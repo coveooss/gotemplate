@@ -9,12 +9,10 @@ import (
 	"strings"
 	"text/template"
 
-	"fmt"
 	"github.com/Masterminds/sprig"
 )
 
 func processFiles(context interface{}) {
-	fmt.Println(context)
 	var files []string
 	if files = Must(filepath.Glob("*.template")).([]string); len(files) == 0 {
 		// There is nothing to process
