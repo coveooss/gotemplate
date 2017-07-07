@@ -23,8 +23,8 @@ func AddExtraFuncs(template *template.Template) {
 	}
 
 	// Internal function used to actually convert the supplied string and apply a conversion function over it to get a go map
-	converter := func(str string, convFunc func([]byte, interface{}) error, context ...interface{}) (map[string]interface{}, error) {
-		out := make(map[string]interface{})
+	converter := func(str string, convFunc func([]byte, interface{}) error, context ...interface{}) (interface{}, error) {
+		var out interface{}
 		content, err := runTemplate(str, context...)
 		if err != nil {
 			if _, ok := err.(TemplateNotFoundError); !ok {
@@ -39,13 +39,14 @@ func AddExtraFuncs(template *template.Template) {
 
 	// converts the supplied string containing yaml/json to go map
 	yamlConverter := func(str string, context ...interface{}) (interface{}, error) {
-		return converter(str, yaml.Unmarshal, context...)
+		result, err := converter(str, yaml.Unmarshal, context...)
+		return interface2string(result), err
 	}
 
 	// Converts the supplied string containing terraform/hcl to go map
 	hclConverter := func(str string, context ...interface{}) (interface{}, error) {
 		out, err := converter(str, hcl.Unmarshal, context...)
-		return FlattenHCL(out), err
+		return FlattenHCL(out.(map[string]interface{})), err
 	}
 
 	*template = *template.Funcs(map[string]interface{}{

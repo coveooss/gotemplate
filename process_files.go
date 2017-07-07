@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -40,6 +41,8 @@ func processFiles(context interface{}) {
 
 	// If terraform is present, we apply a terraform fmt to the resulting templates
 	if _, err := exec.LookPath("terraform"); err == nil {
-		Must(exec.Command("terraform", "fmt").Run())
+		cmd := exec.Command("terraform", "fmt")
+		cmd.Stderr = os.Stderr
+		Must(cmd.Run())
 	}
 }
