@@ -12,6 +12,7 @@ import (
 var (
 	app      = kingpin.New(os.Args[0], "A template processor for go.")
 	varFiles = app.Flag("variables", "Variables file to import").Short('v').Strings()
+	listFunc = app.Flag("list-functions", "List the available functions").Short('l').Bool()
 )
 
 func main() {

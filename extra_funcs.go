@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"strconv"
 	"text/template"
 
 	"github.com/hashicorp/hcl"
@@ -53,5 +54,6 @@ func AddExtraFuncs(template *template.Template) {
 		"yaml": yamlConverter,
 		"json": yamlConverter,
 		"hcl":  hclConverter,
+		"bool": func(str string) (bool, error) { return strconv.ParseBool(str) },
 	})
 }

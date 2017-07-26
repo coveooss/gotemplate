@@ -2,11 +2,14 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"reflect"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -14,15 +17,28 @@ import (
 )
 
 func processFiles(context interface{}) {
+	// Create the evaluation context
+	root := template.New("context").Funcs(sprig.GenericFuncMap())
+	AddExtraFuncs(root)
+
+	if *listFunc {
+		val := reflect.ValueOf(*root)
+		common := val.FieldByName("common").Elem().FieldByName("funcMaps")
+		keys := common.MapKeys()
+		functions := make([]string, len(keys))
+		for i, k := range keys {
+			functions[i] = k.String()
+		}
+		sort.Strings(functions)
+		fmt.Println(strings.Join(functions, "\n"))
+		os.Exit(0)
+	}
+
 	var files []string
 	if files = Must(filepath.Glob("*.template")).([]string); len(files) == 0 {
 		// There is nothing to process
 		return
 	}
-
-	// Create the evaluation context
-	root := template.New("context").Funcs(sprig.GenericFuncMap())
-	AddExtraFuncs(root)
 
 	// Parse the files
 	templates := Must(root.ParseFiles(files...)).(*template.Template)
