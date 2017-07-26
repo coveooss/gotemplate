@@ -13,7 +13,7 @@ install:
 script:
 - if [ ${TRAVIS_TAG::1} = v ];
   then
-    make test;
+    go test ./...;
   fi
 
 after_success:
