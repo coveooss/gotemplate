@@ -43,8 +43,8 @@ a direct data definition.
 Function name | Argument(s() |Description
 --- | --- | ---
 yaml | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting YAML must be valid)
-json | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting YAML must be valid)
-hcl | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting YAML must be valid)
+json | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting JSON must be valid)
+hcl | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting HCL must be valid)
 
 _Usage:_
 
