@@ -6,15 +6,12 @@ import (
 	"github.com/hashicorp/hcl"
 )
 
+// Convert array of 1 to single object otherwise, let the context unchanged
 func getContext(context ...interface{}) interface{} {
-	switch len(context) {
-	case 0:
-		return nil
-	case 1:
+	if len(context) == 1 {
 		return context[0]
-	default:
-		return context
 	}
+	return context
 }
 
 // FlattenHCL - Convert array of map to single map if there is only one element in the array

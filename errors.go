@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/go-errors/errors"
 )
 
-// Must traps errors and return the remaining results to the caller
+// PanicOnError traps errors and return the remaining results to the caller
 // If there is an error, a panic is issued
-func Must(result ...interface{}) interface{} {
+func PanicOnError(result ...interface{}) interface{} {
 	last := len(result) - 1
 	err := result[last]
 
 	if err != nil {
-		panic(err)
+		panic(errors.WrapPrefix(err, "PanicOnError call failed", 2))
 	}
 
 	result = result[:last]
