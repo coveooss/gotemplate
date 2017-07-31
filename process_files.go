@@ -61,9 +61,7 @@ func processFiles(context interface{}) {
 			fmt.Println("Processing file", file)
 		}
 		template := mainTemplate.Lookup(filepath.Base(file))
-
-		var out bytes.Buffer
-		err := template.Execute(&out, context)
+		out, err := executeTemplate(template, file, context)
 		if err != nil {
 			if *dryRun {
 				fmt.Fprintln(os.Stderr, err, "while executing", file)
@@ -102,8 +100,7 @@ func processFiles(context interface{}) {
 			fmt.Fprintln(os.Stderr, err, "while parsing", file)
 			continue
 		}
-		var out bytes.Buffer
-		err = template.Execute(&out, context)
+		out, err := executeTemplate(template, file, context)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err, "while executing", file)
 			continue
@@ -133,6 +130,19 @@ func processFiles(context interface{}) {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}
+}
+
+// RunningTemplate represents the current running template (this avoid concurrent processing)
+var RunningTemplate *template.Template
+
+func executeTemplate(template *template.Template, fileName string, context interface{}) (bytes.Buffer, error) {
+	var out bytes.Buffer
+
+	RunningTemplate = template
+	RunningTemplate.ParseName = fileName
+
+	err := RunningTemplate.Execute(&out, context)
+	return out, err
 }
 
 func findFiles(folder string, patterns ...string) ([]string, error) {

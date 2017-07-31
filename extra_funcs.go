@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
@@ -24,7 +25,12 @@ func AddExtraFuncs(template *template.Template) {
 		if t == nil {
 			// This is not a template, so we try to load file named <source>
 			if !strings.Contains(source, "\n") {
-				content, err := ioutil.ReadFile(source)
+				tryFile := source
+				if !path.IsAbs(tryFile) {
+					// We try to load the file from the relative path
+					tryFile = path.Join(path.Dir(RunningTemplate.ParseName), tryFile)
+				}
+				content, err := ioutil.ReadFile(tryFile)
 				if _, ok := err.(*os.PathError); err != nil && !ok {
 					return "", err
 				}
