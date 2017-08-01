@@ -31,10 +31,13 @@ func AddExtraFuncs(template *template.Template) {
 					tryFile = path.Join(path.Dir(RunningTemplate.ParseName), tryFile)
 				}
 				content, err := ioutil.ReadFile(tryFile)
-				if _, ok := err.(*os.PathError); err != nil && !ok {
-					return "", err
+				if err != nil {
+					if _, ok := err.(*os.PathError); err != nil && !ok {
+						return "", err
+					}
+				} else {
+					source = string(content)
 				}
-				source = string(content)
 			}
 			if t == nil {
 				// There is no file named <source>, so we consider that <source> is the content
