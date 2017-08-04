@@ -1,0 +1,10 @@
+package: github.com/coveo/gotemplate
+owners:
+- name: Coveo
+  homepage: http://www.coveo.com
+import:
+- package: github.com/gruntwork-io/terragrunt
+  repo: https://github.com/coveo/terragrunt.git
+  version: v0.12.25.04
+- package: github.com/Masterminds/sprig
+- package: github.com/drhodes/goLorem
