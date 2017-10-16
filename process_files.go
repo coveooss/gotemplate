@@ -51,8 +51,10 @@ func processFiles(context interface{}) {
 
 	// Parse the template files
 	templateFiles, files := isolateTemplateFiles(files)
-	if len(templateFiles) > 0 {
-		mainTemplate = PanicOnError(mainTemplate.ParseFiles(templateFiles...)).(*template.Template)
+	for _, filename := range templateFiles {
+		// We do not use ParseFiles because it names the template with the base name of the file
+		// which result in overriding templates with the same base name in different folders.
+		mainTemplate.New(filename).Parse(string(PanicOnError(ioutil.ReadFile(filename)).([]byte)))
 	}
 
 	// Process the files and generate resulting file if there is an output from the template
@@ -60,7 +62,7 @@ func processFiles(context interface{}) {
 		if *dryRun {
 			fmt.Println("Processing file", file)
 		}
-		template := mainTemplate.Lookup(filepath.Base(file))
+		template := mainTemplate.Lookup(file)
 		out, err := executeTemplate(template, file, context)
 		if err != nil {
 			if *dryRun {
