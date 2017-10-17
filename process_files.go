@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"os/exec"
 	"path"
@@ -204,7 +205,7 @@ func isolateTemplateFiles(files []string) (templates, others []string) {
 }
 
 func printFunctions(template *template.Template) {
-	common := reflect.ValueOf(template).FieldByName("common").Elem().FieldByName("parseFuncs")
+	common := reflect.ValueOf(*template).FieldByName("common").Elem().FieldByName("parseFuncs")
 	keys := common.MapKeys()
 	functions := make([]string, len(keys))
 	for i, k := range keys {
@@ -213,11 +214,29 @@ func printFunctions(template *template.Template) {
 
 	functions = append(basicFunctions, functions...)
 	sort.Strings(functions)
-	for i, function := range functions {
-		fmt.Printf("%-15s", function)
-		if (i+1)%5 == 0 {
-			fmt.Println()
-		}
+
+	const nbColumn = 5
+	colLength := int(math.Ceil(float64(len(functions)) / float64(nbColumn)))
+	maxLength := 0
+
+	// Initialize the columns to sort function per column
+	var list [nbColumn][]string
+	for i := range list {
+		list[i] = make([]string, colLength)
 	}
-	fmt.Println()
+
+	// Place functions into columns
+	for i, function := range functions {
+		column := list[i/colLength]
+		column[i%colLength] = function
+		maxLength = int(math.Max(float64(len(function)), float64(maxLength)))
+	}
+
+	// Print the columns
+	for i := range list[0] {
+		for _, column := range list {
+			fmt.Printf("%-[1]*[2]s", maxLength+2, column[i])
+		}
+		fmt.Println()
+	}
 }

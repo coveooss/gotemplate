@@ -10,6 +10,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig"
 	"github.com/hashicorp/hcl"
 	"gopkg.in/yaml.v2"
 )
@@ -96,6 +97,13 @@ func AddExtraFuncs(template *template.Template) {
 		"yaml": yamlConverter,
 		"json": yamlConverter,
 		"hcl":  hclConverter,
+		"toYaml": func(v interface{}) (string, error) {
+			if result, err := yaml.Marshal(v); err != nil {
+				return "", err
+			} else {
+				return string(result), nil
+			}
+		},
 	})
 
 	*template = *template.Funcs(map[string]interface{}{
@@ -112,6 +120,16 @@ func AddExtraFuncs(template *template.Template) {
 			}
 			return result
 		},
-		"lorem": lorem,
+		"lorem":      lorem,
+		"formatList": formatList,
 	})
+}
+
+func formatList(format string, v interface{}) []string {
+	list := sprig.GenericFuncMap()["toStrings"].(func(interface{}) []string)(v)
+
+	for i, val := range list {
+		list[i] = fmt.Sprintf(format, val)
+	}
+	return list
 }

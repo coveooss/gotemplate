@@ -92,7 +92,9 @@ Function name | Argument(s() |Description
 --- | --- | ---
 bool | string | Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)
 concat | objects ... | Returns the concatenation (without separator) of the string representation of objects
+formatList | format string, list | Return a list of strings by applying the format to each element of the supplied list.
 lorem | type string, min, max int | Returns a random string. Valid types are be `word`, `words`, `sentence`, `para`, `paragraph`, `host`, `email`, `url`.
+toYaml | interface | Returns the YAML string representation of the supplied object.
 
 ```go
 // Random text
@@ -106,4 +108,7 @@ lorem | type string, min, max int | Returns a random string. Valid types are be 
 
 // Boolean conversion
 {{ $bool := bool "True" }}
+
+// Quote all elements of a list
+{{ $quoted := list 1 2 3 | formatList "\"%v\"" }}
 ```
