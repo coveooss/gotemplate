@@ -51,42 +51,54 @@ func processFiles(context interface{}) {
 	}
 
 	// Parse the template files
+	var validTemplates []string
 	templateFiles, files := isolateTemplateFiles(files)
 	for _, filename := range templateFiles {
 		// We do not use ParseFiles because it names the template with the base name of the file
 		// which result in overriding templates with the same base name in different folders.
-		mainTemplate.New(filename).Parse(string(PanicOnError(ioutil.ReadFile(filename)).([]byte)))
+		if _, err := mainTemplate.New(filename).Parse(string(PanicOnError(ioutil.ReadFile(filename)).([]byte))); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		} else {
+			validTemplates = append(validTemplates, filename)
+		}
 	}
 
+	var terraformFiles bool
+
 	// Process the files and generate resulting file if there is an output from the template
-	for _, file := range templateFiles {
+	for _, file := range validTemplates {
 		if *dryRun {
 			fmt.Println("Processing file", file)
 		}
-		template := mainTemplate.Lookup(file)
-		out, err := executeTemplate(template, file, context)
+
+		out, err := executeTemplate(mainTemplate.Lookup(file), file, context)
 		if err != nil {
 			if *dryRun {
 				fmt.Fprintln(os.Stderr, err, "while executing", file)
 				continue
 			} else {
-				PanicOnError(err)
-			}
-		}
-
-		if result := strings.TrimSpace(out.String()); result != "" {
-			fileName := strings.TrimSuffix(file, templateExt)
-			ext := path.Ext(fileName)
-			fileName = fmt.Sprint(strings.TrimSuffix(fileName, ext), ".generated", ext)
-			if *dryRun {
-				fmt.Printf("  Would create file %s with content:\n%s\n", fileName, result)
-			} else {
-				info, _ := os.Stat(file)
-				if err := ioutil.WriteFile(fileName, []byte(result), info.Mode()); err != nil {
+				switch err := err.(type) {
+				case template.ExecError:
+					fmt.Fprintln(os.Stderr, err)
+				default:
 					PanicOnError(err)
 				}
 			}
 		}
+
+		fileName := strings.TrimSuffix(file, templateExt)
+		ext := path.Ext(fileName)
+		fileName = fmt.Sprint(strings.TrimSuffix(fileName, ext), ".generated", ext)
+		if *dryRun {
+			fmt.Printf("  Would create file %s with content:\n%s\n", fileName, out.String())
+		} else {
+			info, _ := os.Stat(file)
+			if err := ioutil.WriteFile(fileName, []byte(out.String()), info.Mode()); err != nil {
+				PanicOnError(err)
+			}
+		}
+
+		terraformFiles = terraformFiles || ext == ".tf" || ext == ".tf.json"
 	}
 
 	for _, file := range files {
@@ -98,6 +110,12 @@ func processFiles(context interface{}) {
 			fmt.Fprintln(os.Stderr, err, "while reading", file)
 			continue
 		}
+
+		if strings.TrimSpace(string(content)) == "" {
+			// For a weird reason, empty file generates the previous template content
+			continue
+		}
+
 		template, err := mainTemplate.Parse(string(content))
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err, "while parsing", file)
@@ -118,14 +136,15 @@ func processFiles(context interface{}) {
 					PanicOnError(err)
 				}
 				ioutil.WriteFile(file, out.Bytes(), info.Mode())
+				ext := path.Ext(file)
+				terraformFiles = terraformFiles || ext == ".tf" || ext == ".tf.json"
 			}
-			fmt.Println()
 		}
 	}
 
 	// If terraform is present, we apply a terraform fmt to the resulting templates
 	// to ensure that the resulting files are valids.
-	if _, err := exec.LookPath("terraform"); err == nil {
+	if _, err := exec.LookPath("terraform"); err == nil && terraformFiles {
 		cmd := exec.Command("terraform", "fmt")
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()

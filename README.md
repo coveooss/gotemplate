@@ -90,9 +90,11 @@ list = [
 
 Function name | Argument(s() |Description
 --- | --- | ---
-bool | string | Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)
-concat | objects ... | Returns the concatenation (without separator) of the string representation of objects
+bool | string | Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`).
+concat | objects ... | Returns the concatenation (without separator) of the string representation of objects.
+exec | command string, args ... | Returns the result of the shell command as string.
 formatList | format string, list | Return a list of strings by applying the format to each element of the supplied list.
+glob | args ... | Returns the expanded list of supplied arguments (expand *[]? on filename).
 lorem | type string, min, max int | Returns a random string. Valid types are be `word`, `words`, `sentence`, `para`, `paragraph`, `host`, `email`, `url`.
 toYaml | interface | Returns the YAML string representation of the supplied object.
 

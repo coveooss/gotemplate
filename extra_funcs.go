@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
@@ -122,14 +124,38 @@ func AddExtraFuncs(template *template.Template) {
 		},
 		"lorem":      lorem,
 		"formatList": formatList,
+		"exec":       execFunc,
+		"glob":       globFunc,
 	})
 }
 
-func formatList(format string, v interface{}) []string {
-	list := sprig.GenericFuncMap()["toStrings"].(func(interface{}) []string)(v)
+var toStrings = sprig.GenericFuncMap()["toStrings"].(func(interface{}) []string)
 
+func formatList(format string, v interface{}) []string {
+	list := toStrings(v)
 	for i, val := range list {
 		list[i] = fmt.Sprintf(format, val)
 	}
 	return list
+}
+
+func execFunc(command string, args ...interface{}) (string, error) {
+	cmd := exec.Command(command, globFunc(args...)...)
+	cmd.Stdin = os.Stdin
+	cmd.Dir = path.Dir(RunningTemplate.ParseName)
+	out, err := cmd.Output()
+	return strings.TrimSpace(string(out)), err
+}
+
+func globFunc(args ...interface{}) (result []string) {
+	for _, arg := range toStrings(args) {
+		if strings.ContainsAny(arg, "*?[]") {
+			if expanded, _ := filepath.Glob(arg); expanded != nil {
+				result = append(result, expanded...)
+				continue
+			}
+		}
+		result = append(result, arg)
+	}
+	return
 }
