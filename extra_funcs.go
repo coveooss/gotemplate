@@ -124,6 +124,7 @@ func AddExtraFuncs(template *template.Template) {
 		},
 		"lorem":      lorem,
 		"formatList": formatList,
+		"mergeList":  mergeLists,
 		"exec":       execFunc,
 		"glob":       globFunc,
 	})
@@ -132,17 +133,34 @@ func AddExtraFuncs(template *template.Template) {
 var toStrings = sprig.GenericFuncMap()["toStrings"].(func(interface{}) []string)
 
 func formatList(format string, v interface{}) []string {
-	list := toStrings(v)
-	for i, val := range list {
-		list[i] = fmt.Sprintf(format, val)
+	source := toStrings(v)
+	list := make([]string, 0, len(source))
+	for _, val := range source {
+		list = append(list, fmt.Sprintf(format, val))
 	}
 	return list
+}
+
+func mergeLists(lists ...[]interface{}) []interface{} {
+	switch len(lists) {
+	case 0:
+		return nil
+	case 1:
+		return lists[0]
+	}
+	result := make([]interface{}, 0)
+	for _, list := range lists {
+		result = append(result, list...)
+	}
+	return result
 }
 
 func execFunc(command string, args ...interface{}) (string, error) {
 	cmd := exec.Command(command, globFunc(args...)...)
 	cmd.Stdin = os.Stdin
-	cmd.Dir = path.Dir(RunningTemplate.ParseName)
+	if RunningTemplate != nil {
+		cmd.Dir = path.Dir(RunningTemplate.ParseName)
+	}
 	out, err := cmd.Output()
 	return strings.TrimSpace(string(out)), err
 }

@@ -15,7 +15,7 @@ var version = "master"
 
 var (
 	app             = kingpin.New(os.Args[0], "A template processor for go.")
-	varFiles        = app.Flag("import", "Import variables files (could be YAML, JSON or HCL format)").PlaceHolder("file").Short('i').Strings()
+	varFiles        = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').Strings()
 	includePatterns = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
 	listFunc        = app.Flag("list-functions", "List the available functions").Short('l').Bool()
 	recursive       = app.Flag("recursive", "Process all template files recursively").Short('r').Bool()
