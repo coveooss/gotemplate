@@ -19,12 +19,16 @@ A template processor for go.
 
 Flags:
   -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
-  -i, --import=file ...       Import variables files (could be YAML, JSON or HCL format)
+  -i, --import=file ...       Import variables files (could be any of YAML, JSON or HCL format)
   -p, --patterns=pattern ...  Additional patterns that should be processed by gotemplate
-  -l, --list-functions        List the available functions
+  -o, --overwrite             Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
+  -s, --substitute=exp ...    Substitute text in the processed files by applying the regex substitute expression (format: regex/substitution, see: Go regexp)
   -r, --recursive             Process all template files recursively
+      --source=SOURCE         Specify a source folder (default to the current folder)
+      --target=TARGET         Specify a target folder (default to source folder)
   -f, --follow-symlinks       Follow the symbolic links while using the recursive option
   -d, --dry-run               Do not actually overwrite files, just show the result
+  -l, --list-functions        List the available functions
   -v, --version               Get the current version of gotemplate
 ```
 

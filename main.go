@@ -17,10 +17,14 @@ var (
 	app             = kingpin.New(os.Args[0], "A template processor for go.")
 	varFiles        = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').Strings()
 	includePatterns = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
-	listFunc        = app.Flag("list-functions", "List the available functions").Short('l').Bool()
+	overwrite       = app.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
+	substitutes     = app.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: regex/substitution, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
 	recursive       = app.Flag("recursive", "Process all template files recursively").Short('r').Bool()
+	sourceFolder    = app.Flag("source", "Specify a source folder (default to the current folder)").String()
+	targetFolder    = app.Flag("target", "Specify a target folder (default to source folder)").String()
 	followSymLinks  = app.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
 	dryRun          = app.Flag("dry-run", "Do not actually overwrite files, just show the result").Short('d').Bool()
+	listFunc        = app.Flag("list-functions", "List the available functions").Short('l').Bool()
 	getVersion      = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
 )
 
@@ -44,6 +48,21 @@ func main() {
 		fmt.Println(version)
 		os.Exit(0)
 	}
+
+	if *targetFolder == "" {
+		// Target folder default to source folder
+		*targetFolder = *sourceFolder
+	}
+	*sourceFolder = PanicOnError(filepath.Abs(*sourceFolder)).(string)
+	*targetFolder = PanicOnError(filepath.Abs(*targetFolder)).(string)
+
+	// If target folder is not equal to source folder, we run in overwrite mode by default
+	*overwrite = *overwrite || *sourceFolder != *targetFolder
+
+	if *sourceFolder != "" {
+		PanicOnError(os.Chdir(*sourceFolder))
+	}
+
 	processFiles(context(varFiles))
 }
 

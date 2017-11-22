@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -53,13 +54,14 @@ func processFiles(context interface{}) {
 	// Parse the template files
 	var validTemplates []string
 	templateFiles, files := isolateTemplateFiles(files)
-	for _, filename := range templateFiles {
+	for _, file := range templateFiles {
 		// We do not use ParseFiles because it names the template with the base name of the file
 		// which result in overriding templates with the same base name in different folders.
-		if _, err := mainTemplate.New(filename).Parse(string(PanicOnError(ioutil.ReadFile(filename)).([]byte))); err != nil {
+		content := substitute(string(PanicOnError(ioutil.ReadFile(file)).([]byte)))
+		if _, err := mainTemplate.New(file).Parse(content); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		} else {
-			validTemplates = append(validTemplates, filename)
+			validTemplates = append(validTemplates, file)
 		}
 	}
 
@@ -86,15 +88,24 @@ func processFiles(context interface{}) {
 			}
 		}
 
-		fileName := strings.TrimSuffix(file, templateExt)
-		ext := path.Ext(fileName)
-		fileName = fmt.Sprint(strings.TrimSuffix(fileName, ext), ".generated", ext)
+		targetFile := getTargetFile(strings.TrimSuffix(file, templateExt), *sourceFolder, *targetFolder)
+		ext := path.Ext(targetFile)
+		if !*overwrite {
+			targetFile = fmt.Sprint(strings.TrimSuffix(targetFile, ext), ".generated", ext)
+		}
 		if *dryRun {
-			fmt.Printf("  Would create file %s with content:\n%s\n", fileName, out.String())
+			fmt.Printf("  Would create file %s with content:\n%s\n", targetFile, out.String())
 		} else {
 			info, _ := os.Stat(file)
-			if err := ioutil.WriteFile(fileName, []byte(out.String()), info.Mode()); err != nil {
+			if *sourceFolder != *targetFolder {
+				PanicOnError(os.MkdirAll(filepath.Dir(targetFile), 0777))
+			}
+			if err := ioutil.WriteFile(targetFile, []byte(out.String()), info.Mode()); err != nil {
 				PanicOnError(err)
+			}
+			if strings.TrimSpace(out.String()) != "" && *overwrite && *sourceFolder == *targetFolder {
+				// In overwrite mode, we delete the source file if it rendered something
+				os.Remove(file)
 			}
 		}
 
@@ -105,18 +116,19 @@ func processFiles(context interface{}) {
 		if *dryRun {
 			fmt.Println("Processing file", file)
 		}
-		content, err := ioutil.ReadFile(file)
+		fileContent, err := ioutil.ReadFile(file)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err, "while reading", file)
 			continue
 		}
+		content := substitute(string(fileContent))
 
-		if strings.TrimSpace(string(content)) == "" {
+		if strings.TrimSpace(content) == "" {
 			// For a weird reason, empty file generates the previous template content
 			continue
 		}
 
-		template, err := mainTemplate.Parse(string(content))
+		template, err := mainTemplate.Parse(content)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err, "while parsing", file)
 			continue
@@ -132,11 +144,17 @@ func processFiles(context interface{}) {
 				fmt.Printf("  Would modify file %s with content:\n%s\n", file, out.String())
 			} else {
 				info, _ := os.Stat(file)
-				if err := os.Rename(file, file+".original"); err != nil {
-					PanicOnError(err)
+				if !*overwrite {
+					PanicOnError(os.Rename(file, file+".original"))
 				}
-				ioutil.WriteFile(file, out.Bytes(), info.Mode())
-				ext := path.Ext(file)
+				targetFile := getTargetFile(file, *sourceFolder, *targetFolder)
+
+				if *sourceFolder != *targetFolder {
+					PanicOnError(os.MkdirAll(filepath.Dir(targetFile), 0777))
+				}
+
+				ioutil.WriteFile(targetFile, out.Bytes(), info.Mode())
+				ext := path.Ext(targetFile)
 				terraformFiles = terraformFiles || ext == ".tf" || ext == ".tf.json"
 			}
 		}
@@ -157,12 +175,11 @@ func processFiles(context interface{}) {
 // RunningTemplate represents the current running template (this avoid concurrent processing)
 var RunningTemplate *template.Template
 
-func executeTemplate(template *template.Template, fileName string, context interface{}) (bytes.Buffer, error) {
+func executeTemplate(template *template.Template, targetFile string, context interface{}) (bytes.Buffer, error) {
 	var out bytes.Buffer
 
 	RunningTemplate = template
-	RunningTemplate.ParseName = fileName
-
+	RunningTemplate.ParseName = targetFile
 	err := RunningTemplate.Execute(&out, context)
 	return out, err
 }
@@ -258,4 +275,24 @@ func printFunctions(template *template.Template) {
 		}
 		fmt.Println()
 	}
+}
+
+func substitute(content string) string {
+	for _, substitute := range *substitutes {
+		expression := strings.SplitN(substitute, "/", 2)
+		regex := regexp.MustCompile(expression[0])
+		subst := expression[1]
+		fmt.Printf("Replacing %s by %s in %s\n", expression[0], subst, content)
+		content = regex.ReplaceAllString(content, subst)
+		fmt.Printf("New content = %s\n", content)
+	}
+	return content
+}
+
+func getTargetFile(targetFile, sourcePath, targetPath string) string {
+	if targetPath != "" {
+		relative := PanicOnError(filepath.Rel(sourcePath, targetFile)).(string)
+		targetFile = filepath.Join(targetPath, relative)
+	}
+	return targetFile
 }
