@@ -31,6 +31,11 @@ func processFiles(context interface{}) {
 	mainTemplate := template.New("context").Funcs(sprig.GenericFuncMap())
 	AddExtraFuncs(mainTemplate)
 
+	if *delimiters != "" {
+		split := strings.SplitN(*delimiters, ",", 2)
+		mainTemplate = mainTemplate.Delims(strings.TrimSpace(split[0]), strings.TrimSpace(split[1]))
+	}
+
 	*includePatterns = append(*includePatterns, "*"+templateExt)
 
 	if *listFunc {
@@ -100,6 +105,10 @@ func processFiles(context interface{}) {
 			if *sourceFolder != *targetFolder {
 				PanicOnError(os.MkdirAll(filepath.Dir(targetFile), 0777))
 			}
+			if !*silent {
+				fmt.Fprintln(os.Stderr, targetFile)
+			}
+
 			if err := ioutil.WriteFile(targetFile, []byte(out.String()), info.Mode()); err != nil {
 				PanicOnError(err)
 			}
@@ -139,18 +148,22 @@ func processFiles(context interface{}) {
 			continue
 		}
 
-		if out.String() != string(content) {
+		if out.String() != string(content) || *sourceFolder != *targetFolder {
+			targetFile := getTargetFile(file, *sourceFolder, *targetFolder)
 			if *dryRun {
-				fmt.Printf("  Would modify file %s with content:\n%s\n", file, out.String())
+				fmt.Printf("  Write file %s with content:\n%s\n", targetFile, out.String())
 			} else {
 				info, _ := os.Stat(file)
 				if !*overwrite {
 					PanicOnError(os.Rename(file, file+".original"))
 				}
-				targetFile := getTargetFile(file, *sourceFolder, *targetFolder)
 
 				if *sourceFolder != *targetFolder {
 					PanicOnError(os.MkdirAll(filepath.Dir(targetFile), 0777))
+				}
+
+				if !*silent {
+					fmt.Fprintln(os.Stderr, targetFile)
 				}
 
 				ioutil.WriteFile(targetFile, out.Bytes(), info.Mode())

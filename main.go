@@ -15,16 +15,18 @@ var version = "master"
 
 var (
 	app             = kingpin.New(os.Args[0], "A template processor for go.")
+	delimiters      = app.Flag("delimiters", "Define the default delimiters for go template (separate the left and right delimiters by a comma)").PlaceHolder("{{,}}").String()
 	varFiles        = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').Strings()
 	includePatterns = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
 	overwrite       = app.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
 	substitutes     = app.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: regex/substitution, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
 	recursive       = app.Flag("recursive", "Process all template files recursively").Short('r').Bool()
-	sourceFolder    = app.Flag("source", "Specify a source folder (default to the current folder)").String()
-	targetFolder    = app.Flag("target", "Specify a target folder (default to source folder)").String()
+	sourceFolder    = app.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").String()
+	targetFolder    = app.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
 	followSymLinks  = app.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
-	dryRun          = app.Flag("dry-run", "Do not actually overwrite files, just show the result").Short('d').Bool()
+	dryRun          = app.Flag("dry-run", "Do not actually write files, just show the result").Short('d').Bool()
 	listFunc        = app.Flag("list-functions", "List the available functions").Short('l').Bool()
+	silent          = app.Flag("silent", "Don not print out the name of the generated files").Bool()
 	getVersion      = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
 )
 
