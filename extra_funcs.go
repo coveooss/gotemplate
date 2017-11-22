@@ -156,6 +156,15 @@ func mergeLists(lists ...[]interface{}) []interface{} {
 }
 
 func execFunc(command string, args ...interface{}) (string, error) {
+	if _, err := exec.LookPath(command); err != nil && strings.Contains(command, " ") {
+		split := strings.Split(command, " ")
+		command = split[0]
+		newArgs := make([]interface{}, len(split)-1)
+		for i := range split[1:] {
+			newArgs[i] = split[i+1]
+		}
+		args = append(newArgs, args...)
+	}
 	cmd := exec.Command(command, globFunc(args...)...)
 	cmd.Stdin = os.Stdin
 	if RunningTemplate != nil {

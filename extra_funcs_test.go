@@ -42,6 +42,9 @@ func Test_execFunc(t *testing.T) {
 	}{
 		{"Current folder", args{"pwd", nil}, cwd, false},
 		{"Echo", args{"echo", []interface{}{"Hello", "World!"}}, "Hello World!", false},
+		{"Echo One arg", args{command: "echo Hello World!"}, "Hello World!", false},
+		{"Echo separated arg", args{"echo Hello", []interface{}{"World!"}}, "Hello World!", false},
+		{"Non working", args{command: "non existent"}, "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
