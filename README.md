@@ -13,7 +13,7 @@ Every matching `*.ext.template` file will render a file named `*.generated.ext`.
 ## Usage
 
 ```text
-usage: gotemplate [<flags>]
+usage: gotemplate [<flags>] [<files>...]
 
 A template processor for go.
 
@@ -21,24 +21,30 @@ Flags:
   -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
       --delimiters={{,}}      Define the default delimiters for go template (separate the left and right delimiters by a comma)
   -i, --import=file ...       Import variables files (could be any of YAML, JSON or HCL format)
+  -V, --var=name:=file ...    Import named variables files (base file name is used as identifier if unspecified)
   -p, --patterns=pattern ...  Additional patterns that should be processed by gotemplate
   -o, --overwrite             Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
-  -s, --substitute=exp ...    Substitute text in the processed files by applying the regex substitute expression (format: regex/substitution, see: Go regexp)
+  -s, --substitute=exp ...    Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)
   -r, --recursive             Process all template files recursively
       --source=folder         Specify a source folder (default to the current folder)
       --target=folder         Specify a target folder (default to source folder)
   -f, --follow-symlinks       Follow the symbolic links while using the recursive option
-  -d, --dry-run               Do not actually write files, just show the result
+  -P, --print                 Output the result directly to stdout
   -l, --list-functions        List the available functions
-      --silent                Don not print out the name of the generated files
+  -L, --list-templates        List the available templates function
+      --all-templates         List all templates (--at)
+  -q, --quiet                 Don not print out the name of the generated files
   -v, --version               Get the current version of gotemplate
+
+Args:
+  [<files>]  Template files to process
 ```
 
 ## Available functions
 
 ### Base functions
 
-* All functions included in [Go Template](https://golang.org/pkg/text/template) 
+* All functions included in [Go Template](https://golang.org/pkg/text/template)
 * All function included in [Sprig](http://masterminds.github.io/sprig)
 
 ## Structured import functions
@@ -48,11 +54,12 @@ a direct data definition.
 
 Function name | Argument(s() |Description
 --- | --- | ---
-yaml | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting YAML must be valid)
-json | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting JSON must be valid)
+data | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the result must be valid HCL, JSON or YAML)
 hcl | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting HCL must be valid)
+json | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting JSON must be valid)
+yaml | source [context] | Convert the data referred by `source` with `context` as argument into a go interface (the resulting YAML must be valid)
 
-_Usage:_
+## _Usage:_
 
 ```go
 // JSON data definition
@@ -88,22 +95,43 @@ list = [
 
 {{ $hcl_data := hcl "source" }}
 
-// YAML data defintion for file
-{{ $ymal_file := yaml "source.yml" }}
+// YAML data definition for file
+{{ $yaml_file := yaml "source.yml" }}
+
+// Assign arbitrary data definition to a variable
+// data can handle any HCL, JSON, YAML or string coming from the string directly or a template name or a file name
+{{ $foo := `a = 1 b = 2 c = "Hello world!` | data }}
+
 ```
 
 # Other functions
 
 Function name | Argument(s() |Description
 --- | --- | ---
+alias | name, function, source, args ... | Defines an alias (go template function) using the function (`exec`, `run`, `include`, `template`). Executed in the context of the caller.
 bool | string | Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`).
 concat | objects ... | Returns the concatenation (without separator) of the string representation of objects.
-exec | command string, args ... | Returns the result of the shell command as string.
+current | | Returns the current folder (like `pwd`, but returns the folder of the currently running folder).
+exec | command string, args ... | Returns the result of the shell command as structured data (as string if no other conversion is possible).
 formatList | format string, list | Return a list of strings by applying the format to each element of the supplied list.
-mergeLists | lists | Return a single list containing all elements from the lists supplied.
+functions | | Return the list of available functions.
+get | key, map | Returns the value associated with the supplied map.
 glob | args ... | Returns the expanded list of supplied arguments (expand *[]? on filename).
+include | template, args ... | Returns the result of the named template rendering (like template but it is possible to capture the output).
+joinLines | objects ... | Merge the supplied objects into a newline separated string.
+local_alias | name, function, source, args ... | Defines an alias (go template function) using the function (`exec`, `run`, `include`, `template`). Executed in the context of the function it maps to.
 lorem | type string, min, max int | Returns a random string. Valid types are be `word`, `words`, `sentence`, `para`, `paragraph`, `host`, `email`, `url`.
+mergeLists | lists | Return a single list containing all elements from the lists supplied.
+pwd | | Return the current working directory.
+run | command string, args ... | Returns the result of the shell command as string.
+set | key string, value, map | Add the value to the supplied map using key as identifier.
+splitLines | object | Returns a list of strings from the supplied object with newline as the separator.
+substitutes | string | Applies the supplied regex substitute specified on the command line on the supplied string (see `--substitute`).
+templateNames | | Returns the list of available templates names.
+templates | | Returns the list of available templates (including itself). The returned value is the actual Go Template object list.
 toYaml | interface | Returns the YAML string representation of the supplied object.
+
+## _Some examples:_
 
 ```go
 // Random text
@@ -120,4 +148,81 @@ toYaml | interface | Returns the YAML string representation of the supplied obje
 
 // Quote all elements of a list
 {{ $quoted := list 1 2 3 | formatList "\"%v\"" }}
+
+// Define a script
+{{ define "script" }}
+#! /usr/bin/env python
+
+for i in range({{ . | default 10 }}):
+    print("- ".format(i))
+{{ end }}
+
+// Run the script (render the data as output by the python script)
+{{ run "script" }}
+
+// Run the script (returns a list of number from 0 to 24)
+{{ $values := exec "script" 25 }}
+
+// Get the content of a folder
+{{ $values := run "ls" "-l" }}
+
+// Get the content of the root folder (note that arguments could be either separated of embedded with the command)
+{{ $values := run "ls -l /" }}
+
+// Get the script in a variable and execute it later
+{{ $script := include "script" 40 }}
+{{ exec $script }}
+
+// Add a function that could be called later (should be created in a .template file and used later as a function)
+// Note that it is not possible to 
+{{ alias "generate_numbers" "exec" "script" }}
+...
+// Can be later used as a function in another template script
+{{ $numbers := generate_numbers 200 }}
+{{ $numbers := 1000 | generate_numbers }}
 ```
+
+### A lot of template functions are available
+
+They are coming from either gotemplate, Sprig or native Go Template.
+
+```
+> gotemplate -l
+abbrev                  dict                    initial                 plural                  sub
+abbrevboth              dir                     initials                prepend                 substitute
+add                     div                     int                     print                   substr
+add1                    empty                   int64                   printf                  swapcase
+ago                     env                     isAbs                   println                 templateNames
+alias                   eq                      join                    push                    templates
+and                     exec                    joinLines               pwd                     title
+append                  expandenv               js                      quote                   toDate
+atoi                    ext                     json                    randAlpha               toJson
+b32dec                  fail                    keys                    randAlphaNum            toPrettyJson
+b32enc                  first                   kindIs                  randAscii               toString
+b64dec                  float64                 kindOf                  randNumeric             toStrings
+b64enc                  floor                   last                    regexFind               toYaml
+base                    formatList              le                      regexFindAll            trim
+biggest                 functions               len                     regexMatch              trimAll
+bool                    ge                      list                    regexReplaceAll         trimPrefix
+call                    genCA                   local_alias             regexReplaceAllLiteral  trimSuffix
+call                    genPrivateKey           lorem                   regexSplit              trimall
+camelcase               genSelfSignedCert       lower                   repeat                  trunc
+cat                     genSignedCert           lt                      replace                 tuple
+ceil                    get                     max                     rest                    typeIs
+clean                   glob                    merge                   reverse                 typeIsLike
+coalesce                gt                      mergeList               round                   typeOf
+compact                 has                     min                     run                     uniq
+concat                  hasKey                  mod                     semver                  unset
+contains                hasPrefix               mul                     semverCompare           until
+current                 hasSuffix               ne                      set                     untilStep
+data                    hcl                     nindent                 sha256sum               untitle
+date                    hello                   nospace                 shuffle                 upper
+dateInZone              html                    not                     snakecase               urlquery
+dateModify              htmlDate                now                     sortAlpha               uuidv4
+date_in_zone            htmlDateInZone          omit                    split                   without
+date_modify             include                 or                      splitLines              wrap
+default                 indent                  pick                    splitList               wrapWith
+derivePassword          index                   pluck                   squote                  yaml
+```
+
+Links to documentations of foreign fucntions are in the section [base functions](#base-functions).
