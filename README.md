@@ -100,7 +100,7 @@ list = [
 
 // Assign arbitrary data definition to a variable
 // data can handle any HCL, JSON, YAML or string coming from the string directly or a template name or a file name
-{{ $foo := `a = 1 b = 2 c = "Hello world!` | data }}
+{{ $foo := `a = 1 b = 2 c = "Hello world!"` | data }}
 
 ```
 
