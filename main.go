@@ -34,11 +34,17 @@ func cleanup() {
 	}
 }
 
+const description = `
+A template processor for go.
+
+See: https://github.com/coveo/gotemplate/blob/master/README.md for complete documentation.
+`
+
 func main() {
 	defer cleanup()
 
 	var (
-		app               = kingpin.New(os.Args[0], "A template processor for go.")
+		app               = kingpin.New(os.Args[0], description)
 		delimiters        = app.Flag("delimiters", "Define the default delimiters for go template (separate the left and right delimiters by a comma)").PlaceHolder("{{,}}").String()
 		varFiles          = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
 		namedVarFiles     = app.Flag("var", "Import named variables files (base file name is used as identifier if unspecified)").PlaceHolder("name:=file").Short('V').Strings()
