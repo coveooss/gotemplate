@@ -182,12 +182,13 @@ for i in range({{ . | default 10 }}):
 {{ $numbers := 1000 | generate_numbers }}
 ```
 
-### A lot of template functions are available
+### A lot of template functions are available:
 
 They are coming from either gotemplate, Sprig or native Go Template.
 
 ```
 > gotemplate -l
+
 abbrev                  dict                    initial                 plural                  sub
 abbrevboth              dir                     initials                prepend                 substitute
 add                     div                     int                     print                   substr
