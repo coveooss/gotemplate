@@ -240,7 +240,7 @@ func (t Template) PrintTemplates(all bool) {
 			if tpl.Name() == tpl.ParseName {
 				name = ""
 			}
-			fmt.Fprintf(os.Stderr, "%-[3]*[1]s %[2]s\n", name, faint(filepath.Rel(t.folder, tpl.ParseName)), maxLen)
+			fmt.Fprintf(os.Stderr, "%-[3]*[1]s %[2]s\n", name, faint(utils.Relative(t.folder, tpl.ParseName)), maxLen)
 		}
 	}
 	fmt.Fprintln(os.Stderr)
