@@ -14,7 +14,7 @@ install:
 script:
 - if [ ${TRAVIS_TAG::1} = v ];
   then
-    go test &&
+    go test ./... &&
     curl -sL https://git.io/goreleaser | bash;
   fi
 

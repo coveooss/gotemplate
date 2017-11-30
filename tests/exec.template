@@ -1,0 +1,53 @@
+# List content of current directory
+{{ $test := `ls -l` }}
+{{ exec $test }}
+
+# Return a list of numbers
+{{ exec "echo [1,2,3,4]" }}
+
+# Return a list of numbers generated in python
+{{ exec `#! /usr/bin/env python3
+for i in range(10):
+    print("-", i)
+` }}
+
+# Return a list of number generated in bash by calling a template
+{{ define "generate_list" }}
+#! /usr/bin/env bash
+
+for i in `seq 1 ${1:-10}`
+do
+    echo "- $i"
+done
+{{ end }}
+
+{{ template "generate_list" 10 }}
+{{ template "generate_list" 100 }}
+
+
+
+# List content of current directory
+@test = "ls -l"
+@exec(test)
+
+# Return a list of numbers
+@exec("echo [1,2,3,4]")
+
+# Return a list of numbers generated in python
+@exec(`#! /usr/bin/env python3
+for i in range(10):
+    print("-", i)
+`)
+
+# Return a list of number generated in bash by calling a template
+@define(generate_list)
+#! /usr/bin/env bash
+
+for i in `seq 1 ${1:-10}`
+do
+    echo "- $i"
+done
+@end
+
+@template(generate_list, 10)
+@template(generate_list, 100)

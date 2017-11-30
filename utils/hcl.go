@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"io/ioutil"
@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/hcl"
 )
 
-// Convert array of 1 to single object otherwise, let the context unchanged
-func getContext(context ...interface{}) interface{} {
+// SingleContext converts array of 1 to single object otherwise, let the context unchanged
+func SingleContext(context ...interface{}) interface{} {
 	if len(context) == 1 {
 		return context[0]
 	}
@@ -33,8 +33,8 @@ func FlattenHCL(source map[string]interface{}) map[string]interface{} {
 	return source
 }
 
-// Load HCL file into variable
-func loadHCL(filename string) (result map[string]interface{}, err error) {
+// LoadHCL loads hcl file into variable
+func LoadHCL(filename string) (result map[string]interface{}, err error) {
 	var content []byte
 	if content, err = ioutil.ReadFile(filename); err == nil {
 		if err = hcl.Unmarshal(content, &result); err == nil {
