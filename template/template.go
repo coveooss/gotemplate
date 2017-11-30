@@ -148,7 +148,7 @@ func (t Template) ProcessFile(file, sourceFolder, targetFolder string) (resultFi
 	if sourceFolder != targetFolder {
 		errors.Must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
-	t.trace(resultFile)
+	t.trace(utils.Relative(t.folder, resultFile))
 
 	if utils.IsShebangScript(result) {
 		mode = 0755
