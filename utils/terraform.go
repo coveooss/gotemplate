@@ -7,12 +7,16 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/terragrunt/util"
 )
 
 // IsTerraformFile check if the file extension matches on of the terraform file extension
 func IsTerraformFile(file string) bool {
-	return util.ListContainsElement([]string{".tf", ".tf.json", ".tfvars"}, filepath.Ext(file))
+	switch filepath.Ext(file) {
+	case ".tf", ".tf.json", ".tfvars":
+		return true
+	default:
+		return false
+	}
 }
 
 // TerraformFormat applies terraform fmt on

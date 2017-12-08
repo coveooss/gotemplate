@@ -7,15 +7,10 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/terragrunt/util"
 )
 
 // FindFiles returns the list of the files matching the array of patterns
 func FindFiles(folder string, recursive, followLinks bool, patterns ...string) ([]string, error) {
-	if !recursive {
-		return util.FindFiles(folder, patterns...)
-	}
-
 	visited := map[string]bool{}
 	var walker func(folder string) ([]string, error)
 	walker = func(folder string) ([]string, error) {
@@ -24,8 +19,11 @@ func FindFiles(folder string, recursive, followLinks bool, patterns ...string) (
 
 		filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
+				if !recursive && folder != path {
+					return filepath.SkipDir
+				}
 				visited[path] = true
-				files, err := util.FindFiles(path, patterns...)
+				files, err := findFiles(path, patterns...)
 				if err != nil {
 					return err
 				}
@@ -57,6 +55,19 @@ func FindFiles(folder string, recursive, followLinks bool, patterns ...string) (
 		return results, nil
 	}
 	return walker(folder)
+}
+
+// FindFiles returns the list of files in the specified folder that match one of the supplied patterns
+func findFiles(folder string, patterns ...string) ([]string, error) {
+	var tfFiles []string
+	for _, ext := range patterns {
+		files, err := filepath.Glob(filepath.Join(folder, ext))
+		if err != nil {
+			return nil, err
+		}
+		tfFiles = append(tfFiles, files...)
+	}
+	return tfFiles, nil
 }
 
 // MustFindFiles returns the list of the files matching the array of patterns with panic on error
