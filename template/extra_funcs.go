@@ -26,16 +26,22 @@ func (t *Template) addFuncs() {
 
 	// Add utilities functions
 	t.Funcs(map[string]interface{}{
-		"concat":     utils.Concat,
-		"formatList": utils.FormatList,
-		"glob":       utils.GlobFunc,
-		"joinLines":  utils.JoinLines,
-		"mergeList":  utils.MergeLists,
-		"pwd":        utils.Pwd,
-		"splitLines": utils.SplitLines,
-		"toYaml":     utils.ToYaml,
-		"current":    func() string { return t.folder },
-
+		"concat":      utils.Concat,
+		"formatList":  utils.FormatList,
+		"glob":        utils.GlobFunc,
+		"joinLines":   utils.JoinLines,
+		"mergeList":   utils.MergeLists,
+		"pwd":         utils.Pwd,
+		"splitLines":  utils.SplitLines,
+		"toYaml":      utils.ToYaml,
+		"current":     func() string { return t.folder },
+		"toHcl":       func(v interface{}) string { return string(utils.ToHCL(v)) },
+		"toPrettyHcl": func(v interface{}) string { return string(utils.ToPrettyHCL(v)) },
+		"toQuotedJson": func(v interface{}) string {
+			output, _ := json.Marshal(v)
+			result := fmt.Sprintf("%q", output)
+			return result[1 : len(result)-1]
+		},
 		"bool": func(str string) (bool, error) {
 			return strconv.ParseBool(str)
 		},

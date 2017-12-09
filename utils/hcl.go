@@ -1,7 +1,14 @@
 package utils
 
 import (
+	"bytes"
+	"fmt"
 	"io/ioutil"
+	"os"
+	"reflect"
+	"regexp"
+	"sort"
+	"strings"
 
 	"github.com/hashicorp/hcl"
 )
@@ -43,3 +50,122 @@ func LoadHCL(filename string) (result map[string]interface{}, err error) {
 	}
 	return
 }
+
+// ToHCL serialize values to hcl format
+func ToHCL(value interface{}) []byte {
+	return marshalHCL(value, false, 0)
+}
+
+// ToPrettyHCL serialize values to hcl format with indentation
+func ToPrettyHCL(value interface{}) []byte {
+	return marshalHCL(value, true, 0)
+}
+
+func marshalHCL(value interface{}, pretty bool, indent int) []byte {
+	var buffer bytes.Buffer
+
+	typ, val := reflect.TypeOf(value), reflect.ValueOf(value)
+	switch typ.Kind() {
+	case reflect.String:
+		buffer.WriteString(fmt.Sprintf("%q", strings.Replace(val.String(), `\`, `\\`, -1)))
+
+	case reflect.Int:
+		fallthrough
+	case reflect.Float64:
+		fallthrough
+	case reflect.Bool:
+		buffer.WriteString(fmt.Sprintf("%v", value))
+
+	case reflect.Slice:
+		fallthrough
+	case reflect.Array:
+		switch val.Len() {
+		case 0:
+			buffer.WriteString("[]")
+		case 1:
+			buffer.WriteByte('[')
+			buffer.Write(marshalHCL(reflect.ValueOf(value).Index(0).Interface(), pretty, indent+1))
+			buffer.WriteByte(']')
+		default:
+			buffer.WriteString("[")
+			if pretty && indent > 0 {
+				buffer.WriteString("\n")
+			}
+			for i := 0; i < val.Len(); i++ {
+				if pretty {
+					buffer.WriteString(strings.Repeat(" ", indent*2))
+				}
+				buffer.Write(marshalHCL(val.Index(i).Interface(), pretty, indent+1))
+				if i < val.Len()-1 || pretty {
+					buffer.WriteString(",")
+				}
+				if pretty {
+					buffer.WriteString("\n")
+				}
+			}
+			if pretty && indent > 0 {
+				buffer.WriteString(strings.Repeat(" ", (indent-1)*2))
+			}
+			buffer.WriteString("]")
+		}
+
+	case reflect.Map:
+		if indent == 0 {
+			value = FlattenHCL(value.(map[string]interface{}))
+		}
+		switch value := value.(type) {
+		case map[string]interface{}:
+			keys := make([]string, 0, len(value))
+
+			for _, key := range val.MapKeys() {
+				keys = append(keys, key.String())
+			}
+			sort.Strings(keys)
+
+			if indent > 0 {
+				buffer.WriteString("{")
+				if pretty {
+					buffer.WriteString("\n")
+				}
+			}
+
+			for i, key := range keys {
+				if pretty {
+					buffer.WriteString(strings.Repeat(" ", indent*2))
+				}
+				if identifierRegex.MatchString(key) {
+					buffer.WriteString(key)
+				} else {
+					// The identifier contains characters that may be considered invalid, we have to quote it
+					buffer.WriteString(fmt.Sprintf("%q", key))
+				}
+				if pretty {
+					buffer.WriteString(" = ")
+				} else {
+					buffer.WriteString("=")
+				}
+
+				buffer.Write(marshalHCL(value[key], pretty, indent+1))
+				if pretty {
+					buffer.WriteString("\n")
+				} else if i < len(keys)-1 {
+					buffer.WriteString(" ")
+				}
+			}
+
+			if indent > 0 {
+				if pretty {
+					buffer.WriteString(strings.Repeat(" ", (indent-1)*2))
+				}
+				buffer.WriteString("}")
+			}
+		}
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown type %T %v : %v\n", value, typ.Kind(), value)
+		buffer.WriteString(fmt.Sprintf("%v", value))
+	}
+
+	return buffer.Bytes()
+}
+
+var identifierRegex = regexp.MustCompile(`^[A-za-z][\w-]*$`)
