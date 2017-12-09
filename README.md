@@ -129,6 +129,9 @@ splitLines | object | Returns a list of strings from the supplied object with ne
 substitutes | string | Applies the supplied regex substitute specified on the command line on the supplied string (see `--substitute`).
 templateNames | | Returns the list of available templates names.
 templates | | Returns the list of available templates (including itself). The returned value is the actual Go Template object list.
+toHcl | interface | Returns the HCL string representation of the supplied object.
+toPrettyHcl | interface | Returns the indented HCL string representation of the supplied object.
+toQuotedJson | interface | Returns the JSON string representation of the supplied object with escaped quote.
 toYaml | interface | Returns the YAML string representation of the supplied object.
 
 ## _Some examples:_
@@ -189,41 +192,42 @@ They are coming from either gotemplate, Sprig or native Go Template.
 ```
 > gotemplate -l
 
-abbrev                  dict                    initial                 plural                  sub
-abbrevboth              dir                     initials                prepend                 substitute
-add                     div                     int                     print                   substr
-add1                    empty                   int64                   printf                  swapcase
-ago                     env                     isAbs                   println                 templateNames
-alias                   eq                      join                    push                    templates
-and                     exec                    joinLines               pwd                     title
-append                  expandenv               js                      quote                   toDate
-atoi                    ext                     json                    randAlpha               toJson
-b32dec                  fail                    keys                    randAlphaNum            toPrettyJson
-b32enc                  first                   kindIs                  randAscii               toString
-b64dec                  float64                 kindOf                  randNumeric             toStrings
-b64enc                  floor                   last                    regexFind               toYaml
-base                    formatList              le                      regexFindAll            trim
-biggest                 functions               len                     regexMatch              trimAll
-bool                    ge                      list                    regexReplaceAll         trimPrefix
-call                    genCA                   local_alias             regexReplaceAllLiteral  trimSuffix
-call                    genPrivateKey           lorem                   regexSplit              trimall
-camelcase               genSelfSignedCert       lower                   repeat                  trunc
-cat                     genSignedCert           lt                      replace                 tuple
-ceil                    get                     max                     rest                    typeIs
-clean                   glob                    merge                   reverse                 typeIsLike
-coalesce                gt                      mergeList               round                   typeOf
-compact                 has                     min                     run                     uniq
-concat                  hasKey                  mod                     semver                  unset
-contains                hasPrefix               mul                     semverCompare           until
-current                 hasSuffix               ne                      set                     untilStep
-data                    hcl                     nindent                 sha256sum               untitle
-date                    hello                   nospace                 shuffle                 upper
-dateInZone              html                    not                     snakecase               urlquery
-dateModify              htmlDate                now                     sortAlpha               uuidv4
-date_in_zone            htmlDateInZone          omit                    split                   without
-date_modify             include                 or                      splitLines              wrap
-default                 indent                  pick                    splitList               wrapWith
-derivePassword          index                   pluck                   squote                  yaml
+abbrev                  dir                     int                     printf                  templateNames
+abbrevboth              div                     int64                   println                 templates
+add                     empty                   isAbs                   push                    title
+add1                    env                     join                    pwd                     toDate
+ago                     eq                      joinLines               quote                   toHcl
+alias                   exec                    js                      randAlpha               toJson
+and                     expandenv               json                    randAlphaNum            toPrettyHcl
+append                  ext                     keys                    randAscii               toPrettyJson
+atoi                    fail                    kindIs                  randNumeric             toQuotedJson
+b32dec                  first                   kindOf                  regexFind               toString
+b32enc                  float64                 last                    regexFindAll            toStrings
+b64dec                  floor                   le                      regexMatch              toYaml
+b64enc                  formatList              len                     regexReplaceAll         trim
+base                    functions               list                    regexReplaceAllLiteral  trimAll
+biggest                 ge                      local_alias             regexSplit              trimPrefix
+bool                    genCA                   lorem                   repeat                  trimSuffix
+call                    genPrivateKey           lower                   replace                 trimall
+call                    genSelfSignedCert       lt                      rest                    trunc
+camelcase               genSignedCert           max                     reverse                 tuple
+cat                     get                     merge                   round                   typeIs
+ceil                    glob                    mergeList               run                     typeIsLike
+clean                   gt                      min                     semver                  typeOf
+coalesce                has                     mod                     semverCompare           uniq
+compact                 hasKey                  mul                     set                     unset
+concat                  hasPrefix               ne                      sha256sum               until
+contains                hasSuffix               nindent                 shuffle                 untilStep
+current                 hcl                     nospace                 snakecase               untitle
+data                    hello                   not                     sortAlpha               upper
+date                    html                    now                     split                   urlquery
+dateInZone              htmlDate                omit                    splitLines              uuidv4
+dateModify              htmlDateInZone          or                      splitList               without
+date_in_zone            include                 pick                    squote                  wrap
+date_modify             indent                  pluck                   sub                     wrapWith
+default                 index                   plural                  substitute              yaml
+derivePassword          initial                 prepend                 substr
+dict                    initials                print                   swapcase
 ```
 
 Links to documentations of foreign fucntions are in the section [base functions](#base-functions).
