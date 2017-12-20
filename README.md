@@ -104,7 +104,7 @@ list = [
 
 ```
 
-# Other functions
+## Other functions
 
 Function name | Argument(s() |Description
 --- | --- | ---
@@ -177,7 +177,7 @@ for i in range({{ . | default 10 }}):
 {{ exec $script }}
 
 // Add a function that could be called later (should be created in a .template file and used later as a function)
-// Note that it is not possible to 
+// Note that it is not possible to
 {{ alias "generate_numbers" "exec" "script" }}
 ...
 // Can be later used as a function in another template script
@@ -185,11 +185,11 @@ for i in range({{ . | default 10 }}):
 {{ $numbers := 1000 | generate_numbers }}
 ```
 
-### A lot of template functions are available:
+### A lot of template functions are available
 
 They are coming from either gotemplate, Sprig or native Go Template.
 
-```
+```text
 > gotemplate -l
 
 abbrev                  dir                     int                     printf                  templateNames

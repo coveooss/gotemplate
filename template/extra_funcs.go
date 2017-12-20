@@ -45,10 +45,47 @@ func (t *Template) addFuncs() {
 		"bool": func(str string) (bool, error) {
 			return strconv.ParseBool(str)
 		},
-		"get": func(key string, dict map[string]interface{}) interface{} {
+		"get": func(arg1, arg2 interface{}) interface{} {
+			// In pipe execution, the map is often the last parameter, but we also support to
+			// put the map as the first parameter. So all following forms are supported:
+			//    get map key
+			//    get key map
+			//    map | get key
+			//    key | get map
+			var (
+				dict map[string]interface{}
+				key  string
+			)
+			if reflect.TypeOf(arg1).Kind() == reflect.Map {
+				dict = arg1.(map[string]interface{})
+				key = arg2.(string)
+			} else {
+				key = arg1.(string)
+				dict = arg2.(map[string]interface{})
+			}
 			return dict[key]
 		},
-		"set": func(key string, value interface{}, dict map[string]interface{}) string {
+		"set": func(arg1, arg2, arg3 interface{}) string {
+			// In pipe execution, the map is often the last parameter, but we also support to
+			// put the map as the first parameter. So all following forms are supported:
+			//    set map key value
+			//    set key value map
+			//    map | set key value
+			//    value | set map key
+			var (
+				dict  map[string]interface{}
+				key   string
+				value interface{}
+			)
+			if reflect.TypeOf(arg1).Kind() == reflect.Map {
+				dict = arg1.(map[string]interface{})
+				key = arg2.(string)
+				value = arg3
+			} else {
+				key = arg1.(string)
+				value = arg2
+				dict = arg3.(map[string]interface{})
+			}
 			dict[key] = value
 			return ""
 		},
