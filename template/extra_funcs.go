@@ -174,11 +174,13 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	cmd := exec.Command(command, cmdArgs...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = &stdout
-	cmd.Stdin = &stderr
+	cmd.Stderr = &stderr
 	cmd.Dir = t.folder
 
 	if err = cmd.Run(); err == nil {
-		result = string(re	sult.([]byte))
+		result = stdout.String()
+	} else {
+		err = fmt.Errorf("Error %v: %s", err, stderr.String())
 	}
 	return
 }
