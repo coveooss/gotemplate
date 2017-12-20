@@ -92,7 +92,8 @@ func (t *Template) addFuncs() {
 			return t.run(utils.Interface2string(command), args...)
 		},
 		"include": func(source interface{}, context ...interface{}) (interface{}, error) {
-			return t.runTemplate(utils.Interface2string(source), context...)
+			content, _, err := t.runTemplate(utils.Interface2string(source), context...)
+			return content, err
 		},
 	})
 }
@@ -126,8 +127,10 @@ func (t *Template) addAlias(name, function string, source interface{}, local boo
 
 // Execute the command (command could be a file, a template or a script)
 func (t *Template) run(command string, args ...interface{}) (result interface{}, err error) {
+	var filename string
+
 	// We check if the supplied command is a template
-	if command, err = t.runTemplate(command, args...); err != nil {
+	if command, filename, err = t.runTemplate(command, args...); err != nil {
 		return
 	}
 
@@ -136,19 +139,22 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 
 	executer, delegate, command := utils.ScriptParts(strings.TrimSpace(command))
 	if executer != "" {
-		// The command is a shebang script, so we save the content as a temporary file
-		var temp *os.File
-		if temp, err = ioutil.TempFile(t.TempFolder, "exec_"); err != nil {
-			return
-		}
-		defer func() { os.Remove(temp.Name()) }()
+		if filename == "" {
+			// The command is a shebang script, so we save the content as a temporary file
+			var temp *os.File
+			if temp, err = ioutil.TempFile(t.TempFolder, "exec_"); err != nil {
+				return
+			}
+			defer func() { os.Remove(temp.Name()) }()
 
-		if _, err = temp.WriteString(command); err != nil {
-			return
+			if _, err = temp.WriteString(command); err != nil {
+				return
+			}
+			temp.Close()
+			filename = temp.Name()
 		}
-		temp.Close()
 		command = executer
-		cmdArgs = append([]string{temp.Name()}, cmdArgs...)
+		cmdArgs = append([]string{filename}, cmdArgs...)
 		if delegate != "" {
 			cmdArgs = append([]string{delegate}, cmdArgs...)
 		}
@@ -163,12 +169,16 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 			return
 		}
 	}
+
+	var stdout, stderr bytes.Buffer
 	cmd := exec.Command(command, cmdArgs...)
 	cmd.Stdin = os.Stdin
+	cmd.Stdout = &stdout
+	cmd.Stdin = &stderr
 	cmd.Dir = t.folder
 
-	if result, err = cmd.CombinedOutput(); err == nil {
-		result = string(result.([]byte))
+	if err = cmd.Run(); err == nil {
+		result = string(re	sult.([]byte))
 	}
 	return
 }
@@ -189,7 +199,7 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 	return
 }
 
-func (t Template) runTemplate(source string, context ...interface{}) (string, error) {
+func (t Template) runTemplate(source string, context ...interface{}) (resultContent, filename string, err error) {
 	var out bytes.Buffer
 
 	// We first try to find a template named <source>
@@ -201,32 +211,41 @@ func (t Template) runTemplate(source string, context ...interface{}) (string, er
 			if !path.IsAbs(tryFile) {
 				tryFile = path.Join(t.folder, tryFile)
 			}
-			content, err := ioutil.ReadFile(tryFile)
-			if err != nil {
-				if _, ok := err.(*os.PathError); err != nil && !ok {
-					return "", err
+			if fileContent, e := ioutil.ReadFile(tryFile); e != nil {
+				if _, ok := e.(*os.PathError); !ok {
+					err = e
+					return
 				}
 			} else {
-				source = string(content)
+				source = string(fileContent)
+				filename = tryFile
 			}
 		}
 		// There is no file named <source>, so we consider that <source> is the content
-		inline, err := t.New("inline").Parse(source)
-		if err != nil {
-			return "", err
+		if inline, e := t.New("inline").Parse(source); e != nil {
+			err = e
+			return
+		} else {
+			internalTemplate = inline
 		}
-		internalTemplate = inline
 	}
 
-	// We execute the resulting t
-	if err := internalTemplate.Execute(&out, utils.SingleContext(context...)); err != nil {
-		return "", err
+	// We execute the resulting template
+	if err = internalTemplate.Execute(&out, utils.SingleContext(context...)); err != nil {
+		return
 	}
 
-	return out.String(), nil
+	resultContent = out.String()
+	if resultContent != source {
+		// If the content is different from the source, that is because the source contains
+		// templating, In that case, we do not consider the original filename as unaltered source.
+		filename = ""
+	}
+	return
 }
 func (t Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
-	return t.runTemplate(source, context...)
+	content, _, err := t.runTemplate(source, context...)
+	return content, err
 }
 
 type dataConverter func([]byte, interface{}) error
@@ -245,7 +264,7 @@ func (t Template) converter(converter dataConverter, content string, context ...
 
 // Apply a converter to the result of the template execution of the supplied string
 func (t Template) templateConverter(converter dataConverter, str string, context ...interface{}) (result interface{}, err error) {
-	if content, err := t.runTemplate(str, context...); err == nil {
+	if content, _, err := t.runTemplate(str, context...); err == nil {
 		if result, err = t.converter(converter, content, context...); err == nil {
 			result = utils.MapKeyInterface2string(result)
 		}
@@ -273,7 +292,7 @@ func (t Template) hclConverter(str string, context ...interface{}) (result inter
 
 // Converts the supplied string containing yaml, json or terraform/hcl to go map
 func (t Template) dataConverter(source string, context ...interface{}) (result interface{}, err error) {
-	if content, err := t.runTemplate(source, context...); err == nil {
+	if content, _, err := t.runTemplate(source, context...); err == nil {
 		if result, err = t.converter(hcl.Unmarshal, content, context...); err == nil {
 			result = utils.FlattenHCL(utils.MapKeyInterface2string(result).(map[string]interface{}))
 		} else if result, err = t.converter(yaml.Unmarshal, content, context...); err == nil {
