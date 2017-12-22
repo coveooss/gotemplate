@@ -27,6 +27,7 @@ func TestMarshalHCLVars(t *testing.T) {
 		{"Map", args{map[string]interface{}{"a": 0, "b": 1}, false}, `a=0 b=1`},
 		{"Map (pretty)", args{map[string]interface{}{"a": 0, "b": 1}, true}, "a = 0\nb = 1\n"},
 		{"Struct (pretty)", args{test{"name", 1}, true}, "Name = \"name\"\nValue = 1\n"},
+		{"Struct Ptr (pretty)", args{&test{"name", 1}, true}, "Name = \"name\"\nValue = 1\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

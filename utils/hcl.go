@@ -66,6 +66,12 @@ func marshalHCL(value interface{}, pretty bool, indent int) []byte {
 	var buffer bytes.Buffer
 
 	typ, val := reflect.TypeOf(value), reflect.ValueOf(value)
+
+	if typ.Kind() == reflect.Ptr && !val.IsNil() {
+		val = val.Elem()
+		typ = val.Type()
+	}
+
 	switch typ.Kind() {
 	case reflect.String:
 		buffer.WriteString(fmt.Sprintf("%q", strings.Replace(val.String(), `\`, `\\`, -1)))
