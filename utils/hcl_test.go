@@ -10,6 +10,7 @@ func TestMarshalHCLVars(t *testing.T) {
 		Name  string
 		Value int
 	}
+	var testNilPtr *test
 
 	type args struct {
 		value  interface{}
@@ -31,6 +32,7 @@ func TestMarshalHCLVars(t *testing.T) {
 		{"Array of 1 struct (pretty)", args{[]test{{"name", 1}}, true}, "[{\n  Name = \"name\"\n  Value = 1\n}]"},
 		{"Array of 2 structs (pretty)", args{[]test{{"val1", 1}, {"val2", 1}}, true}, "[\n  {\n    Name = \"val1\"\n    Value = 1\n  },\n  {\n    Name = \"val2\"\n    Value = 1\n  },\n]"},
 		{"Null value", args{nil, true}, "null"},
+		{"Null struct", args{testNilPtr, true}, "null"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -71,6 +71,9 @@ func marshalHCL(value interface{}, pretty bool, indent int) []byte {
 	typ, val := reflect.TypeOf(value), reflect.ValueOf(value)
 
 	if typ.Kind() == reflect.Ptr {
+		if val.IsNil() {
+			return []byte("null")
+		}
 		val = val.Elem()
 		typ = val.Type()
 	}
