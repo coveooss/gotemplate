@@ -6,6 +6,11 @@ import (
 )
 
 func TestMarshalHCLVars(t *testing.T) {
+	type test struct {
+		Name  string
+		Value int
+	}
+
 	type args struct {
 		value  interface{}
 		pretty bool
@@ -21,6 +26,7 @@ func TestMarshalHCLVars(t *testing.T) {
 		{"List of integer", args{[]int{0, 1, 2, 3}, false}, `[0,1,2,3]`},
 		{"Map", args{map[string]interface{}{"a": 0, "b": 1}, false}, `a=0 b=1`},
 		{"Map (pretty)", args{map[string]interface{}{"a": 0, "b": 1}, true}, "a = 0\nb = 1\n"},
+		{"Struct (pretty)", args{test{"name", 1}, true}, "Name = \"name\"\nValue = 1\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

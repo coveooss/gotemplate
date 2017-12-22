@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/fatih/structs"
 	"github.com/hashicorp/hcl"
 )
 
@@ -160,6 +161,8 @@ func marshalHCL(value interface{}, pretty bool, indent int) []byte {
 				buffer.WriteString("}")
 			}
 		}
+	case reflect.Struct:
+		buffer.Write(marshalHCL(structs.Map(value), pretty, indent))
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown type %T %v : %v\n", value, typ.Kind(), value)
 		buffer.WriteString(fmt.Sprintf("%v", value))

@@ -1,5 +1,5 @@
 hash: d6775831eb4a216531158f0c39b27183e666154386de11fd65b9c79d1a3e00b3
-updated: 2017-12-08T08:49:32.744803406-05:00
+updated: 2017-12-22T13:59:16.765796-05:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -13,6 +13,8 @@ imports:
   version: ecccc744c2d953a1e13cbe5e5fc5d4cbc9b8daeb
 - name: github.com/fatih/color
   version: 5df930a27be2502f99b292b7cc09ebad4d0891f4
+- name: github.com/fatih/structs
+  version: f5faa72e73092639913f5833b75e1ac1d6bc7a63
 - name: github.com/go-errors/errors
   version: 8fa88b06e5974e97fbf9899a7f86a344bfd1f105
 - name: github.com/hashicorp/hcl
@@ -33,7 +35,7 @@ imports:
 - name: github.com/Masterminds/semver
   version: 59c29afe1a994eacb71c833025ca7acf874bb1da
 - name: github.com/Masterminds/sprig
-  version: b217b9c388de2cacde4354c536e520c52c055563
+  version: 9d9aa1f74c86fd9d36ecfe3f2a44a3093c3d4c15
 - name: github.com/mattn/go-colorable
   version: 5411d3eea5978e6cdc258b30de592b60df6aba96
   repo: https://github.com/mattn/go-colorable
@@ -53,7 +55,7 @@ imports:
   subpackages:
   - unix
 - name: gopkg.in/alecthomas/kingpin.v2
-  version: 1087e65c9441605df944fb12c33f0fe7072d18ca
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/yaml.v2
   version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 testImports: []
