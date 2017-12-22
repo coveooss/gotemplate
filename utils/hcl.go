@@ -63,11 +63,14 @@ func ToPrettyHCL(value interface{}) []byte {
 }
 
 func marshalHCL(value interface{}, pretty bool, indent int) []byte {
-	var buffer bytes.Buffer
+	if value == nil {
+		return []byte("null")
+	}
 
+	var buffer bytes.Buffer
 	typ, val := reflect.TypeOf(value), reflect.ValueOf(value)
 
-	if typ.Kind() == reflect.Ptr && !val.IsNil() {
+	if typ.Kind() == reflect.Ptr {
 		val = val.Elem()
 		typ = val.Type()
 	}
@@ -91,11 +94,12 @@ func marshalHCL(value interface{}, pretty bool, indent int) []byte {
 			buffer.WriteString("[]")
 		case 1:
 			buffer.WriteByte('[')
-			buffer.Write(marshalHCL(reflect.ValueOf(value).Index(0).Interface(), pretty, indent+1))
+			buffer.Write(marshalHCL(reflect.ValueOf(value).Index(0).Interface(), true, indent+1))
 			buffer.WriteByte(']')
 		default:
 			buffer.WriteString("[")
-			if pretty && indent > 0 {
+			indent++
+			if pretty {
 				buffer.WriteString("\n")
 			}
 			for i := 0; i < val.Len(); i++ {

@@ -28,6 +28,9 @@ func TestMarshalHCLVars(t *testing.T) {
 		{"Map (pretty)", args{map[string]interface{}{"a": 0, "b": 1}, true}, "a = 0\nb = 1\n"},
 		{"Struct (pretty)", args{test{"name", 1}, true}, "Name = \"name\"\nValue = 1\n"},
 		{"Struct Ptr (pretty)", args{&test{"name", 1}, true}, "Name = \"name\"\nValue = 1\n"},
+		{"Array of 1 struct (pretty)", args{[]test{{"name", 1}}, true}, "[{\n  Name = \"name\"\n  Value = 1\n}]"},
+		{"Array of 2 structs (pretty)", args{[]test{{"val1", 1}, {"val2", 1}}, true}, "[\n  {\n    Name = \"val1\"\n    Value = 1\n  },\n  {\n    Name = \"val2\"\n    Value = 1\n  },\n]"},
+		{"Null value", args{nil, true}, "null"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
