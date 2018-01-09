@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/template"
 	"github.com/coveo/gotemplate/utils"
 	goerrors "github.com/go-errors/errors"
@@ -161,7 +162,7 @@ func createContext(varsFiles []string, namedVarsFiles []string) (context map[str
 		loader := utils.LoadYaml
 		switch strings.ToLower(filepath.Ext(varsFile)) {
 		case ".hcl", ".tfvars":
-			loader = utils.LoadHCL
+			loader = hcl.Load
 		}
 
 		var content = map[string]interface{}{}
