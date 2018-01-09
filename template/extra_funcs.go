@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/Masterminds/sprig"
+	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/hashicorp/hcl"
 	"gopkg.in/yaml.v2"
@@ -270,7 +271,7 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 	}
 
 	// We execute the resulting template
-	if err = internalTemplate.Execute(&out, hcl.SingleContext(context...)); err != nil {
+	if err = internalTemplate.Execute(&out, utils.SingleContext(context...)); err != nil {
 		return
 	}
 
@@ -325,7 +326,7 @@ func (t Template) jsonConverter(str string, context ...interface{}) (interface{}
 // Converts the supplied string containing terraform/hcl to go map
 func (t Template) hclConverter(str string, context ...interface{}) (result interface{}, err error) {
 	if result, err = t.templateConverter(hcl.Unmarshal, str, context...); err == nil && result != nil {
-		result = hcl.Flatten(result.(map[string]interface{}))
+		result = utils.FlattenHCL(result.(map[string]interface{}))
 	}
 	return
 }
@@ -336,7 +337,7 @@ func (t Template) dataConverter(source string, context ...interface{}) (result i
 	if content, _, err = t.runTemplate(source, context...); err == nil {
 		var errs errors.Array
 		if result, err = t.converter(hcl.Unmarshal, content, true, context...); err == nil {
-			result = hcl.Flatten(utils.MapKeyInterface2string(result).(map[string]interface{}))
+			result = utils.FlattenHCL(utils.MapKeyInterface2string(result).(map[string]interface{}))
 		} else {
 			errs = append(errs, err)
 			if result, err = t.converter(yaml.Unmarshal, content, false, context...); err == nil {
