@@ -19,6 +19,8 @@ import (
 var version = "master"
 var tempFolder = errors.Must(ioutil.TempDir("", "gotemplate-")).(string)
 
+const disableStdinCheck = "GOTEMPLATE_NO_STDIN"
+
 func cleanup() {
 	os.RemoveAll(tempFolder)
 
@@ -44,33 +46,32 @@ func main() {
 	defer cleanup()
 
 	var (
-		app               = kingpin.New(os.Args[0], description)
-		delimiters        = app.Flag("delimiters", "Define the default delimiters for go template (separate the left and right delimiters by a comma)").PlaceHolder("{{,}}").String()
-		varFiles          = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
-		namedVarFiles     = app.Flag("var", "Import named variables files (base file name is used as identifier if unspecified)").PlaceHolder("name:=file").Short('V').Strings()
-		includePatterns   = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
-		overwrite         = app.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
-		substitutes       = app.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
-		recursive         = app.Flag("recursive", "Process all template files recursively").Short('r').Bool()
-		sourceFolder      = app.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").ExistingDir()
-		targetFolder      = app.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
-		followSymLinks    = app.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
-		print             = app.Flag("print", "Output the result directly to stdout").Short('P').Bool()
-		listFunctions     = app.Flag("list-functions", "List the available functions").Short('l').Bool()
-		listTemplates     = app.Flag("list-templates", "List the available templates function").Short('L').Bool()
-		listALlTemplates  = app.Flag("all-templates", "List all templates (--at)").Bool()
-		listALlTemplates2 = app.Flag("at", "short version of --all-templates").Hidden().Bool()
-		quiet             = app.Flag("quiet", "Don not print out the name of the generated files").Short('q').Bool()
-		getVersion        = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
-		files             = app.Arg("files", "Template files to process").ExistingFiles()
-
-		pipedInput bool
+		app              = kingpin.New(os.Args[0], description)
+		delimiters       = app.Flag("delimiters", "Define the default delimiters for go template (separate the left and right delimiters by a comma)").PlaceHolder("{{,}}").String()
+		varFiles         = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
+		namedVarFiles    = app.Flag("var", "Import named variables files (base file name is used as identifier if unspecified)").PlaceHolder("name:=file").Short('V').Strings()
+		includePatterns  = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
+		overwrite        = app.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
+		substitutes      = app.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
+		recursive        = app.Flag("recursive", "Process all template files recursively").Short('r').Bool()
+		sourceFolder     = app.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").ExistingDir()
+		targetFolder     = app.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
+		forceStdin       = app.Flag("stdin", "Force read of the standard input to get a template defintion").Short('I').Bool()
+		followSymLinks   = app.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
+		print            = app.Flag("print", "Output the result directly to stdout").Short('P').Bool()
+		listFunctions    = app.Flag("list-functions", "List the available functions").Short('l').Bool()
+		listTemplates    = app.Flag("list-templates", "List the available templates function").Short('L').Bool()
+		listALlTemplates = app.Flag("all-templates", "List all templates (--at)").Bool()
+		quiet            = app.Flag("quiet", "Don not print out the name of the generated files").Short('q').Bool()
+		getVersion       = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
+		files            = app.Arg("files", "Template files to process").ExistingFiles()
 	)
+
+	app.Flag("at", "short version of --all-templates").Hidden().BoolVar(listALlTemplates)
 
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
 	kingpin.Parse()
-	*listALlTemplates = *listALlTemplates || *listALlTemplates2
 
 	if *getVersion {
 		fmt.Println(version)
@@ -88,9 +89,10 @@ func main() {
 	*overwrite = *overwrite || *sourceFolder != *targetFolder
 
 	stat, _ := os.Stdin.Stat()
-	if (stat.Mode() & os.ModeCharDevice) == 0 {
-		pipedInput = true
+	if (stat.Mode()&os.ModeCharDevice) == 0 && os.Getenv(disableStdinCheck) == "" {
+		*forceStdin = true
 	}
+
 	t := template.NewTemplate(createContext(*varFiles, *namedVarFiles), *delimiters, *substitutes...)
 	t.Quiet = *quiet
 	t.Overwrite = *overwrite
@@ -111,7 +113,7 @@ func main() {
 	}
 
 	errors.Must(os.Chdir(*sourceFolder))
-	if !pipedInput {
+	if !*forceStdin {
 		// We only process template files if go template has not been called with piped input
 		*files = append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, "*.template"), *files...)
 	}
@@ -121,7 +123,7 @@ func main() {
 		errors.Print(err)
 	}
 
-	if pipedInput {
+	if *forceStdin {
 		content := string(errors.Must(ioutil.ReadAll(os.Stdin)).([]byte))
 		if result, err := t.ProcessContent(content, "Piped input"); err == nil {
 			fmt.Print(result)

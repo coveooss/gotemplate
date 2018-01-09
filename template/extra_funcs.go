@@ -261,16 +261,16 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 			}
 		}
 		// There is no file named <source>, so we consider that <source> is the content
-		if inline, e := t.New("inline").Parse(source); e != nil {
+		inline, e := t.New("inline").Parse(source)
+		if e != nil {
 			err = e
 			return
-		} else {
-			internalTemplate = inline
 		}
+		internalTemplate = inline
 	}
 
 	// We execute the resulting template
-	if err = internalTemplate.Execute(&out, utils.SingleContext(context...)); err != nil {
+	if err = internalTemplate.Execute(&out, hcl.SingleContext(context...)); err != nil {
 		return
 	}
 
@@ -290,8 +290,8 @@ func (t Template) runTemplateItf(source string, context ...interface{}) (interfa
 type dataConverter func([]byte, interface{}) error
 
 // Internal function used to actually convert the supplied string and apply a conversion function over it to get a go map
-func (t Template) converter(converter dataConverter, content string, context ...interface{}) (result interface{}, err error) {
-	if err = converter([]byte(content), &result); err != nil {
+func (t Template) converter(converter dataConverter, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
+	if err = converter([]byte(content), &result); err != nil && sourceWithError {
 		source := "\n"
 		for i, line := range utils.SplitLines(content) {
 			source += fmt.Sprintf("%4d %s\n", i+1, line)
@@ -303,8 +303,9 @@ func (t Template) converter(converter dataConverter, content string, context ...
 
 // Apply a converter to the result of the template execution of the supplied string
 func (t Template) templateConverter(converter dataConverter, str string, context ...interface{}) (result interface{}, err error) {
-	if content, _, err := t.runTemplate(str, context...); err == nil {
-		if result, err = t.converter(converter, content, context...); err == nil {
+	var content string
+	if content, _, err = t.runTemplate(str, context...); err == nil {
+		if result, err = t.converter(converter, content, true, context...); err == nil {
 			result = utils.MapKeyInterface2string(result)
 		}
 	}
@@ -324,18 +325,27 @@ func (t Template) jsonConverter(str string, context ...interface{}) (interface{}
 // Converts the supplied string containing terraform/hcl to go map
 func (t Template) hclConverter(str string, context ...interface{}) (result interface{}, err error) {
 	if result, err = t.templateConverter(hcl.Unmarshal, str, context...); err == nil && result != nil {
-		result = utils.FlattenHCL(result.(map[string]interface{}))
+		result = hcl.Flatten(result.(map[string]interface{}))
 	}
 	return
 }
 
 // Converts the supplied string containing yaml, json or terraform/hcl to go map
 func (t Template) dataConverter(source string, context ...interface{}) (result interface{}, err error) {
-	if content, _, err := t.runTemplate(source, context...); err == nil {
-		if result, err = t.converter(hcl.Unmarshal, content, context...); err == nil {
-			result = utils.FlattenHCL(utils.MapKeyInterface2string(result).(map[string]interface{}))
-		} else if result, err = t.converter(yaml.Unmarshal, content, context...); err == nil {
-			result = utils.MapKeyInterface2string(result)
+	var content string
+	if content, _, err = t.runTemplate(source, context...); err == nil {
+		var errs errors.Array
+		if result, err = t.converter(hcl.Unmarshal, content, true, context...); err == nil {
+			result = hcl.Flatten(utils.MapKeyInterface2string(result).(map[string]interface{}))
+		} else {
+			errs = append(errs, err)
+			if result, err = t.converter(yaml.Unmarshal, content, false, context...); err == nil {
+				result = utils.MapKeyInterface2string(result)
+				err = nil
+			} else {
+				// If there is still an error, we return both the hcl and yaml error
+				err = append(errs, err)
+			}
 		}
 	}
 	return
