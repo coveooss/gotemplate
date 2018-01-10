@@ -15,8 +15,8 @@ import (
 
 	"github.com/Masterminds/sprig"
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/utils"
+	"github.com/hashicorp/hcl"
 	"gopkg.in/yaml.v2"
 )
 
@@ -27,15 +27,15 @@ func (t *Template) addFuncs() {
 
 	// Add utilities functions
 	t.Funcs(map[string]interface{}{
-		"concat":     utils.Concat,
-		"formatList": utils.FormatList,
-		"glob":       utils.GlobFunc,
-		"joinLines":  utils.JoinLines,
-		"mergeList":  utils.MergeLists,
-		"pwd":        utils.Pwd,
-		"splitLines": utils.SplitLines,
-		"toYaml":     utils.ToYaml,
-		"current":    func() string { return t.folder },
+		"concat":      utils.Concat,
+		"formatList":  utils.FormatList,
+		"glob":        utils.GlobFunc,
+		"joinLines":   utils.JoinLines,
+		"mergeList":   utils.MergeLists,
+		"pwd":         utils.Pwd,
+		"splitLines":  utils.SplitLines,
+		"toYaml":      utils.ToYaml,
+		"current":     func() string { return t.folder },
 		"toHcl": func(v interface{}) (string, error) {
 			output, err := hcl.Marshal(v)
 			return string(output), err
