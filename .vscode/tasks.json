@@ -6,7 +6,7 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "go generate -x ./... && go build -o $(which gotemplate) -ldflags '-X main.VERSION=9.99'",
+            "command": "go generate -x ./... && go build -o $(which gotemplate) -ldflags '-X main.version=9.99.9'",
             "group": {
                 "kind": "build",
                 "isDefault": true

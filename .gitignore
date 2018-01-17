@@ -1,3 +1,5 @@
 .pkg
 dist
 vendor
+launch.json
+tasks.json

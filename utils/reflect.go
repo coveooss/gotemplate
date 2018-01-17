@@ -21,6 +21,8 @@ func IsEmptyValue(v reflect.Value) bool {
 		return v.Float() == 0
 	case reflect.Interface, reflect.Ptr:
 		return v.IsNil()
+	case reflect.Invalid:
+		return true
 	}
 	return false
 }
@@ -29,4 +31,28 @@ func IsEmptyValue(v reflect.Value) bool {
 func IsExported(id string) bool {
 	r, _ := utf8.DecodeRuneInString(id)
 	return unicode.IsUpper(r)
+}
+
+// IfUndef returns default value if nothing is supplied as values
+func IfUndef(def interface{}, values ...interface{}) interface{} {
+	switch len(values) {
+	case 0:
+		return def
+	case 1:
+		if values[0] == nil {
+			return def
+		}
+		return values[0]
+	default:
+		return values
+	}
+}
+
+// IIf acts as a generic ternary operator. It returns valueTrue if testValue is not empty,
+// otherwise, it returns valueFalse
+func IIf(testValue, valueTrue, valueFalse interface{}) interface{} {
+	if IsEmptyValue(reflect.ValueOf(testValue)) {
+		return valueFalse
+	}
+	return valueTrue
 }

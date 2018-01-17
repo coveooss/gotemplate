@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/utils"
-	"github.com/fatih/color"
 	"github.com/hashicorp/hcl"
 )
 
@@ -36,17 +35,13 @@ func Load(filename string) (result map[string]interface{}, err error) {
 }
 
 // Marshal serialize values to hcl format
-func Marshal(value interface{}) ([]byte, error) {
-	value = toBase(value)
-	return marshalHCL(value, "", ""), nil
-}
+func Marshal(value interface{}) ([]byte, error) { return MarshalIndent(value, "", "") }
 
 // MarshalIndent serialize values to hcl format with indentation
 func MarshalIndent(value interface{}, prefix, indent string) ([]byte, error) {
-	fmt.Println(1, value)
 	value = toBase(value)
-	fmt.Println(2, value)
-	return marshalHCL(value, prefix, indent), nil
+	result, err := marshalHCL(value, true, prefix, indent)
+	return []byte(result), err
 }
 
 // SingleContext converts array of 1 to single object otherwise, let the context unchanged
@@ -60,6 +55,7 @@ func SingleContext(context ...interface{}) interface{} {
 // Flatten - Convert array of map to single map if there is only one element in the array
 // By default, Unmarshal returns array of map even if there is only a single map in the definition
 func Flatten(source map[string]interface{}) map[string]interface{} {
+	return source
 	for key, value := range source {
 		switch value := value.(type) {
 		case []map[string]interface{}:
@@ -166,45 +162,59 @@ func toBase(value interface{}) interface{} {
 	}
 }
 
-func marshalHCL(value interface{}, prefix, indent string) []byte {
+func marshalHCL(value interface{}, head bool, prefix, indent string) (result string, err error) {
+	//defer func() { fmt.Println(color.GreenString(result)) }()
 	if value == nil {
-		return []byte("null")
+		result = "null"
+		return
 	}
 
-	ifIndent := func(vTrue, vFalse interface{}) interface{} {
-		if indent != "" {
-			return vTrue
-		}
-		return vFalse
-	}
+	ifIndent := func(vTrue, vFalse interface{}) interface{} { return utils.IIf(indent, vTrue, vFalse) }
+	const specialFormat = "#HCL_ARRAY_MAP#!"
 
 	switch value := value.(type) {
-	case []interface{}:
-		result := make([]string, len(value))
-		var (
-			totalLength int
-			newLine     bool
-		)
-		for i := range value {
-			result[i] = string(marshalHCL(value[i], "", indent))
-			totalLength += len(result[i])
-			newLine = newLine || strings.Contains(result[i], "\n")
-		}
-
-		if totalLength > 60 && indent != "" || newLine {
-			output := ""
-			for i := range result {
-				output += "\n"
-				for _, s := range strings.Split(result[i], "\n") {
-					output += fmt.Sprintf("%s%s", prefix, s)
-				}
-				output += ","
+	case string:
+		if indent != "" && strings.Contains(value, "\\n") {
+			// We unquote the value
+			unIndented := value[1 : len(value)-1]
+			// Then replace escaped characters, other escape chars are \a, \b, \f and \v are not managed
+			unIndented = strings.Replace(unIndented, `\n`, "\n", -1)
+			unIndented = strings.Replace(unIndented, `\\`, "\\", -1)
+			unIndented = strings.Replace(unIndented, `\"`, "\"", -1)
+			unIndented = strings.Replace(unIndented, `\r`, "\r", -1)
+			unIndented = strings.Replace(unIndented, `\t`, "\t", -1)
+			unIndented = utils.UnIndent(unIndented)
+			if strings.HasSuffix(unIndented, "\n") {
+				value = fmt.Sprintf("<<-EOF\n%sEOF", unIndented)
 			}
-			fmt.Println("array 1", color.GreenString(fmt.Sprintf("[%s\n]", output)))
-			return []byte(fmt.Sprintf("[%s\n]", output))
 		}
-		fmt.Println("array 2", color.GreenString(fmt.Sprintf("[%s]", strings.Join(result, ifIndent(", ", ",").(string)))))
-		return []byte(fmt.Sprintf("[%s]", strings.Join(result, ifIndent(", ", ",").(string))))
+		result = value
+
+	case []interface{}:
+		results := make([]string, len(value))
+		if isArrayOfMap(value) {
+			for i, element := range value {
+				element := element.(map[string]interface{})
+				for key := range element {
+					results[i], err = marshalHCL(element[key], false, "", indent)
+					results[i] = fmt.Sprintf(`%s "%s" %s`, specialFormat, key, results[i])
+				}
+			}
+			result = strings.Join(results, ifIndent("\n\n", ",").(string))
+			break
+		}
+		var totalLength int
+		var newLine bool
+		for i := range value {
+			results[i], err = marshalHCL(value[i], false, "", indent)
+			totalLength += len(results[i])
+			newLine = newLine || strings.Contains(results[i], "\n")
+		}
+		if totalLength > 60 && indent != "" || newLine {
+			result = fmt.Sprintf("[\n%s,\n]", utils.Indent(strings.Join(results, ",\n"), prefix+indent))
+		} else {
+			result = fmt.Sprintf("[%s]", strings.Join(results, ifIndent(", ", ",").(string)))
+		}
 
 	case map[string]interface{}:
 		keys := make([]string, 0, len(value))
@@ -216,83 +226,81 @@ func marshalHCL(value interface{}, prefix, indent string) []byte {
 			if len(key) > keyLen && indent != "" {
 				keyLen = len(key)
 			}
-			rendered[key] = string(marshalHCL(val, indent, indent))
+			rendered[key], err = marshalHCL(val, false, "", indent)
 		}
 		sort.Strings(keys)
 
-		items := make([]string, 0, len(value))
-
-		if indent == "" {
-			for _, key := range keys {
-				switch value[key].(type) {
-				case map[string]interface{}:
-					items = append(items, fmt.Sprintf("%s{%s}", id(key), rendered[key]))
-				default:
-					items = append(items, fmt.Sprintf("%s=%s", id(key), rendered[key]))
-				}
-			}
-			fmt.Println("map 1", color.GreenString(strings.Join(items, " ")))
-			return []byte(strings.Join(items, " "))
-		}
-
+		items := make([]string, 0, len(value)+2)
 		for _, multiline := range []bool{false, true} {
 			for _, key := range keys {
-				lines := strings.Split(rendered[key], "\n")
+				rendered := rendered[key]
+				lines := strings.Split(rendered, "\n")
 
 				// We process the multilines elements after the single line one
 				if len(lines) > 1 && !multiline || len(lines) == 1 && multiline {
 					continue
 				}
 
-				_, isMap := value[key].(map[string]interface{})
-				if !multiline {
-					if isMap {
-						lines[0] = fmt.Sprintf("{ %s }", lines[0])
-					}
-					fmt.Println(color.MagentaString(lines[0]))
-					items = append(items, fmt.Sprintf("%*s = %s", -keyLen, id(key), lines[0]))
-					continue
-				} else if len(items) > 0 {
+				if multiline && len(items) > 0 {
+					// Add a blank line between multilines elements
 					items = append(items, "")
+					keyLen = 0
 				}
 
-				if isMap {
-					items = append(items, fmt.Sprintf("%s {", id(key)))
-					for _, line := range lines {
-						items = append(items, fmt.Sprintf("%s%s", prefix+indent, line))
+				equal := ifIndent(" = ", "=").(string)
+				if _, isMap := value[key].(map[string]interface{}); isMap {
+					if multiline {
+						equal = " "
+					} else if indent == "" {
+						equal = ""
 					}
-					items = append(items, "}")
+				}
+
+				if strings.Contains(rendered, specialFormat) {
+					items = append(items, strings.Replace(rendered, specialFormat, id(key), -1))
+
 				} else {
-					items = append(items, fmt.Sprintf("%*s = %s", -keyLen, id(key), lines[0]))
-					for _, line := range lines[1:] {
-						items = append(items, fmt.Sprintf("%s%s", prefix+indent, line))
-					}
+					items = append(items, fmt.Sprintf("%*s%s%s", -keyLen, id(key), equal, rendered))
 				}
 			}
 		}
 
-		fmt.Println("map 2", color.GreenString(strings.Join(items, ifIndent("\n", " ").(string))))
-		return []byte(strings.Join(items, ifIndent("\n", " ").(string)))
-
-	case string:
-		if indent != "" && strings.Contains(value, "\\n") {
-			prefix += indent
-
-			// We unquote the value, other escape chars are \a, \b, \f and \v are not managed
-			value = value[1 : len(value)-1]
-			value = strings.Replace(value, `\\`, "\\", -1)
-			value = strings.Replace(value, `\"`, "\"", -1)
-			value = strings.Replace(value, `\r`, "\r", -1)
-			value = strings.Replace(value, `\t`, "\t", -1)
-
-			// We indent each line
-			lines := strings.Join(strings.Split(value, "\\n"), "\n"+prefix)
-			value = fmt.Sprintf("<<-EOF\n%[1]s%[2]s\n%[1]sEOF", prefix, lines)
+		if head {
+			result = strings.Join(items, ifIndent("\n", " ").(string))
+			break
 		}
-		fmt.Println("string", color.GreenString(value))
-		return []byte(value)
+
+		if indent == "" || len(items) == 0 {
+			result = fmt.Sprintf("{%s}", strings.Join(items, " "))
+			break
+		}
+
+		result = fmt.Sprintf("{\n%s\n}", utils.Indent(strings.Join(items, "\n"), prefix+indent))
+
+	default:
+		err = fmt.Errorf("Unknown type %[1]T %[1]v", value)
 	}
-	return []byte(fmt.Sprintf("Not evaluated %T", value))
+	return
+}
+
+func isArrayOfMap(array []interface{}) bool {
+	return false
+	if len(array) == 0 {
+		return false
+	}
+	for _, item := range array {
+		mapItem, isMap := item.(map[string]interface{})
+		if !isMap || len(mapItem) != 1 {
+			return false
+		}
+		// for key := range mapItem {
+		// 	if _, isMap := mapItem[key].(map[string]interface{}); !isMap {
+		// 		fmt.Println("exit2 on", key)
+		// 		return false
+		// 	}
+		// }
+	}
+	return true
 }
 
 var identifierRegex = regexp.MustCompile(`^[A-za-z][\w-]*$`)

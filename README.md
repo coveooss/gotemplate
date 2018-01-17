@@ -17,6 +17,8 @@ usage: gotemplate [<flags>] [<files>...]
 
 A template processor for go.
 
+See: https://github.com/coveo/gotemplate/blob/master/README.md for complete documentation.
+
 Flags:
   -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
       --delimiters={{,}}      Define the default delimiters for go template (separate the left and right delimiters by a comma)
@@ -28,6 +30,7 @@ Flags:
   -r, --recursive             Process all template files recursively
       --source=folder         Specify a source folder (default to the current folder)
       --target=folder         Specify a target folder (default to source folder)
+  -I, --stdin                 Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)
   -f, --follow-symlinks       Follow the symbolic links while using the recursive option
   -P, --print                 Output the result directly to stdout
   -l, --list-functions        List the available functions
@@ -35,6 +38,7 @@ Flags:
       --all-templates         List all templates (--at)
   -q, --quiet                 Don not print out the name of the generated files
   -v, --version               Get the current version of gotemplate
+  -c, --color                 Force rendering of colors event if output is redirected
 
 Args:
   [<files>]  Template files to process
@@ -111,6 +115,7 @@ Function name | Argument(s() |Description
 alias | name, function, source, args ... | Defines an alias (go template function) using the function (`exec`, `run`, `include`, `template`). Executed in the context of the caller.
 bool | string | Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`).
 concat | objects ... | Returns the concatenation (without separator) of the string representation of objects.
+color | attributes ... objects ... | Prints a message like print, but the first parameters are used to set color attributes (see [fatih/color](https://github.com/fatih/color)).
 current | | Returns the current folder (like `pwd`, but returns the folder of the currently running folder).
 exec | command string, args ... | Returns the result of the shell command as structured data (as string if no other conversion is possible).
 formatList | format string, list | Return a list of strings by applying the format to each element of the supplied list.
@@ -118,6 +123,7 @@ functions | | Return the list of available functions.
 get | key, map | Returns the value associated with the supplied map.
 glob | args ... | Returns the expanded list of supplied arguments (expand *[]? on filename).
 include | template, args ... | Returns the result of the named template rendering (like template but it is possible to capture the output).
+isUndef| default, value | Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, "" are not considered as unset).
 joinLines | objects ... | Merge the supplied objects into a newline separated string.
 local_alias | name, function, source, args ... | Defines an alias (go template function) using the function (`exec`, `run`, `include`, `template`). Executed in the context of the function it maps to.
 lorem | type string, min, max int | Returns a random string. Valid types are be `word`, `words`, `sentence`, `para`, `paragraph`, `host`, `email`, `url`.
@@ -151,6 +157,11 @@ toYaml | interface | Returns the YAML string representation of the supplied obje
 
 // Quote all elements of a list
 {{ $quoted := list 1 2 3 | formatList "\"%v\"" }}
+
+// Colored strings
+{{ $colored := color "red" "I am red" }}
+{{ $colored := color "red,bgwhite" "I am red with white background" }}
+{{ $colored := color "red" "bgyellow" "I am %s with %s background" "red" "yellow" }}
 
 // Define a script
 {{ define "script" }}
@@ -191,43 +202,43 @@ They are coming from either gotemplate, Sprig or native Go Template.
 
 ```text
 > gotemplate -l
-
-abbrev                  dir                     int                     printf                  templateNames
-abbrevboth              div                     int64                   println                 templates
-add                     empty                   isAbs                   push                    title
-add1                    env                     join                    pwd                     toDate
-ago                     eq                      joinLines               quote                   toHcl
-alias                   exec                    js                      randAlpha               toJson
-and                     expandenv               json                    randAlphaNum            toPrettyHcl
-append                  ext                     keys                    randAscii               toPrettyJson
-atoi                    fail                    kindIs                  randNumeric             toQuotedJson
-b32dec                  first                   kindOf                  regexFind               toString
-b32enc                  float64                 last                    regexFindAll            toStrings
-b64dec                  floor                   le                      regexMatch              toYaml
-b64enc                  formatList              len                     regexReplaceAll         trim
-base                    functions               list                    regexReplaceAllLiteral  trimAll
-biggest                 ge                      local_alias             regexSplit              trimPrefix
-bool                    genCA                   lorem                   repeat                  trimSuffix
-call                    genPrivateKey           lower                   replace                 trimall
-call                    genSelfSignedCert       lt                      rest                    trunc
-camelcase               genSignedCert           max                     reverse                 tuple
-cat                     get                     merge                   round                   typeIs
-ceil                    glob                    mergeList               run                     typeIsLike
-clean                   gt                      min                     semver                  typeOf
-coalesce                has                     mod                     semverCompare           uniq
-compact                 hasKey                  mul                     set                     unset
-concat                  hasPrefix               ne                      sha256sum               until
-contains                hasSuffix               nindent                 shuffle                 untilStep
-current                 hcl                     nospace                 snakecase               untitle
-data                    hello                   not                     sortAlpha               upper
-date                    html                    now                     split                   urlquery
-dateInZone              htmlDate                omit                    splitLines              uuidv4
-dateModify              htmlDateInZone          or                      splitList               without
-date_in_zone            include                 pick                    squote                  wrap
-date_modify             indent                  pluck                   sub                     wrapWith
-default                 index                   plural                  substitute              yaml
-derivePassword          initial                 prepend                 substr
-dict                    initials                print                   swapcase
+abbrev                  div                     int64                   push                    toDate
+abbrevboth              empty                   isAbs                   pwd                     toHcl
+add                     env                     join                    quote                   toJson
+add1                    eq                      joinLines               randAlpha               toPrettyHcl
+ago                     exec                    js                      randAlphaNum            toPrettyJson
+alias                   expandenv               json                    randAscii               toQuotedHcl
+and                     ext                     keys                    randNumeric             toQuotedJson
+append                  fail                    kindIs                  regexFind               toString
+atoi                    first                   kindOf                  regexFindAll            toStrings
+b32dec                  float64                 last                    regexMatch              toYaml
+b32enc                  floor                   le                      regexReplaceAll         trim
+b64dec                  formatList              len                     regexReplaceAllLiteral  trimAll
+b64enc                  functions               list                    regexSplit              trimPrefix
+base                    ge                      local_alias             repeat                  trimSuffix
+biggest                 genCA                   lorem                   replace                 trimall
+bool                    genPrivateKey           lower                   rest                    trunc
+call                    genSelfSignedCert       lt                      reverse                 tuple
+camelcase               genSignedCert           max                     round                   typeIs
+cat                     get                     merge                   run                     typeIsLike
+ceil                    glob                    mergeList               semver                  typeOf
+clean                   gt                      min                     semverCompare           undef
+coalesce                has                     mod                     set                     uniq
+color                   hasKey                  mul                     sha256sum               unset
+compact                 hasPrefix               ne                      shuffle                 until
+concat                  hasSuffix               nindent                 snakecase               untilStep
+contains                hcl                     nospace                 sortAlpha               untitle
+current                 hello                   not                     split                   upper
+data                    html                    now                     splitLines              urlquery
+date                    htmlDate                omit                    splitList               uuidv4
+dateInZone              htmlDateInZone          or                      squote                  without
+dateModify              ifUndef                 pick                    sub                     wrap
+date_in_zone            include                 pluck                   substitute              wrapWith
+date_modify             indent                  plural                  substr                  yaml
+default                 index                   prepend                 swapcase
+derivePassword          initial                 print                   templateNames
+dict                    initials                printf                  templates
+dir                     int                     println                 title
 ```
 
 Links to documentations of foreign fucntions are in the section [base functions](#base-functions).

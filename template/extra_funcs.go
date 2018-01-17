@@ -15,8 +15,8 @@ import (
 
 	"github.com/Masterminds/sprig"
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/utils"
-	"github.com/hashicorp/hcl"
 	"gopkg.in/yaml.v2"
 )
 
@@ -27,15 +27,17 @@ func (t *Template) addFuncs() {
 
 	// Add utilities functions
 	t.Funcs(map[string]interface{}{
-		"concat":      utils.Concat,
-		"formatList":  utils.FormatList,
-		"glob":        utils.GlobFunc,
-		"joinLines":   utils.JoinLines,
-		"mergeList":   utils.MergeLists,
-		"pwd":         utils.Pwd,
-		"splitLines":  utils.SplitLines,
-		"toYaml":      utils.ToYaml,
-		"current":     func() string { return t.folder },
+		"concat":     utils.Concat,
+		"formatList": utils.FormatList,
+		"glob":       utils.GlobFunc,
+		"joinLines":  utils.JoinLines,
+		"mergeList":  utils.MergeLists,
+		"pwd":        utils.Pwd,
+		"splitLines": utils.SplitLines,
+		"toYaml":     utils.ToYaml,
+		"undef":      utils.IfUndef,
+		"ifUndef":    utils.IfUndef,
+		"current":    func() string { return t.folder },
 		"toHcl": func(v interface{}) (string, error) {
 			output, err := hcl.Marshal(v)
 			return string(output), err
@@ -44,21 +46,33 @@ func (t *Template) addFuncs() {
 			output, err := hcl.MarshalIndent(v, "", "  ")
 			return string(output), err
 		},
-		"toQuotedJson": func(v interface{}) string {
-			output, _ := json.Marshal(v)
+		"toQuotedHcl": func(v interface{}) (string, error) {
+			output, err := hcl.Marshal(v)
 			result := fmt.Sprintf("%q", output)
-			return result[1 : len(result)-1]
+			return result[1 : len(result)-1], err
+		},
+		"toQuotedJson": func(v interface{}) (string, error) {
+			output, err := json.Marshal(v)
+			result := fmt.Sprintf("%q", output)
+			return result[1 : len(result)-1], err
 		},
 		"bool": func(str string) (bool, error) {
 			return strconv.ParseBool(str)
 		},
-		"get": func(arg1, arg2 interface{}) interface{} {
+		"get": func(arg1, arg2 interface{}) (result interface{}, err error) {
 			// In pipe execution, the map is often the last parameter, but we also support to
 			// put the map as the first parameter. So all following forms are supported:
 			//    get map key
 			//    get key map
 			//    map | get key
 			//    key | get map
+
+			defer func() {
+				if e := recover(); e != nil {
+					err = fmt.Errorf("Cannot retrieve key from undefined map: %v", e)
+				}
+			}()
+
 			var (
 				dict map[string]interface{}
 				key  string
@@ -70,15 +84,21 @@ func (t *Template) addFuncs() {
 				key = arg1.(string)
 				dict = arg2.(map[string]interface{})
 			}
-			return dict[key]
+			return dict[key], nil
 		},
-		"set": func(arg1, arg2, arg3 interface{}) string {
+		"set": func(arg1, arg2, arg3 interface{}) (result string, err error) {
 			// In pipe execution, the map is often the last parameter, but we also support to
 			// put the map as the first parameter. So all following forms are supported:
 			//    set map key value
 			//    set key value map
 			//    map | set key value
 			//    value | set map key
+			defer func() {
+				if e := recover(); e != nil {
+					err = fmt.Errorf("Cannot set key from undefined map: %v", e)
+				}
+			}()
+
 			var (
 				dict  map[string]interface{}
 				key   string
@@ -94,7 +114,7 @@ func (t *Template) addFuncs() {
 				dict = arg3.(map[string]interface{})
 			}
 			dict[key] = value
-			return ""
+			return "", nil
 		},
 		"lorem": func(funcName string, params ...int) (result string, err error) {
 			kind, err := utils.GetLoremKind(funcName)
@@ -103,6 +123,7 @@ func (t *Template) addFuncs() {
 			}
 			return
 		},
+		"color": utils.SprintColor,
 	})
 
 	// Add template related functions
@@ -366,7 +387,7 @@ func (t Template) substitute(content string) string {
 // List the available functions in the template
 func (t Template) getFunctions() []string {
 	functions := []string{
-		"and", "call", "call", "html", "index", "js", "len", "not", "or", "print", "printf", "println", "urlquery",
+		"and", "call", "html", "index", "js", "len", "not", "or", "print", "printf", "println", "urlquery",
 		"eq", "ge", "gt", "le", "lt", "ne",
 	}
 
