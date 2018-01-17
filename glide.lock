@@ -1,5 +1,5 @@
 hash: d6775831eb4a216531158f0c39b27183e666154386de11fd65b9c79d1a3e00b3
-updated: 2017-12-22T13:59:16.765796-05:00
+updated: 2018-01-11T17:37:30.748818766-05:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -13,8 +13,6 @@ imports:
   version: ecccc744c2d953a1e13cbe5e5fc5d4cbc9b8daeb
 - name: github.com/fatih/color
   version: 5df930a27be2502f99b292b7cc09ebad4d0891f4
-- name: github.com/fatih/structs
-  version: f5faa72e73092639913f5833b75e1ac1d6bc7a63
 - name: github.com/go-errors/errors
   version: 8fa88b06e5974e97fbf9899a7f86a344bfd1f105
 - name: github.com/hashicorp/hcl
@@ -43,7 +41,7 @@ imports:
   version: 57fdcb988a5c543893cc61bce354a6e24ab70022
   repo: https://github.com/mattn/go-isatty
 - name: github.com/satori/go.uuid
-  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: golang.org/x/crypto
   version: 2509b142fb2b797aa7587dad548f113b2c0f20ce
   subpackages:
