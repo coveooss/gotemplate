@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -11,7 +12,7 @@ import (
 func LoadYaml(filename string) (result map[string]interface{}, err error) {
 	var content []byte
 	if content, err = ioutil.ReadFile(filename); err == nil {
-		err = yaml.Unmarshal(content, &result)
+		err = YamlUnmarshal(content, &result)
 	}
 	return
 }
@@ -42,4 +43,11 @@ func ToYaml(v interface{}) (string, error) {
 		return "", err
 	}
 	return string(result), nil
+}
+
+// YamlUnmarshal calls yaml.Unmarshal, but replace tabs by spaces if there are
+func YamlUnmarshal(in []byte, out interface{}) (err error) {
+	// Yaml does not support tab, so we repace tabs by spaces if there are
+	in = []byte(strings.Replace(string(in), "\t", "    ", -1))
+	return yaml.Unmarshal(in, out)
 }

@@ -66,6 +66,7 @@ func main() {
 		listALlTemplates = app.Flag("all-templates", "List all templates (--at)").Bool()
 		quiet            = app.Flag("quiet", "Don not print out the name of the generated files").Short('q').Bool()
 		getVersion       = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
+		razorSyntax      = app.Flag("razor", "Allow razor like expressions (@variable)").Short('R').Bool()
 		forceColor       = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
 		files            = app.Arg("files", "Template files to process").ExistingFiles()
 	)
@@ -104,6 +105,7 @@ func main() {
 	t.Quiet = *quiet
 	t.Overwrite = *overwrite
 	t.OutputStdout = *print
+	t.RazorSyntax = *razorSyntax
 	t.TempFolder = tempFolder
 
 	if *listFunctions || *listTemplates || *listALlTemplates {

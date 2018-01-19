@@ -25,6 +25,7 @@ type Template struct {
 	Quiet        bool
 	OutputStdout bool
 	TempFolder   string
+	RazorSyntax  bool
 	substitutes  []utils.RegexReplacer
 	context      interface{}
 	delimiters   []string

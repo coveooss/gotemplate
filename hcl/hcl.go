@@ -55,7 +55,7 @@ func SingleContext(context ...interface{}) interface{} {
 // Flatten - Convert array of map to single map if there is only one element in the array
 // By default, Unmarshal returns array of map even if there is only a single map in the definition
 func Flatten(source map[string]interface{}) map[string]interface{} {
-	return source
+	// return source
 	for key, value := range source {
 		switch value := value.(type) {
 		case []map[string]interface{}:

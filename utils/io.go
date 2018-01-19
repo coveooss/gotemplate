@@ -102,8 +102,8 @@ func Relative(folder, file string) string {
 	return errors.Must(filepath.Rel(folder, file)).(string)
 }
 
-// https://regex101.com/r/ykVKPt/3
-var shebang = regexp.MustCompile(`(?sm)^#!\s*(?P<program>[^\s]*)\s*(?P<app>[^\s]*)?\s*$\s*(?P<source>.*)`)
+// https://regex101.com/r/ykVKPt/4
+var shebang = regexp.MustCompile(`(?sm)^(\s*#!\s*(?P<program>[^\s]*)[ \t]*(?P<app>[^\s]*)?\s*$)?\s*(?P<source>.*)`)
 
 // IsShebangScript determines if the supplied code has a Shebang definition #! program subprogram
 func IsShebangScript(content string) bool {

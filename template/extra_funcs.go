@@ -17,7 +17,6 @@ import (
 	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/utils"
-	"gopkg.in/yaml.v2"
 )
 
 // Add additional functions to the go template context
@@ -342,7 +341,7 @@ func (t Template) templateConverter(converter dataConverter, str string, context
 
 // converts the supplied string containing yaml to go map
 func (t Template) yamlConverter(str string, context ...interface{}) (interface{}, error) {
-	return t.templateConverter(yaml.Unmarshal, str, context...)
+	return t.templateConverter(utils.YamlUnmarshal, str, context...)
 }
 
 // converts the supplied string containing json to go map
@@ -367,7 +366,7 @@ func (t Template) dataConverter(source string, context ...interface{}) (result i
 			result = hcl.Flatten(utils.MapKeyInterface2string(result).(map[string]interface{}))
 		} else {
 			errs = append(errs, err)
-			if result, err = t.converter(yaml.Unmarshal, content, false, context...); err == nil {
+			if result, err = t.converter(utils.YamlUnmarshal, content, false, context...); err == nil {
 				result = utils.MapKeyInterface2string(result)
 				err = nil
 			} else {
@@ -381,6 +380,9 @@ func (t Template) dataConverter(source string, context ...interface{}) (result i
 
 // Apply all regular expressions replacements to the supplied string
 func (t Template) substitute(content string) string {
+	if t.RazorSyntax {
+		content = string(t.applyRazor([]byte(content)))
+	}
 	return utils.Substitute(content, t.substitutes...)
 }
 
