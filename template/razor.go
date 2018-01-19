@@ -8,7 +8,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 
 	for _, match := range variables.FindAllIndex(content, -1) {
 		start, length := match[0], match[1]
-		content = append((*content)[:start], content[start+length:]...)
+		content = append(content[:start], content[start+length:]...)
 	}
 	return content
 }
