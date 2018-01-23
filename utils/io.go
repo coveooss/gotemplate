@@ -3,7 +3,6 @@ package utils
 import (
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
@@ -77,7 +76,7 @@ func MustFindFiles(folder string, recursive, followLinks bool, patterns ...strin
 
 // GlobFunc returns an array of string representing the expansion of the supplied arguments using filepath.Glob function
 func GlobFunc(args ...interface{}) (result []string) {
-	for _, arg := range toStrings(args) {
+	for _, arg := range ToStrings(args) {
 		if strings.ContainsAny(arg, "*?[]") {
 			if expanded, _ := filepath.Glob(arg); expanded != nil {
 				result = append(result, expanded...)
@@ -100,25 +99,4 @@ func Relative(folder, file string) string {
 		return file
 	}
 	return errors.Must(filepath.Rel(folder, file)).(string)
-}
-
-// https://regex101.com/r/ykVKPt/4
-var shebang = regexp.MustCompile(`(?sm)^(\s*#!\s*(?P<program>[^\s]*)[ \t]*(?P<app>[^\s]*)?\s*$)?\s*(?P<source>.*)`)
-
-// IsShebangScript determines if the supplied code has a Shebang definition #! program subprogram
-func IsShebangScript(content string) bool {
-	return shebang.MatchString(strings.TrimSpace(content))
-}
-
-// ScriptParts splits up the supplied content into program, subprogram and source if the content matches Shebang defintion
-func ScriptParts(content string) (program, subprogram, source string) {
-	matches := shebang.FindStringSubmatch(strings.TrimSpace(content))
-	if len(matches) > 0 {
-		program = matches[1]
-		subprogram = matches[2]
-		source = matches[3]
-	} else {
-		source = content
-	}
-	return
 }

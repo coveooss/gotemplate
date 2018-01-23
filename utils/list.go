@@ -19,7 +19,7 @@ func MergeLists(lists ...[]interface{}) []interface{} {
 
 // FormatList returns an array of string where format as been applied on every element of the supplied array
 func FormatList(format string, v interface{}) []string {
-	source := toStrings(v)
+	source := ToStrings(v)
 	list := make([]string, 0, len(source))
 	for _, val := range source {
 		list = append(list, fmt.Sprintf(format, val))

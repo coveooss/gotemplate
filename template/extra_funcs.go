@@ -198,44 +198,22 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 		return
 	}
 
-	// We expland the arguments
-	cmdArgs := utils.GlobFunc(args...)
-
-	executer, delegate, command := utils.ScriptParts(strings.TrimSpace(command))
-	if executer != "" {
-		if filename == "" {
-			// The command is a shebang script, so we save the content as a temporary file
-			var temp *os.File
-			if temp, err = ioutil.TempFile(t.TempFolder, "exec_"); err != nil {
-				return
-			}
-			defer func() { os.Remove(temp.Name()) }()
-
-			if _, err = temp.WriteString(command); err != nil {
-				return
-			}
-			temp.Close()
-			filename = temp.Name()
-		}
-		command = executer
-		cmdArgs = append([]string{filename}, cmdArgs...)
-		if delegate != "" {
-			cmdArgs = append([]string{delegate}, cmdArgs...)
-		}
-	} else if _, errPath := exec.LookPath(command); errPath != nil {
-		if strings.Contains(command, " ") {
-			// The command is a string that should be splitted up into several parts
-			split := strings.Split(command, " ")
-			command = split[0]
-			cmdArgs = append(split[1:], cmdArgs...)
-		} else {
-			// The command does not exist
-			return
+	var cmd *exec.Cmd
+	if filename != "" {
+		cmd, err = utils.GetCommandFromFile(filename, args...)
+	} else {
+		var tempFile string
+		cmd, tempFile, err = utils.GetCommandFromString(command, args...)
+		if tempFile != "" {
+			defer func() { os.Remove(tempFile) }()
 		}
 	}
 
+	if cmd == nil {
+		return
+	}
+
 	var stdout, stderr bytes.Buffer
-	cmd := exec.Command(command, cmdArgs...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
