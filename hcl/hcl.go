@@ -55,7 +55,6 @@ func SingleContext(context ...interface{}) interface{} {
 // Flatten - Convert array of map to single map if there is only one element in the array
 // By default, Unmarshal returns array of map even if there is only a single map in the definition
 func Flatten(source map[string]interface{}) map[string]interface{} {
-	// return source
 	for key, value := range source {
 		switch value := value.(type) {
 		case []map[string]interface{}:
@@ -106,7 +105,7 @@ func toBase(value interface{}) interface{} {
 		for _, key := range val.MapKeys() {
 			result[fmt.Sprintf("%v", key)] = toBase(val.MapIndex(key).Interface())
 		}
-		return result
+		return Flatten(result)
 
 	case reflect.Struct:
 		result := make(map[string]interface{}, typ.NumField())
@@ -284,7 +283,6 @@ func marshalHCL(value interface{}, head bool, prefix, indent string) (result str
 }
 
 func isArrayOfMap(array []interface{}) bool {
-	return false
 	if len(array) == 0 {
 		return false
 	}
@@ -293,12 +291,6 @@ func isArrayOfMap(array []interface{}) bool {
 		if !isMap || len(mapItem) != 1 {
 			return false
 		}
-		// for key := range mapItem {
-		// 	if _, isMap := mapItem[key].(map[string]interface{}); !isMap {
-		// 		fmt.Println("exit2 on", key)
-		// 		return false
-		// 	}
-		// }
 	}
 	return true
 }

@@ -20,6 +20,11 @@ func LoadYaml(filename string) (result map[string]interface{}, err error) {
 // MapKeyInterface2string convert maps with interface{} key to map with a string as the key
 func MapKeyInterface2string(source interface{}) interface{} {
 	switch value := source.(type) {
+	case map[string]interface{}:
+		for key, val := range value {
+			value[key] = MapKeyInterface2string(val)
+		}
+		return value
 	case map[interface{}]interface{}:
 		result := make(map[string]interface{}, len(value))
 		for key, val := range value {
