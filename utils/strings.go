@@ -68,17 +68,21 @@ func UnIndent(s string) string {
 		return s
 	}
 
-	spaces := ""
+	var spaces *string
 	for i, line := range lines {
-		if spaces == "" {
-			if trimmed := strings.TrimLeftFunc(line, unicode.IsSpace); trimmed != lines[i] {
-				spaces = string(lines[i][:len(lines[i])-len(trimmed)])
+		if spaces == nil {
+			if strings.TrimSpace(line) == "" {
+				// We do not consider empty lines
+				continue
 			}
+			trimmed := strings.TrimLeftFunc(line, unicode.IsSpace)
+			trimmed = string(lines[i][:len(lines[i])-len(trimmed)])
+			spaces = &trimmed
 		}
-		if !strings.HasPrefix(line, spaces) && strings.TrimSpace(line) != "" {
+		if !strings.HasPrefix(line, *spaces) && strings.TrimSpace(line) != "" {
 			return s
 		}
-		lines[i] = strings.TrimPrefix(line, spaces)
+		lines[i] = strings.TrimPrefix(line, *spaces)
 	}
 
 	return strings.Join(lines, "\n")

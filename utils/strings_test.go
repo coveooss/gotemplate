@@ -31,6 +31,7 @@ func TestUnIndent(t *testing.T) {
 	        World
 			end!
 			`}, "\n\t\t\tHello\n\n\t        World\n\t\t\tend!\n\t\t\t"},
+		{"One line indented", args{"\nHello\n   World\n"}, "\nHello\n   World\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
