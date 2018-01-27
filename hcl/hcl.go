@@ -98,6 +98,10 @@ func toBase(value interface{}) interface{} {
 		for i := range result {
 			result[i] = toBase(reflect.ValueOf(value).Index(i).Interface())
 		}
+		if len(result) == 1 && reflect.TypeOf(result[0]).Kind() == reflect.Map {
+			// If the result is an array of one map, we just return the inner element
+			return result[0]
+		}
 		return result
 
 	case reflect.Map:
@@ -199,7 +203,7 @@ func marshalHCL(value interface{}, head bool, prefix, indent string) (result str
 					results[i] = fmt.Sprintf(`%s "%s" %s`, specialFormat, key, results[i])
 				}
 			}
-			result = strings.Join(results, ifIndent("\n\n", ",").(string))
+			result = strings.Join(results, ifIndent("\n\n", " ").(string))
 			break
 		}
 		var totalLength int
