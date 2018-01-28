@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -80,16 +81,31 @@ func GetCommandFromString(script string, args ...interface{}) (cmd *exec.Cmd, te
 	} else {
 		strArgs := GlobFunc(args...)
 		if _, err = exec.LookPath(command); err != nil {
-			if !strings.Contains(command, " ") {
-				// The command does not exist
+			if !strings.ContainsAny(command, " \t|&,$;(){}") {
+				// The command does not exist, we return the error
 				return
 			}
 
-			// The command is a string that should be splitted up into several parts
 			err = nil
-			split := strings.Split(command, " ")
-			command = split[0]
-			strArgs = append(split[1:], strArgs...)
+			originalCommand := command
+			defShells := []string{"bash", "sh", "zsh", "ksh"}
+			defSwitch := "-c"
+			if runtime.GOOS == "windows" {
+				defShells = []string{"powershell", "pwsh", "cmd"}
+				defSwitch = "/c"
+			}
+			for _, sh := range defShells {
+				if sh, err := exec.LookPath(sh); err == nil {
+					command = sh
+				}
+			}
+
+			for i := range strArgs {
+				if strings.ContainsAny(strArgs[i], "\t \"'") {
+					strArgs[i] = fmt.Sprintf("%q", strArgs[i])
+				}
+			}
+			strArgs = []string{defSwitch, strings.Join(append([]string{originalCommand}, strArgs...), " ")}
 		}
 		cmd = exec.Command(command, strArgs...)
 	}
