@@ -145,7 +145,7 @@ func toBase(value interface{}) interface{} {
 			split := strings.Split(tag, ",")
 			name := split[0]
 			if name == "" {
-				tag = sf.Name
+				name = sf.Name
 			}
 			options := make(map[string]bool, len(split[1:]))
 			for i := range split[1:] {
@@ -156,7 +156,13 @@ func toBase(value interface{}) interface{} {
 				continue
 			}
 
-			result[name] = toBase(val.Field(i).Interface())
+			if options["inline"] {
+				for key, value := range toBase(val.Field(i).Interface()).(map[string]interface{}) {
+					result[key] = value
+				}
+			} else {
+				result[name] = toBase(val.Field(i).Interface())
+			}
 		}
 		return result
 	default:
