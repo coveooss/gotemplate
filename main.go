@@ -14,6 +14,7 @@ import (
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
 	goerrors "github.com/go-errors/errors"
+	logging "github.com/op/go-logging"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -49,9 +50,9 @@ func main() {
 
 	var (
 		app              = kingpin.New(os.Args[0], description)
-		delimiters       = app.Flag("delimiters", "Define the default delimiters for go template (separate the left and right delimiters by a comma)").PlaceHolder("{{,}}").String()
+		delimiters       = app.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma)").PlaceHolder("{{,}},@").String()
 		varFiles         = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
-		namedVarFiles    = app.Flag("var", "Import named variables files (base file name is used as identifier if unspecified)").PlaceHolder("name:=file").Short('V').Strings()
+		namedVars        = app.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("name=file").Short('V').Strings()
 		includePatterns  = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
 		overwrite        = app.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
 		substitutes      = app.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
@@ -68,10 +69,12 @@ func main() {
 		getVersion       = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
 		razorSyntax      = app.Flag("razor", "Allow razor like expressions (@variable)").Short('R').Bool()
 		forceColor       = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
+		logLevel         = app.Flag("log-level", "Set the logging level (0-5)").Default("2").Int8()
 		files            = app.Arg("files", "Template files to process").ExistingFiles()
 	)
 
 	app.Flag("at", "short version of --all-templates").Hidden().BoolVar(listALlTemplates)
+	app.Flag("ll", "short version of --log-level").Hidden().Int8Var(logLevel)
 
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
@@ -85,6 +88,8 @@ func main() {
 		fmt.Println(version)
 		os.Exit(0)
 	}
+
+	template.SetLogLevel(logging.Level(*logLevel))
 
 	if *targetFolder == "" {
 		// Target folder default to source folder
@@ -101,11 +106,10 @@ func main() {
 		*forceStdin = true
 	}
 
-	t := template.NewTemplate(createContext(*varFiles, *namedVarFiles), *delimiters, *substitutes...)
+	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, *razorSyntax, *substitutes...)
 	t.Quiet = *quiet
 	t.Overwrite = *overwrite
 	t.OutputStdout = *print
-	t.RazorSyntax = *razorSyntax
 	t.TempFolder = tempFolder
 
 	if *listFunctions || *listTemplates || *listALlTemplates {
@@ -147,49 +151,54 @@ func main() {
 	}
 }
 
-func createContext(varsFiles []string, namedVarsFiles []string) (context map[string]interface{}) {
+func createContext(varsFiles []string, namedVars []string) (context map[string]interface{}) {
 	context = map[string]interface{}{}
 
-	// We validate the named configuration
-	for i := range namedVarsFiles {
-		split := strings.Split(namedVarsFiles[i], ":=")
-		switch len(split) {
-		case 1:
-			base := strings.Split(filepath.Base(split[0]), ".")[0]
-			namedVarsFiles[i] = fmt.Sprintf("%s==%s", namedVarsFiles[i], base)
-		case 2:
-			namedVarsFiles[i] = fmt.Sprintf("%s==%s", split[1], split[0])
-		default:
-			errors.Raise("Invalid named vars file %s", namedVarsFiles[i])
-		}
+	type fileDef struct {
+		name  string
+		value string
 	}
 
-	for _, varsFile := range append(varsFiles, namedVarsFiles...) {
-		varsFile, varName := utils.Split2(varsFile, "==")
+	nameValuePairs := make([]fileDef, 0, len(varsFiles)+len(namedVars))
+	for i := range varsFiles {
+		nameValuePairs = append(nameValuePairs, fileDef{value: varsFiles[i]})
+	}
 
-		loader := utils.LoadYaml
-		switch strings.ToLower(filepath.Ext(varsFile)) {
+	for i := range namedVars {
+		name, value := utils.Split2(namedVars[i], "=")
+		if value == "" {
+			value = name
+			name = filepath.Base(value)
+			name = strings.TrimSuffix(name, filepath.Ext(name))
+		}
+		nameValuePairs = append(nameValuePairs, fileDef{strings.TrimSpace(name), strings.TrimSpace(value)})
+	}
+
+	for _, nv := range nameValuePairs {
+		var loader func(string) (map[string]interface{}, error)
+		switch strings.ToLower(filepath.Ext(nv.value)) {
 		case ".hcl", ".tfvars":
 			loader = hcl.Load
+		case ".json", ".yml", ".yaml":
+			loader = utils.LoadYaml
 		}
 
-		var content = map[string]interface{}{}
-		var err error
-
-		if content, err = loader(varsFile); err != nil {
-			errors.Raise("Error %v while loading vars file %s", varsFile, err)
-		}
-
-		if varName == "" {
-			for key, value := range content {
-				context[key] = value
+		if loader != nil {
+			if content, err := loader(nv.value); err != nil {
+				errors.Raise("Error %v while loading vars file %s", nv.value, err)
+			} else {
+				if nv.name == "" {
+					for key, value := range content {
+						context[key] = value
+					}
+				} else {
+					context[nv.name] = content
+				}
 			}
+		} else if nv.name != "" {
+			context[nv.name] = strings.TrimSpace(nv.value)
 		} else {
-			var varContent = map[string]interface{}{}
-			for key, value := range content {
-				varContent[key] = value
-			}
-			context[varName] = varContent
+			errors.Raise("--var parameter must be a file or assignation (name=value) %s", nv.value)
 		}
 	}
 	return

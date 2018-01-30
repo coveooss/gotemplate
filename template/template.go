@@ -36,18 +36,29 @@ type Template struct {
 }
 
 // NewTemplate creates an Template object with default initialization
-func NewTemplate(context interface{}, delimiters string, substitutes ...string) *Template {
+func NewTemplate(context interface{}, delimiters string, razor bool, substitutes ...string) *Template {
 	t := Template{Template: template.New("Main")}
 	errors.Must(t.Parse(""))
 	t.context = context
 	t.aliases = &map[string]interface{}{}
+	t.RazorSyntax = razor
 
 	// Set the template delimiters
 	if delimiters == "" {
 		delimiters = "{{,}}"
+		if t.RazorSyntax {
+			delimiters += ",@"
+		}
 	}
-	t.delimiters = strings.SplitN(delimiters, ",", 2)
-	if len(t.delimiters) != 2 {
+	t.delimiters = strings.SplitN(delimiters, ",", 3)
+	switch len(t.delimiters) {
+	case 2:
+		if t.RazorSyntax {
+			t.delimiters = append(t.delimiters, "@")
+		}
+	case 3:
+		break
+	default:
 		errors.Raise("Invalid delimiters '%s', must be two comma separated parts", delimiters)
 	}
 
@@ -81,6 +92,10 @@ func NewTemplate(context interface{}, delimiters string, substitutes ...string) 
 
 // ProcessContent loads and runs the file template
 func (t Template) ProcessContent(content, source string) (string, error) {
+	if t.RazorSyntax {
+		content = string(t.applyRazor([]byte(content)))
+	}
+
 	context := t.getContext(filepath.Dir(source))
 	newTemplate, err := context.New(source).Parse(content)
 	if err != nil {

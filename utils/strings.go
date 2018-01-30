@@ -33,7 +33,7 @@ var ToStrings = sprig.GenericFuncMap()["toStrings"].(func(interface{}) []string)
 // SplitLines return a list of interface object for each line in the supplied content
 func SplitLines(content interface{}) []interface{} {
 	content = Interface2string(content)
-	split := strings.Split(content.(string), "\n")
+	split := strings.Split(strings.TrimSuffix(content.(string), "\n"), "\n")
 	result := make([]interface{}, len(split))
 	for i := range split {
 		result[i] = split[i]

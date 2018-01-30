@@ -358,9 +358,6 @@ func (t Template) dataConverter(source string, context ...interface{}) (result i
 
 // Apply all regular expressions replacements to the supplied string
 func (t Template) substitute(content string) string {
-	if t.RazorSyntax {
-		content = string(t.applyRazor([]byte(content)))
-	}
 	return utils.Substitute(content, t.substitutes...)
 }
 

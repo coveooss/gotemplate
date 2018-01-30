@@ -81,7 +81,7 @@ func GetCommandFromString(script string, args ...interface{}) (cmd *exec.Cmd, te
 	} else {
 		strArgs := GlobFunc(args...)
 		if _, err = exec.LookPath(command); err != nil {
-			if !strings.ContainsAny(command, " \t|&,$;(){}") {
+			if !strings.ContainsAny(command, " \t|&,$;(){}<>") {
 				// The command does not exist, we return the error
 				return
 			}
