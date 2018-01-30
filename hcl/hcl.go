@@ -141,12 +141,12 @@ func toBase(value interface{}) interface{} {
 			if tag == "-" {
 				continue
 			}
-			if tag == "" {
-				tag = sf.Name
-			}
 
 			split := strings.Split(tag, ",")
 			name := split[0]
+			if name == "" {
+				tag = sf.Name
+			}
 			options := make(map[string]bool, len(split[1:]))
 			for i := range split[1:] {
 				options[split[i+1]] = true
