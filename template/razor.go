@@ -24,7 +24,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 		if getLogLevel() >= logging.DEBUG {
 			all := e.re.FindAllString(string(content), -1)
 			if len(all) > 0 {
-				log.Debug("Regex:", color.YellowString(expressions[i][0].(string)), "Match:", all)
+				log.Debug("Regex:", color.YellowString(expressions[i][0].(string)), "Match:", strings.Join(all, " | "))
 			}
 		}
 		if e.parser == nil {
@@ -35,7 +35,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 			})
 		}
 	}
-	log.Notice(color.GreenString(string(content)))
+	log.Noticef("Generated content\n%s", color.GreenString(string(content)))
 	return content
 }
 
@@ -86,9 +86,9 @@ func expressionParser(repl replacement, match string) string {
 			result = strings.Replace(result, dotRep, ".", -1)
 			return result
 		}
-		log.Debug(color.RedString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
+		log.Info(color.RedString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
 	} else {
-		log.Debug(color.RedString(fmt.Sprintf("Invalid expression '%s'", expression)))
+		log.Info(color.RedString(fmt.Sprintf("Invalid expression '%s'", expression)))
 	}
 	return match
 }

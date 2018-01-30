@@ -36,7 +36,7 @@ type Template struct {
 }
 
 // NewTemplate creates an Template object with default initialization
-func NewTemplate(context interface{}, delimiters string, razor bool, substitutes ...string) *Template {
+func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bool, substitutes ...string) *Template {
 	t := Template{Template: template.New("Main")}
 	errors.Must(t.Parse(""))
 	t.context = context
@@ -68,24 +68,26 @@ func NewTemplate(context interface{}, delimiters string, razor bool, substitutes
 	baseRegex := []string{`/(?m)^\s*#!\s*$/`}
 	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
 
-	// Retrieve the template files
-	for _, file := range utils.MustFindFiles(t.folder, true, true, "*.template") {
-		// We just load all the template files available to ensure that all template definition are loaded
-		// We do not use ParseFiles because it names the template with the base name of the file
-		// which result in overriding templates with the same base name in different folders.
-		content := string(errors.Must(ioutil.ReadFile(file)).([]byte))
+	if !skipTemplates {
+		// Retrieve the template files
+		for _, file := range utils.MustFindFiles(t.folder, true, true, "*.template") {
+			// We just load all the template files available to ensure that all template definition are loaded
+			// We do not use ParseFiles because it names the template with the base name of the file
+			// which result in overriding templates with the same base name in different folders.
+			content := string(errors.Must(ioutil.ReadFile(file)).([]byte))
 
-		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
-		t.ProcessContent(content, file)
+			// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
+			t.ProcessContent(content, file)
+		}
+
+		// Add the children contexts to the main context
+		for _, context := range t.children {
+			t.importTemplates(*context)
+		}
+
+		// We reset the list of templates
+		t.children = make(map[string]*Template)
 	}
-
-	// Add the children contexts to the main context
-	for _, context := range t.children {
-		t.importTemplates(*context)
-	}
-
-	// We reset the list of templates
-	t.children = make(map[string]*Template)
 
 	return &t
 }
