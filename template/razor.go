@@ -20,11 +20,11 @@ func (t *Template) applyRazor(content []byte) []byte {
 		return content
 	}
 	t.ensureInit()
-	for i, e := range replacements {
-		if getLogLevel() >= logging.DEBUG {
+	for _, e := range replacements {
+		if getLogLevel() >= logging.INFO && e.name != "" {
 			all := e.re.FindAllString(string(content), -1)
 			if len(all) > 0 {
-				log.Debug("Regex:", color.YellowString(expressions[i][0].(string)), "Match:", strings.Join(all, " | "))
+				log.Infof("%s = %s", color.YellowString(e.name), strings.Join(all, " | "))
 			}
 		}
 		if e.parser == nil {
@@ -40,26 +40,26 @@ func (t *Template) applyRazor(content []byte) []byte {
 }
 
 var expressions = [][]interface{}{
-	{`(\W|^)([\w.!#$%&'*+/=?^_{|}~-])+@(\w(?:[\w-]{0,61}[\w])?(?:\.\w(?:[\w-]{0,61}\w))+)`, "", replacementFunc(protectEmail)},
-	{`@@`, literalAt},
-	{`(?m)@(#|//)\s*(?P<line_comment>.*)\s*$`, "{{/* ${line_comment} */}}"},
-	{`(?s)@/\*(?P<block_comment>.*?)\*/`, "{{/*${block_comment}*/}}"},
-	{`@(?P<command>elseif)\(\s*(?P<arg>.*?)\s*\)`, "{{ else if ${arg} }}"},
-	{`@if\(\s*(?P<expr>[^@{]*)\s*\)`, "{{ if ${expr} }}", replacementFunc(expressionParser)},
-	{`@(?P<command>end(if|range|template|block|with))`, "{{ end }}"},
-	{`@(?P<command>else)`, "{{ ${command} }}"},
-	{`(?m)@\$(?P<id>\w[\w-]*)\s*:=\s*(?P<value>.*)\s*$`, `{{ $$${id} := ${value} }}`},
-	{`(?m)@(?P<id>\w[\w-]*)\s*:=\s*(?P<value>.*)\s*$`, `{{ set $ "${id}" ${value} }}`},
-	{`(?m)@range\((?P<args>.+)\).*@endrange`, ``},
-	{`@template\(\s*(?P<args>.+)\w*\)`, `{{ define ${args} }}`},
-	{`@(?P<function>\w+)\(\s*(?P<args>.+)\w*\)`, `{{ ${function} ${args} }}`},
-	{`@(?P<name>\w[\w\.]+)`, `{{ $$.${name} }}`},
-	{`@(?P<name>\$[\w\.]*)`, `{{ ${name} }}`},
-	{`@(?P<name>\.[\w\.]*)`, `{{ ${name} }}`},
-	{`@\(\s*(?P<name>\w[\w\.]+)\s*\)`, `{{ $$.${name} }}`},
-	{`@\(\s*(?P<expr>[^@{]*)\s*\)`, `{{ ${expr} }}`, replacementFunc(expressionParser)},
-	{`@`, `{{ $$ }}`},
-	{literalAt, "@"},
+	{"Protect email", `(\W|^)([\w.!#$%&'*+/=?^_{|}~-])+@(\w(?:[\w-]{0,61}[\w])?(?:\.\w(?:[\w-]{0,61}\w))+)`, "", replacementFunc(protectEmail)},
+	{"", `@@`, literalAt},
+	{"Line comment", `(?m)@(#|//)\s*(?P<line_comment>.*)\s*$`, "{{/* ${line_comment} */}}"},
+	{"Block comment", `(?s)@/\*(?P<block_comment>.*?)\*/`, "{{/*${block_comment}*/}}"},
+	{"else if", `@(?P<command>elseif)\(\s*(?P<arg>.*?)\s*\)`, "{{- else if ${arg} }}"},
+	{"if", `@if\(\s*(?P<expr>[^@{]*)\s*\)`, "{{- if ${expr} }}", replacementFunc(expressionParser)},
+	{"various ends", `@(?P<command>end(if|range|template|define|block|with))`, "{{- end }}"},
+	{"else", `@(?P<command>else)`, "{{- else }}"},
+	{"Assign local", `(?m)@\$(?P<id>\w[\w-]*)\s*:=\s*(?P<value>.*)\s*$`, `{{- $$${id} := ${value} }}`},
+	{"Assing global", `(?m)@(?P<id>\w[\w-]*)\s*:=\s*(?P<value>.*)\s*$`, `{{- set $ "${id}" (${value}) }}`},
+	{"Range", `(?m)@range\((?P<args>.+)\).*@endrange`, ``},
+	{"Template", `@template\(\s*(?P<args>.+)\w*\)`, `{{- define ${args} -}}`},
+	{"Section", `@(?P<id>block|with|define)\(\s*(?P<args>.+)\w*\)`, `{{- ${id} ${args} }}`},
+	{"Function call", `@(?P<function>\w+)\(\s*(?P<args>.+)\w*\)`, `{{ ${function} ${args} }}`},
+	{"Global variables", `@(?P<name>\w[\w\.]*)`, `{{ $$.${name} }}`},
+	{"Local variables", `@(?P<name>[\$\.][\w\.]*)`, `{{ ${name} }}`},
+	{"Expresion var", `@\(\s*(?P<expr>\w[\w\.]*)\s*\)`, `{{ $$.${expr} }}`},
+	{"Expresion", `@\(\s*(?P<expr>[^@{]*)\s*\)`, `{{ ${expr} }}`, replacementFunc(expressionParser)},
+	{"Global content", `@`, `{{ $$ }}`},
+	{"", literalAt, "@"},
 }
 
 const (
@@ -86,11 +86,11 @@ func expressionParser(repl replacement, match string) string {
 			result = strings.Replace(result, dotRep, ".", -1)
 			return result
 		}
-		log.Info(color.RedString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
+		log.Debug(color.YellowString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
 	} else {
-		log.Info(color.RedString(fmt.Sprintf("Invalid expression '%s'", expression)))
+		log.Debug(color.YellowString(fmt.Sprintf("Invalid expression '%s'", expression)))
 	}
-	return match
+	return repl.re.ReplaceAllString(match, strings.Replace(repl.replace, "${expr}", expression, -1))
 }
 
 func protectEmail(repl replacement, match string) string {
@@ -184,8 +184,10 @@ var replacements []replacement
 
 type replacementFunc func(replacement, string) string
 type replacement struct {
-	re      *regexp.Regexp
+	name    string
+	expr    string
 	replace string
+	re      *regexp.Regexp
 	parser  replacementFunc
 }
 
@@ -194,12 +196,14 @@ func (t *Template) ensureInit() {
 		replacements = make([]replacement, 0, len(expressions))
 		for _, expr := range expressions {
 			var exprParser replacementFunc
-			if len(expr) == 3 {
-				exprParser = expr[2].(replacementFunc)
+			if len(expr) == 4 {
+				exprParser = expr[3].(replacementFunc)
 			}
 			replacements = append(replacements, replacement{
-				regexp.MustCompile(strings.Replace(expr[0].(string), "@", t.delimiters[2], -1)),
-				strings.Replace(strings.Replace(expr[1].(string), "{{", t.delimiters[0], -1), "}}", t.delimiters[1], -1),
+				expr[0].(string),
+				expr[1].(string),
+				strings.Replace(strings.Replace(expr[2].(string), "{{", t.delimiters[0], -1), "}}", t.delimiters[1], -1),
+				regexp.MustCompile(strings.Replace(expr[1].(string), "@", t.delimiters[2], -1)),
 				exprParser,
 			})
 		}
