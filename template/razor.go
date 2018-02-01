@@ -42,6 +42,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 var expressions = [][]interface{}{
 	{"Protect email", `(\W|^)([\w.!#$%&'*+/=?^_{|}~-])+@(\w(?:[\w-]{0,61}[\w])?(?:\.\w(?:[\w-]{0,61}\w))+)`, "", replacementFunc(protectEmail)},
 	{"", `@@`, literalAt},
+	{"Pseudo comments", `(?:(?:#|//)\s*)@`, "@"},
 	{"Line comment", `(?m)@(#|//)\s*(?P<line_comment>.*)\s*$`, "{{/* ${line_comment} */}}"},
 	{"Block comment", `(?s)@/\*(?P<block_comment>.*?)\*/`, "{{/*${block_comment}*/}}"},
 	{"else if", `@(?P<command>elseif)\(\s*(?P<arg>.*?)\s*\)`, "{{- else if ${arg} }}"},
@@ -59,6 +60,7 @@ var expressions = [][]interface{}{
 	{"Expresion var", `@\(\s*(?P<expr>\w[\w\.]*)\s*\)`, `{{ $$.${expr} }}`},
 	{"Expresion", `@\(\s*(?P<expr>[^@{]*)\s*\)`, `{{ ${expr} }}`, replacementFunc(expressionParser)},
 	{"Global content", `@`, `{{ $$ }}`},
+	{"Inline content", `"<<(?P<content>{{\s*.*\s*}})"`, `${content}`},
 	{"", literalAt, "@"},
 }
 
@@ -202,7 +204,7 @@ func (t *Template) ensureInit() {
 			replacements = append(replacements, replacement{
 				expr[0].(string),
 				expr[1].(string),
-				strings.Replace(strings.Replace(expr[2].(string), "{{", t.delimiters[0], -1), "}}", t.delimiters[1], -1),
+				strings.Replace(strings.Replace(strings.Replace(expr[2].(string), "{{", t.delimiters[0], -1), "}}", t.delimiters[1], -1), "@", t.delimiters[2], -1),
 				regexp.MustCompile(strings.Replace(expr[1].(string), "@", t.delimiters[2], -1)),
 				exprParser,
 			})

@@ -94,7 +94,8 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 
 // ProcessContent loads and runs the file template
 func (t Template) ProcessContent(content, source string) (string, error) {
-	log.Noticef("GoTemplate processing of %s", source)
+	log.Notice("GoTemplate processing of", source)
+	content = t.substitute(content)
 	if t.RazorSyntax {
 		content = string(t.applyRazor([]byte(content)))
 	}
@@ -124,8 +125,8 @@ func (t Template) ProcessFile(file, sourceFolder, targetFolder string) (resultFi
 	if err != nil {
 		return
 	}
-	content := t.substitute(string(fileContent))
 
+	content := string(fileContent)
 	result, err := t.ProcessContent(content, file)
 	if err != nil {
 		return

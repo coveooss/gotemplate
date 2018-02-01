@@ -9,6 +9,12 @@ I sent an email to Someone@company.com
 @s2 := dict "a" 1 "b" 2
 @$x := 0
 
+# With line comment to avoid error in language such as YAML, HCL
+#@$x := 0
+#  @$x := 0
+//@$x := 0
+//  @$x := 0
+
 @@        => @ => {{ $ }}
 @@$       => @$ => {{ $ }}
 @@.       => @. => {{ . }}
