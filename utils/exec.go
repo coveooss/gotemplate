@@ -67,48 +67,60 @@ func GetCommandFromFile(filename string, args ...interface{}) (cmd *exec.Cmd, er
 // GetCommandFromString returns an exec.Cmd structure to run the supplied command
 func GetCommandFromString(script string, args ...interface{}) (cmd *exec.Cmd, tempFile string, err error) {
 	if executer, delegate, command := ScriptParts(strings.TrimSpace(script)); executer != "" {
-		// The command is a shebang script, so we save the content as a temporary file
-		var temp *os.File
-		if temp, err = ioutil.TempFile("", "exec_"); err != nil {
-			return
-		}
-		if _, err = temp.WriteString(fmt.Sprintf("#! %s %s\n%s", executer, delegate, command)); err != nil {
-			return
-		}
-		temp.Close()
-		tempFile = temp.Name()
-		cmd, err = GetCommandFromFile(tempFile, args...)
+		cmd, tempFile, err = saveTempFile(fmt.Sprintf("#! %s %s\n%s", executer, delegate, command), args...)
 	} else {
 		strArgs := GlobFunc(args...)
-		if _, err = exec.LookPath(command); err != nil {
-			if !strings.ContainsAny(command, " \t|&,$;(){}<>") {
-				// The command does not exist, we return the error
-				return
-			}
-
-			err = nil
-			originalCommand := command
-			defShells := []string{"bash", "sh", "zsh", "ksh"}
-			defSwitch := "-c"
-			if runtime.GOOS == "windows" {
-				defShells = []string{"powershell", "pwsh", "cmd"}
-				defSwitch = "/c"
-			}
-			for _, sh := range defShells {
-				if sh, err := exec.LookPath(sh); err == nil {
-					command = sh
-				}
-			}
-
-			for i := range strArgs {
-				if strings.ContainsAny(strArgs[i], "\t \"'") {
-					strArgs[i] = fmt.Sprintf("%q", strArgs[i])
-				}
-			}
-			strArgs = []string{defSwitch, strings.Join(append([]string{originalCommand}, strArgs...), " ")}
+		if _, err = exec.LookPath(command); err == nil {
+			cmd = exec.Command(command, strArgs...)
+			return
 		}
-		cmd = exec.Command(command, strArgs...)
-	}
+		if IsCommand(command) {
+			// The command does just not exist, we return the error
+			return
+		}
 
+		if cmd, tempFile, err = saveTempFile(fmt.Sprintf("#! %s\n%s", getDefaultShell(), command), args...); err != nil {
+			return
+		}
+	}
 	return
 }
+
+// IsCommand ensures that the supplied command does not contain any shell specific characters
+func IsCommand(command string) bool {
+	return !strings.ContainsAny(command, " \t|&$,;(){}<>[]")
+}
+
+func saveTempFile(content string, args ...interface{}) (cmd *exec.Cmd, fileName string, err error) {
+	var temp *os.File
+	if temp, err = ioutil.TempFile("", "exec_"); err != nil {
+		return
+	}
+
+	if _, err = temp.WriteString(content); err != nil {
+		return
+	}
+	temp.Close()
+	fileName = temp.Name()
+	cmd, err = GetCommandFromFile(fileName, args...)
+	return
+}
+
+func getDefaultShell() string {
+	if defaultShell != "" {
+		return defaultShell
+	}
+	defShells := []string{"bash", "sh", "zsh", "ksh"}
+	if runtime.GOOS == "windows" {
+		defShells = []string{"powershell", "pwsh", "cmd"}
+	}
+	for _, sh := range defShells {
+		if sh, err := exec.LookPath(sh); err == nil {
+			defaultShell = sh
+			break
+		}
+	}
+	return defaultShell
+}
+
+var defaultShell string

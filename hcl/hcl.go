@@ -172,7 +172,6 @@ func toBase(value interface{}) interface{} {
 }
 
 func marshalHCL(value interface{}, head bool, prefix, indent string) (result string, err error) {
-	//defer func() { fmt.Println(color.GreenString(result)) }()
 	if value == nil {
 		result = "null"
 		return

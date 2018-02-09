@@ -26,6 +26,7 @@ type Template struct {
 	OutputStdout bool
 	TempFolder   string
 	RazorSyntax  bool
+	Disabled     bool
 	substitutes  []utils.RegexReplacer
 	context      interface{}
 	delimiters   []string
@@ -100,6 +101,11 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 		content = string(t.applyRazor([]byte(content)))
 	}
 
+	if t.Disabled || !(strings.Contains(content, t.delimiters[0]) && strings.Contains(content, t.delimiters[1])) {
+		// There is no template element to evaluate or the template rendering is off
+		return content, nil
+	}
+
 	context := t.getContext(filepath.Dir(source))
 	newTemplate, err := context.New(source).Parse(content)
 	if err != nil {
@@ -146,15 +152,15 @@ func (t Template) ProcessFile(file, sourceFolder, targetFolder string) (resultFi
 		}
 	}
 
-	if sourceFolder == targetFolder && result == content {
-		return "", nil
-	}
-
 	if t.OutputStdout {
 		err = t.printResult(file, resultFile, result)
 		if err != nil {
 			errors.Print(err)
 		}
+		return "", nil
+	}
+
+	if sourceFolder == targetFolder && result == content {
 		return "", nil
 	}
 
@@ -329,7 +335,7 @@ func (t Template) printResult(source, target, result string) (err error) {
 	} else {
 		t.trace("# %s", target)
 	}
-	fmt.Printf("%s\n\n", result)
+	fmt.Printf("%s", result)
 	return
 }
 

@@ -24,6 +24,8 @@ func (t *Template) addFuncs() {
 	// Add functions form Sprig library https://github.com/Masterminds/sprig
 	t.Funcs(sprig.GenericFuncMap())
 
+	t.addMathFuncs()
+
 	// Add utilities functions
 	t.Funcs(map[string]interface{}{
 		"concat":     utils.Concat,
@@ -35,8 +37,17 @@ func (t *Template) addFuncs() {
 		"splitLines": utils.SplitLines,
 		"toYaml":     utils.ToYaml,
 		"undef":      utils.IfUndef,
+		"iif":        utils.IIf,
 		"ifUndef":    utils.IfUndef,
+		"slice":      slice,
 		"current":    func() string { return t.folder },
+
+		"char": func(c interface{}) (r interface{}, err error) {
+			defer func() { err = trapError(err, recover()) }()
+			return process(c, func(a interface{}) interface{} {
+				return string(toInt(a))
+			})
+		},
 		"toHcl": func(v interface{}) (string, error) {
 			output, err := hcl.Marshal(v)
 			return string(output), err
@@ -55,6 +66,8 @@ func (t *Template) addFuncs() {
 			result := fmt.Sprintf("%q", output)
 			return result[1 : len(result)-1], err
 		},
+		// "toFile": func(file string, v interface{}) (string, error) {
+		// },
 		"bool": func(str string) (bool, error) {
 			return strconv.ParseBool(str)
 		},
@@ -115,8 +128,8 @@ func (t *Template) addFuncs() {
 			dict[key] = value
 			return "", nil
 		},
-		"lorem": func(funcName string, params ...int) (result string, err error) {
-			kind, err := utils.GetLoremKind(funcName)
+		"lorem": func(funcName interface{}, params ...int) (result string, err error) {
+			kind, err := utils.GetLoremKind(fmt.Sprint(funcName))
 			if err == nil {
 				result, err = utils.Lorem(kind, params...)
 			}
@@ -384,4 +397,73 @@ func (t Template) getTemplateNames() []string {
 	}
 	sort.Strings(result)
 	return result
+}
+
+func slice(list interface{}, args ...interface{}) (interface{}, error) {
+	tp := reflect.TypeOf(list).Kind()
+	switch tp {
+	case reflect.Slice, reflect.Array, reflect.String:
+		l2 := reflect.ValueOf(list)
+		l := l2.Len()
+		if l == 0 {
+			return nil, nil
+		}
+
+		begin := 0
+		end := l
+		reverse := false
+
+		switch len(args) {
+		case 2:
+			end = toInt(args[1])
+			if end < 0 {
+				end = l + end + 1
+			}
+			fallthrough
+		case 1:
+			begin = toInt(args[0])
+			if begin < 0 {
+				begin = l + begin + 1
+			}
+		}
+		if end < begin {
+			end, begin = begin, end
+			reverse = true
+		}
+		end = int(min(end, l).(int64))
+		begin = int(max(begin, 0).(int64))
+
+		if tp == reflect.String {
+			result := list.(string)[begin:end]
+			if reverse {
+				return reverseString(result), nil
+			}
+			return result, nil
+		}
+		if begin > l {
+			return []interface{}{}, nil
+		}
+		nl := make([]interface{}, end-begin)
+		for i := range nl {
+			nl[i] = l2.Index(i + begin).Interface()
+		}
+		if reverse {
+			return reverseArray(nl), nil
+		}
+
+		return nl, nil
+	default:
+		return nil, fmt.Errorf("Cannot apply slice on type %s", tp)
+	}
+}
+
+var reverseArray = sprig.GenericFuncMap()["reverse"].(func(v interface{}) []interface{})
+
+// Reverse returns its argument string reversed rune-wise left to right.
+func reverseString(s string) string {
+	r := []rune(s)
+	for i, j := 0, len(r)-1; i < len(r)/2; i, j = i+1, j-1 {
+		r[i], r[j] = r[j], r[i]
+	}
+	return string(r)
 }

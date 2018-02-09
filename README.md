@@ -21,9 +21,9 @@ See: https://github.com/coveo/gotemplate/blob/master/README.md for complete docu
 
 Flags:
   -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
-      --delimiters={{,}}      Define the default delimiters for go template (separate the left and right delimiters by a comma)
+      --delimiters={{,}},@    Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)
   -i, --import=file ...       Import variables files (could be any of YAML, JSON or HCL format)
-  -V, --var=name:=file ...    Import named variables files (base file name is used as identifier if unspecified)
+  -V, --var=name=file ...     Import named variables (if value is a file, the content is loaded)
   -p, --patterns=pattern ...  Additional patterns that should be processed by gotemplate
   -o, --overwrite             Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
   -s, --substitute=exp ...    Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)
@@ -38,7 +38,12 @@ Flags:
       --all-templates         List all templates (--at)
   -q, --quiet                 Don not print out the name of the generated files
   -v, --version               Get the current version of gotemplate
+  -R, --razor                 Allow razor like expressions (@variable)
+  -d, --disable               Disable go template rendering (used to view razor conversion)
   -c, --color                 Force rendering of colors event if output is redirected
+      --log-level=2           Set the logging level (0-5) (--ll)
+      --log-simple            Disable the extended logging (--ls)
+      --skip-templates        Do not load the base template *.template files, (--st)
 
 Args:
   [<files>]  Template files to process
@@ -202,43 +207,68 @@ They are coming from either gotemplate, Sprig or native Go Template.
 
 ```text
 > gotemplate -l
-abbrev                  div                     int64                   push                    toDate
-abbrevboth              empty                   isAbs                   pwd                     toHcl
-add                     env                     join                    quote                   toJson
-add1                    eq                      joinLines               randAlpha               toPrettyHcl
-ago                     exec                    js                      randAlphaNum            toPrettyJson
-alias                   expandenv               json                    randAscii               toQuotedHcl
-and                     ext                     keys                    randNumeric             toQuotedJson
-append                  fail                    kindIs                  regexFind               toString
-atoi                    first                   kindOf                  regexFindAll            toStrings
-b32dec                  float64                 last                    regexMatch              toYaml
-b32enc                  floor                   le                      regexReplaceAll         trim
-b64dec                  formatList              len                     regexReplaceAllLiteral  trimAll
-b64enc                  functions               list                    regexSplit              trimPrefix
-base                    ge                      local_alias             repeat                  trimSuffix
-biggest                 genCA                   lorem                   replace                 trimall
-bool                    genPrivateKey           lower                   rest                    trunc
-call                    genSelfSignedCert       lt                      reverse                 tuple
-camelcase               genSignedCert           max                     round                   typeIs
-cat                     get                     merge                   run                     typeIsLike
-ceil                    glob                    mergeList               semver                  typeOf
-clean                   gt                      min                     semverCompare           undef
-coalesce                has                     mod                     set                     uniq
-color                   hasKey                  mul                     sha256sum               unset
-compact                 hasPrefix               ne                      shuffle                 until
-concat                  hasSuffix               nindent                 snakecase               untilStep
-contains                hcl                     nospace                 sortAlpha               untitle
-current                 hello                   not                     split                   upper
-data                    html                    now                     splitLines              urlquery
-date                    htmlDate                omit                    splitList               uuidv4
-dateInZone              htmlDateInZone          or                      squote                  without
-dateModify              ifUndef                 pick                    sub                     wrap
-date_in_zone            include                 pluck                   substitute              wrapWith
-date_modify             indent                  plural                  substr                  yaml
-default                 index                   prepend                 swapcase
-derivePassword          initial                 print                   templateNames
-dict                    initials                printf                  templates
-dir                     int                     println                 title
+
+E                       call                    hasPrefix               minimum                 sine
+Ln10                    camelcase               hasSuffix               mod                     sineCosine
+Ln2                     cat                     hcl                     modf                    sinh
+Log10E                  ceil                    hello                   modulo                  sinus
+Log2E                   char                    hex                     mul                     sinusCosinus
+MaxFloat                clean                   hexa                    multiply                slice
+MaxInt                  coalesce                hexaDecimal             ne                      smallest
+MaxUInt                 color                   html                    nextAfter               snakecase
+MinNonZeroFloat         compact                 htmlDate                nindent                 sortAlpha
+Nan                     concat                  htmlDateInZone          nospace                 split
+Phi                     contains                hyperbolicCosine        not                     splitLines
+Pi                      cos                     hyperbolicCosinus       now                     splitlist
+Sqrt2                   cosh                    hyperbolicSine          omit                    sqrt
+SqrtE                   cosine                  hyperbolicSinus         or                      squote
+SqrtPhi                 cosinus                 hyperbolicTangent       pick                    sub
+SqrtPi                  current                 hypot                   pluck                   substitute
+abbrev                  data                    ifUndef                 plural                  substr
+abbrevboth              date                    iif                     pow                     subtract
+abs                     dateInZone              ilogb                   pow10                   sum
+acos                    dateModify              include                 power                   swapcase
+acosh                   date_in_zone            indent                  power10                 tan
+add                     date_modify             index                   prepend                 tangent
+add1                    dec                     inf                     print                   tanh
+ago                     decimal                 infinity                printf                  templateNames
+alias                   default                 initial                 println                 templates
+and                     deg                     initials                prod                    title
+append                  degree                  int                     product                 to
+arcCosine               derivePassword          int64                   push                    toDate
+arcCosinus              dict                    isAbs                   pwd                     toHcl
+arcHyperbolicCosine     dir                     isInf                   quote                   toJson
+arcHyperbolicCosinus    div                     isInfinity              quotient                toPrettyHcl
+arcHyperbolicSine       divide                  isNaN                   rad                     toPrettyJson
+arcHyperbolicSinus      empty                   join                    radian                  toQuotedHcl
+arcHyperbolicTangent    env                     joinLines               randAlpha               toQuotedJson
+arcSine                 eq                      js                      randAlphaNum            toString
+arcSinus                exec                    json                    randAscii               toStrings
+arcTangent              exp                     keys                    randNumeric             toYaml
+arcTangent2             exp2                    kindIs                  regexFind               trim
+asin                    expandenv               kindOf                  regexFindAll            trimAll
+asinh                   expm1                   last                    regexMatch              trimPrefix
+atan                    exponent                ldexp                   regexReplaceAll         trimSuffix
+atan2                   exponent2               le                      regexReplaceAllLiteral  trimall
+atanh                   ext                     leftShift               regexSplit              trunc
+atoi                    fail                    len                     rem                     tuple
+average                 first                   lgamma                  remainder               typeIs
+avg                     float64                 list                    repeat                  typeIsLike
+b32dec                  floor                   local_alias             replace                 typeOf
+b32enc                  formatList              log                     rest                    undef
+b64dec                  frexp                   log10                   reverse                 uniq
+b64enc                  functions               log1p                   rightShift              unset
+band                    gamma                   log2                    round                   until
+base                    ge                      logb                    rshift                  untilStep
+bclear                  genCA                   lorem                   run                     untitle
+biggest                 genPrivateKey           lower                   semver                  upper
+bitwiseAND              genSelfSignedCert       lshift                  semverCompare           urlquery
+bitwiseClear            genSignedCert           lt                      set                     uuidv4
+bitwiseOR               get                     max                     sha256sum               without
+bitwiseXOR              glob                    maximum                 shuffle                 wrap
+bool                    gt                      merge                   signBit                 wrapWith
+bor                     has                     mergeList               sin                     yaml
+bxor                    hasKey                  min                     sincos
 ```
 
 Links to documentations of foreign fucntions are in the section [base functions](#base-functions).

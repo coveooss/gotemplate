@@ -28,7 +28,17 @@ func Concat(objects ...interface{}) string {
 	return result
 }
 
+// ToStrings converts the supplied parameter into an array of string
 var ToStrings = sprig.GenericFuncMap()["toStrings"].(func(interface{}) []string)
+
+// ToInterfaces converts an array of strings into an array of interfaces
+func ToInterfaces(values ...string) []interface{} {
+	result := make([]interface{}, len(values))
+	for i := range values {
+		result[i] = values[i]
+	}
+	return result
+}
 
 // SplitLines return a list of interface object for each line in the supplied content
 func SplitLines(content interface{}) []interface{} {

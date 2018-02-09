@@ -50,7 +50,7 @@ func main() {
 
 	var (
 		app              = kingpin.New(os.Args[0], description)
-		delimiters       = app.Flag("delimiters-values", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--dv --del --delimiters)").PlaceHolder("{{,}},@").String()
+		delimiters       = app.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
 		varFiles         = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
 		namedVars        = app.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("name=file").Short('V').Strings()
 		includePatterns  = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
@@ -68,17 +68,18 @@ func main() {
 		quiet            = app.Flag("quiet", "Don not print out the name of the generated files").Short('q').Bool()
 		getVersion       = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
 		razorSyntax      = app.Flag("razor", "Allow razor like expressions (@variable)").Short('R').Bool()
+		disableRender    = app.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
 		forceColor       = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
 		logLevel         = app.Flag("log-level", "Set the logging level (0-5) (--ll)").Default("2").Int8()
+		logSimple        = app.Flag("log-simple", "Disable the extended logging (--ls)").Bool()
 		skipTemplate     = app.Flag("skip-templates", "Do not load the base template *.template files, (--st)").Bool()
 		files            = app.Arg("files", "Template files to process").ExistingFiles()
 	)
 
 	app.Flag("at", "short version of --all-templates").Hidden().BoolVar(listALlTemplates)
 	app.Flag("ll", "short version of --log-level").Hidden().Int8Var(logLevel)
-	app.Flag("dv", "short version of --delimiters").Hidden().StringVar(delimiters)
+	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "").Hidden().StringVar(delimiters)
-	app.Flag("delimiters", "").Hidden().StringVar(delimiters)
 	app.Flag("st", "short version of --skip-templates").Hidden().BoolVar(skipTemplate)
 	app.Flag("skip", "").Hidden().BoolVar(skipTemplate)
 	app.Flag("skip-template", "").Hidden().BoolVar(skipTemplate)
@@ -96,7 +97,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	template.SetLogLevel(logging.Level(*logLevel))
+	template.InitLogging(logging.Level(*logLevel), *logSimple)
 
 	if *targetFolder == "" {
 		// Target folder default to source folder
@@ -115,6 +116,7 @@ func main() {
 
 	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, *razorSyntax, *skipTemplate, *substitutes...)
 	t.Quiet = *quiet
+	t.Disabled = *disableRender
 	t.Overwrite = *overwrite
 	t.OutputStdout = *print
 	t.TempFolder = tempFolder
