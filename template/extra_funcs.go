@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 	"reflect"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -40,6 +41,7 @@ func (t *Template) addFuncs() {
 		"iif":        utils.IIf,
 		"ifUndef":    utils.IfUndef,
 		"slice":      slice,
+		"id":         id,
 		"current":    func() string { return t.folder },
 
 		"char": func(c interface{}) (r interface{}, err error) {
@@ -467,3 +469,10 @@ func reverseString(s string) string {
 	}
 	return string(r)
 }
+
+func id(id string) string {
+	return duplicateUnderscore.ReplaceAllString(validChars.ReplaceAllString(id, "_"), "_")
+}
+
+var validChars = regexp.MustCompile(`[^\p{L}\d_]`)
+var duplicateUnderscore = regexp.MustCompile(`_+`)

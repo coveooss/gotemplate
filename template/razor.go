@@ -41,7 +41,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 	for i := range lines {
 		lines[i] = fmt.Sprintf("%*d %s", n, i+1, lines[i])
 	}
-	log.Noticef("Generated content\n%s", color.GreenString(strings.Join(lines, "\n")))
+	Log.Noticef("Generated content\n%s", color.GreenString(strings.Join(lines, "\n")))
 	return content
 }
 
@@ -126,7 +126,7 @@ func expressionParserInternal(repl replacement, match string, skipError bool) (r
 	if getLogLevel() >= logging.DEBUG {
 		defer func() {
 			if result != expression {
-				log.Debug("Resulting expression =", result)
+				Log.Debug("Resulting expression =", result)
 			}
 		}()
 	}
@@ -153,9 +153,9 @@ func expressionParserInternal(repl replacement, match string, skipError bool) (r
 			result = strings.Replace(result, dotRep, ".", -1)
 			return repl.re.ReplaceAllString(match, strings.Replace(repl.replace, "${expr}", result, -1))
 		}
-		log.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
+		Log.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
 	} else {
-		log.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s'", expression)))
+		Log.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s'", expression)))
 	}
 	if skipError {
 		return match
@@ -385,5 +385,5 @@ func printDebugInfo(r replacement, content string) {
 		matches = append(matches, key)
 	}
 	fmt.Fprintln(os.Stderr)
-	log.Infof("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
+	Log.Infof("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
 }

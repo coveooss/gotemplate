@@ -14,6 +14,7 @@ import (
 	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
+	logging "github.com/op/go-logging"
 )
 
 const templateExt = ".template"
@@ -70,6 +71,11 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
 
 	if !skipTemplates {
+		// We temporary set the logging level one grade lower
+		logLevel := logging.GetLevel(logger)
+		logging.SetLevel(logLevel-1, logger)
+		defer func() { logging.SetLevel(logLevel, logger) }()
+
 		// Retrieve the template files
 		for _, file := range utils.MustFindFiles(t.folder, true, true, "*.template") {
 			// We just load all the template files available to ensure that all template definition are loaded
@@ -95,7 +101,7 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 
 // ProcessContent loads and runs the file template
 func (t Template) ProcessContent(content, source string) (string, error) {
-	log.Notice("GoTemplate processing of", source)
+	Log.Notice("GoTemplate processing of", source)
 	content = t.substitute(content)
 	if t.RazorSyntax {
 		content = string(t.applyRazor([]byte(content)))
@@ -268,6 +274,7 @@ func (t Template) PrintTemplates(all bool) {
 			}
 			fmt.Fprintf(os.Stderr, "%-[3]*[1]s %[2]s\n", name, faint(utils.Relative(t.folder, tpl.ParseName)), maxLen)
 		}
+		fmt.Fprintln(os.Stderr)
 	}
 	fmt.Fprintln(os.Stderr)
 }

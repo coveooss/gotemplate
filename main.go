@@ -54,6 +54,7 @@ func main() {
 		varFiles         = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
 		namedVars        = app.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("name=file").Short('V').Strings()
 		includePatterns  = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
+		excludedPatterns = app.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
 		overwrite        = app.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
 		substitutes      = app.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
 		recursive        = app.Flag("recursive", "Process all template files recursively").Short('r').Bool()
@@ -72,7 +73,7 @@ func main() {
 		forceColor       = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
 		logLevel         = app.Flag("log-level", "Set the logging level (0-5) (--ll)").Default("2").Int8()
 		logSimple        = app.Flag("log-simple", "Disable the extended logging (--ls)").Bool()
-		skipTemplate     = app.Flag("skip-templates", "Do not load the base template *.template files, (--st)").Bool()
+		skipTemplate     = app.Flag("skip-templates", "Do not load the base template *.template files (--st)").Bool()
 		files            = app.Arg("files", "Template files to process").ExistingFiles()
 	)
 
@@ -139,7 +140,8 @@ func main() {
 		// We only process template files if go template has not been called with piped input
 		*files = append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, "*.template"), *files...)
 	}
-	*files = append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, *includePatterns...), *files...)
+	*files = exclude(append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, extend(*includePatterns)...), *files...), *excludedPatterns)
+
 	resultFiles, err := t.ProcessFiles(*sourceFolder, *targetFolder, *files...)
 	if err != nil {
 		errors.Print(err)
@@ -212,3 +214,45 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 	}
 	return
 }
+
+func exclude(files []string, patterns []string) []string {
+	if patterns = extend(patterns); len(patterns) == 0 {
+		// There is no exclusion pattern, so we return the list of files as is
+		return files
+	}
+
+	result := make([]string, 0, len(files))
+	for i, file := range files {
+		var excluded bool
+		for _, pattern := range patterns {
+			file = iif(filepath.IsAbs(pattern), file, filepath.Base(file)).(string)
+			if excluded = errors.Must(filepath.Match(pattern, file)).(bool); excluded {
+				template.Log.Noticef("%s ignored", files[i])
+				break
+			}
+		}
+		if !excluded {
+			result = append(result, files[i])
+		}
+	}
+	return result
+}
+
+func extend(values []string) []string {
+	result := make([]string, 0, len(values))
+	for i := range values {
+		for _, sv := range strings.Split(values[i], ",") {
+			sv = strings.TrimSpace(sv)
+			if sv != "" {
+				if strings.Contains(filepath.ToSlash(sv), "/") {
+					// If the pattern contains /, we make it relative
+					sv = errors.Must(filepath.Abs(sv)).(string)
+				}
+				result = append(result, sv)
+			}
+		}
+	}
+	return result
+}
+
+var iif = utils.IIf

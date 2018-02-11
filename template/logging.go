@@ -8,7 +8,8 @@ import (
 
 const logger = "gotemplate"
 
-var log = logging.MustGetLogger(logger)
+// Log is the logger used to log message during template processing
+var Log = logging.MustGetLogger(logger)
 
 func getLogLevel() logging.Level {
 	return logging.GetLevel(logger)
