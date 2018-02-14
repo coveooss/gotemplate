@@ -1,0 +1,7 @@
+#! /usr/bin/env bash 
+
+for file in doc_test/*.md
+do
+    gotemplate --st -dRP $file > ${file%.*}.razor
+    gotemplate --st -RP $file > ${file%.*}.render
+done
