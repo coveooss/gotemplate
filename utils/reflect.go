@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/imdario/mergo"
 )
 
 // IsEmptyValue determines if a value is a zero value
@@ -55,4 +57,14 @@ func IIf(testValue, valueTrue, valueFalse interface{}) interface{} {
 		return valueFalse
 	}
 	return valueTrue
+}
+
+// MergeMaps merges several maps into one privileging the leftmost
+func MergeMaps(destination map[string]interface{}, sources ...map[string]interface{}) (map[string]interface{}, error) {
+	for i := range sources {
+		if err := mergo.Merge(&destination, sources[i]); err != nil {
+			return destination, err
+		}
+	}
+	return destination, nil
 }

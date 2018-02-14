@@ -126,7 +126,6 @@ current | | Returns the current folder (like `pwd`, but returns the folder of th
 exec | command string, args ... | Returns the result of the shell command as structured data (as string if no other conversion is possible).
 formatList | format string, list | Return a list of strings by applying the format to each element of the supplied list.
 functions | | Return the list of available functions.
-get | key, map | Returns the value associated with the supplied map.
 glob | args ... | Returns the expanded list of supplied arguments (expand *[]? on filename).
 id | string | Returns a valid go identifier from the supplied string (replacing any non compliant character by _).
 include | template, args ... | Returns the result of the named template rendering (like template but it is possible to capture the output).
@@ -137,7 +136,6 @@ lorem | type string, min, max int | Returns a random string. Valid types are be 
 mergeLists | lists | Return a single list containing all elements from the lists supplied.
 pwd | | Return the current working directory.
 run | command string, args ... | Returns the result of the shell command as string.
-set | key string, value, map | Add the value to the supplied map using key as identifier.
 slice | object start [end] | Returns a slice of the supplied object (equivalent to object[from:to]).
 splitLines | object | Returns a list of strings from the supplied object with newline as the separator.
 substitutes | string | Applies the supplied regex substitute specified on the command line on the supplied string (see `--substitute`).
@@ -147,6 +145,15 @@ toHcl | interface | Returns the HCL string representation of the supplied object
 toPrettyHcl | interface | Returns the indented HCL string representation of the supplied object.
 toQuotedJson | interface | Returns the JSON string representation of the supplied object with escaped quote.
 toYaml | interface | Returns the YAML string representation of the supplied object.
+
+### Map function
+
+Function name | Argument(s() |Description
+--- | --- | ---
+get | key, map | Returns the value associated with the supplied map.
+set | key string, value, map | Add the value to the supplied map using key as identifier.
+key | single_key_map | Return the key name of a single element map (used to retrieve name in a declaration like `value "name" { a = 1 b = 3}`)
+content | single_key_map | Return the key name of a single element map (used to retrieve content in a declaration like `value "name" { a = 1 b = 3}`)
 
 ## _Some examples:_
 

@@ -52,13 +52,14 @@ var iif = utils.IIf
 // Warning: The declaration order is important
 var customMetaclass = [][2]string{
 	{"function;", `@(?P<expr>[id]\([sp][expr][sp]\))`},
+	{"index;", `(?P<index>\[[expr]\])`},
 	{"endexpr;", `(?:[sp];)?`},             // Optional end expression (spaces + ;)
 	{"[sem]", `(?:[[:blank:]]*;)?`},        // Optional semicolon at the end of a statement
 	{"[sp]", `[[:blank:]]*`},               // Optional spaces
 	{"[id]", `[\p{L}\d_]+`},                // Go language id
 	{"[id2]", `[map_id;][map_id;\.]*`},     // Id with additional character that could be used to create variables in maps
 	{"[idSel]", `[\p{L}\d_][\p{L}\d_\.]*`}, // Id with optional selection (object.selection.subselection)
-	{"[expr]", `[^@;{\n]*`},                // Expression (any character that is not a new line, a start of razor expression or a semicolumn)
+	{"[expr]", `[^@;\n]*`},                 // Expression (any character that is not a new line, a start of razor expression or a semicolumn)
 	{"map_id;", `\p{L}\d_\-\+\*%#!~`},      // Id with additional character that could be used to create variables in maps
 }
 
@@ -80,25 +81,28 @@ var expressions = [][]interface{}{
 	{"else", `@else[sem]`, "{{- else }}"},
 	{"Template", `@template\([sp](?P<args>.+)[sp]\)`, `{{- define ${args} -}}`},
 	{"Command - @with (expr)", `@(?P<command>if|elseif|block|with|define|range)[sp]\([sp](?P<expr>[expr])[sp]\)[sp]`, `{{- ${command} ${expr} }}`, replacementFunc(expressionParser)},
-	{"Slice function call - @func(args...)[...]", `function;(?P<index>\[[expr]\])endexpr;`, `@(${expr}${index})`},
+	{"Function call - @func(args...)[...]", `function;index;endexpr;`, `@(${expr}${index})`},
 	{"Function call - @func(args...)", `function;endexpr;`, `{{ ${expr} }}`, replacementFunc(expressionParserSkipError)},
 	{"Function unmanaged - @func(value | func)", `@(?P<function>[id])\([sp](?P<args>[expr])[sp]\)[sem]`, `{{ ${function} ${args} }}`},
+	{"Global variables - @var[...]", `@(?P<name>[idSel])index;`, `@($$.${name}${index})`},
 	{"Global variables - @var", `@(?P<name>[idSel])`, `{{ $$.${name} }}`},
 	{"Context variables special - @var", `@\.(?P<name>[id2])`, `{{ get . "${name}" }}`},
 	{"Global variables special - @var", `@(?P<name>[id2])`, `{{ get $$ "${name}" }}`},
 	{"Local variables - @$var or @.var", `@(?P<name>[\$\.][\p{L}\d_\.]*)`, `{{ ${name} }}`},
+	{"Expression var[...]", `@\([sp](?P<name>[idSel])[sp]\)index;`, `@($$.${name}${index})`},
 	{"Expression var", `@\([sp](?P<name>[idSel])[sp]\)`, `{{ $$.${name} }}`},
+	{"Expression[...]", `@\([sp](?P<expr>[expr])[sp]\)index;[sem]`, `@(${expr}${index})`, replacementFunc(expressionParser)},
 	{"Expression", `@\([sp](?P<expr>[expr])[sp]\)[sem]`, `{{ ${expr} }}`, replacementFunc(expressionParser)},
-	{"Global content", `@`, `{{ $$ }}`},
 	{"Inline content", `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},
 	{"", literalAt, "@"},
 }
 
 const (
-	literalAt = "_=!AT!=_"
-	stringRep = "_STRING_"
-	rangeExpr = "_range_"
-	dotRep    = "_DOT_PREFIX_"
+	literalAt   = "_=!AT!=_"
+	stringRep   = "_STRING_"
+	rangeExpr   = "_range_"
+	defaultExpr = "_default_"
+	dotRep      = "_DOT_PREFIX_"
 )
 
 var dotPrefix = regexp.MustCompile(`(?P<prefix>^|\W)\.(?P<value>\w[\w\.]*)?`)
@@ -133,6 +137,7 @@ func expressionParserInternal(repl replacement, match string, skipError bool) (r
 
 	expr := strings.Replace(expression, "$", stringRep, -1)
 	expr = strings.Replace(expr, "range", rangeExpr, -1)
+	expr = strings.Replace(expr, "default", defaultExpr, -1)
 	expr = dotPrefix.ReplaceAllString(expr, fmt.Sprintf("${prefix}%s${value}", dotRep))
 	expr = strings.Replace(expr, "<>", "!=", -1)
 	expr = strings.Replace(expr, "÷", "/", -1)
@@ -150,6 +155,7 @@ func expressionParserInternal(repl replacement, match string, skipError bool) (r
 		if err == nil {
 			result = strings.Replace(result, stringRep, "$$", -1)
 			result = strings.Replace(result, rangeExpr, "range", -1)
+			result = strings.Replace(result, defaultExpr, "default", -1)
 			result = strings.Replace(result, dotRep, ".", -1)
 			return repl.re.ReplaceAllString(match, strings.Replace(repl.replace, "${expr}", result, -1))
 		}
@@ -372,6 +378,10 @@ func printDebugInfo(r replacement, content string) {
 		}
 		found = strings.Join(lines, "\n")
 		allUnique[found] = allUnique[found] + 1
+	}
+
+	if len(allUnique) == 0 {
+		return
 	}
 
 	matches := make([]string, 0, len(allUnique)+1)

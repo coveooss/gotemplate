@@ -130,6 +130,15 @@ func (t *Template) addFuncs() {
 			dict[key] = value
 			return "", nil
 		},
+		"key": func(v interface{}) (interface{}, error) {
+			key, _, err := getSingleMapElement(v)
+			return key, err
+		},
+		"content": func(v interface{}) (interface{}, error) {
+			_, value, err := getSingleMapElement(v)
+			return value, err
+		},
+		"merge": utils.MergeMaps,
 		"lorem": func(funcName interface{}, params ...int) (result string, err error) {
 			kind, err := utils.GetLoremKind(fmt.Sprint(funcName))
 			if err == nil {
@@ -456,6 +465,41 @@ func slice(list interface{}, args ...interface{}) (interface{}, error) {
 		return nl, nil
 	default:
 		return nil, fmt.Errorf("Cannot apply slice on type %s", tp)
+	}
+}
+
+func getSingleMapElement(m interface{}) (key, value interface{}, err error) {
+	err = fmt.Errorf("Argument must be a map with a single key")
+	if m == nil {
+		return
+	}
+	t := reflect.TypeOf(m)
+	v := reflect.ValueOf(m)
+	switch t.Kind() {
+	case reflect.Map:
+		keys := v.MapKeys()
+		if len(keys) != 1 {
+			return
+		}
+		return keys[0], v.MapIndex(keys[0]).Interface(), nil
+	case reflect.Slice:
+		l := v.Len()
+		keys := make([]interface{}, l)
+		values := make([]interface{}, l)
+		for i := range keys {
+			if keys[i], values[i], err = getSingleMapElement(v.Index(i).Interface()); err != nil {
+				return
+			}
+		}
+
+		results := make(map[string]interface{})
+		for i := range keys {
+			results[fmt.Sprint(keys[i])] = values[i]
+		}
+		return keys, results, nil
+
+	default:
+		return
 	}
 }
 
