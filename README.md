@@ -152,8 +152,8 @@ Function name | Argument(s() |Description
 --- | --- | ---
 get | key, map | Returns the value associated with the supplied map.
 set | key string, value, map | Add the value to the supplied map using key as identifier.
-key | single_key_map | Return the key name of a single element map (used to retrieve name in a declaration like `value "name" { a = 1 b = 3}`)
-content | single_key_map | Return the key name of a single element map (used to retrieve content in a declaration like `value "name" { a = 1 b = 3}`)
+key | single_key_map | Returns the key name of a single element map (used to retrieve name in a declaration like `value "name" { a = 1 b = 3}`)
+content | single_key_map | Returns the content of a single element map (used to retrieve content in a declaration like `value "name" { a = 1 b = 3}`)
 
 ## _Some examples:_
 
@@ -281,4 +281,4 @@ bor                     has                     merge                   signBit 
 bxor                    hasKey                  mergeList               sin                     yaml
 ```
 
-Links to documentations of foreign fucntions are in the section [base functions](#base-functions).
+Links to documentations of foreign functions are in the section [base functions](#base-functions).

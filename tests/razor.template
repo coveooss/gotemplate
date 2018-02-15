@@ -109,18 +109,18 @@ block comment
 {{- if and (not (or (ne (add $a 4) 1) (eq $b 2))) (eq $s.a 3) }}{{- end }}
 ------------------------------------------------------------------------------------------
 
-@template("tmpl")
+@template ("tmpl")
 Hello @(2 * 10)
-@endtemplate
+@end template
 
-@block("block" "arg1")
+@block ("block" "arg1")
 Hello @.
-@endblock
+@end block
 
-@with(exec "ls -l" | splitLines)
+@with (exec "ls -l" | splitLines)
     @.
 @else
     Nothing
-@endwith
+@end with
 
 @with("Hello") @.; # This is a test
