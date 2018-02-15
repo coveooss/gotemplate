@@ -514,9 +514,24 @@ func reverseString(s string) string {
 	return string(r)
 }
 
-func id(id string) string {
-	return duplicateUnderscore.ReplaceAllString(validChars.ReplaceAllString(id, "_"), "_")
+func id(id string, replace ...interface{}) string {
+	// By default, replacement char for invalid chars would be _
+	// but it is possible to specify an alternative string to act as the replacement
+	replacement := fmt.Sprint(replace...)
+	if replacement == "" {
+		replacement = "_"
+	}
+
+	dup := duplicateUnderscore
+	if replacement != "_" {
+		// If the replacement string is not the default one, we generate a special substituter to remove duplicates
+		// taking into account regex special chars such as +, ?, etc.
+		dup = regexp.MustCompile(fmt.Sprintf(`(?:%s)+`, regexSpecial.ReplaceAllString(replacement, `\$0`)))
+	}
+
+	return dup.ReplaceAllString(validChars.ReplaceAllString(id, replacement), replacement)
 }
 
 var validChars = regexp.MustCompile(`[^\p{L}\d_]`)
 var duplicateUnderscore = regexp.MustCompile(`_+`)
+var regexSpecial = regexp.MustCompile(`[\+\.\?\(\)\[\]\{\}\\]`)
