@@ -3,8 +3,6 @@ package hcl
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
-	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -39,8 +37,16 @@ func Marshal(value interface{}) ([]byte, error) { return MarshalIndent(value, ""
 
 // MarshalIndent serialize values to hcl format with indentation
 func MarshalIndent(value interface{}, prefix, indent string) ([]byte, error) {
-	value = toBase(value)
-	result, err := marshalHCL(value, true, prefix, indent)
+	result, err := marshalHCL(utils.ToNativeRepresentation(value), true, true, prefix, indent)
+	return []byte(result), err
+}
+
+// MarshalTFVars serialize values to hcl format (without hcl map format)
+func MarshalTFVars(value interface{}) ([]byte, error) { return MarshalTFVarsIndent(value, "", "") }
+
+// MarshalTFVarsIndent serialize values to hcl format with indentation (without hcl map format)
+func MarshalTFVarsIndent(value interface{}, prefix, indent string) ([]byte, error) {
+	result, err := marshalHCL(utils.ToNativeRepresentation(value), false, true, prefix, indent)
 	return []byte(result), err
 }
 
@@ -52,126 +58,9 @@ func SingleContext(context ...interface{}) interface{} {
 	return context
 }
 
-// Flatten - Convert array of map to single map if there is only one element in the array
-// By default, Unmarshal returns array of map even if there is only a single map in the definition
-func Flatten(source map[string]interface{}) map[string]interface{} {
-	for key, value := range source {
-		switch value := value.(type) {
-		case []map[string]interface{}:
-			switch len(value) {
-			case 1:
-				source[key] = Flatten(value[0])
-			default:
-				for i, subMap := range value {
-					value[i] = Flatten(subMap)
-				}
-			}
-		}
-	}
-	return source
-}
+var Flatten = utils.Flatten
 
-func toBase(value interface{}) interface{} {
-	if value == nil {
-		return nil
-	}
-
-	typ, val := reflect.TypeOf(value), reflect.ValueOf(value)
-	if typ.Kind() == reflect.Ptr {
-		if val.IsNil() {
-			return nil
-		}
-		val = val.Elem()
-		typ = val.Type()
-	}
-	switch typ.Kind() {
-	case reflect.String:
-		return fmt.Sprintf("%q", value)
-
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-		reflect.Float32, reflect.Float64, reflect.Bool:
-		return fmt.Sprintf("%v", value)
-
-	case reflect.Slice, reflect.Array:
-		result := make([]interface{}, val.Len())
-		for i := range result {
-			result[i] = toBase(reflect.ValueOf(value).Index(i).Interface())
-		}
-		if len(result) == 1 && reflect.TypeOf(result[0]).Kind() == reflect.Map {
-			// If the result is an array of one map, we just return the inner element
-			return result[0]
-		}
-		return result
-
-	case reflect.Map:
-		result := make(map[string]interface{}, val.Len())
-		for _, key := range val.MapKeys() {
-			result[fmt.Sprintf("%v", key)] = toBase(val.MapIndex(key).Interface())
-		}
-		return Flatten(result)
-
-	case reflect.Struct:
-		result := make(map[string]interface{}, typ.NumField())
-		for i := 0; i < typ.NumField(); i++ {
-			sf := typ.Field(i)
-			if sf.Anonymous {
-				t := sf.Type
-				if t.Kind() == reflect.Ptr {
-					t = t.Elem()
-				}
-				// If embedded, StructField.PkgPath is not a reliable
-				// indicator of whether the field is exported.
-				// See https://golang.org/issue/21122
-				if !utils.IsExported(t.Name()) && t.Kind() != reflect.Struct {
-					// Ignore embedded fields of unexported non-struct types.
-					// Do not ignore embedded fields of unexported struct types
-					// since they may have exported fields.
-					continue
-				}
-			} else if sf.PkgPath != "" {
-				// Ignore unexported non-embedded fields.
-				continue
-			}
-			tag := sf.Tag.Get("hcl")
-			if tag == "" {
-				// If there is no hcl specific tag, we rely on json tag if there is
-				tag = sf.Tag.Get("json")
-			}
-			if tag == "-" {
-				continue
-			}
-
-			split := strings.Split(tag, ",")
-			name := split[0]
-			if name == "" {
-				name = sf.Name
-			}
-			options := make(map[string]bool, len(split[1:]))
-			for i := range split[1:] {
-				options[split[i+1]] = true
-			}
-
-			if options["omitempty"] && utils.IsEmptyValue(val.Field(i)) {
-				continue
-			}
-
-			if options["inline"] {
-				for key, value := range toBase(val.Field(i).Interface()).(map[string]interface{}) {
-					result[key] = value
-				}
-			} else {
-				result[name] = toBase(val.Field(i).Interface())
-			}
-		}
-		return result
-	default:
-		fmt.Fprintf(os.Stderr, "Unknown type %T %v : %v\n", value, typ.Kind(), value)
-		return fmt.Sprintf("%v", value)
-	}
-}
-
-func marshalHCL(value interface{}, head bool, prefix, indent string) (result string, err error) {
+func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (result string, err error) {
 	if value == nil {
 		result = "null"
 		return
@@ -200,12 +89,16 @@ func marshalHCL(value interface{}, head bool, prefix, indent string) (result str
 
 	case []interface{}:
 		results := make([]string, len(value))
-		if isArrayOfMap(value) {
+		if fullHcl && isArrayOfMap(value) {
 			for i, element := range value {
 				element := element.(map[string]interface{})
 				for key := range element {
-					results[i], err = marshalHCL(element[key], false, "", indent)
-					results[i] = fmt.Sprintf(`%s "%s" %s`, specialFormat, key, results[i])
+					results[i], err = marshalHCL(element[key], fullHcl, false, "", indent)
+					if head {
+						results[i] = fmt.Sprintf(`%s%s%s`, id(key), ifIndent(" = ", ""), results[i])
+					} else {
+						results[i] = fmt.Sprintf(`%s "%s" %s`, specialFormat, key, results[i])
+					}
 				}
 			}
 			result = strings.Join(results, ifIndent("\n\n", " ").(string))
@@ -214,7 +107,7 @@ func marshalHCL(value interface{}, head bool, prefix, indent string) (result str
 		var totalLength int
 		var newLine bool
 		for i := range value {
-			results[i], err = marshalHCL(value[i], false, "", indent)
+			results[i], err = marshalHCL(value[i], fullHcl, false, "", indent)
 			totalLength += len(results[i])
 			newLine = newLine || strings.Contains(results[i], "\n")
 		}
@@ -234,7 +127,7 @@ func marshalHCL(value interface{}, head bool, prefix, indent string) (result str
 			if len(key) > keyLen && indent != "" {
 				keyLen = len(key)
 			}
-			rendered[key], err = marshalHCL(val, false, "", indent)
+			rendered[key], err = marshalHCL(val, fullHcl, false, "", indent)
 		}
 		sort.Strings(keys)
 

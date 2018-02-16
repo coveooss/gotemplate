@@ -63,11 +63,25 @@ func (t *Template) addFuncs() {
 			result := fmt.Sprintf("%q", output)
 			return result[1 : len(result)-1], err
 		},
+		"toTFVars": func(v interface{}) (string, error) {
+			output, err := hcl.MarshalTFVars(v)
+			return string(output), err
+		},
+		"toPrettyTFVars": func(v interface{}) (string, error) {
+			output, err := hcl.MarshalTFVarsIndent(v, "", "  ")
+			return string(output), err
+		},
+		"toQuotedTFVars": func(v interface{}) (string, error) {
+			output, err := hcl.MarshalTFVars(v)
+			result := fmt.Sprintf("%q", output)
+			return result[1 : len(result)-1], err
+		},
 		"toQuotedJson": func(v interface{}) (string, error) {
 			output, err := json.Marshal(v)
 			result := fmt.Sprintf("%q", output)
 			return result[1 : len(result)-1], err
 		},
+		"toBash": utils.ToBash,
 		// "toFile": func(file string, v interface{}) (string, error) {
 		// },
 		"bool": func(str string) (bool, error) {

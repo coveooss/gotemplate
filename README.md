@@ -141,12 +141,22 @@ splitLines | object | Returns a list of strings from the supplied object with ne
 substitutes | string | Applies the supplied regex substitute specified on the command line on the supplied string (see `--substitute`).
 templateNames | | Returns the list of available templates names.
 templates | | Returns the list of available templates (including itself). The returned value is the actual Go Template object list.
+
+### Data rendering functions
+
+Function name | Argument(s() |Description
+--- | --- | ---
+toBash | interface | Returns the Bash 4 string representation of the supplied object.
 toHcl | interface | Returns the HCL string representation of the supplied object.
 toPrettyHcl | interface | Returns the indented HCL string representation of the supplied object.
-toQuotedJson | interface | Returns the JSON string representation of the supplied object with escaped quote.
+toQuotedHcl | interface | Returns the HCL string representation of the supplied object with escaped quotes.
+toTFVars | interface | Returns the HCL string representation of the supplied object (without hcl map special format).
+toPrettyTFVars | interface | Returns the indented HCL string representation of the supplied object (without hcl map special format).
+toQuotedTFVars | interface | Returns the HCL string representation of the supplied object with escaped quotes (without hcl map special format).
+toQuotedJson | interface | Returns the JSON string representation of the supplied object with escaped quotes.
 toYaml | interface | Returns the YAML string representation of the supplied object.
 
-### Map function
+### Map functions
 
 Function name | Argument(s() |Description
 --- | --- | ---
@@ -217,68 +227,69 @@ They are coming from either gotemplate, Sprig or native Go Template.
 
 ```text
 > gotemplate -l
-E                       camelcase               hasSuffix               minimum                 sineCosine
-Ln10                    cat                     hcl                     mod                     sinh
-Ln2                     ceil                    hello                   modf                    sinus
-Log10E                  char                    hex                     modulo                  sinusCosinus
-Log2E                   clean                   hexa                    mul                     slice
-MaxFloat                coalesce                hexaDecimal             multiply                smallest
-MaxInt                  color                   html                    ne                      snakecase
-MaxUInt                 compact                 htmlDate                nextAfter               sortAlpha
-MinNonZeroFloat         concat                  htmlDateInZone          nindent                 split
-Nan                     contains                hyperbolicCosine        nospace                 splitLines
-Phi                     content                 hyperbolicCosinus       not                     splitList
-Pi                      cos                     hyperbolicSine          now                     sqrt
-Sqrt2                   cosh                    hyperbolicSinus         omit                    squote
-SqrtE                   cosine                  hyperbolicTangent       or                      sub
-SqrtPhi                 cosinus                 hypot                   pick                    substitute
-SqrtPi                  current                 id                      pluck                   substr
-abbrev                  data                    ifUndef                 plural                  subtract
-abbrevboth              date                    iif                     pow                     sum
-abs                     dateInZone              ilogb                   pow10                   swapcase
-acos                    dateModify              include                 power                   tan
-acosh                   date_in_zone            indent                  power10                 tangent
-add                     date_modify             index                   prepend                 tanh
-add1                    dec                     inf                     print                   templateNames
-ago                     decimal                 infinity                printf                  templates
-alias                   default                 initial                 println                 title
-and                     deg                     initials                prod                    to
-append                  degree                  int                     product                 toDate
-arcCosine               derivePassword          int64                   push                    toHcl
-arcCosinus              dict                    isAbs                   pwd                     toJson
-arcHyperbolicCosine     dir                     isInf                   quote                   toPrettyHcl
-arcHyperbolicCosinus    div                     isInfinity              quotient                toPrettyJson
-arcHyperbolicSine       divide                  isNaN                   rad                     toQuotedHcl
-arcHyperbolicSinus      empty                   join                    radian                  toQuotedJson
-arcHyperbolicTangent    env                     joinLines               randAlpha               toString
-arcSine                 eq                      js                      randAlphaNum            toStrings
-arcSinus                exec                    json                    randAscii               toYaml
-arcTangent              exp                     key                     randNumeric             trim
-arcTangent2             exp2                    keys                    regexFind               trimAll
-asin                    expandenv               kindIs                  regexFindAll            trimPrefix
-asinh                   expm1                   kindOf                  regexMatch              trimSuffix
-atan                    exponent                last                    regexReplaceAll         trimall
-atan2                   exponent2               ldexp                   regexReplaceAllLiteral  trunc
-atanh                   ext                     le                      regexSplit              tuple
-atoi                    fail                    leftShift               rem                     typeIs
-average                 first                   len                     remainder               typeIsLike
-avg                     float64                 lgamma                  repeat                  typeOf
-b32dec                  floor                   list                    replace                 undef
-b32enc                  formatList              local_alias             rest                    uniq
-b64dec                  frexp                   log                     reverse                 unset
-b64enc                  functions               log10                   rightShift              until
-band                    gamma                   log1p                   round                   untilStep
-base                    ge                      log2                    rshift                  untitle
-bclear                  genCA                   logb                    run                     upper
-biggest                 genPrivateKey           lorem                   semver                  urlquery
-bitwiseAND              genSelfSignedCert       lower                   semverCompare           uuidv4
-bitwiseClear            genSignedCert           lshift                  set                     without
-bitwiseOR               get                     lt                      sha256sum               wrap
-bitwiseXOR              glob                    max                     shuffle                 wrapWith
-bool                    gt                      maximum                 signBit                 yaml
-bor                     has                     merge                   sin
-bxor                    hasKey                  mergeList               sincos
-call                    hasPrefix               min                     sine
+E                       cat                     hello                   modulo                  slice
+Ln10                    ceil                    hex                     mul                     smallest
+Ln2                     char                    hexa                    multiply                snakecase
+Log10E                  clean                   hexaDecimal             ne                      sortAlpha
+Log2E                   coalesce                html                    nextAfter               split
+MaxFloat                color                   htmlDate                nindent                 splitLines
+MaxInt                  compact                 htmlDateInZone          nospace                 splitList
+MaxUInt                 concat                  hyperbolicCosine        not                     sqrt
+MinNonZeroFloat         contains                hyperbolicCosinus       now                     squote
+Nan                     content                 hyperbolicSine          omit                    sub
+Phi                     cos                     hyperbolicSinus         or                      substitute
+Pi                      cosh                    hyperbolicTangent       pick                    substr
+Sqrt2                   cosine                  hypot                   pluck                   subtract
+SqrtE                   cosinus                 id                      plural                  sum
+SqrtPhi                 current                 ifUndef                 pow                     swapcase
+SqrtPi                  data                    iif                     pow10                   tan
+abbrev                  date                    ilogb                   power                   tangent
+abbrevboth              dateInZone              include                 power10                 tanh
+abs                     dateModify              indent                  prepend                 templateNames
+acos                    date_in_zone            index                   print                   templates
+acosh                   date_modify             inf                     printf                  title
+add                     dec                     infinity                println                 to
+add1                    decimal                 initial                 prod                    toBash
+ago                     default                 initials                product                 toDate
+alias                   deg                     int                     push                    toHcl
+and                     degree                  int64                   pwd                     toJson
+append                  derivePassword          isAbs                   quote                   toPrettyHcl
+arcCosine               dict                    isInf                   quotient                toPrettyJson
+arcCosinus              dir                     isInfinity              rad                     toPrettyTFVars
+arcHyperbolicCosine     div                     isNaN                   radian                  toQuotedHcl
+arcHyperbolicCosinus    divide                  join                    randAlpha               toQuotedJson
+arcHyperbolicSine       empty                   joinLines               randAlphaNum            toQuotedTFVars
+arcHyperbolicSinus      env                     js                      randAscii               toString
+arcHyperbolicTangent    eq                      json                    randNumeric             toStrings
+arcSine                 exec                    key                     regexFind               toTFVars
+arcSinus                exp                     keys                    regexFindAll            toYaml
+arcTangent              exp2                    kindIs                  regexMatch              trim
+arcTangent2             expandenv               kindOf                  regexReplaceAll         trimAll
+asin                    expm1                   last                    regexReplaceAllLiteral  trimPrefix
+asinh                   exponent                ldexp                   regexSplit              trimSuffix
+atan                    exponent2               le                      rem                     trimall
+atan2                   ext                     leftShift               remainder               trunc
+atanh                   fail                    len                     repeat                  tuple
+atoi                    first                   lgamma                  replace                 typeIs
+average                 float64                 list                    rest                    typeIsLike
+avg                     floor                   local_alias             reverse                 typeOf
+b32dec                  formatList              log                     rightShift              undef
+b32enc                  frexp                   log10                   round                   uniq
+b64dec                  functions               log1p                   rshift                  unset
+b64enc                  gamma                   log2                    run                     until
+band                    ge                      logb                    semver                  untilStep
+base                    genCA                   lorem                   semverCompare           untitle
+bclear                  genPrivateKey           lower                   set                     upper
+biggest                 genSelfSignedCert       lshift                  sha256sum               urlquery
+bitwiseAND              genSignedCert           lt                      shuffle                 uuidv4
+bitwiseClear            get                     max                     signBit                 without
+bitwiseOR               glob                    maximum                 sin                     wrap
+bitwiseXOR              gt                      merge                   sincos                  wrapWith
+bool                    has                     mergeList               sine                    yaml
+bor                     hasKey                  min                     sineCosine
+bxor                    hasPrefix               minimum                 sinh
+call                    hasSuffix               mod                     sinus
+camelcase               hcl                     modf                    sinusCosinus
 ```
 
 Links to documentations of foreign functions are in the section [base functions](#base-functions).
