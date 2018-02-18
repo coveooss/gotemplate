@@ -41,6 +41,7 @@ func (t *Template) addFuncs() {
 		"iif":        utils.IIf,
 		"ifUndef":    utils.IfUndef,
 		"slice":      slice,
+		"extract":    extract,
 		"id":         id,
 		"current":    func() string { return t.folder },
 
@@ -161,6 +162,9 @@ func (t *Template) addFuncs() {
 			return
 		},
 		"color": utils.SprintColor,
+		"pick":  pick,
+		"pickv": pickv,
+		"omit":  omit,
 	})
 
 	// Add template related functions
@@ -368,7 +372,9 @@ func (t Template) jsonConverter(str string, context ...interface{}) (interface{}
 // Converts the supplied string containing terraform/hcl to go map
 func (t Template) hclConverter(str string, context ...interface{}) (result interface{}, err error) {
 	if result, err = t.templateConverter(hcl.Unmarshal, str, context...); err == nil && result != nil {
-		result = hcl.Flatten(result.(map[string]interface{}))
+		if r, isMap := result.(map[string]interface{}); isMap {
+			result = hcl.Flatten(r)
+		}
 	}
 	return
 }
@@ -379,7 +385,9 @@ func (t Template) dataConverter(source string, context ...interface{}) (result i
 	if content, _, err = t.runTemplate(source, context...); err == nil {
 		var errs errors.Array
 		if result, err = t.converter(hcl.Unmarshal, content, true, context...); err == nil {
-			result = hcl.Flatten(utils.MapKeyInterface2string(result).(map[string]interface{}))
+			if r, isMap := result.(map[string]interface{}); isMap {
+				result = hcl.Flatten(utils.MapKeyInterface2string(r).(map[string]interface{}))
+			}
 		} else {
 			errs = append(errs, err)
 			if result, err = t.converter(utils.YamlUnmarshal, content, false, context...); err == nil {
@@ -422,110 +430,6 @@ func (t Template) getTemplateNames() []string {
 	}
 	sort.Strings(result)
 	return result
-}
-
-func slice(list interface{}, args ...interface{}) (interface{}, error) {
-	tp := reflect.TypeOf(list).Kind()
-	switch tp {
-	case reflect.Slice, reflect.Array, reflect.String:
-		l2 := reflect.ValueOf(list)
-		l := l2.Len()
-		if l == 0 {
-			return nil, nil
-		}
-
-		begin := 0
-		end := l
-		reverse := false
-
-		switch len(args) {
-		case 2:
-			end = toInt(args[1])
-			if end < 0 {
-				end = l + end + 1
-			}
-			fallthrough
-		case 1:
-			begin = toInt(args[0])
-			if begin < 0 {
-				begin = l + begin + 1
-			}
-		}
-		if end < begin {
-			end, begin = begin, end
-			reverse = true
-		}
-		end = int(min(end, l).(int64))
-		begin = int(max(begin, 0).(int64))
-
-		if tp == reflect.String {
-			result := list.(string)[begin:end]
-			if reverse {
-				return reverseString(result), nil
-			}
-			return result, nil
-		}
-		if begin > l {
-			return []interface{}{}, nil
-		}
-		nl := make([]interface{}, end-begin)
-		for i := range nl {
-			nl[i] = l2.Index(i + begin).Interface()
-		}
-		if reverse {
-			return reverseArray(nl), nil
-		}
-
-		return nl, nil
-	default:
-		return nil, fmt.Errorf("Cannot apply slice on type %s", tp)
-	}
-}
-
-func getSingleMapElement(m interface{}) (key, value interface{}, err error) {
-	err = fmt.Errorf("Argument must be a map with a single key")
-	if m == nil {
-		return
-	}
-	t := reflect.TypeOf(m)
-	v := reflect.ValueOf(m)
-	switch t.Kind() {
-	case reflect.Map:
-		keys := v.MapKeys()
-		if len(keys) != 1 {
-			return
-		}
-		return keys[0], v.MapIndex(keys[0]).Interface(), nil
-	case reflect.Slice:
-		l := v.Len()
-		keys := make([]interface{}, l)
-		values := make([]interface{}, l)
-		for i := range keys {
-			if keys[i], values[i], err = getSingleMapElement(v.Index(i).Interface()); err != nil {
-				return
-			}
-		}
-
-		results := make(map[string]interface{})
-		for i := range keys {
-			results[fmt.Sprint(keys[i])] = values[i]
-		}
-		return keys, results, nil
-
-	default:
-		return
-	}
-}
-
-var reverseArray = sprig.GenericFuncMap()["reverse"].(func(v interface{}) []interface{})
-
-// Reverse returns its argument string reversed rune-wise left to right.
-func reverseString(s string) string {
-	r := []rune(s)
-	for i, j := 0, len(r)-1; i < len(r)/2; i, j = i+1, j-1 {
-		r[i], r[j] = r[j], r[i]
-	}
-	return string(r)
 }
 
 func id(id string, replace ...interface{}) string {

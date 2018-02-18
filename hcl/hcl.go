@@ -1,12 +1,15 @@
 package hcl
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/hashicorp/hcl"
 )
@@ -18,8 +21,34 @@ var (
 	Parse        = hcl.Parse
 	ParseBytes   = hcl.ParseBytes
 	ParseString  = hcl.ParseString
-	Unmarshal    = hcl.Unmarshal
 )
+
+var _ = func() int {
+	utils.HCLConvert = Unmarshal
+	return 0
+}()
+
+// Unmarshal adds support to single array and struct representation
+func Unmarshal(bs []byte, out interface{}) (err error) {
+	defer func() { err = errors.Trap(err, recover()) }()
+
+	bs = bytes.TrimSpace(bs)
+	if bytes.HasPrefix(bs, []byte("[")) || bytes.HasPrefix(bs, []byte("{")) {
+		val := reflect.ValueOf(out)
+		if val.Kind() != reflect.Ptr {
+			return fmt.Errorf("Out result must be a pointer %T", out)
+		}
+		bs = append([]byte("_="), bs...)
+		var temp map[string]interface{}
+		if err := hcl.Unmarshal(bs, &temp); err != nil {
+			return err
+		}
+		temp = utils.Flatten(temp)
+		reflect.ValueOf(out).Elem().Set(reflect.ValueOf(temp["_"]))
+		return nil
+	}
+	return hcl.Unmarshal(bs, out)
+}
 
 // Load loads hcl file into variable
 func Load(filename string) (result map[string]interface{}, err error) {

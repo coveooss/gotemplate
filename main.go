@@ -5,11 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime/debug"
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/template"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
@@ -52,7 +52,7 @@ func main() {
 		app              = kingpin.New(os.Args[0], description)
 		delimiters       = app.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
 		varFiles         = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
-		namedVars        = app.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("name=file").Short('V').Strings()
+		namedVars        = app.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
 		includePatterns  = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
 		excludedPatterns = app.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
 		overwrite        = app.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
@@ -166,8 +166,9 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 	context = map[string]interface{}{}
 
 	type fileDef struct {
-		name  string
-		value string
+		name    string
+		value   interface{}
+		unnamed bool
 	}
 
 	nameValuePairs := make([]fileDef, 0, len(varsFiles)+len(namedVars))
@@ -176,39 +177,59 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 	}
 
 	for i := range namedVars {
-		name, value := utils.Split2(namedVars[i], "=")
-		if value == "" {
-			value = name
-			name = filepath.Base(value)
-			name = strings.TrimSuffix(name, filepath.Ext(name))
+		data := make(map[string]interface{})
+		if err := utils.ConvertData(namedVars[i], &data); err != nil {
+			var fd fileDef
+			fd.name, fd.value = utils.Split2(namedVars[i], "=")
+			if fd.value == "" {
+				fd = fileDef{"", fd.name, true}
+			}
+			nameValuePairs = append(nameValuePairs, fd)
+			continue
 		}
-		nameValuePairs = append(nameValuePairs, fileDef{strings.TrimSpace(name), strings.TrimSpace(value)})
+		for key, value := range utils.Flatten(data) {
+			nameValuePairs = append(nameValuePairs, fileDef{key, value, false})
+		}
 	}
 
 	for _, nv := range nameValuePairs {
 		var loader func(string) (map[string]interface{}, error)
-		switch strings.ToLower(filepath.Ext(nv.value)) {
-		case ".hcl", ".tfvars":
-			loader = hcl.Load
-		case ".json", ".yml", ".yaml":
-			loader = utils.LoadYaml
+		filename, _ := reflect.ValueOf(nv.value).Interface().(string)
+		if filename != "" {
+			loader = func(filename string) (result map[string]interface{}, err error) {
+				var content interface{}
+				if err := utils.LoadData(filename, &content); err == nil {
+					if content, isMap := content.(map[string]interface{}); isMap && nv.name == "" && !nv.unnamed {
+						return content, nil
+					}
+					if nv.name == "" {
+						nv.name = strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
+					}
+					return map[string]interface{}{nv.name: content}, nil
+				} else if _, isFileErr := err.(*os.PathError); !isFileErr {
+					return nil, err
+				}
+				if nv.name == "" {
+					nv.name = "DEFAULT"
+				}
+				return map[string]interface{}{nv.name: nv.value}, nil
+			}
 		}
 
-		if loader != nil {
-			if content, err := loader(nv.value); err != nil {
-				errors.Raise("Error %v while loading vars file %s", nv.value, err)
-			} else {
-				if nv.name == "" {
-					for key, value := range content {
-						context[key] = value
-					}
-				} else {
-					context[nv.name] = content
-				}
-			}
-		} else if nv.name != "" {
-			context[nv.name] = strings.TrimSpace(nv.value)
-		} else {
+		if loader == nil {
+			context[nv.name] = nv.value
+			continue
+		}
+		content, err := loader(filename)
+		if err != nil {
+			errors.Raise("Error %v while loading vars file %s", nv.value, err)
+		}
+		for key, value := range content {
+			context[key] = value
+		}
+
+		// There is no content
+		if len(content) == 0 && nv.unnamed {
 			errors.Raise("--var parameter must be a file or assignation (name=value) %s", nv.value)
 		}
 	}

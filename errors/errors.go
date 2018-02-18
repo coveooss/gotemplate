@@ -45,6 +45,27 @@ func Must(result ...interface{}) interface{} {
 	}
 }
 
+// Trap catch any panic exception, and convert it to error
+// It must be called with current error state and recover() as argument
+func Trap(sourceErr error, recovered interface{}) (err error) {
+	err = sourceErr
+	var trap error
+	switch rec := recovered.(type) {
+	case nil:
+	case error:
+		trap = rec
+	default:
+		trap = fmt.Errorf("%v", rec)
+	}
+	if trap != nil {
+		if err != nil {
+			return Array{err, trap}
+		}
+		return trap
+	}
+	return
+}
+
 // TemplateNotFoundError is returned when a template does not exist
 type TemplateNotFoundError struct {
 	name string

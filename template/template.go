@@ -342,7 +342,7 @@ func (t Template) printResult(source, target, result string) (err error) {
 	} else {
 		t.trace("# %s", target)
 	}
-	fmt.Printf("%s", result)
+	fmt.Printf(result)
 	return
 }
 

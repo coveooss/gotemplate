@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"sort"
@@ -9,6 +10,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/coveo/gotemplate/errors"
 	"github.com/imdario/mergo"
 )
 
@@ -198,6 +200,42 @@ func Flatten(source map[string]interface{}) map[string]interface{} {
 	}
 	return source
 }
+
+// ConvertData returns a go representation of the supplied string (YAML, JSON or HCL)
+func ConvertData(data string, out interface{}) error {
+	var errs errors.Array
+	if HCLConvert != nil {
+		if err := HCLConvert([]byte(data), out); err != nil {
+			errs = append(errs, err)
+		} else {
+			return nil
+		}
+	}
+	if err := YamlUnmarshal([]byte(data), out); err != nil && HCLConvert != nil {
+		if len(errs) > 0 {
+			return append(errs, err)
+		}
+		return err
+	}
+	return nil
+}
+
+// LoadData returns a go representation of the supplied file name (YAML, JSON or HCL)
+func LoadData(filename string, out interface{}) (err error) {
+	var content []byte
+	if content, err = ioutil.ReadFile(filename); err == nil {
+		if err = ConvertData(string(content), out); err == nil {
+			switch out := out.(type) {
+			case map[string]interface{}:
+				out = Flatten(out)
+			}
+		}
+	}
+	return
+}
+
+// HCLConvert is used to avoid circular reference
+var HCLConvert func([]byte, interface{}) error
 
 // ToBash returns the bash 4 variable representation of value
 func ToBash(value interface{}) string {
