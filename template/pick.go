@@ -6,14 +6,13 @@ import (
 	"strings"
 
 	"github.com/Masterminds/sprig"
-	"github.com/coveo/gotemplate/utils"
 )
 
 var sprigPick = sprig.GenericFuncMap()["pick"].(func(map[string]interface{}, ...string) map[string]interface{})
 var sprigOmit = sprig.GenericFuncMap()["omit"].(func(map[string]interface{}, ...string) map[string]interface{})
 
 func pick(dict map[string]interface{}, keys ...interface{}) map[string]interface{} {
-	return sprigPick(dict, utils.ToStrings(convertArgs(nil, keys...))...)
+	return sprigPick(dict, toStrings(convertArgs(nil, keys...))...)
 }
 
 func pickv(dict map[string]interface{}, message string, keys ...interface{}) (map[string]interface{}, error) {
@@ -37,5 +36,5 @@ func pickv(dict map[string]interface{}, message string, keys ...interface{}) (ma
 }
 
 func omit(dict map[string]interface{}, keys ...interface{}) map[string]interface{} {
-	return sprigOmit(dict, utils.ToStrings(convertArgs(nil, keys...))...)
+	return sprigOmit(dict, toStrings(convertArgs(nil, keys...))...)
 }

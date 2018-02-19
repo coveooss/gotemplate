@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Masterminds/sprig"
 	"github.com/coveo/gotemplate/errors"
@@ -29,6 +30,7 @@ func (t *Template) addFuncs() {
 
 	// Add utilities functions
 	t.Funcs(map[string]interface{}{
+		"string":     func(s interface{}) utils.String { return utils.String(fmt.Sprint(s)) },
 		"concat":     utils.Concat,
 		"formatList": utils.FormatList,
 		"glob":       utils.GlobFunc,
@@ -41,10 +43,15 @@ func (t *Template) addFuncs() {
 		"iif":        utils.IIf,
 		"ifUndef":    utils.IfUndef,
 		"slice":      slice,
+		"safeIndex":  safeIndex,
 		"extract":    extract,
 		"id":         id,
+		"center":     utils.CenterString,
 		"current":    func() string { return t.folder },
-
+		"lenc": func(s string) int {
+			// Returns the actual length of a string
+			return utf8.RuneCountInString(s)
+		},
 		"char": func(c interface{}) (r interface{}, err error) {
 			defer func() { err = trapError(err, recover()) }()
 			return process(c, func(a interface{}) interface{} {
@@ -76,6 +83,14 @@ func (t *Template) addFuncs() {
 			output, err := hcl.MarshalTFVars(v)
 			result := fmt.Sprintf("%q", output)
 			return result[1 : len(result)-1], err
+		},
+		"toJson": func(v interface{}) (string, error) {
+			output, err := json.Marshal(v)
+			return string(output), err
+		},
+		"toPrettyJson": func(v interface{}) (string, error) {
+			output, err := json.MarshalIndent(v, "", "  ")
+			return string(output), err
 		},
 		"toQuotedJson": func(v interface{}) (string, error) {
 			output, err := json.Marshal(v)
@@ -201,6 +216,7 @@ func (t *Template) addFuncs() {
 			content, _, err := t.runTemplate(utils.Interface2string(source), context...)
 			return content, err
 		},
+		"ellipsis": t.ellipsis,
 	})
 }
 
@@ -226,7 +242,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local boo
 	}
 
 	(*t.aliases)[name] = func(args ...interface{}) (result interface{}, err error) {
-		return f(utils.Interface2string(source), args...)
+		return f(utils.Interface2string(source), append(defaultArgs, args...)...)
 	}
 	return
 }
@@ -332,6 +348,36 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 func (t Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
 	content, _, err := t.runTemplate(source, context...)
 	return content, err
+}
+
+// This function is used to call a function that requires its last argument to be expanded ...
+func (t Template) ellipsis(function string, args ...interface{}) (interface{}, error) {
+	last := len(args) - 1
+	if last < 0 || reflect.TypeOf(args[last]).Kind() != reflect.Slice {
+		return nil, fmt.Errorf("The last argument must be a slice")
+	}
+
+	lastArg := reflect.ValueOf(args[last])
+	argsStr := make([]string, 0, last+lastArg.Len())
+	context := make(map[string]interface{})
+
+	convertArg := func(arg interface{}) {
+		argName := fmt.Sprintf("ARG%d", len(argsStr)+1)
+		argsStr = append(argsStr, fmt.Sprintf(".%s", argName))
+		context[argName] = arg
+	}
+
+	for i := range args[:last] {
+		convertArg(args[i])
+	}
+
+	for i := 0; i < lastArg.Len(); i++ {
+		convertArg(lastArg.Index(i).Interface())
+	}
+
+	template := fmt.Sprintf("%s %s %s %s", t.delimiters[0], function, strings.Join(argsStr, " "), t.delimiters[1])
+	result, _, err := t.runTemplate(template, context)
+	return result, err
 }
 
 type dataConverter func([]byte, interface{}) error

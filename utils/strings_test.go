@@ -1,6 +1,8 @@
 package utils
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestUnIndent(t *testing.T) {
 	type args struct {
@@ -37,6 +39,22 @@ func TestUnIndent(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := UnIndent(tt.args.s); got != tt.want {
 				t.Errorf("UnIndent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestString_ToTitle(t *testing.T) {
+	tests := []struct {
+		s    String
+		want string
+	}{
+		{"Hello world", "HELLO WORLD"},
+	}
+	for _, tt := range tests {
+		t.Run(string(tt.s), func(t *testing.T) {
+			if got := tt.s.ToTitle(); got != tt.want {
+				t.Errorf("String.ToTitle() = %v, want %v", got, tt.want)
 			}
 		})
 	}

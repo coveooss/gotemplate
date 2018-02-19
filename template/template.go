@@ -17,7 +17,7 @@ import (
 	logging "github.com/op/go-logging"
 )
 
-const templateExt = ".template"
+var templateExt = []string{".gt", ".template"}
 
 // Template let us extend the functionalities of base template
 type Template struct {
@@ -36,6 +36,8 @@ type Template struct {
 	children     map[string]*Template
 	aliases      *map[string]interface{}
 }
+
+var toStrings = utils.ToStrings
 
 // NewTemplate creates an Template object with default initialization
 func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bool, substitutes ...string) *Template {
@@ -76,15 +78,17 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 		logging.SetLevel(logLevel-1, logger)
 		defer func() { logging.SetLevel(logLevel, logger) }()
 
-		// Retrieve the template files
-		for _, file := range utils.MustFindFiles(t.folder, true, true, "*.template") {
+		// Retrieve the template extension files
+		for _, file := range utils.MustFindFiles(t.folder, true, true, "*.gte") {
 			// We just load all the template files available to ensure that all template definition are loaded
 			// We do not use ParseFiles because it names the template with the base name of the file
 			// which result in overriding templates with the same base name in different folders.
 			content := string(errors.Must(ioutil.ReadFile(file)).([]byte))
 
 			// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
-			t.ProcessContent(content, file)
+			if _, err := t.ProcessContent(content, file); err != nil {
+				Log.Notice(color.New(color.FgRed).Sprintf("Error while processing %v", err))
+			}
 		}
 
 		// Add the children contexts to the main context
@@ -103,6 +107,15 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 func (t Template) ProcessContent(content, source string) (string, error) {
 	Log.Notice("GoTemplate processing of", source)
 	content = t.substitute(content)
+
+	if strings.HasPrefix(content, "#!") {
+		// If the content starts with a Shebang operator including gotemplate, we remove the first line
+		lines := strings.Split(content, "\n")
+		if strings.Contains(lines[0], "gotemplate") {
+			content = strings.Join(lines[1:], "\n")
+		}
+	}
+
 	if t.RazorSyntax {
 		content = string(t.applyRazor([]byte(content)))
 	}
@@ -144,9 +157,13 @@ func (t Template) ProcessFile(file, sourceFolder, targetFolder string) (resultFi
 		return
 	}
 
-	resultFile = getTargetFile(strings.TrimSuffix(file, templateExt), sourceFolder, targetFolder)
+	resultFile = file
+	for i := range templateExt {
+		resultFile = strings.TrimSuffix(resultFile, templateExt[i])
+	}
+	resultFile = getTargetFile(resultFile, sourceFolder, targetFolder)
 
-	isTemplate := strings.HasSuffix(file, templateExt)
+	isTemplate := t.isTemplate(file)
 	if isTemplate {
 		ext := path.Ext(resultFile)
 		if strings.TrimSpace(result)+ext == "" {
@@ -220,6 +237,15 @@ func (t Template) trace(format string, args ...interface{}) {
 	fmt.Fprintln(os.Stderr, color.GreenString(fmt.Sprintf(format, args...)))
 }
 
+func (t Template) isTemplate(file string) bool {
+	for i := range templateExt {
+		if strings.HasSuffix(file, templateExt[i]) {
+			return true
+		}
+	}
+	return false
+}
+
 // PrintFunctions output the list of functions available
 func (t Template) PrintFunctions() {
 	functions := t.getFunctions()
@@ -286,6 +312,19 @@ func (t *Template) init(folder string) {
 	t.Parse("")
 	t.children = make(map[string]*Template)
 	t.Delims(t.delimiters[0], t.delimiters[1])
+	t.setConstant("\n", "NL", "CR", "NEWLINE")
+}
+
+func (t *Template) setConstant(value interface{}, names ...string) {
+	context, isMap := t.context.(map[string]interface{})
+	if !isMap {
+		return
+	}
+	for i := range names {
+		if _, isSet := context[names[i]]; !isSet {
+			context[names[i]] = value
+		}
+	}
 }
 
 // Import templates from another template
@@ -329,7 +368,7 @@ func (t Template) printResult(source, target, result string) (err error) {
 		result = string(bytes)
 	}
 
-	if !strings.HasSuffix(source, templateExt) && !t.Overwrite {
+	if !t.isTemplate(source) && !t.Overwrite {
 		source += ".original"
 	}
 

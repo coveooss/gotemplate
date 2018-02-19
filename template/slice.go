@@ -7,8 +7,21 @@ import (
 
 	"github.com/Masterminds/sprig"
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/utils"
 )
+
+func safeIndex(value interface{}, index int, def interface{}) (result interface{}, err error) {
+	defer func() { err = errors.Trap(err, recover()) }()
+	valueOf := reflect.ValueOf(value)
+	switch valueOf.Kind() {
+	case reflect.Slice, reflect.Array, reflect.String:
+		if index < 0 || index >= valueOf.Len() {
+			return def, nil
+		}
+		return valueOf.Index(index).Interface(), nil
+	default:
+		return nil, fmt.Errorf("First argument is not indexable %T", value)
+	}
+}
 
 func slice(value interface{}, args ...interface{}) (result interface{}, err error) {
 	return sliceInternal(value, false, args...)
@@ -77,7 +90,7 @@ func sliceMap(data reflect.Value, args ...interface{}) (interface{}, error) {
 			mapStrings[keyStrings[i]] = data.MapIndex(keys[i])
 		}
 		sort.Strings(keyStrings)
-		argsStr := utils.ToStrings(args)
+		argsStr := toStrings(args)
 		for i := range keyStrings {
 			if keyStrings[i] >= argsStr[0] && keyStrings[i] <= argsStr[1] {
 				results = append(results, mapStrings[keyStrings[i]].Interface())
@@ -108,7 +121,7 @@ func sliceList(value reflect.Value, args ...interface{}) (result interface{}, er
 
 	if value.Kind() == reflect.String {
 		// String slices are returned as string instead of array of runes
-		result := value.Interface().(string)[begin:end]
+		result := value.String()[begin:end]
 		if reverse {
 			return reverseString(result), nil
 		}
@@ -132,7 +145,7 @@ func sliceList(value reflect.Value, args ...interface{}) (result interface{}, er
 func selectElement(value reflect.Value, index int) interface{} {
 	index = iif(index < 0, value.Len()+index, index).(int)
 	if value.Kind() == reflect.String {
-		return value.Interface().(string)[index : index+1]
+		return value.String()[index : index+1]
 	}
 	return value.Index(index).Interface()
 }

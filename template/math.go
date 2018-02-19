@@ -67,25 +67,6 @@ var mathFuncs = funcTableMap{
 	"bxor":   {bitwiseXor, mathBits, []string{"bitwiseXOR"}, ""},
 	"bclear": {bitwiseClear, mathBits, []string{"bitwiseClear"}, ""},
 
-	// Constants
-	"E":               {func() float64 { return math.E }, mathConstants, []string{}, ""},
-	"Pi":              {func() float64 { return math.Pi }, mathConstants, []string{}, ""},
-	"Phi":             {func() float64 { return math.Phi }, mathConstants, []string{}, ""},
-	"Sqrt2":           {func() float64 { return math.Sqrt2 }, mathConstants, []string{}, ""},
-	"SqrtE":           {func() float64 { return math.SqrtE }, mathConstants, []string{}, ""},
-	"SqrtPi":          {func() float64 { return math.SqrtPi }, mathConstants, []string{}, ""},
-	"SqrtPhi":         {func() float64 { return math.SqrtPhi }, mathConstants, []string{}, ""},
-	"Ln2":             {func() float64 { return math.Ln2 }, mathConstants, []string{}, ""},
-	"Log2E":           {func() float64 { return math.Log2E }, mathConstants, []string{}, ""},
-	"Ln10":            {func() float64 { return math.Ln10 }, mathConstants, []string{}, ""},
-	"Log10E":          {func() float64 { return math.Log10E }, mathConstants, []string{}, ""},
-	"MaxFloat":        {func() float64 { return math.MaxFloat64 }, mathConstants, []string{}, ""},
-	"MinNonZeroFloat": {func() float64 { return math.SmallestNonzeroFloat64 }, mathConstants, []string{}, ""},
-	"MaxInt":          {func() float64 { return math.MaxInt64 }, mathConstants, []string{}, ""},
-	"MaxUInt":         {func() float64 { return math.MaxUint64 }, mathConstants, []string{}, ""},
-	"Nan":             {func() float64 { return math.NaN() }, mathConstants, []string{}, ""},
-	"inf":             {infinity, mathConstants, []string{"infinity"}, ""},
-
 	// Utilities
 	"abs":       {abs, mathUtilities, []string{}, ""},
 	"sqrt":      {sqrt, mathUtilities, []string{}, ""},
@@ -112,6 +93,38 @@ func (t *Template) addMathFuncs() {
 	}
 	// Enhance mathematic functions
 	t.Funcs(mathFuncsInject)
+
+	constants := map[string]interface{}{
+		"E":                      math.E,
+		"Pi":                     math.Pi,
+		"Phi":                    math.Phi,
+		"Sqrt2":                  math.Sqrt2,
+		"SqrtE":                  math.SqrtE,
+		"SqrtPi":                 math.SqrtPi,
+		"SqrtPhi":                math.SqrtPhi,
+		"Ln2":                    math.Ln2,
+		"Log2E":                  math.Log2E,
+		"Ln10":                   math.Ln10,
+		"Log10E":                 math.Log10E,
+		"MaxFloat32":             math.MaxFloat32,
+		"MaxFloat64":             math.MaxFloat64,
+		"SmallestNonzeroFloat64": math.SmallestNonzeroFloat64,
+		"MaxInt8":                math.MaxInt8,
+		"MaxInt16":               math.MaxInt16,
+		"MaxInt32":               math.MaxInt32,
+		"MaxInt64":               math.MaxInt64,
+		"MaxUint8":               math.MaxUint8,
+		"MaxUint16":              math.MaxUint16,
+		"MaxUint32":              math.MaxUint32,
+		"MaxUint64":              uint(math.MaxUint64),
+		"Nan":                    math.NaN(),
+		"Infinity":               math.Inf(1),
+		"Inf":                    math.Inf(1),
+		"NegativeInfinity":       math.Inf(-1),
+		"NegInf":                 math.Inf(-1),
+	}
+
+	t.setConstant(constants, "MATH", "Math")
 }
 
 var round = sprig.GenericFuncMap()["round"].(func(a interface{}, p int, r_opt ...float64) float64)

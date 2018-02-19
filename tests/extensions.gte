@@ -1,0 +1,14 @@
+@merge($, $.common)
+
+@template("draw_fir")
+  @$param := dict("context", .[0], "default", .[1], "args", safeIndex(., 2, dict))
+  @$_ := merge($param, merge($param.args, $param.default))
+  @$size := $param.size*2
+  @$len := $size * lenc($param.char) + len(color($param.color))
+  @with ($param.context)
+    @range($n := to(1, $param.size*2, 2)) -@center(color("Fg"+$param.fg, "Bg"+$param.bg, $param.char * $n), $len)@$param.context.CR;
+  @end with
+@end template
+
+@alias("ChristmasTree", "template", "draw_fir", $, data(`size=15 bg="Green", fg="Red" char="*"`))
+@alias("Fir", "template", "draw_fir", $, data(`size=10 bg="Green" fg="White" char=" "`))

@@ -40,7 +40,7 @@ func cleanup() {
 }
 
 const description = `
-A template processor for go.
+An extended template processor for go.
 
 See: https://github.com/coveo/gotemplate/blob/master/README.md for complete documentation.
 `
@@ -64,26 +64,29 @@ func main() {
 		followSymLinks   = app.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
 		print            = app.Flag("print", "Output the result directly to stdout").Short('P').Bool()
 		listFunctions    = app.Flag("list-functions", "List the available functions").Short('l').Bool()
-		listTemplates    = app.Flag("list-templates", "List the available templates function").Short('L').Bool()
+		listTemplates    = app.Flag("list-templates", "List the available templates function (--lt)").Bool()
 		listALlTemplates = app.Flag("all-templates", "List all templates (--at)").Bool()
 		quiet            = app.Flag("quiet", "Don not print out the name of the generated files").Short('q').Bool()
 		getVersion       = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
 		razorSyntax      = app.Flag("razor", "Allow razor like expressions (@variable)").Short('R').Bool()
 		disableRender    = app.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
 		forceColor       = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
-		logLevel         = app.Flag("log-level", "Set the logging level (0-5) (--ll)").Default("2").Int8()
-		logSimple        = app.Flag("log-simple", "Disable the extended logging (--ls)").Bool()
-		skipTemplate     = app.Flag("skip-templates", "Do not load the base template *.template files (--st)").Bool()
+		logLevel         = app.Flag("log-level", "Set the logging level (0-5)").Short('L').Default("2").Int8()
+		logSimple        = app.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
+		skipExtensions   = app.Flag("skip-extensions", "Do not load the gotemplate extensions files *.gte (--se)").Bool()
+		execCode         = app.Flag("exec", "Execute the supplied gotemplate code & render its output to stdout").Short('E').PlaceHolder("code").Strings()
 		files            = app.Arg("files", "Template files to process").ExistingFiles()
 	)
 
+	app.Flag("lt", "short version of --list-template").Hidden().BoolVar(listTemplates)
 	app.Flag("at", "short version of --all-templates").Hidden().BoolVar(listALlTemplates)
 	app.Flag("ll", "short version of --log-level").Hidden().Int8Var(logLevel)
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "").Hidden().StringVar(delimiters)
-	app.Flag("st", "short version of --skip-templates").Hidden().BoolVar(skipTemplate)
-	app.Flag("skip", "").Hidden().BoolVar(skipTemplate)
-	app.Flag("skip-template", "").Hidden().BoolVar(skipTemplate)
+	app.Flag("se", "short version of --skip-extensions").Hidden().BoolVar(skipExtensions)
+	app.Flag("st", "").Hidden().BoolVar(skipExtensions)
+	app.Flag("skip", "").Hidden().BoolVar(skipExtensions)
+	app.Flag("skip-ext", "").Hidden().BoolVar(skipExtensions)
 
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
@@ -115,7 +118,7 @@ func main() {
 		*forceStdin = true
 	}
 
-	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, *razorSyntax, *skipTemplate, *substitutes...)
+	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, *razorSyntax, *skipExtensions, *substitutes...)
 	t.Quiet = *quiet
 	t.Disabled = *disableRender
 	t.Overwrite = *overwrite
@@ -136,9 +139,9 @@ func main() {
 	}
 
 	errors.Must(os.Chdir(*sourceFolder))
-	if !*forceStdin {
+	if !*forceStdin && len(*execCode) == 0 {
 		// We only process template files if go template has not been called with piped input
-		*files = append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, "*.template"), *files...)
+		*files = append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, "*.gt", "*.template"), *files...)
 	}
 	*files = exclude(append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, extend(*includePatterns)...), *files...), *excludedPatterns)
 
@@ -147,10 +150,19 @@ func main() {
 		errors.Print(err)
 	}
 
-	if *forceStdin {
-		content := string(errors.Must(ioutil.ReadAll(os.Stdin)).([]byte))
+	if *forceStdin && stdinContent == "" {
+		// If there is input in stdin and it has not already been consumed as data (---var)
+		content := readStdin()
 		if result, err := t.ProcessContent(content, "Piped input"); err == nil {
-			fmt.Print(result)
+			fmt.Println(result)
+		} else {
+			errors.Print(err)
+		}
+	}
+
+	for _, code := range *execCode {
+		if result, err := t.ProcessContent(code, fmt.Sprintf("Parameter %s", code)); err == nil {
+			fmt.Println(result)
 		} else {
 			errors.Print(err)
 		}
@@ -161,6 +173,16 @@ func main() {
 		utils.TerraformFormat(resultFiles...)
 	}
 }
+
+func readStdin() string {
+	if stdinContent != "" {
+		return stdinContent
+	}
+	stdinContent = string(errors.Must(ioutil.ReadAll(os.Stdin)).([]byte))
+	return stdinContent
+}
+
+var stdinContent string
 
 func createContext(varsFiles []string, namedVars []string) (context map[string]interface{}) {
 	context = map[string]interface{}{}
@@ -213,6 +235,22 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 					nv.name = "DEFAULT"
 				}
 				return map[string]interface{}{nv.name: nv.value}, nil
+			}
+
+			if filename == "-" {
+				loader = func(filename string) (result map[string]interface{}, err error) {
+					var content interface{}
+					if err = utils.ConvertData(readStdin(), &content); err != nil {
+						return nil, err
+					}
+					if content, isMap := content.(map[string]interface{}); isMap && nv.name == "" {
+						return content, nil
+					}
+					if nv.name == "" {
+						nv.name = "STDIN"
+					}
+					return map[string]interface{}{nv.name: content}, nil
+				}
 			}
 		}
 

@@ -15,15 +15,15 @@ Every matching `*.ext.template` file will render a file named `*.generated.ext`.
 ```text
 usage: gotemplate [<flags>] [<files>...]
 
-A template processor for go.
+An extended template processor for go.
 
 See: https://github.com/coveo/gotemplate/blob/master/README.md for complete documentation.
 
 Flags:
-  -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
+ -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
       --delimiters={{,}},@    Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)
   -i, --import=file ...       Import variables files (could be any of YAML, JSON or HCL format)
-  -V, --var=name=file ...     Import named variables (if value is a file, the content is loaded)
+  -V, --var=values ...        Import named variables (if value is a file, the content is loaded)
   -p, --patterns=pattern ...  Additional patterns that should be processed by gotemplate
   -e, --exclude=pattern ...   Exclude file patterns (comma separated) when applying gotemplate recursively
   -o, --overwrite             Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
@@ -35,16 +35,17 @@ Flags:
   -f, --follow-symlinks       Follow the symbolic links while using the recursive option
   -P, --print                 Output the result directly to stdout
   -l, --list-functions        List the available functions
-  -L, --list-templates        List the available templates function
+      --list-templates        List the available templates function (--lt)
       --all-templates         List all templates (--at)
   -q, --quiet                 Don not print out the name of the generated files
   -v, --version               Get the current version of gotemplate
   -R, --razor                 Allow razor like expressions (@variable)
   -d, --disable               Disable go template rendering (used to view razor conversion)
   -c, --color                 Force rendering of colors event if output is redirected
-      --log-level=2           Set the logging level (0-5) (--ll)
-      --log-simple            Disable the extended logging (--ls)
-      --skip-templates        Do not load the base template *.template files (--st)
+  -L, --log-level=2           Set the logging level (0-5)
+      --log-simple            Disable the extended logging, i.e. no color, no date (--ls)
+      --skip-extensions       Do not load the gotemplate extensions files *.gte (--se)
+  -E, --exec=code ...         Execute the supplied gotemplate code & render its output to stdout
 
 Args:
   [<files>]  Template files to process
@@ -120,9 +121,11 @@ Function name | Argument(s() |Description
 --- | --- | ---
 alias | name, function, source, args ... | Defines an alias (go template function) using the function (`exec`, `run`, `include`, `template`). Executed in the context of the caller.
 bool | string | Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`).
+center | string, width int | Returns a string with both left and right padding to ensure that the string is centered.
 concat | objects ... | Returns the concatenation (without separator) of the string representation of objects.
 color | attributes ... objects ... | Prints a message like print, but the first parameters are used to set color attributes (see [fatih/color](https://github.com/fatih/color)).
 current | | Returns the current folder (like `pwd`, but returns the folder of the currently running folder).
+ellipsis | function string, args ... | Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).
 exec | command string, args ... | Returns the result of the shell command as structured data (as string if no other conversion is possible).
 formatList | format string, list | Return a list of strings by applying the format to each element of the supplied list.
 functions | | Return the list of available functions.
@@ -131,13 +134,16 @@ id | string [replacement] | Returns a valid go identifier from the supplied stri
 include | template, args ... | Returns the result of the named template rendering (like template but it is possible to capture the output).
 isUndef| default, value | Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, "" are not considered as unset).
 joinLines | objects ... | Merge the supplied objects into a newline separated string.
+lenc | string | Returns the actual number of characters in a string according to the width of unicode characters.
 local_alias | name, function, source, args ... | Defines an alias (go template function) using the function (`exec`, `run`, `include`, `template`). Executed in the context of the function it maps to.
 lorem | type string, min, max int | Returns a random string. Valid types are be `word`, `words`, `sentence`, `para`, `paragraph`, `host`, `email`, `url`.
 mergeLists | lists | Return a single list containing all elements from the lists supplied.
 pwd | | Return the current working directory.
 run | command string, args ... | Returns the result of the shell command as string.
+safeIndex | array, index int, default | Returns the element at index position or default if index is outside bounds.
 slice | object start [end] | Returns a slice of the supplied object (equivalent to object[from:to]).
 splitLines | object | Returns a list of strings from the supplied object with newline as the separator.
+string | string | Returns a String class object that allows invoking standard string operations as method.
 substitutes | string | Applies the supplied regex substitute specified on the command line on the supplied string (see `--substitute`).
 templateNames | | Returns the list of available templates names.
 templates | | Returns the list of available templates (including itself). The returned value is the actual Go Template object list.
@@ -227,69 +233,66 @@ They are coming from either gotemplate, Sprig or native Go Template.
 
 ```text
 > gotemplate -l
-E                       cat                     hello                   modulo                  slice
-Ln10                    ceil                    hex                     mul                     smallest
-Ln2                     char                    hexa                    multiply                snakecase
-Log10E                  clean                   hexaDecimal             ne                      sortAlpha
-Log2E                   coalesce                html                    nextAfter               split
-MaxFloat                color                   htmlDate                nindent                 splitLines
-MaxInt                  compact                 htmlDateInZone          nospace                 splitList
-MaxUInt                 concat                  hyperbolicCosine        not                     sqrt
-MinNonZeroFloat         contains                hyperbolicCosinus       now                     squote
-Nan                     content                 hyperbolicSine          omit                    sub
-Phi                     cos                     hyperbolicSinus         or                      substitute
-Pi                      cosh                    hyperbolicTangent       pick                    substr
-Sqrt2                   cosine                  hypot                   pluck                   subtract
-SqrtE                   cosinus                 id                      plural                  sum
-SqrtPhi                 current                 ifUndef                 pow                     swapcase
-SqrtPi                  data                    iif                     pow10                   tan
-abbrev                  date                    ilogb                   power                   tangent
-abbrevboth              dateInZone              include                 power10                 tanh
-abs                     dateModify              indent                  prepend                 templateNames
-acos                    date_in_zone            index                   print                   templates
-acosh                   date_modify             inf                     printf                  title
-add                     dec                     infinity                println                 to
-add1                    decimal                 initial                 prod                    toBash
-ago                     default                 initials                product                 toDate
-alias                   deg                     int                     push                    toHcl
-and                     degree                  int64                   pwd                     toJson
-append                  derivePassword          isAbs                   quote                   toPrettyHcl
-arcCosine               dict                    isInf                   quotient                toPrettyJson
-arcCosinus              dir                     isInfinity              rad                     toPrettyTFVars
-arcHyperbolicCosine     div                     isNaN                   radian                  toQuotedHcl
-arcHyperbolicCosinus    divide                  join                    randAlpha               toQuotedJson
-arcHyperbolicSine       empty                   joinLines               randAlphaNum            toQuotedTFVars
-arcHyperbolicSinus      env                     js                      randAscii               toString
-arcHyperbolicTangent    eq                      json                    randNumeric             toStrings
-arcSine                 exec                    key                     regexFind               toTFVars
-arcSinus                exp                     keys                    regexFindAll            toYaml
-arcTangent              exp2                    kindIs                  regexMatch              trim
-arcTangent2             expandenv               kindOf                  regexReplaceAll         trimAll
-asin                    expm1                   last                    regexReplaceAllLiteral  trimPrefix
-asinh                   exponent                ldexp                   regexSplit              trimSuffix
-atan                    exponent2               le                      rem                     trimall
-atan2                   ext                     leftShift               remainder               trunc
-atanh                   fail                    len                     repeat                  tuple
-atoi                    first                   lgamma                  replace                 typeIs
-average                 float64                 list                    rest                    typeIsLike
-avg                     floor                   local_alias             reverse                 typeOf
-b32dec                  formatList              log                     rightShift              undef
-b32enc                  frexp                   log10                   round                   uniq
-b64dec                  functions               log1p                   rshift                  unset
-b64enc                  gamma                   log2                    run                     until
-band                    ge                      logb                    semver                  untilStep
-base                    genCA                   lorem                   semverCompare           untitle
-bclear                  genPrivateKey           lower                   set                     upper
-biggest                 genSelfSignedCert       lshift                  sha256sum               urlquery
-bitwiseAND              genSignedCert           lt                      shuffle                 uuidv4
-bitwiseClear            get                     max                     signBit                 without
-bitwiseOR               glob                    maximum                 sin                     wrap
-bitwiseXOR              gt                      merge                   sincos                  wrapWith
-bool                    has                     mergeList               sine                    yaml
-bor                     hasKey                  min                     sineCosine
-bxor                    hasPrefix               minimum                 sinh
-call                    hasSuffix               mod                     sinus
-camelcase               hcl                     modf                    sinusCosinus
+abbrev                  cosine                  hyperbolicCosine        nindent                 slice
+abbrevboth              cosinus                 hyperbolicCosinus       nospace                 smallest
+abs                     current                 hyperbolicSine          not                     snakecase
+acos                    data                    hyperbolicSinus         now                     sortAlpha
+acosh                   date                    hyperbolicTangent       omit                    split
+add                     dateInZone              hypot                   or                      splitLines
+add1                    dateModify              id                      pick                    splitList
+ago                     date_in_zone            ifUndef                 pickv                   sqrt
+alias                   date_modify             iif                     pluck                   squote
+and                     dec                     ilogb                   plural                  string
+append                  decimal                 include                 pow                     sub
+arcCosine               default                 indent                  pow10                   substitute
+arcCosinus              deg                     index                   power                   substr
+arcHyperbolicCosine     degree                  initial                 power10                 subtract
+arcHyperbolicCosinus    derivePassword          initials                prepend                 sum
+arcHyperbolicSine       dict                    int                     print                   swapcase
+arcHyperbolicSinus      dir                     int64                   printf                  tan
+arcHyperbolicTangent    div                     isAbs                   println                 tangent
+arcSine                 divide                  isInf                   prod                    tanh
+arcSinus                ellipsis                isInfinity              product                 templateNames
+arcTangent              empty                   isNaN                   push                    templates
+arcTangent2             env                     join                    pwd                     title
+asin                    eq                      joinLines               quote                   to
+asinh                   exec                    js                      quotient                toBash
+atan                    exp                     json                    rad                     toDate
+atan2                   exp2                    key                     radian                  toHcl
+atanh                   expandenv               keys                    randAlpha               toJson
+atoi                    expm1                   kindIs                  randAlphaNum            toPrettyHcl
+average                 exponent                kindOf                  randAscii               toPrettyJson
+avg                     exponent2               last                    randNumeric             toPrettyTFVars
+b32dec                  ext                     ldexp                   regexFind               toQuotedHcl
+b32enc                  extract                 le                      regexFindAll            toQuotedJson
+b64dec                  fail                    leftShift               regexMatch              toQuotedTFVars
+b64enc                  first                   len                     regexReplaceAll         toString
+band                    float64                 lenc                    regexReplaceAllLiteral  toStrings
+base                    floor                   lgamma                  regexSplit              toTFVars
+bclear                  formatList              list                    rem                     toYaml
+biggest                 frexp                   local_alias             remainder               trim
+bitwiseAND              functions               log                     repeat                  trimAll
+bitwiseClear            gamma                   log10                   replace                 trimPrefix
+bitwiseOR               ge                      log1p                   rest                    trimSuffix
+bitwiseXOR              genCA                   log2                    reverse                 trimall
+bool                    genPrivateKey           logb                    rightShift              trunc
+bor                     genSelfSignedCert       lorem                   round                   tuple
+bxor                    genSignedCert           lower                   rshift                  typeIs
+call                    get                     lshift                  run                     typeIsLike
+camelcase               glob                    lt                      safeIndex               typeOf
+cat                     gt                      max                     semver                  undef
+ceil                    has                     maximum                 semverCompare           uniq
+center                  hasKey                  merge                   set                     unset
+char                    hasPrefix               mergeList               sha256sum               until
+clean                   hasSuffix               min                     shuffle                 untilStep
+coalesce                hcl                     minimum                 signBit                 untitle
+color                   hello                   mod                     sin                     upper
+compact                 hex                     modf                    sincos                  urlquery
+concat                  hexa                    modulo                  sine                    uuidv4
+contains                hexaDecimal             mul                     sineCosine              without
+content                 html                    multiply                sinh                    wrap
+cos                     htmlDate                ne                      sinus                   wrapWith
+cosh                    htmlDateInZone          nextAfter               sinusCosinus            yaml
 ```
 
 Links to documentations of foreign functions are in the section [base functions](#base-functions).

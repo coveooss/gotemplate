@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
@@ -89,19 +88,22 @@ func Color(attributes ...string) (*color.Color, error) {
 	}
 
 	result := color.New()
+	var containsColor bool
 	var err errors.Array
 	for _, attr := range attributes {
-		attr = re.ReplaceAllString(attr, " ")
-		for _, attr := range strings.Split(attr, " ") {
-			if attr == "" {
-				continue
-			}
+		for _, attr := range String(attr).FieldsId().Strings() {
 			if a, match := nameValues[strings.ToLower(attr)]; match {
 				result.Add(a)
+				containsColor = true
+
 			} else {
 				err = append(err, fmt.Errorf("Attribute not found %s", attr))
 			}
 		}
+	}
+
+	if !containsColor {
+		return result, fmt.Errorf("No color specified")
 	}
 	if len(err) > 0 {
 		return result, err
@@ -120,17 +122,17 @@ func SprintColor(args ...interface{}) (string, error) {
 		colorArgs[i] = fmt.Sprint(args[i])
 	}
 
-	c, err := Color(colorArgs...)
-	if err != nil {
-		return "", err
+	c, _ := Color(colorArgs...)
+
+	var format string
+	if i < len(args) {
+		format = fmt.Sprint(args[i])
 	}
 
-	f := fmt.Sprint(args[i])
-	if strings.Contains(f, "%") {
-		return c.Sprintf(f, args[i+1:]...), nil
+	if strings.Contains(format, "%") {
+		return c.Sprintf(format, args[i+1:]...), nil
 	}
 	return c.Sprint(args[i:]...), nil
 }
 
-var re = regexp.MustCompile("[ \t,;]")
 var nameValues map[string]color.Attribute

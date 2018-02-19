@@ -3,11 +3,179 @@ package utils
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/Masterminds/sprig"
 )
+
+// -------------------------- String Type --------------------------
+type String string
+
+func (s String) Str() string                   { return string(s) }
+func (s String) String() string                { return string(s) }
+func (s String) Compare(b string) int          { return strings.Compare(string(s), b) }
+func (s String) Contains(substr string) bool   { return strings.Contains(string(s), substr) }
+func (s String) ContainsAny(chars string) bool { return strings.ContainsAny(string(s), chars) }
+func (s String) ContainsRune(r rune) bool      { return strings.ContainsRune(string(s), r) }
+func (s String) Count(substr string) int       { return strings.Count(string(s), substr) }
+func (s String) EqualFold(t string) bool       { return strings.EqualFold(string(s), t) }
+func (s String) Fields() StringArray           { return stringArray(strings.Fields(string(s))) }
+func (s String) FieldsFunc(f func(rune) bool) StringArray {
+	return stringArray(strings.FieldsFunc(string(s), f))
+}
+func (s String) HasPrefix(prefix string) bool        { return strings.HasPrefix(string(s), prefix) }
+func (s String) HasSuffix(suffix string) bool        { return strings.HasSuffix(string(s), suffix) }
+func (s String) Index(substr string) int             { return strings.Index(string(s), substr) }
+func (s String) IndexAny(chars string) int           { return strings.IndexAny(string(s), chars) }
+func (s String) IndexByte(c byte) int                { return strings.IndexByte(string(s), c) }
+func (s String) IndexFunc(f func(rune) bool) int     { return strings.IndexFunc(string(s), f) }
+func (s String) IndexRune(r rune) int                { return strings.IndexRune(string(s), r) }
+func (s String) Join(array ...string) String         { return String(strings.Join(array, string(s))) }
+func (s String) LastIndex(substr string) int         { return strings.LastIndex(string(s), substr) }
+func (s String) LastIndexAny(chars string) int       { return strings.LastIndexAny(string(s), chars) }
+func (s String) LastIndexByte(c byte) int            { return strings.LastIndexByte(string(s), c) }
+func (s String) LastIndexFunc(f func(rune) bool) int { return strings.LastIndexFunc(string(s), f) }
+func (s String) Map(mapping func(rune) rune) String  { return String(strings.Map(mapping, string(s))) }
+func (s String) Repeat(count int) String             { return String(strings.Repeat(string(s), count)) }
+func (s String) Replace(old, new string, n int) String {
+	return String(strings.Replace(string(s), old, new, n))
+}
+func (s String) Split(sep string) StringArray { return stringArray(strings.Split(string(s), sep)) }
+func (s String) SplitAfter(sep string) StringArray {
+	return stringArray(strings.SplitAfter(string(s), sep))
+}
+func (s String) SplitAfterN(sep string, n int) StringArray {
+	return stringArray(strings.SplitAfterN(string(s), sep, n))
+}
+func (s String) SplitN(sep string, n int) StringArray {
+	return stringArray(strings.SplitN(string(s), sep, n))
+}
+func (s String) Title() String                     { return String(strings.Title(string(s))) }
+func (s String) ToLower() String                   { return String(strings.ToLower(string(s))) }
+func (s String) ToTitle() String                   { return String(strings.ToTitle(string(s))) }
+func (s String) ToUpper() String                   { return String(strings.ToUpper(string(s))) }
+func (s String) Trim(cutset string) String         { return String(strings.Trim(string(s), cutset)) }
+func (s String) TrimFunc(f func(rune) bool) String { return String(strings.TrimFunc(string(s), f)) }
+func (s String) TrimLeft(cutset string) String     { return String(strings.TrimLeft(string(s), cutset)) }
+func (s String) TrimLeftFunc(f func(rune) bool) String {
+	return String(strings.TrimLeftFunc(string(s), f))
+}
+func (s String) TrimPrefix(prefix string) String { return String(strings.TrimPrefix(string(s), prefix)) }
+func (s String) TrimRight(cutset string) String  { return String(strings.TrimRight(string(s), cutset)) }
+func (s String) TrimRightFunc(f func(rune) bool) String {
+	return String(strings.TrimRightFunc(string(s), f))
+}
+func (s String) TrimSpace() String               { return String(strings.TrimSpace(string(s))) }
+func (s String) TrimSuffix(suffix string) String { return String(strings.TrimSuffix(string(s), suffix)) }
+func (s String) ToLowerSpecial(c unicode.SpecialCase) String {
+	return String(strings.ToLowerSpecial(c, string(s)))
+}
+func (s String) ToTitleSpecial(c unicode.SpecialCase) String {
+	return String(strings.ToTitleSpecial(c, string(s)))
+}
+func (s String) ToUpperSpecial(c unicode.SpecialCase) String {
+	return String(strings.ToUpperSpecial(c, string(s)))
+}
+func (s String) FieldsId() StringArray {
+	f := func(c rune) bool {
+		return !unicode.IsLetter(c) && !unicode.IsNumber(c) && c != '_'
+	}
+	return s.FieldsFunc(f)
+}
+func (s String) Center(width interface{}) String { return String(CenterString(string(s), width)) }
+
+// -------------------------- StringArray Type --------------------------
+
+type StringArray []String
+
+func (as StringArray) Str() []string        { return as.Strings() }
+func (as StringArray) Strings() []string    { return ToStrings(as) }
+func (as StringArray) Title() StringArray   { return as.apply(String.Title) }
+func (as StringArray) ToLower() StringArray { return as.apply(String.ToLower) }
+func (as StringArray) ToUpper() StringArray { return as.apply(String.ToUpper) }
+func (as StringArray) ToTitle() StringArray { return as.apply(String.ToTitle) }
+func (as StringArray) Trim(cutset string) StringArray {
+	return as.applyStr(String.Trim, cutset)
+}
+func (as StringArray) TrimFunc(f func(rune) bool) StringArray {
+	return as.applyRF(String.TrimFunc, f)
+}
+func (as StringArray) TrimLeft(cutset string) StringArray {
+	return as.applyStr(String.TrimLeft, cutset)
+}
+func (as StringArray) TrimLeftFunc(f func(rune) bool) StringArray {
+	return as.applyRF(String.TrimLeftFunc, f)
+}
+func (as StringArray) TrimPrefix(prefix string) StringArray {
+	return as.applyStr(String.TrimPrefix, prefix)
+}
+func (as StringArray) TrimRight(cutset string) StringArray {
+	return as.applyStr(String.TrimRight, cutset)
+}
+func (as StringArray) TrimRightFunc(f func(rune) bool) StringArray {
+	return as.applyRF(String.TrimRightFunc, f)
+}
+func (as StringArray) TrimSpace() StringArray { return as.apply(String.TrimSpace) }
+func (as StringArray) TrimSuffix(suffix string) StringArray {
+	return as.applyStr(String.TrimSuffix, suffix)
+}
+func (as StringArray) ToLowerSpecial(c unicode.SpecialCase) StringArray {
+	return as.applySC(String.ToLowerSpecial, c)
+}
+func (as StringArray) ToTitleSpecial(c unicode.SpecialCase) StringArray {
+	return as.applySC(String.ToTitleSpecial, c)
+}
+func (as StringArray) ToUpperSpecial(c unicode.SpecialCase) StringArray {
+	return as.applySC(String.ToUpperSpecial, c)
+}
+
+func (as StringArray) Join(sep interface{}) String {
+	return String(reflect.ValueOf(sep).String()).Join(ToStrings(as)...)
+}
+
+func (as StringArray) applyRF(f func(String, func(rune) bool) String, fr func(rune) bool) (result StringArray) {
+	return as.apply(func(s String) String { return f(s, fr) })
+}
+
+func (as StringArray) applySC(f func(String, unicode.SpecialCase) String, c unicode.SpecialCase) (result StringArray) {
+	return as.apply(func(s String) String { return f(s, c) })
+}
+
+func (as StringArray) applyStr(f func(String, string) String, a string) (result StringArray) {
+	return as.apply(func(s String) String { return f(s, a) })
+}
+
+func (as StringArray) apply(f func(s String) String) (result StringArray) {
+	result = make(StringArray, len(as))
+	for i := range result {
+		result[i] = f(as[i])
+	}
+	return
+}
+
+func stringArray(a []string) (result StringArray) {
+	result = make(StringArray, len(a))
+	for i := range result {
+		result[i] = String(a[i])
+	}
+	return
+}
+
+// CenterString returns string s centered within width
+func CenterString(s string, width interface{}) string {
+	var w int
+	w, err := strconv.Atoi(fmt.Sprintf("%v", width))
+	l := utf8.RuneCountInString(s)
+	if l > w || err != nil {
+		return s
+	}
+	left := (w - l) / 2
+	right := w - left - l
+	return fmt.Sprintf("%[2]*[1]s%[4]s%[3]*[1]s", "", left, right, s)
+}
 
 // Interface2string returns the string representation of any interface
 func Interface2string(str interface{}) string {
