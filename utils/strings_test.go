@@ -53,7 +53,7 @@ func TestString_ToTitle(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(string(tt.s), func(t *testing.T) {
-			if got := tt.s.ToTitle(); got != tt.want {
+			if got := tt.s.ToTitle(); string(got) != tt.want {
 				t.Errorf("String.ToTitle() = %v, want %v", got, tt.want)
 			}
 		})
