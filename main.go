@@ -55,7 +55,7 @@ func main() {
 		logSimple        = app.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
 		skipExtensions   = app.Flag("skip-extensions", "Do not load the gotemplate extensions files *.gte (--se)").Bool()
 		execCode         = app.Flag("exec", "Execute the supplied gotemplate code & render its output to stdout").Short('E').PlaceHolder("code").Strings()
-		files            = app.Arg("files", "Template files to process").ExistingFiles()
+		files            = app.Arg("files", "Template files to process").Strings()
 	)
 
 	app.Flag("lt", "short version of --list-template").Hidden().BoolVar(listTemplates)
@@ -108,7 +108,7 @@ func main() {
 	if *listFunctions || *listTemplates || *listALlTemplates {
 		t = t.GetNewContext("", false)
 		if *listFunctions {
-			t.PrintFunctions()
+			t.PrintFunctions(*files...)
 		}
 		if *listTemplates {
 			t.PrintTemplates(false)

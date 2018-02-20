@@ -460,8 +460,8 @@ func (t Template) getFunctions() []string {
 		"eq", "ge", "gt", "le", "lt", "ne",
 	}
 
-	for _, k := range reflect.ValueOf(t).FieldByName("common").Elem().FieldByName("parseFuncs").MapKeys() {
-		functions = append(functions, k.String())
+	for name := range t.functions {
+		functions = append(functions, name)
 	}
 	sort.Strings(functions)
 	return functions

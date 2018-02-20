@@ -1,3 +1,7 @@
+pre-commit:
+	go fmt ./...
+	go test ./...
+
 install:
 	go install
 

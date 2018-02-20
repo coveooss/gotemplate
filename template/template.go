@@ -8,7 +8,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"strings"
+	"text/tabwriter"
 	"text/template"
 
 	"github.com/coveo/gotemplate/errors"
@@ -35,6 +37,7 @@ type Template struct {
 	folder       string
 	children     map[string]*Template
 	aliases      *map[string]interface{}
+	functions    template.FuncMap
 }
 
 var toStrings = utils.ToStrings
@@ -92,6 +95,18 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 		}
 	}
 	return &t
+}
+
+// Funcs overrides the base Funcs to get a copy of the functins added to the template
+func (t *Template) Funcs(funcMap template.FuncMap) *Template {
+	if t.functions == nil {
+		t.functions = make(template.FuncMap)
+	}
+	for key, value := range funcMap {
+		t.functions[key] = value
+	}
+	t.Template.Funcs(funcMap)
+	return t
 }
 
 // ProcessContent loads and runs the file template
@@ -237,13 +252,65 @@ func (t Template) isTemplate(file string) bool {
 	return false
 }
 
-// PrintFunctions output the list of functions available
-func (t Template) PrintFunctions() {
+func (t Template) filterFunctions(filters ...string) []string {
 	functions := t.getFunctions()
+	if len(filters) == 0 {
+		return functions
+	}
 
+	for i := range filters {
+		filters[i] = strings.ToLower(filters[i])
+	}
+
+	filtered := make([]string, 0, len(functions))
+	for i := range functions {
+		for f := range filters {
+			if strings.Contains(strings.ToLower(functions[i]), filters[f]) {
+				filtered = append(filtered, functions[i])
+				break
+			}
+		}
+	}
+	return filtered
+}
+
+func (t Template) printFunctionsDetailed(functions []string) {
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 0, 1, 1, ' ', 0)
+	fmt.Fprintln(w, "Function\tParameters\tOutputs")
+	fmt.Fprintln(w, "--------\t----------\t-------")
+	for i := range functions {
+		function := t.functions[functions[i]]
+		var in, out string
+		if function != nil {
+			signature := reflect.ValueOf(function).Type()
+			var parameters, outputs []string
+			for i := 0; i < signature.NumIn(); i++ {
+				parameters = append(parameters, strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "generic", -1))
+			}
+			in = strings.Join(parameters, ", ")
+			for i := 0; i < signature.NumOut(); i++ {
+				outputs = append(outputs, strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "generic", -1))
+			}
+			out = strings.Join(outputs, ", ")
+		} else {
+			in = "Check go template documentation"
+		}
+		fmt.Fprintf(w, "%s\t%s\t%s\n", functions[i], in, out)
+	}
+	w.Flush()
+}
+
+// PrintFunctions output the list of functions available
+func (t Template) PrintFunctions(filters ...string) {
 	const nbColumn = 5
+	functions := t.filterFunctions(filters...)
+	if getLogLevel() >= 3 {
+		t.printFunctionsDetailed(functions)
+		return
+	}
+
 	colLength := int(math.Ceil(float64(len(functions)) / float64(nbColumn)))
-	maxLength := 0
 
 	// Initialize the columns to sort function per column
 	var list [nbColumn][]string
@@ -252,10 +319,11 @@ func (t Template) PrintFunctions() {
 	}
 
 	// Place functions into columns
-	for i, function := range functions {
+	maxLength := 0
+	for i := range functions {
 		column := list[i/colLength]
-		column[i%colLength] = function
-		maxLength = int(math.Max(float64(len(function)), float64(maxLength)))
+		column[i%colLength] = functions[i]
+		maxLength = int(math.Max(float64(len(functions[i])), float64(maxLength)))
 	}
 
 	// Print the columns
@@ -265,7 +333,7 @@ func (t Template) PrintFunctions() {
 		}
 		fmt.Println()
 	}
-	fmt.Fprintln(os.Stderr)
+	fmt.Println()
 }
 
 // PrintTemplates output the list of templates available
