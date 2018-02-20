@@ -43,7 +43,7 @@ func Unmarshal(bs []byte, out interface{}) (err error) {
 		if err := hcl.Unmarshal(bs, &temp); err != nil {
 			return err
 		}
-		temp = utils.Flatten(temp)
+		temp = Flatten(temp)
 		reflect.ValueOf(out).Elem().Set(reflect.ValueOf(temp["_"]))
 		return nil
 	}

@@ -208,6 +208,19 @@ func ConvertData(data string, out interface{}) error {
 		if err := HCLConvert([]byte(data), out); err != nil {
 			errs = append(errs, err)
 		} else {
+			switch out := out.(type) {
+			case *interface{}:
+				switch out := (*out).(type) {
+				case map[string]interface{}:
+					out = Flatten(out)
+				}
+			case *map[string]interface{}:
+				*out = Flatten(*out)
+			case map[string]interface{}:
+				out = Flatten(out)
+			default:
+				fmt.Printf("%T\n", out)
+			}
 			return nil
 		}
 	}
@@ -224,12 +237,7 @@ func ConvertData(data string, out interface{}) error {
 func LoadData(filename string, out interface{}) (err error) {
 	var content []byte
 	if content, err = ioutil.ReadFile(filename); err == nil {
-		if err = ConvertData(string(content), out); err == nil {
-			switch out := out.(type) {
-			case map[string]interface{}:
-				out = Flatten(out)
-			}
-		}
+		return ConvertData(string(content), out)
 	}
 	return
 }

@@ -5,15 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"reflect"
-	"runtime/debug"
-	"strings"
 
 	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/template"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
-	goerrors "github.com/go-errors/errors"
 	logging "github.com/op/go-logging"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -23,22 +19,6 @@ var version = "master"
 var tempFolder = errors.Must(ioutil.TempDir("", "gotemplate-")).(string)
 
 const disableStdinCheck = "GOTEMPLATE_NO_STDIN"
-
-func cleanup() {
-	os.RemoveAll(tempFolder)
-
-	if err := recover(); err != nil {
-		switch err := err.(type) {
-		case errors.Managed:
-			errors.Print(err)
-		case *goerrors.Error:
-			errors.Printf(err.ErrorStack())
-		default:
-			errors.Printf("%T: %[1]v\n%s", err, string(debug.Stack()))
-		}
-	}
-}
-
 const description = `
 An extended template processor for go.
 
@@ -126,6 +106,7 @@ func main() {
 	t.TempFolder = tempFolder
 
 	if *listFunctions || *listTemplates || *listALlTemplates {
+		t = t.GetNewContext("", false)
 		if *listFunctions {
 			t.PrintFunctions()
 		}
@@ -173,145 +154,3 @@ func main() {
 		utils.TerraformFormat(resultFiles...)
 	}
 }
-
-func readStdin() string {
-	if stdinContent != "" {
-		return stdinContent
-	}
-	stdinContent = string(errors.Must(ioutil.ReadAll(os.Stdin)).([]byte))
-	return stdinContent
-}
-
-var stdinContent string
-
-func createContext(varsFiles []string, namedVars []string) (context map[string]interface{}) {
-	context = map[string]interface{}{}
-
-	type fileDef struct {
-		name    string
-		value   interface{}
-		unnamed bool
-	}
-
-	nameValuePairs := make([]fileDef, 0, len(varsFiles)+len(namedVars))
-	for i := range varsFiles {
-		nameValuePairs = append(nameValuePairs, fileDef{value: varsFiles[i]})
-	}
-
-	for i := range namedVars {
-		data := make(map[string]interface{})
-		if err := utils.ConvertData(namedVars[i], &data); err != nil {
-			var fd fileDef
-			fd.name, fd.value = utils.Split2(namedVars[i], "=")
-			if fd.value == "" {
-				fd = fileDef{"", fd.name, true}
-			}
-			nameValuePairs = append(nameValuePairs, fd)
-			continue
-		}
-		for key, value := range utils.Flatten(data) {
-			nameValuePairs = append(nameValuePairs, fileDef{key, value, false})
-		}
-	}
-
-	for _, nv := range nameValuePairs {
-		var loader func(string) (map[string]interface{}, error)
-		filename, _ := reflect.ValueOf(nv.value).Interface().(string)
-		if filename != "" {
-			loader = func(filename string) (result map[string]interface{}, err error) {
-				var content interface{}
-				if err := utils.LoadData(filename, &content); err == nil {
-					if content, isMap := content.(map[string]interface{}); isMap && nv.name == "" && !nv.unnamed {
-						return content, nil
-					}
-					if nv.name == "" {
-						nv.name = strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
-					}
-					return map[string]interface{}{nv.name: content}, nil
-				} else if _, isFileErr := err.(*os.PathError); !isFileErr {
-					return nil, err
-				}
-				if nv.name == "" {
-					nv.name = "DEFAULT"
-				}
-				return map[string]interface{}{nv.name: nv.value}, nil
-			}
-
-			if filename == "-" {
-				loader = func(filename string) (result map[string]interface{}, err error) {
-					var content interface{}
-					if err = utils.ConvertData(readStdin(), &content); err != nil {
-						return nil, err
-					}
-					if content, isMap := content.(map[string]interface{}); isMap && nv.name == "" {
-						return content, nil
-					}
-					if nv.name == "" {
-						nv.name = "STDIN"
-					}
-					return map[string]interface{}{nv.name: content}, nil
-				}
-			}
-		}
-
-		if loader == nil {
-			context[nv.name] = nv.value
-			continue
-		}
-		content, err := loader(filename)
-		if err != nil {
-			errors.Raise("Error %v while loading vars file %s", nv.value, err)
-		}
-		for key, value := range content {
-			context[key] = value
-		}
-
-		// There is no content
-		if len(content) == 0 && nv.unnamed {
-			errors.Raise("--var parameter must be a file or assignation (name=value) %s", nv.value)
-		}
-	}
-	return
-}
-
-func exclude(files []string, patterns []string) []string {
-	if patterns = extend(patterns); len(patterns) == 0 {
-		// There is no exclusion pattern, so we return the list of files as is
-		return files
-	}
-
-	result := make([]string, 0, len(files))
-	for i, file := range files {
-		var excluded bool
-		for _, pattern := range patterns {
-			file = iif(filepath.IsAbs(pattern), file, filepath.Base(file)).(string)
-			if excluded = errors.Must(filepath.Match(pattern, file)).(bool); excluded {
-				template.Log.Noticef("%s ignored", files[i])
-				break
-			}
-		}
-		if !excluded {
-			result = append(result, files[i])
-		}
-	}
-	return result
-}
-
-func extend(values []string) []string {
-	result := make([]string, 0, len(values))
-	for i := range values {
-		for _, sv := range strings.Split(values[i], ",") {
-			sv = strings.TrimSpace(sv)
-			if sv != "" {
-				if strings.Contains(filepath.ToSlash(sv), "/") {
-					// If the pattern contains /, we make it relative
-					sv = errors.Must(filepath.Abs(sv)).(string)
-				}
-				result = append(result, sv)
-			}
-		}
-	}
-	return result
-}
-
-var iif = utils.IIf

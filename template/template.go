@@ -45,27 +45,8 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 	errors.Must(t.Parse(""))
 	t.context = context
 	t.aliases = &map[string]interface{}{}
-	t.RazorSyntax = razor
-
-	// Set the template delimiters
-	if delimiters == "" {
-		delimiters = "{{,}}"
-		if t.RazorSyntax {
-			delimiters += ",@"
-		}
-	}
-	t.delimiters = strings.SplitN(delimiters, ",", 3)
-	switch len(t.delimiters) {
-	case 2:
-		if t.RazorSyntax {
-			t.delimiters = append(t.delimiters, "@")
-		}
-	case 3:
-		break
-	default:
-		errors.Raise("Invalid delimiters '%s', must be two comma separated parts", delimiters)
-	}
-
+	t.RazorSyntax = true
+	t.delimiters = []string{"{{", "}}", "@"}
 	t.init(utils.Pwd())
 
 	// Set the regular expression replacements
@@ -100,6 +81,16 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 		t.children = make(map[string]*Template)
 	}
 
+	// Set the options supplied by caller
+	t.RazorSyntax = razor
+	if delimiters != "" {
+		for i, delimiter := range strings.Split(delimiters, ",") {
+			if i == len(t.delimiters) {
+				errors.Raise("Invalid delimiters '%s', must be two comma separated parts", delimiters)
+			}
+			t.delimiters[i] = delimiter
+		}
+	}
 	return &t
 }
 
@@ -125,7 +116,7 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 		return content, nil
 	}
 
-	context := t.getContext(filepath.Dir(source))
+	context := t.GetNewContext(filepath.Dir(source), true)
 	newTemplate, err := context.New(source).Parse(content)
 	if err != nil {
 		return "", err
@@ -280,7 +271,6 @@ func (t Template) PrintFunctions() {
 // PrintTemplates output the list of templates available
 func (t Template) PrintTemplates(all bool) {
 	templates := t.getTemplateNames()
-
 	var maxLen int
 	for _, template := range templates {
 		t := t.Lookup(template)
@@ -298,9 +288,11 @@ func (t Template) PrintTemplates(all bool) {
 			if tpl.Name() == tpl.ParseName {
 				name = ""
 			}
-			fmt.Fprintf(os.Stderr, "%-[3]*[1]s %[2]s\n", name, faint(utils.Relative(t.folder, tpl.ParseName)), maxLen)
+			folder := utils.Relative(t.folder, tpl.ParseName)
+			if folder+name != "." {
+				fmt.Fprintf(os.Stderr, "%-[3]*[1]s %[2]s\n", name, faint(folder), maxLen)
+			}
 		}
-		fmt.Fprintln(os.Stderr)
 	}
 	fmt.Fprintln(os.Stderr)
 }
@@ -336,9 +328,10 @@ func (t *Template) importTemplates(source Template) {
 	}
 }
 
-// Get a distint context for each folder
-func (t Template) getContext(folder string) *Template {
-	if context, ok := t.children[folder]; ok {
+// GetNewContext returns a distint context for each folder
+func (t Template) GetNewContext(folder string, useCache bool) *Template {
+	folder, _ = filepath.Abs(folder)
+	if context, found := t.children[folder]; useCache && found {
 		return context
 	}
 
@@ -350,6 +343,9 @@ func (t Template) getContext(folder string) *Template {
 	newTemplate.importTemplates(t)
 
 	// We register the new template as a child of the main template
+	if !useCache {
+		return &newTemplate
+	}
 	t.children[folder] = &newTemplate
 	return t.children[folder]
 }
