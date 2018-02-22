@@ -20,7 +20,10 @@ An extended template processor for go.
 See: https://github.com/coveo/gotemplate/blob/master/README.md for complete documentation.
 
 Flags:
- -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
+  -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
+  -R, --razor                 Allow razor like expressions (@variable), on by default --no-razor to disable
+      --math                  Include Math library, on by default --no-math to disable
+      --sprig                 Include Sprig library, on by default --no-sprig to disable
       --delimiters={{,}},@    Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)
   -i, --import=file ...       Import variables files (could be any of YAML, JSON or HCL format)
   -V, --var=values ...        Import named variables (if value is a file, the content is loaded)
@@ -39,16 +42,14 @@ Flags:
       --all-templates         List all templates (--at)
   -q, --quiet                 Don not print out the name of the generated files
   -v, --version               Get the current version of gotemplate
-  -R, --razor                 Allow razor like expressions (@variable)
   -d, --disable               Disable go template rendering (used to view razor conversion)
   -c, --color                 Force rendering of colors event if output is redirected
   -L, --log-level=2           Set the logging level (0-5)
       --log-simple            Disable the extended logging, i.e. no color, no date (--ls)
       --skip-extensions       Do not load the gotemplate extensions files *.gte (--se)
-  -E, --exec=code ...         Execute the supplied gotemplate code & render its output to stdout
 
 Args:
-  [<files>]  Template files to process
+  [<templates>]  Template files or command to process
 ```
 
 ## Available functions
@@ -128,6 +129,7 @@ current | | Returns the current folder (like `pwd`, but returns the folder of th
 ellipsis | function string, args ... | Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).
 exec | command string, args ... | Returns the result of the shell command as structured data (as string if no other conversion is possible).
 formatList | format string, list | Return a list of strings by applying the format to each element of the supplied list.
+func | name, function, source, default map, args names | Defines a function with the current context using the function (`exec`, `run`, `include`, `template`). Executed in the context of the caller.
 functions | | Return the list of available functions.
 glob | args ... | Returns the expanded list of supplied arguments (expand *[]? on filename).
 id | string [replacement] | Returns a valid go identifier from the supplied string (replacing any non compliant character by replacement, default `_` ).
@@ -233,66 +235,67 @@ They are coming from either gotemplate, Sprig or native Go Template.
 
 ```text
 > gotemplate -l
-abbrev                  cosine                  hyperbolicCosine        nindent                 slice
-abbrevboth              cosinus                 hyperbolicCosinus       nospace                 smallest
-abs                     current                 hyperbolicSine          not                     snakecase
-acos                    data                    hyperbolicSinus         now                     sortAlpha
-acosh                   date                    hyperbolicTangent       omit                    split
-add                     dateInZone              hypot                   or                      splitLines
-add1                    dateModify              id                      pick                    splitList
-ago                     date_in_zone            ifUndef                 pickv                   sqrt
-alias                   date_modify             iif                     pluck                   squote
-and                     dec                     ilogb                   plural                  string
-append                  decimal                 include                 pow                     sub
-arcCosine               default                 indent                  pow10                   substitute
-arcCosinus              deg                     index                   power                   substr
-arcHyperbolicCosine     degree                  initial                 power10                 subtract
-arcHyperbolicCosinus    derivePassword          initials                prepend                 sum
-arcHyperbolicSine       dict                    int                     print                   swapcase
-arcHyperbolicSinus      dir                     int64                   printf                  tan
-arcHyperbolicTangent    div                     isAbs                   println                 tangent
-arcSine                 divide                  isInf                   prod                    tanh
-arcSinus                ellipsis                isInfinity              product                 templateNames
-arcTangent              empty                   isNaN                   push                    templates
-arcTangent2             env                     join                    pwd                     title
-asin                    eq                      joinLines               quote                   to
-asinh                   exec                    js                      quotient                toBash
-atan                    exp                     json                    rad                     toDate
-atan2                   exp2                    key                     radian                  toHcl
-atanh                   expandenv               keys                    randAlpha               toJson
-atoi                    expm1                   kindIs                  randAlphaNum            toPrettyHcl
-average                 exponent                kindOf                  randAscii               toPrettyJson
-avg                     exponent2               last                    randNumeric             toPrettyTFVars
-b32dec                  ext                     ldexp                   regexFind               toQuotedHcl
-b32enc                  extract                 le                      regexFindAll            toQuotedJson
-b64dec                  fail                    leftShift               regexMatch              toQuotedTFVars
-b64enc                  first                   len                     regexReplaceAll         toString
-band                    float64                 lenc                    regexReplaceAllLiteral  toStrings
-base                    floor                   lgamma                  regexSplit              toTFVars
-bclear                  formatList              list                    rem                     toYaml
-biggest                 frexp                   local_alias             remainder               trim
-bitwiseAND              functions               log                     repeat                  trimAll
-bitwiseClear            gamma                   log10                   replace                 trimPrefix
-bitwiseOR               ge                      log1p                   rest                    trimSuffix
-bitwiseXOR              genCA                   log2                    reverse                 trimall
-bool                    genPrivateKey           logb                    rightShift              trunc
-bor                     genSelfSignedCert       lorem                   round                   tuple
-bxor                    genSignedCert           lower                   rshift                  typeIs
-call                    get                     lshift                  run                     typeIsLike
-camelcase               glob                    lt                      safeIndex               typeOf
-cat                     gt                      max                     semver                  undef
-ceil                    has                     maximum                 semverCompare           uniq
-center                  hasKey                  merge                   set                     unset
-char                    hasPrefix               mergeList               sha256sum               until
-clean                   hasSuffix               min                     shuffle                 untilStep
-coalesce                hcl                     minimum                 signBit                 untitle
-color                   hello                   mod                     sin                     upper
-compact                 hex                     modf                    sincos                  urlquery
-concat                  hexa                    modulo                  sine                    uuidv4
-contains                hexaDecimal             mul                     sineCosine              without
-content                 html                    multiply                sinh                    wrap
-cos                     htmlDate                ne                      sinus                   wrapWith
-cosh                    htmlDateInZone          nextAfter               sinusCosinus            yaml
+abbrev                  cosinus                 hyperbolicCosinus       not                     sortAlpha
+abbrevboth              current                 hyperbolicSine          now                     split
+abs                     data                    hyperbolicSinus         omit                    splitLines
+acos                    date                    hyperbolicTangent       or                      splitList
+acosh                   dateInZone              hypot                   pick                    sqrt
+add                     dateModify              id                      pickv                   squote
+add1                    date_in_zone            ifUndef                 pluck                   string
+ago                     date_modify             iif                     plural                  sub
+alias                   dec                     ilogb                   pow                     substitute
+and                     decimal                 include                 pow10                   substr
+append                  default                 indent                  power                   subtract
+arcCosine               deg                     index                   power10                 sum
+arcCosinus              degree                  initial                 prepend                 swapcase
+arcHyperbolicCosine     derivePassword          initials                print                   tan
+arcHyperbolicCosinus    dict                    int                     printf                  tangent
+arcHyperbolicSine       dir                     int64                   println                 tanh
+arcHyperbolicSinus      div                     isAbs                   prod                    templateNames
+arcHyperbolicTangent    divide                  isInf                   product                 templates
+arcSine                 ellipsis                isInfinity              push                    title
+arcSinus                empty                   isNaN                   pwd                     to
+arcTangent              env                     join                    quote                   toBash
+arcTangent2             eq                      joinLines               quotient                toDate
+asin                    exec                    js                      rad                     toHcl
+asinh                   exp                     json                    radian                  toJson
+atan                    exp2                    key                     randAlpha               toPrettyHcl
+atan2                   expandenv               keys                    randAlphaNum            toPrettyJson
+atanh                   expm1                   kindIs                  randAscii               toPrettyTFVars
+atoi                    exponent                kindOf                  randNumeric             toQuotedHcl
+average                 exponent2               last                    regexFind               toQuotedJson
+avg                     ext                     ldexp                   regexFindAll            toQuotedTFVars
+b32dec                  extract                 le                      regexMatch              toString
+b32enc                  fail                    leftShift               regexReplaceAll         toStrings
+b64dec                  first                   len                     regexReplaceAllLiteral  toTFVars
+b64enc                  float64                 lenc                    regexSplit              toYaml
+band                    floor                   lgamma                  rem                     trim
+base                    formatList              list                    remainder               trimAll
+bclear                  frexp                   local_alias             repeat                  trimPrefix
+biggest                 func                    log                     replace                 trimSuffix
+bitwiseAND              functions               log10                   rest                    trimall
+bitwiseClear            gamma                   log1p                   reverse                 trunc
+bitwiseOR               ge                      log2                    rightShift              tuple
+bitwiseXOR              genCA                   logb                    round                   typeIs
+bool                    genPrivateKey           lorem                   rshift                  typeIsLike
+bor                     genSelfSignedCert       lower                   run                     typeOf
+bxor                    genSignedCert           lshift                  safeIndex               undef
+call                    get                     lt                      semver                  uniq
+camelcase               glob                    max                     semverCompare           unset
+cat                     gt                      maximum                 set                     until
+ceil                    has                     merge                   sha256sum               untilStep
+center                  hasKey                  mergeList               shuffle                 untitle
+char                    hasPrefix               min                     signBit                 upper
+clean                   hasSuffix               minimum                 sin                     urlquery
+coalesce                hcl                     mod                     sincos                  uuidv4
+color                   hello                   modf                    sine                    without
+compact                 hex                     modulo                  sineCosine              wrap
+concat                  hexa                    mul                     sinh                    wrapWith
+contains                hexaDecimal             multiply                sinus                   yaml
+content                 html                    ne                      sinusCosinus
+cos                     htmlDate                nextAfter               slice
+cosh                    htmlDateInZone          nindent                 smallest
+cosine                  hyperbolicCosine        nospace                 snakecase
 ```
 
 Links to documentations of foreign functions are in the section [base functions](#base-functions).
