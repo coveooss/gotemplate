@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/template"
@@ -29,7 +30,16 @@ func main() {
 	defer cleanup()
 
 	var (
-		app              = kingpin.New(os.Args[0], description)
+		razorSyntax  = true
+		app          = kingpin.New(os.Args[0], description)
+		includeMath  = true
+		includeSprig = true
+	)
+
+	app.Flag("razor", "Allow razor like expressions (@variable), on by default --no-razor to disable").Short('R').BoolVar(&razorSyntax)
+	app.Flag("math", "Include Math library, on by default --no-math to disable").BoolVar(&includeMath)
+	app.Flag("sprig", "Include Sprig library, on by default --no-sprig to disable").BoolVar(&includeSprig)
+	var (
 		delimiters       = app.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
 		varFiles         = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
 		namedVars        = app.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
@@ -48,14 +58,12 @@ func main() {
 		listALlTemplates = app.Flag("all-templates", "List all templates (--at)").Bool()
 		quiet            = app.Flag("quiet", "Don not print out the name of the generated files").Short('q').Bool()
 		getVersion       = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
-		razorSyntax      = app.Flag("razor", "Allow razor like expressions (@variable)").Short('R').Bool()
 		disableRender    = app.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
 		forceColor       = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
 		logLevel         = app.Flag("log-level", "Set the logging level (0-5)").Short('L').Default("2").Int8()
 		logSimple        = app.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
 		skipExtensions   = app.Flag("skip-extensions", "Do not load the gotemplate extensions files *.gte (--se)").Bool()
-		execCode         = app.Flag("exec", "Execute the supplied gotemplate code & render its output to stdout").Short('E').PlaceHolder("code").Strings()
-		files            = app.Arg("files", "Template files to process").Strings()
+		templates        = app.Arg("templates", "Template files or command to process").Strings()
 	)
 
 	app.Flag("lt", "short version of --list-template").Hidden().BoolVar(listTemplates)
@@ -67,6 +75,13 @@ func main() {
 	app.Flag("st", "").Hidden().BoolVar(skipExtensions)
 	app.Flag("skip", "").Hidden().BoolVar(skipExtensions)
 	app.Flag("skip-ext", "").Hidden().BoolVar(skipExtensions)
+
+	for i := range os.Args {
+		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
+		if strings.HasPrefix(os.Args[i], "@") {
+			os.Args[i] = "#" + os.Args[i]
+		}
+	}
 
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
@@ -98,7 +113,15 @@ func main() {
 		*forceStdin = true
 	}
 
-	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, *razorSyntax, *skipExtensions, *substitutes...)
+	var lib template.Libraries
+	if includeMath {
+		lib |= template.Math
+	}
+	if includeSprig {
+		lib |= template.Sprig
+	}
+
+	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, lib, razorSyntax, *skipExtensions, *substitutes...)
 	t.Quiet = *quiet
 	t.Disabled = *disableRender
 	t.Overwrite = *overwrite
@@ -108,7 +131,7 @@ func main() {
 	if *listFunctions || *listTemplates || *listALlTemplates {
 		t = t.GetNewContext("", false)
 		if *listFunctions {
-			t.PrintFunctions(*files...)
+			t.PrintFunctions(*templates...)
 		}
 		if *listTemplates {
 			t.PrintTemplates(false)
@@ -120,13 +143,22 @@ func main() {
 	}
 
 	errors.Must(os.Chdir(*sourceFolder))
-	if !*forceStdin && len(*execCode) == 0 {
-		// We only process template files if go template has not been called with piped input
-		*files = append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, "*.gt", "*.template"), *files...)
+	if !*forceStdin && len(*templates) == 0 {
+		// We only process template files if go template has not been called with piped input or explicit files
+		*includePatterns = append(*includePatterns, "*.gt,*.template")
 	}
-	*files = exclude(append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, extend(*includePatterns)...), *files...), *excludedPatterns)
 
-	resultFiles, err := t.ProcessFiles(*sourceFolder, *targetFolder, *files...)
+	*templates = append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, extend(*includePatterns)...), *templates...)
+	for i, template := range *templates {
+		if !t.IsCode(template) {
+			if rel, err := filepath.Rel(*sourceFolder, (*templates)[i]); err == nil {
+				(*templates)[i] = rel
+			}
+		}
+	}
+	*templates = exclude(*templates, *excludedPatterns)
+
+	resultFiles, err := t.ProcessTemplates(*sourceFolder, *targetFolder, *templates...)
 	if err != nil {
 		errors.Print(err)
 	}
@@ -135,14 +167,6 @@ func main() {
 		// If there is input in stdin and it has not already been consumed as data (---var)
 		content := readStdin()
 		if result, err := t.ProcessContent(content, "Piped input"); err == nil {
-			fmt.Println(result)
-		} else {
-			errors.Print(err)
-		}
-	}
-
-	for _, code := range *execCode {
-		if result, err := t.ProcessContent(code, fmt.Sprintf("Parameter %s", code)); err == nil {
 			fmt.Println(result)
 		} else {
 			errors.Print(err)

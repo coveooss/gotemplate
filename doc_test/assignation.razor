@@ -10,12 +10,6 @@
 {{- set $ "num4" (5E-3) }}
 {{- set $ "hex1" (0x100) }}
 
-### List all global variables
-
-{{- range $key, $value := $ }}
-    {{ $key }} = {{ $value }}
-{{- end }}
-
 ## Local variables
 
 {{- $string := "string value" }}

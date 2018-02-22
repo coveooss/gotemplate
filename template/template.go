@@ -38,25 +38,38 @@ type Template struct {
 	children     map[string]*Template
 	aliases      *map[string]interface{}
 	functions    template.FuncMap
+	include      Libraries
 }
+
+type Libraries int
+
+const (
+	_ Libraries = iota << 2
+	Math
+	Sprig
+	AllLibraries = 0xFFFF
+)
 
 var toStrings = utils.ToStrings
 
 // NewTemplate creates an Template object with default initialization
-func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bool, substitutes ...string) *Template {
+func NewTemplate(context interface{}, delimiters string, libraries Libraries, razor, skipTemplates bool, substitutes ...string) *Template {
 	t := Template{Template: template.New("Main")}
 	errors.Must(t.Parse(""))
 	t.context = context
 	t.aliases = &map[string]interface{}{}
-	t.RazorSyntax = true
 	t.delimiters = []string{"{{", "}}", "@"}
-	t.init(utils.Pwd())
 
 	// Set the regular expression replacements
 	baseRegex := []string{`/(?m)^\s*#!\s*$/`}
 	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
 
 	if !skipTemplates {
+		ext := t.GetNewContext(utils.Pwd(), false)
+		ext.RazorSyntax = true
+		ext.include = AllLibraries
+		ext.init(utils.Pwd())
+
 		// We temporary set the logging level one grade lower
 		logLevel := logging.GetLevel(logger)
 		logging.SetLevel(logLevel-1, logger)
@@ -70,13 +83,13 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 			content := string(errors.Must(ioutil.ReadFile(file)).([]byte))
 
 			// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
-			if _, err := t.ProcessContent(content, file); err != nil {
+			if _, err := ext.ProcessContent(content, file); err != nil {
 				Log.Notice(color.New(color.FgRed).Sprintf("Error while processing %v", err))
 			}
 		}
 
 		// Add the children contexts to the main context
-		for _, context := range t.children {
+		for _, context := range ext.children {
 			t.importTemplates(*context)
 		}
 
@@ -85,7 +98,9 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 	}
 
 	// Set the options supplied by caller
+	t.include = libraries
 	t.RazorSyntax = razor
+	t.init(utils.Pwd())
 	if delimiters != "" {
 		for i, delimiter := range strings.Split(delimiters, ",") {
 			if i == len(t.delimiters) {
@@ -96,6 +111,25 @@ func NewTemplate(context interface{}, delimiters string, razor, skipTemplates bo
 	}
 	return &t
 }
+
+// IsCode determines if the supplied code appears to have gotemplate code
+func (t Template) IsCode(code string) bool {
+	return t.IsRazor(code) || strings.Contains(code, t.LeftDelim()) || strings.Contains(code, t.RightDelim())
+}
+
+// IsRazor determines if the supplied code appears to have razor code
+func (t Template) IsRazor(code string) bool {
+	return strings.Contains(code, t.RazorDelim())
+}
+
+// LeftDelim returns the left delimiter
+func (t Template) LeftDelim() string { return t.delimiters[0] }
+
+// RightDelim returns the right delimiter
+func (t Template) RightDelim() string { return t.delimiters[1] }
+
+// RazorDelim returns the razor delimiter
+func (t Template) RazorDelim() string { return t.delimiters[2] }
 
 // Funcs overrides the base Funcs to get a copy of the functins added to the template
 func (t *Template) Funcs(funcMap template.FuncMap) *Template {
@@ -122,11 +156,11 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 		}
 	}
 
-	if t.RazorSyntax {
+	if t.RazorSyntax && t.IsRazor(content) {
 		content = string(t.applyRazor([]byte(content)))
 	}
 
-	if t.Disabled || !(strings.Contains(content, t.delimiters[0]) && strings.Contains(content, t.delimiters[1])) {
+	if t.Disabled || !t.IsCode(content) {
 		// There is no template element to evaluate or the template rendering is off
 		return content, nil
 	}
@@ -150,26 +184,35 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 	return t.substitute(out.String()), nil
 }
 
-// ProcessFile loads and runs the file template
-func (t Template) ProcessFile(file, sourceFolder, targetFolder string) (resultFile string, err error) {
-	fileContent, err := ioutil.ReadFile(file)
+// ProcessTemplate loads and runs the template if it is a file, otherwise, it simply process the content
+func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (resultFile string, err error) {
+	isCode := t.IsCode(template)
+	var content string
+
+	if isCode {
+		content = template
+		template = "."
+	} else if fileContent, err := ioutil.ReadFile(template); err == nil {
+		content = string(fileContent)
+	} else {
+		return "", err
+	}
+
+	result, err := t.ProcessContent(content, template)
 	if err != nil {
 		return
 	}
 
-	content := string(fileContent)
-	result, err := t.ProcessContent(content, file)
-	if err != nil {
-		return
+	if isCode {
+		fmt.Println(result)
+		return "", nil
 	}
-
-	resultFile = file
+	resultFile = template
 	for i := range templateExt {
 		resultFile = strings.TrimSuffix(resultFile, templateExt[i])
 	}
 	resultFile = getTargetFile(resultFile, sourceFolder, targetFolder)
-
-	isTemplate := t.isTemplate(file)
+	isTemplate := t.isTemplate(template)
 	if isTemplate {
 		ext := path.Ext(resultFile)
 		if strings.TrimSpace(result)+ext == "" {
@@ -182,7 +225,7 @@ func (t Template) ProcessFile(file, sourceFolder, targetFolder string) (resultFi
 	}
 
 	if t.OutputStdout {
-		err = t.printResult(file, resultFile, result)
+		err = t.printResult(template, resultFile, result)
 		if err != nil {
 			errors.Print(err)
 		}
@@ -193,11 +236,11 @@ func (t Template) ProcessFile(file, sourceFolder, targetFolder string) (resultFi
 		return "", nil
 	}
 
-	mode := errors.Must(os.Stat(file)).(os.FileInfo).Mode()
+	mode := errors.Must(os.Stat(template)).(os.FileInfo).Mode()
 	if !isTemplate && !t.Overwrite {
-		newName := file + ".original"
-		t.trace("%s => %s", utils.Relative(t.folder, file), utils.Relative(t.folder, newName))
-		errors.Must(os.Rename(file, file+".original"))
+		newName := template + ".original"
+		t.trace("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
+		errors.Must(os.Rename(template, template+".original"))
 	}
 
 	if sourceFolder != targetFolder {
@@ -214,17 +257,17 @@ func (t Template) ProcessFile(file, sourceFolder, targetFolder string) (resultFi
 	}
 
 	if isTemplate && t.Overwrite && sourceFolder == targetFolder {
-		os.Remove(file)
+		os.Remove(template)
 	}
 	return
 }
 
-// ProcessFiles loads and runs the file template
-func (t Template) ProcessFiles(sourceFolder, targetFolder string, files ...string) (resultFiles []string, errors errors.Array) {
-	resultFiles = make([]string, 0, len(files))
+// ProcessTemplates loads and runs the file template or execute the content if it is not a file
+func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates ...string) (resultFiles []string, errors errors.Array) {
+	resultFiles = make([]string, 0, len(templates))
 
-	for _, file := range files {
-		resultFile, err := t.ProcessFile(file, sourceFolder, targetFolder)
+	for i := range templates {
+		resultFile, err := t.ProcessTemplate(templates[i], sourceFolder, targetFolder)
 		if err == nil {
 			if resultFile != "" {
 				resultFiles = append(resultFiles, resultFile)
@@ -372,17 +415,22 @@ func (t *Template) init(folder string) {
 	t.Parse("")
 	t.children = make(map[string]*Template)
 	t.Delims(t.delimiters[0], t.delimiters[1])
-	t.setConstant("\n", "NL", "CR", "NEWLINE")
+	t.setConstant(false, "\n", "NL", "CR", "NEWLINE")
 }
 
-func (t *Template) setConstant(value interface{}, names ...string) {
+func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...string) {
 	context, isMap := t.context.(map[string]interface{})
 	if !isMap {
 		return
 	}
 	for i := range names {
-		if _, isSet := context[names[i]]; !isSet {
+		if val, isSet := context[names[i]]; !isSet {
 			context[names[i]] = value
+			if stopOnFirst {
+				return
+			}
+		} else if isSet && reflect.DeepEqual(value, val) {
+			return
 		}
 	}
 }
@@ -446,6 +494,7 @@ func (t Template) printResult(source, target, result string) (err error) {
 		t.trace("# %s", target)
 	}
 	fmt.Printf(result)
+	fmt.Fprintln(os.Stderr)
 	return
 }
 

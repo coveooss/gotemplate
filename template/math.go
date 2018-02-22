@@ -124,7 +124,7 @@ func (t *Template) addMathFuncs() {
 		"NegInf":                 math.Inf(-1),
 	}
 
-	t.setConstant(constants, "MATH", "Math")
+	t.setConstant(true, constants, "Math", "MATH")
 }
 
 var round = sprig.GenericFuncMap()["round"].(func(a interface{}, p int, r_opt ...float64) float64)

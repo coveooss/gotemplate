@@ -35,7 +35,7 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 			nameValuePairs = append(nameValuePairs, fd)
 			continue
 		}
-		for key, value := range utils.Flatten(data) {
+		for key, value := range data {
 			nameValuePairs = append(nameValuePairs, fileDef{key, value, false})
 		}
 	}

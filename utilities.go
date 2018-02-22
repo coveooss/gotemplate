@@ -48,7 +48,7 @@ func exclude(files []string, patterns []string) []string {
 	for i, file := range files {
 		var excluded bool
 		for _, pattern := range patterns {
-			file = iif(filepath.IsAbs(pattern), file, filepath.Base(file)).(string)
+			file = iif(strings.ContainsAny(pattern, `/\`), file, filepath.Base(file)).(string)
 			if excluded = errors.Must(filepath.Match(pattern, file)).(bool); excluded {
 				template.Log.Noticef("%s ignored", files[i])
 				break
@@ -67,10 +67,6 @@ func extend(values []string) []string {
 		for _, sv := range strings.Split(values[i], ",") {
 			sv = strings.TrimSpace(sv)
 			if sv != "" {
-				if strings.Contains(filepath.ToSlash(sv), "/") {
-					// If the pattern contains /, we make it relative
-					sv = errors.Must(filepath.Abs(sv)).(string)
-				}
 				result = append(result, sv)
 			}
 		}

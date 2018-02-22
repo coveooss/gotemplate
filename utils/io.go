@@ -58,15 +58,15 @@ func FindFiles(folder string, recursive, followLinks bool, patterns ...string) (
 
 // FindFiles returns the list of files in the specified folder that match one of the supplied patterns
 func findFiles(folder string, patterns ...string) ([]string, error) {
-	var tfFiles []string
-	for _, ext := range patterns {
-		files, err := filepath.Glob(filepath.Join(folder, ext))
+	var matches []string
+	for _, pattern := range patterns {
+		files, err := filepath.Glob(filepath.Join(folder, pattern))
 		if err != nil {
 			return nil, err
 		}
-		tfFiles = append(tfFiles, files...)
+		matches = append(matches, files...)
 	}
-	return tfFiles, nil
+	return matches, nil
 }
 
 // MustFindFiles returns the list of the files matching the array of patterns with panic on error

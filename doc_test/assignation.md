@@ -10,12 +10,6 @@
 @num4 := 5E-3
 @hex1 := 0x100
 
-### List all global variables
-
-@range($key, $value := $)
-    @$key = @$value
-@end range
-
 ## Local variables
 
 @$string := "string value"

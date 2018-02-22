@@ -2,12 +2,4 @@
 
 ## Global variables
 
-### List all global variables
-    hex1 = 256
-    num1 = 10
-    num2 = 1.23
-    num3 = 40000
-    num4 = 0.005
-    string = string value
-
 ## Local variables

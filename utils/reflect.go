@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"unicode"
@@ -208,23 +209,24 @@ func ConvertData(data string, out interface{}) error {
 		if err := HCLConvert([]byte(data), out); err != nil {
 			errs = append(errs, err)
 		} else {
-			switch out := out.(type) {
-			case *interface{}:
-				switch out := (*out).(type) {
-				case map[string]interface{}:
-					out = Flatten(out)
-				}
-			case *map[string]interface{}:
+			if out, isMap := out.(*map[string]interface{}); isMap {
 				*out = Flatten(*out)
-			case map[string]interface{}:
-				out = Flatten(out)
-			default:
-				fmt.Printf("%T\n", out)
 			}
 			return nil
 		}
 	}
-	if err := YamlUnmarshal([]byte(data), out); err != nil && HCLConvert != nil {
+	if err := YamlUnmarshal([]byte(data), out); err != nil {
+		if out, isMap := out.(*map[string]interface{}); isMap && strings.Count(data, "=") > 0 {
+			// Special case where we want to have a map and the supplied string is simplified such as "a = 10 b = string"
+			// so we try transform the supplied string in valid YAML
+			simplified := regexp.MustCompile(`[ \t]*=[ \t]*`).ReplaceAllString(data, ":")
+			simplified = regexp.MustCompile(`[ \t]+`).ReplaceAllString(simplified, "\n")
+			simplified = strings.Replace(simplified, ":", ": ", -1) + "\n"
+			if err := YamlUnmarshal([]byte(simplified), out); err == nil {
+				return nil
+			}
+		}
+
 		if len(errs) > 0 {
 			return append(errs, err)
 		}

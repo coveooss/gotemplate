@@ -23,10 +23,14 @@ import (
 
 // Add additional functions to the go template context
 func (t *Template) addFuncs() {
-	// Add functions form Sprig library https://github.com/Masterminds/sprig
-	t.Funcs(sprig.GenericFuncMap())
+	if t.include&Sprig != 0 {
+		// Add functions from Sprig library https://github.com/Masterminds/sprig
+		t.Funcs(sprig.GenericFuncMap())
+	}
 
-	t.addMathFuncs()
+	if t.include&Math != 0 {
+		t.addMathFuncs()
+	}
 
 	// Add utilities functions
 	t.Funcs(map[string]interface{}{
@@ -188,11 +192,14 @@ func (t *Template) addFuncs() {
 		"substitute":    t.substitute,
 		"templateNames": t.getTemplateNames,
 		"templates":     t.Templates,
-		"alias": func(name, function string, source interface{}, args ...interface{}) (result string, err error) {
-			return t.addAlias(name, function, source, false, args...)
+		"alias": func(name, function string, source interface{}, args ...interface{}) (string, error) {
+			return t.addAlias(name, function, source, false, false, args...)
 		},
-		"local_alias": func(name, function string, source interface{}, args ...interface{}) (result string, err error) {
-			return t.addAlias(name, function, source, true, args...)
+		"local_alias": func(name, function string, source interface{}, args ...interface{}) (string, error) {
+			return t.addAlias(name, function, source, true, false, args...)
+		},
+		"func": func(name, function string, source, def, argNames interface{}) (string, error) {
+			return t.addAlias(name, function, source, true, true, def, argNames)
 		},
 		"data": func(source interface{}, context ...interface{}) (interface{}, error) {
 			return t.dataConverter(utils.Interface2string(source), context...)
@@ -221,7 +228,7 @@ func (t *Template) addFuncs() {
 }
 
 // Define alias to an existing command
-func (t *Template) addAlias(name, function string, source interface{}, local bool, defaultArgs ...interface{}) (result string, err error) {
+func (t *Template) addAlias(name, function string, source interface{}, local, context bool, defaultArgs ...interface{}) (result string, err error) {
 	for !local && t.parent != nil {
 		// local specifies if the alias should be executed in the context of the template where it is
 		// defined or in the context of the top parent
@@ -241,8 +248,63 @@ func (t *Template) addAlias(name, function string, source interface{}, local boo
 		return
 	}
 
+	if !context {
+		(*t.aliases)[name] = func(args ...interface{}) (result interface{}, err error) {
+			return f(utils.Interface2string(source), append(defaultArgs, args...)...)
+		}
+		return
+	}
+
+	init := make(map[string]interface{})
+	switch value := defaultArgs[0].(type) {
+	case map[string]interface{}:
+		init = value
+	default:
+		if err = utils.ConvertData(fmt.Sprint(value), &init); err != nil {
+			return
+		}
+	}
+
+	var argNames []string
+	switch value := defaultArgs[1].(type) {
+	case []string:
+		argNames = value
+	case []interface{}:
+		argNames = toStrings(value)
+	default:
+		if err = utils.ConvertData(fmt.Sprint(value), &argNames); err != nil {
+			return
+		}
+	}
+
 	(*t.aliases)[name] = func(args ...interface{}) (result interface{}, err error) {
-		return f(utils.Interface2string(source), append(defaultArgs, args...)...)
+		context := make(map[string]interface{})
+		parentContext, isMap := t.context.(map[string]interface{})
+		if !isMap {
+			context["DEFAULT"] = t.context
+		}
+		switch len(args) {
+		case 1:
+			if arg1, isMap := args[0].(map[string]interface{}); isMap {
+				utils.MergeMaps(context, arg1, init, parentContext)
+				break
+			}
+			if utils.ConvertData(fmt.Sprint(args[0]), &context) == nil {
+				utils.MergeMaps(context, init, parentContext)
+				break
+			}
+			fallthrough
+		default:
+			utils.MergeMaps(context, init, t.context.(map[string]interface{}))
+			for i := range args {
+				if i >= len(argNames) {
+					context["ARGS"] = args[i:]
+					break
+				}
+				context[argNames[i]] = args[i]
+			}
+		}
+		return f(utils.Interface2string(source), context)
 	}
 	return
 }
