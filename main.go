@@ -30,15 +30,11 @@ func main() {
 	defer cleanup()
 
 	var (
-		razorSyntax  = true
 		app          = kingpin.New(os.Args[0], description)
 		includeMath  = true
 		includeSprig = true
 	)
 
-	app.Flag("razor", "Allow razor like expressions (@variable), on by default --no-razor to disable").Short('R').BoolVar(&razorSyntax)
-	app.Flag("math", "Include Math library, on by default --no-math to disable").BoolVar(&includeMath)
-	app.Flag("sprig", "Include Sprig library, on by default --no-sprig to disable").BoolVar(&includeSprig)
 	var (
 		delimiters       = app.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
 		varFiles         = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
@@ -48,6 +44,7 @@ func main() {
 		overwrite        = app.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
 		substitutes      = app.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
 		recursive        = app.Flag("recursive", "Process all template files recursively").Short('r').Bool()
+		recursionDepth   = app.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
 		sourceFolder     = app.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").ExistingDir()
 		targetFolder     = app.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
 		forceStdin       = app.Flag("stdin", "Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)").Short('I').Bool()
@@ -62,19 +59,27 @@ func main() {
 		forceColor       = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
 		logLevel         = app.Flag("log-level", "Set the logging level (0-5)").Short('L').Default("2").Int8()
 		logSimple        = app.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
-		skipExtensions   = app.Flag("skip-extensions", "Do not load the gotemplate extensions files *.gte (--se)").Bool()
 		templates        = app.Arg("templates", "Template files or command to process").Strings()
 	)
+	app.Flag("razor", "Allow razor like expressions (@variable), ON by default --no-razor to disable").BoolVar(&template.RazorMode)
+	app.Flag("math", "Include Math library, ON by default --no-math to disable").BoolVar(&includeMath)
+	app.Flag("sprig", "Include Sprig library, ON by default --no-sprig to disable").BoolVar(&includeSprig)
+	app.Flag("extension", "Activate gotemplate extension, ON by default, --no-extension or --no-ext to disable").BoolVar(&template.Extension)
 
 	app.Flag("lt", "short version of --list-template").Hidden().BoolVar(listTemplates)
 	app.Flag("at", "short version of --all-templates").Hidden().BoolVar(listALlTemplates)
 	app.Flag("ll", "short version of --log-level").Hidden().Int8Var(logLevel)
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "").Hidden().StringVar(delimiters)
-	app.Flag("se", "short version of --skip-extensions").Hidden().BoolVar(skipExtensions)
-	app.Flag("st", "").Hidden().BoolVar(skipExtensions)
-	app.Flag("skip", "").Hidden().BoolVar(skipExtensions)
-	app.Flag("skip-ext", "").Hidden().BoolVar(skipExtensions)
+	app.Flag("ext", "short version of --extension").Hidden().BoolVar(&template.Extension)
+
+	if *recursionDepth != 0 {
+		template.ExtensionDepth = *recursionDepth
+	}
+	if *recursive && *recursionDepth == 0 {
+		// If recursive is specified, but there is not recursion depth, we set it to a huge depth
+		*recursionDepth = 1 << 16
+	}
 
 	for i := range os.Args {
 		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
@@ -113,15 +118,15 @@ func main() {
 		*forceStdin = true
 	}
 
-	var lib template.Libraries
+	template.Libraries = 0
 	if includeMath {
-		lib |= template.Math
+		template.Libraries |= template.Math
 	}
 	if includeSprig {
-		lib |= template.Sprig
+		template.Libraries |= template.Sprig
 	}
 
-	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, lib, razorSyntax, *skipExtensions, *substitutes...)
+	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, *substitutes...)
 	t.Quiet = *quiet
 	t.Disabled = *disableRender
 	t.Overwrite = *overwrite
@@ -148,7 +153,7 @@ func main() {
 		*includePatterns = append(*includePatterns, "*.gt,*.template")
 	}
 
-	*templates = append(utils.MustFindFiles(*sourceFolder, *recursive, *followSymLinks, extend(*includePatterns)...), *templates...)
+	*templates = append(utils.MustFindFilesMaxDepth(*sourceFolder, *recursionDepth, *followSymLinks, extend(*includePatterns)...), *templates...)
 	for i, template := range *templates {
 		if !t.IsCode(template) {
 			if rel, err := filepath.Rel(*sourceFolder, (*templates)[i]); err == nil {

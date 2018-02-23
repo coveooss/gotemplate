@@ -38,13 +38,26 @@ type Template struct {
 	children     map[string]*Template
 	aliases      *map[string]interface{}
 	functions    template.FuncMap
-	include      Libraries
+	include      IncludedLibraries
 }
 
-type Libraries int
+// ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2)
+var ExtensionDepth = 2
+
+// Libraries defines the default template libraries that should be included on template initialization (default = all)
+var Libraries IncludedLibraries = AllLibraries
+
+// Extension defines if gotemplate extension should be enabled (default = true)
+var Extension = true
+
+// RazorMode defines if razor mode should be enabled (default = true)
+var RazorMode = true
+
+// IncludedLibraries defines the type that hold the various libraries that should be included
+type IncludedLibraries int
 
 const (
-	_ Libraries = iota << 2
+	_ IncludedLibraries = iota << 2
 	Math
 	Sprig
 	AllLibraries = 0xFFFF
@@ -53,7 +66,7 @@ const (
 var toStrings = utils.ToStrings
 
 // NewTemplate creates an Template object with default initialization
-func NewTemplate(context interface{}, delimiters string, libraries Libraries, razor, skipTemplates bool, substitutes ...string) *Template {
+func NewTemplate(context interface{}, delimiters string, substitutes ...string) *Template {
 	t := Template{Template: template.New("Main")}
 	errors.Must(t.Parse(""))
 	t.context = context
@@ -64,7 +77,7 @@ func NewTemplate(context interface{}, delimiters string, libraries Libraries, ra
 	baseRegex := []string{`/(?m)^\s*#!\s*$/`}
 	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
 
-	if !skipTemplates {
+	if Extension {
 		ext := t.GetNewContext(utils.Pwd(), false)
 		ext.RazorSyntax = true
 		ext.include = AllLibraries
@@ -76,7 +89,7 @@ func NewTemplate(context interface{}, delimiters string, libraries Libraries, ra
 		defer func() { logging.SetLevel(logLevel, logger) }()
 
 		// Retrieve the template extension files
-		for _, file := range utils.MustFindFiles(t.folder, true, true, "*.gte") {
+		for _, file := range utils.MustFindFilesMaxDepth(t.folder, ExtensionDepth, false, "*.gte") {
 			// We just load all the template files available to ensure that all template definition are loaded
 			// We do not use ParseFiles because it names the template with the base name of the file
 			// which result in overriding templates with the same base name in different folders.
@@ -98,8 +111,8 @@ func NewTemplate(context interface{}, delimiters string, libraries Libraries, ra
 	}
 
 	// Set the options supplied by caller
-	t.include = libraries
-	t.RazorSyntax = razor
+	t.include = Libraries
+	t.RazorSyntax = RazorMode
 	t.init(utils.Pwd())
 	if delimiters != "" {
 		for i, delimiter := range strings.Split(delimiters, ",") {

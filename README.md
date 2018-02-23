@@ -20,33 +20,34 @@ An extended template processor for go.
 See: https://github.com/coveo/gotemplate/blob/master/README.md for complete documentation.
 
 Flags:
-  -h, --help                  Show context-sensitive help (also try --help-long and --help-man).
-  -R, --razor                 Allow razor like expressions (@variable), on by default --no-razor to disable
-      --math                  Include Math library, on by default --no-math to disable
-      --sprig                 Include Sprig library, on by default --no-sprig to disable
-      --delimiters={{,}},@    Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)
-  -i, --import=file ...       Import variables files (could be any of YAML, JSON or HCL format)
-  -V, --var=values ...        Import named variables (if value is a file, the content is loaded)
-  -p, --patterns=pattern ...  Additional patterns that should be processed by gotemplate
-  -e, --exclude=pattern ...   Exclude file patterns (comma separated) when applying gotemplate recursively
-  -o, --overwrite             Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
-  -s, --substitute=exp ...    Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)
-  -r, --recursive             Process all template files recursively
-      --source=folder         Specify a source folder (default to the current folder)
-      --target=folder         Specify a target folder (default to source folder)
-  -I, --stdin                 Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)
-  -f, --follow-symlinks       Follow the symbolic links while using the recursive option
-  -P, --print                 Output the result directly to stdout
-  -l, --list-functions        List the available functions
-      --list-templates        List the available templates function (--lt)
-      --all-templates         List all templates (--at)
-  -q, --quiet                 Don not print out the name of the generated files
-  -v, --version               Get the current version of gotemplate
-  -d, --disable               Disable go template rendering (used to view razor conversion)
-  -c, --color                 Force rendering of colors event if output is redirected
-  -L, --log-level=2           Set the logging level (0-5)
-      --log-simple            Disable the extended logging, i.e. no color, no date (--ls)
-      --skip-extensions       Do not load the gotemplate extensions files *.gte (--se)
+  -h, --help                   Show context-sensitive help (also try --help-long and --help-man).
+      --delimiters={{,}},@     Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)
+  -i, --import=file ...        Import variables files (could be any of YAML, JSON or HCL format)
+  -V, --var=values ...         Import named variables (if value is a file, the content is loaded)
+  -p, --patterns=pattern ...   Additional patterns that should be processed by gotemplate
+  -e, --exclude=pattern ...    Exclude file patterns (comma separated) when applying gotemplate recursively
+  -o, --overwrite              Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
+  -s, --substitute=exp ...     Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)
+  -r, --recursive              Process all template files recursively
+  -R, --recursion-depth=depth  Process template files recursively specifying depth
+      --source=folder          Specify a source folder (default to the current folder)
+      --target=folder          Specify a target folder (default to source folder)
+  -I, --stdin                  Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)
+  -f, --follow-symlinks        Follow the symbolic links while using the recursive option
+  -P, --print                  Output the result directly to stdout
+  -l, --list-functions         List the available functions
+      --list-templates         List the available templates function (--lt)
+      --all-templates          List all templates (--at)
+  -q, --quiet                  Don not print out the name of the generated files
+  -v, --version                Get the current version of gotemplate
+  -d, --disable                Disable go template rendering (used to view razor conversion)
+  -c, --color                  Force rendering of colors event if output is redirected
+  -L, --log-level=2            Set the logging level (0-5)
+      --log-simple             Disable the extended logging, i.e. no color, no date (--ls)
+      --razor                  Allow razor like expressions (@variable), ON by default --no-razor to disable
+      --math                   Include Math library, ON by default --no-math to disable
+      --sprig                  Include Sprig library, ON by default --no-sprig to disable
+      --extension              Activate gotemplate extension, ON by default, --no-extension or --no-ext to disable
 
 Args:
   [<templates>]  Template files or command to process
@@ -121,6 +122,7 @@ list = [
 Function name | Argument(s() |Description
 --- | --- | ---
 alias | name, function, source, args ... | Defines an alias (go template function) using the function (`exec`, `run`, `include`, `template`). Executed in the context of the caller.
+array | arg | Ensure that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the interface is replaced by []interface{} with a single value).
 bool | string | Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`).
 center | string, width int | Returns a string with both left and right padding to ensure that the string is centered.
 concat | objects ... | Returns the concatenation (without separator) of the string representation of objects.
@@ -235,28 +237,29 @@ They are coming from either gotemplate, Sprig or native Go Template.
 
 ```text
 > gotemplate -l
-abbrev                  cosinus                 hyperbolicCosinus       not                     sortAlpha
-abbrevboth              current                 hyperbolicSine          now                     split
-abs                     data                    hyperbolicSinus         omit                    splitLines
-acos                    date                    hyperbolicTangent       or                      splitList
-acosh                   dateInZone              hypot                   pick                    sqrt
-add                     dateModify              id                      pickv                   squote
-add1                    date_in_zone            ifUndef                 pluck                   string
-ago                     date_modify             iif                     plural                  sub
-alias                   dec                     ilogb                   pow                     substitute
-and                     decimal                 include                 pow10                   substr
-append                  default                 indent                  power                   subtract
-arcCosine               deg                     index                   power10                 sum
-arcCosinus              degree                  initial                 prepend                 swapcase
-arcHyperbolicCosine     derivePassword          initials                print                   tan
-arcHyperbolicCosinus    dict                    int                     printf                  tangent
-arcHyperbolicSine       dir                     int64                   println                 tanh
-arcHyperbolicSinus      div                     isAbs                   prod                    templateNames
-arcHyperbolicTangent    divide                  isInf                   product                 templates
-arcSine                 ellipsis                isInfinity              push                    title
-arcSinus                empty                   isNaN                   pwd                     to
-arcTangent              env                     join                    quote                   toBash
-arcTangent2             eq                      joinLines               quotient                toDate
+abbrev                  cosine                  hyperbolicCosine        nospace                 snakecase
+abbrevboth              cosinus                 hyperbolicCosinus       not                     sortAlpha
+abs                     current                 hyperbolicSine          now                     split
+acos                    data                    hyperbolicSinus         omit                    splitLines
+acosh                   date                    hyperbolicTangent       or                      splitList
+add                     dateInZone              hypot                   pick                    sqrt
+add1                    dateModify              id                      pickv                   squote
+ago                     date_in_zone            ifUndef                 pluck                   string
+alias                   date_modify             iif                     plural                  sub
+and                     dec                     ilogb                   pow                     substitute
+append                  decimal                 include                 pow10                   substr
+arcCosine               default                 indent                  power                   subtract
+arcCosinus              deg                     index                   power10                 sum
+arcHyperbolicCosine     degree                  initial                 prepend                 swapcase
+arcHyperbolicCosinus    derivePassword          initials                print                   tan
+arcHyperbolicSine       dict                    int                     printf                  tangent
+arcHyperbolicSinus      dir                     int64                   println                 tanh
+arcHyperbolicTangent    div                     isAbs                   prod                    templateNames
+arcSine                 divide                  isInf                   product                 templates
+arcSinus                ellipsis                isInfinity              push                    title
+arcTangent              empty                   isNaN                   pwd                     to
+arcTangent2             env                     join                    quote                   toBash
+array                   eq                      joinLines               quotient                toDate
 asin                    exec                    js                      rad                     toHcl
 asinh                   exp                     json                    radian                  toJson
 atan                    exp2                    key                     randAlpha               toPrettyHcl
@@ -295,7 +298,6 @@ contains                hexaDecimal             multiply                sinus   
 content                 html                    ne                      sinusCosinus
 cos                     htmlDate                nextAfter               slice
 cosh                    htmlDateInZone          nindent                 smallest
-cosine                  hyperbolicCosine        nospace                 snakecase
 ```
 
 Links to documentations of foreign functions are in the section [base functions](#base-functions).

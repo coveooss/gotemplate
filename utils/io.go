@@ -10,18 +10,34 @@ import (
 
 // FindFiles returns the list of the files matching the array of patterns
 func FindFiles(folder string, recursive, followLinks bool, patterns ...string) ([]string, error) {
+	depth := 0
+	if recursive {
+		depth = 1 << 16
+	}
+	return FindFilesMaxDepth(folder, depth, followLinks, patterns...)
+}
+
+// FindFilesMaxDepth returns the list of the files matching the array of patterns
+func FindFilesMaxDepth(folder string, maxDepth int, followLinks bool, patterns ...string) ([]string, error) {
 	visited := map[string]bool{}
 	var walker func(folder string) ([]string, error)
 	walker = func(folder string) ([]string, error) {
-		var results []string
+		results := errors.Must(findFiles(folder, patterns...)).([]string)
 		folder, _ = filepath.Abs(folder)
+		if maxDepth == 0 {
+			return results, nil
+		}
 
 		filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+			if info == nil || path == folder {
+				return nil
+			}
 			if info.IsDir() {
-				if !recursive && folder != path {
+				visited[path] = true
+				depth := strings.Count(errors.Must(filepath.Rel(path, folder)).(string), "..")
+				if depth > maxDepth {
 					return filepath.SkipDir
 				}
-				visited[path] = true
 				files, err := findFiles(path, patterns...)
 				if err != nil {
 					return err
@@ -72,6 +88,11 @@ func findFiles(folder string, patterns ...string) ([]string, error) {
 // MustFindFiles returns the list of the files matching the array of patterns with panic on error
 func MustFindFiles(folder string, recursive, followLinks bool, patterns ...string) []string {
 	return errors.Must(FindFiles(folder, recursive, followLinks, patterns...)).([]string)
+}
+
+// MustFindFilesMaxDepth returns the list of the files matching the array of patterns with panic on error
+func MustFindFilesMaxDepth(folder string, maxDepth int, followLinks bool, patterns ...string) []string {
+	return errors.Must(FindFilesMaxDepth(folder, maxDepth, followLinks, patterns...)).([]string)
 }
 
 // GlobFunc returns an array of string representing the expansion of the supplied arguments using filepath.Glob function

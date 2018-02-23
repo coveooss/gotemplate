@@ -101,6 +101,17 @@ func (t *Template) addFuncs() {
 			return result[1 : len(result)-1], err
 		},
 		"toBash": utils.ToBash,
+		"array": func(value interface{}) interface{} {
+			if value == nil {
+				return value
+			}
+			switch reflect.TypeOf(value).Kind() {
+			case reflect.Slice, reflect.Array:
+				return value
+			default:
+				return []interface{}{value}
+			}
+		},
 		// "toFile": func(file string, v interface{}) (string, error) {
 		// },
 		"bool": func(str string) (bool, error) {
