@@ -13,7 +13,7 @@ import (
 
 func TestTemplate_applyRazor(t *testing.T) {
 	context := make(map[string]interface{})
-	template := NewTemplate(context, "", Math|Sprig, true, true)
+	template := NewTemplate(context, "")
 
 	files, err := filepath.Glob("../doc_test/*.md")
 	if err != nil {
