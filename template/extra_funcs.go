@@ -16,7 +16,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/sprig"
-	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/utils"
 )
@@ -460,9 +459,7 @@ func (t Template) converter(converter dataConverter, content string, sourceWithE
 func (t Template) templateConverter(converter dataConverter, str string, context ...interface{}) (result interface{}, err error) {
 	var content string
 	if content, _, err = t.runTemplate(str, context...); err == nil {
-		if result, err = t.converter(converter, content, true, context...); err == nil {
-			result = utils.MapKeyInterface2string(result)
-		}
+		result, err = t.converter(converter, content, true, context...)
 	}
 	return
 }
@@ -479,35 +476,15 @@ func (t Template) jsonConverter(str string, context ...interface{}) (interface{}
 
 // Converts the supplied string containing terraform/hcl to go map
 func (t Template) hclConverter(str string, context ...interface{}) (result interface{}, err error) {
-	if result, err = t.templateConverter(hcl.Unmarshal, str, context...); err == nil && result != nil {
-		if r, isMap := result.(map[string]interface{}); isMap {
-			result = hcl.Flatten(r)
-		}
-	}
-	return
+	return t.templateConverter(hcl.Unmarshal, str, context...)
 }
 
 // Converts the supplied string containing yaml, json or terraform/hcl to go map
-func (t Template) dataConverter(source string, context ...interface{}) (result interface{}, err error) {
-	var content string
-	if content, _, err = t.runTemplate(source, context...); err == nil {
-		var errs errors.Array
-		if result, err = t.converter(hcl.Unmarshal, content, true, context...); err == nil {
-			if r, isMap := result.(map[string]interface{}); isMap {
-				result = hcl.Flatten(utils.MapKeyInterface2string(r).(map[string]interface{}))
-			}
-		} else {
-			errs = append(errs, err)
-			if result, err = t.converter(utils.YamlUnmarshal, content, false, context...); err == nil {
-				result = utils.MapKeyInterface2string(result)
-				err = nil
-			} else {
-				// If there is still an error, we return both the hcl and yaml error
-				err = append(errs, err)
-			}
-		}
+func (t Template) dataConverter(str string, context ...interface{}) (result interface{}, err error) {
+	converter := func(bs []byte, out interface{}) (err error) {
+		return utils.ConvertData(string(bs), out)
 	}
-	return
+	return t.templateConverter(converter, str, context...)
 }
 
 // Apply all regular expressions replacements to the supplied string

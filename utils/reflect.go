@@ -115,7 +115,7 @@ func ToNativeRepresentation(value interface{}) interface{} {
 		for _, key := range val.MapKeys() {
 			result[fmt.Sprintf("%v", key)] = ToNativeRepresentation(val.MapIndex(key).Interface())
 		}
-		return Flatten(result)
+		return result
 
 	case reflect.Struct:
 		result := make(map[string]interface{}, typ.NumField())
@@ -177,56 +177,36 @@ func ToNativeRepresentation(value interface{}) interface{} {
 	}
 }
 
-// Flatten - Convert array of map to single map if there is only one element in the array
-// By default, hc.Unmarshal returns array of map even if there is only a single map in the definition
-func Flatten(source map[string]interface{}) map[string]interface{} {
-	for key, value := range source {
-		switch value := value.(type) {
-		case []interface{}:
-			for i, sub := range value {
-				if sub, isSubMap := sub.(map[string]interface{}); isSubMap {
-					value[i] = Flatten(sub)
-				}
-			}
-		case []map[string]interface{}:
-			switch len(value) {
-			case 1:
-				source[key] = Flatten(value[0])
-			default:
-				for i, subMap := range value {
-					value[i] = Flatten(subMap)
-				}
-			}
-		}
-	}
-	return source
-}
-
 // ConvertData returns a go representation of the supplied string (YAML, JSON or HCL)
-func ConvertData(data string, out interface{}) error {
+func ConvertData(data string, out interface{}) (err error) {
 	var errs errors.Array
 	if HCLConvert != nil {
-		if err := HCLConvert([]byte(data), out); err != nil {
-			errs = append(errs, err)
-		} else {
-			if out, isMap := out.(*map[string]interface{}); isMap {
-				*out = Flatten(*out)
-			}
+		if err = HCLConvert([]byte(data), out); err == nil {
+			return
+		}
+		errs = append(errs, err)
+	}
+
+	trySimplified := func() error {
+		if strings.Count(data, "=") == 0 {
+			return fmt.Errorf("Not simplifiable")
+		}
+		// Special case where we want to have a map and the supplied string is simplified such as "a = 10 b = string"
+		// so we try transform the supplied string in valid YAML
+		simplified := regexp.MustCompile(`[ \t]*=[ \t]*`).ReplaceAllString(data, ":")
+		simplified = regexp.MustCompile(`[ \t]+`).ReplaceAllString(simplified, "\n")
+		simplified = strings.Replace(simplified, ":", ": ", -1) + "\n"
+		return YamlUnmarshal([]byte(simplified), out)
+	}
+
+	if _, isInterface := out.(*interface{}); isInterface && trySimplified() == nil {
+		return nil
+	}
+
+	if err := YamlUnmarshal([]byte(data), out); err != nil {
+		if _, isMap := out.(*map[string]interface{}); isMap && trySimplified() == nil {
 			return nil
 		}
-	}
-	if err := YamlUnmarshal([]byte(data), out); err != nil {
-		if out, isMap := out.(*map[string]interface{}); isMap && strings.Count(data, "=") > 0 {
-			// Special case where we want to have a map and the supplied string is simplified such as "a = 10 b = string"
-			// so we try transform the supplied string in valid YAML
-			simplified := regexp.MustCompile(`[ \t]*=[ \t]*`).ReplaceAllString(data, ":")
-			simplified = regexp.MustCompile(`[ \t]+`).ReplaceAllString(simplified, "\n")
-			simplified = strings.Replace(simplified, ":", ": ", -1) + "\n"
-			if err := YamlUnmarshal([]byte(simplified), out); err == nil {
-				return nil
-			}
-		}
-
 		if len(errs) > 0 {
 			return append(errs, err)
 		}

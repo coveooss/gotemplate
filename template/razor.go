@@ -98,6 +98,7 @@ var expressions = [][]interface{}{
 	{"Expression @(var).selector", `@\([sp](?P<name>[idSel])[sp]\)selector;endexpr;`, `@($$.${name}${sel})`},
 	{"Expression @(var)[...]", `reduce;@\([sp](?P<name>[idSel])[sp]\)index;endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(var)", `reduce;@\([sp](?P<name>[idSel])[sp]\)endexpr;`, `{{${reduce} $$.${name} }}`},
+	{"Expression @(expr).selector", `@\([sp](?P<expr>[expr])[sp]\)selector;endexpr;`, `@(${expr}${sel})`},
 	{"Expression @(expr)[...]", `reduce;@\([sp](?P<expr>[expr])[sp]\)index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)", `reduce;@\([sp](?P<expr>[expr])[sp]\)endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParser)},
 	{"Inline content", `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},
@@ -113,7 +114,7 @@ const (
 	dotRep      = "_DOT_PREFIX_"
 )
 
-var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)])\.(?P<value>\w[\w\.]*)?`)
+var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*)?`)
 
 func expressionParser(repl replacement, match string) string {
 	return expressionParserInternal(repl, match, false, false)
@@ -227,8 +228,8 @@ func indexExpression(expr string) string {
 var negativeSlice = regexp.MustCompile(`\[(?P<index>-\d+):]`)
 
 func protectEmail(repl replacement, match string) string {
-	if match[0] == '@' {
-		// If the first character is a @, this is not an email
+	if match[0] == '@' || match[0] == '#' {
+		// This is not an email
 		return match
 	}
 	return strings.Replace(match, "@", "@@", 1)

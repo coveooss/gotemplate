@@ -124,8 +124,14 @@ func (t *Template) addMathFuncs() {
 		"NegInf":                 math.Inf(-1),
 	}
 
-	t.setConstant(true, constants, "Math", "MATH")
+	if !constantInjected {
+		// We do not want to inject the math constant twice
+		t.setConstant(true, constants, "Math", "MATH")
+		constantInjected = true
+	}
 }
+
+var constantInjected bool
 
 var round = sprig.GenericFuncMap()["round"].(func(a interface{}, p int, r_opt ...float64) float64)
 

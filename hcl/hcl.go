@@ -28,35 +28,54 @@ var _ = func() int {
 	return 0
 }()
 
+// flatten converts array of map to single map if there is only one element in the array
+// By default, hc.Unmarshal returns array of map even if there is only a single map in the definition
+func flatten(source interface{}) interface{} {
+	switch value := source.(type) {
+	case []interface{}:
+		for i, sub := range value {
+			value[i] = flatten(sub)
+		}
+	case map[string]interface{}:
+		for key := range value {
+			value[key] = flatten(value[key])
+		}
+	case []map[string]interface{}:
+		switch len(value) {
+		case 1:
+			source = flatten(value[0])
+		default:
+			for i := range value {
+				value[i] = flatten(value[i]).(map[string]interface{})
+			}
+		}
+	}
+	return source
+}
+
 // Unmarshal adds support to single array and struct representation
 func Unmarshal(bs []byte, out interface{}) (err error) {
 	defer func() { err = errors.Trap(err, recover()) }()
-
 	bs = bytes.TrimSpace(bs)
-	if bytes.HasPrefix(bs, []byte("[")) || bytes.HasPrefix(bs, []byte("{")) {
-		val := reflect.ValueOf(out)
-		if val.Kind() != reflect.Ptr {
-			return fmt.Errorf("Out result must be a pointer %T", out)
-		}
+
+	if err = hcl.Unmarshal(bs, out); err != nil {
 		bs = append([]byte("_="), bs...)
 		var temp map[string]interface{}
-		if err := hcl.Unmarshal(bs, &temp); err != nil {
+		if err = hcl.Unmarshal(bs, &temp); err != nil {
 			return err
 		}
-		temp = Flatten(temp)
 		reflect.ValueOf(out).Elem().Set(reflect.ValueOf(temp["_"]))
-		return nil
 	}
-	return hcl.Unmarshal(bs, out)
+	result := flatten(reflect.ValueOf(out).Elem().Interface())
+	reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
+	return
 }
 
 // Load loads hcl file into variable
-func Load(filename string) (result map[string]interface{}, err error) {
+func Load(filename string) (result interface{}, err error) {
 	var content []byte
 	if content, err = ioutil.ReadFile(filename); err == nil {
-		if err = Unmarshal(content, &result); err == nil {
-			result = Flatten(result)
-		}
+		err = Unmarshal(content, &result)
 	}
 	return
 }
@@ -86,8 +105,6 @@ func SingleContext(context ...interface{}) interface{} {
 	}
 	return context
 }
-
-var Flatten = utils.Flatten
 
 func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (result string, err error) {
 	if value == nil {
@@ -122,7 +139,9 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 			for i, element := range value {
 				element := element.(map[string]interface{})
 				for key := range element {
-					results[i], err = marshalHCL(element[key], fullHcl, false, "", indent)
+					if results[i], err = marshalHCL(element[key], fullHcl, false, "", indent); err != nil {
+						return
+					}
 					if head {
 						results[i] = fmt.Sprintf(`%s%s%s`, id(key), ifIndent(" = ", ""), results[i])
 					} else {
@@ -136,7 +155,9 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 		var totalLength int
 		var newLine bool
 		for i := range value {
-			results[i], err = marshalHCL(value[i], fullHcl, false, "", indent)
+			if results[i], err = marshalHCL(value[i], fullHcl, false, "", indent); err != nil {
+				return
+			}
 			totalLength += len(results[i])
 			newLine = newLine || strings.Contains(results[i], "\n")
 		}
@@ -147,16 +168,30 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 		}
 
 	case map[string]interface{}:
+		if key := singleMap(value); fullHcl && key != "" {
+			var element string
+			if element, err = marshalHCL(value[key], fullHcl, false, "", indent); err != nil {
+				return
+			}
+			result = fmt.Sprintf(`"%s" %s`, key, element)
+			break
+		}
+
 		keys := make([]string, 0, len(value))
 		rendered := make(map[string]string, len(value))
 		keyLen := 0
 
 		for key, val := range value {
 			keys = append(keys, key)
+			if rendered[key], err = marshalHCL(val, fullHcl, false, "", indent); err != nil {
+				return
+			}
+			if strings.Contains(rendered[key], "\n") {
+				continue
+			}
 			if len(key) > keyLen && indent != "" {
 				keyLen = len(key)
 			}
-			rendered[key], err = marshalHCL(val, fullHcl, false, "", indent)
 		}
 		sort.Strings(keys)
 
@@ -190,6 +225,9 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 					items = append(items, strings.Replace(rendered, specialFormat, id(key), -1))
 
 				} else {
+					if indent == "" && strings.HasPrefix(rendered, `"`) && equal == "" {
+						keyLen = len(id(key)) + 1
+					}
 					items = append(items, fmt.Sprintf("%*s%s%s", -keyLen, id(key), equal, rendered))
 				}
 			}
@@ -224,6 +262,18 @@ func isArrayOfMap(array []interface{}) bool {
 		}
 	}
 	return true
+}
+
+func singleMap(m map[string]interface{}) string {
+	if len(m) != 1 {
+		return ""
+	}
+	for k := range m {
+		if _, isMap := m[k].(map[string]interface{}); isMap {
+			return k
+		}
+	}
+	return ""
 }
 
 var identifierRegex = regexp.MustCompile(`^[A-za-z][\w-]*$`)

@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -17,24 +18,23 @@ func LoadYaml(filename string) (result map[string]interface{}, err error) {
 	return
 }
 
-// MapKeyInterface2string convert maps with interface{} key to map with a string as the key
-func MapKeyInterface2string(source interface{}) interface{} {
+func mapKeyInterface2string(source interface{}) interface{} {
 	switch value := source.(type) {
 	case map[string]interface{}:
 		for key, val := range value {
-			value[key] = MapKeyInterface2string(val)
+			value[key] = mapKeyInterface2string(val)
 		}
 		return value
 	case map[interface{}]interface{}:
 		result := make(map[string]interface{}, len(value))
 		for key, val := range value {
-			result[fmt.Sprintf("%v", key)] = MapKeyInterface2string(val)
+			result[fmt.Sprintf("%v", key)] = mapKeyInterface2string(val)
 		}
 		return result
 	case []interface{}:
 		result := make([]interface{}, len(value), len(value))
 		for i, val := range value {
-			result[i] = MapKeyInterface2string(val)
+			result[i] = mapKeyInterface2string(val)
 		}
 		return result
 	}
@@ -52,7 +52,13 @@ func ToYaml(v interface{}) (string, error) {
 
 // YamlUnmarshal calls yaml.Unmarshal, but replace tabs by spaces if there are
 func YamlUnmarshal(in []byte, out interface{}) (err error) {
-	// Yaml does not support tab, so we repace tabs by spaces if there are
+	// Yaml does not support tab, so we replace tabs by spaces if there are
 	in = []byte(strings.Replace(string(in), "\t", "    ", -1))
-	return yaml.Unmarshal(in, out)
+
+	if err = yaml.Unmarshal(in, out); err == nil {
+		// yaml.Unmarshal returns map[interface{}]interface{} by default, but it is preferable to have map[string]interface{}
+		result := mapKeyInterface2string(reflect.ValueOf(out).Elem().Interface())
+		reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
+	}
+	return
 }
