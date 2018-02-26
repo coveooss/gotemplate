@@ -301,11 +301,25 @@ func (t Template) printFunctionsDetailed(functions []string) {
 			signature := reflect.ValueOf(funcTable.function).Type()
 			var parameters, outputs []string
 			for i := 0; i < signature.NumIn(); i++ {
-				parameters = append(parameters, strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "generic", -1))
+				arg := strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "interface{}", -1)
+				var argName string
+				if i < len(funcTable.argNames) {
+					argName = funcTable.argNames[i]
+				} else {
+					if signature.IsVariadic() && i == signature.NumIn()-1 {
+						argName = "args"
+					} else {
+						argName = fmt.Sprintf("arg%d", i+1)
+					}
+				}
+				if signature.IsVariadic() && i == signature.NumIn()-1 {
+					arg = "..." + arg[2:]
+				}
+				parameters = append(parameters, fmt.Sprintf("%s %s", argName, arg))
 			}
 			in = strings.Join(parameters, ", ")
 			for i := 0; i < signature.NumOut(); i++ {
-				outputs = append(outputs, strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "generic", -1))
+				outputs = append(outputs, strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "interface{}", -1))
 			}
 			out = strings.Join(outputs, ", ")
 		} else {

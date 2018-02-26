@@ -16,18 +16,18 @@ var loggingFuncs funcTableMap
 func (t *Template) addLoggingFuncs() {
 	if loggingFuncs == nil {
 		loggingFuncs = funcTableMap{
-			"fatal":    {func(args ...interface{}) string { return logBase(Log.Fatal, args...) }, loggingBase, nil, []string{}, ""},
-			"fatalf":   {func(format string, args ...interface{}) string { return logBasef(Log.Fatalf, format, args...) }, loggingBase, nil, []string{}, ""},
-			"error":    {func(args ...interface{}) string { return logBase(Log.Error, args...) }, loggingBase, nil, []string{}, ""},
-			"errorf":   {func(format string, args ...interface{}) string { return logBasef(Log.Errorf, format, args...) }, loggingBase, nil, []string{}, ""},
-			"warning":  {func(args ...interface{}) string { return logBase(Log.Warning, args...) }, loggingBase, nil, []string{}, ""},
-			"warningf": {func(format string, args ...interface{}) string { return logBasef(Log.Warningf, format, args...) }, loggingBase, nil, []string{}, ""},
-			"notice":   {func(args ...interface{}) string { return logBase(Log.Notice, args...) }, loggingBase, nil, []string{}, ""},
-			"noticef":  {func(format string, args ...interface{}) string { return logBasef(Log.Noticef, format, args...) }, loggingBase, nil, []string{}, ""},
-			"info":     {func(args ...interface{}) string { return logBase(Log.Info, args...) }, loggingBase, nil, []string{}, ""},
-			"infof":    {func(format string, args ...interface{}) string { return logBasef(Log.Infof, format, args...) }, loggingBase, nil, []string{}, ""},
-			"debug":    {func(args ...interface{}) string { return logBase(Log.Debug, args...) }, loggingBase, nil, []string{}, ""},
-			"debugf":   {func(format string, args ...interface{}) string { return logBasef(Log.Debugf, format, args...) }, loggingBase, nil, []string{}, ""},
+			"fatal":    {func(args ...interface{}) string { return logBase(Log.Fatal, args...) }, loggingBase, nil, nil, ""},
+			"fatalf":   {func(format string, args ...interface{}) string { return logBasef(Log.Fatalf, format, args...) }, loggingBase, nil, []string{"format"}, ""},
+			"error":    {func(args ...interface{}) string { return logBase(Log.Error, args...) }, loggingBase, nil, nil, ""},
+			"errorf":   {func(format string, args ...interface{}) string { return logBasef(Log.Errorf, format, args...) }, loggingBase, nil, []string{"format"}, ""},
+			"warning":  {func(args ...interface{}) string { return logBase(Log.Warning, args...) }, loggingBase, nil, nil, ""},
+			"warningf": {func(format string, args ...interface{}) string { return logBasef(Log.Warningf, format, args...) }, loggingBase, nil, []string{"format"}, ""},
+			"notice":   {func(args ...interface{}) string { return logBase(Log.Notice, args...) }, loggingBase, nil, nil, ""},
+			"noticef":  {func(format string, args ...interface{}) string { return logBasef(Log.Noticef, format, args...) }, loggingBase, nil, []string{"format"}, ""},
+			"info":     {func(args ...interface{}) string { return logBase(Log.Info, args...) }, loggingBase, nil, nil, ""},
+			"infof":    {func(format string, args ...interface{}) string { return logBasef(Log.Infof, format, args...) }, loggingBase, nil, []string{"format"}, ""},
+			"debug":    {func(args ...interface{}) string { return logBase(Log.Debug, args...) }, loggingBase, nil, nil, ""},
+			"debugf":   {func(format string, args ...interface{}) string { return logBasef(Log.Debugf, format, args...) }, loggingBase, nil, []string{"format"}, ""},
 		}
 	}
 

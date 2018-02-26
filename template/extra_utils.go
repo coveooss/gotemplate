@@ -17,22 +17,24 @@ func (t *Template) addUtilsFuncs() {
 	if utilsFuncs == nil {
 		utilsFuncs = funcTableMap{
 			"concat":     {utils.Concat, utilsBase, nil, []string{}, ""},
-			"formatList": {utils.FormatList, utilsBase, nil, []string{}, ""},
-			"joinLines":  {utils.JoinLines, utilsBase, nil, []string{}, ""},
-			"mergeList":  {utils.MergeLists, utilsBase, nil, []string{}, ""},
+			"formatList": {utils.FormatList, utilsBase, nil, []string{"format", "list"}, ""},
+			"joinLines":  {utils.JoinLines, utilsBase, nil, nil, ""},
+			"mergeList":  {utils.MergeLists, utilsBase, nil, []string{"lists"}, ""},
 			"splitLines": {utils.SplitLines, utilsBase, nil, []string{}, ""},
-			"id":         {id, utilsBase, nil, []string{}, ""},
+			"id":         {id, utilsBase, nil, []string{"identifier", "replaceChar"}, ""},
 			"center":     {utils.CenterString, utilsBase, nil, []string{}, ""},
-			"glob":       {utils.GlobFunc, utilsBase, nil, []string{}, ""},
-			"pwd":        {utils.Pwd, utilsBase, nil, []string{}, ""},
-			"iif":        {utils.IIf, utilsBase, nil, []string{}, ""},
-			"lorem":      {lorem, utilsBase, nil, []string{}, ""},
-			"color":      {utils.SprintColor, utilsBase, nil, []string{}, ""},
+			"glob":       {glob, utilsBase, nil, nil, ""},
+			"pwd":        {utils.Pwd, utilsBase, nil, nil, "Returns the current working directory"},
+			"iif":        {utils.IIf, utilsBase, nil, []string{"test", "valueIfTrue", "valueIfFalse"}, ""},
+			"lorem":      {lorem, utilsBase, nil, []string{"funcName"}, ""},
+			"color":      {utils.SprintColor, utilsBase, nil, nil, ""},
 		}
 	}
 
 	t.AddFunctions(utilsFuncs)
 }
+
+func glob(args ...interface{}) []string { return utils.GlobFuncTrim(args...) }
 
 func lorem(funcName interface{}, params ...int) (result string, err error) {
 	kind, err := utils.GetLoremKind(fmt.Sprint(funcName))

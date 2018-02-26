@@ -95,16 +95,27 @@ func MustFindFilesMaxDepth(folder string, maxDepth int, followLinks bool, patter
 	return errors.Must(FindFilesMaxDepth(folder, maxDepth, followLinks, patterns...)).([]string)
 }
 
-// GlobFunc returns an array of string representing the expansion of the supplied arguments using filepath.Glob function
-func GlobFunc(args ...interface{}) (result []string) {
+func globFunc(trimUnmatch bool, args ...interface{}) (result []string) {
 	for _, arg := range ToStrings(args) {
-		if expanded, _ := filepath.Glob(arg); expanded != nil {
-			result = append(result, expanded...)
-			continue
+		if strings.ContainsAny(arg, "*?[]") {
+			if expanded, _ := filepath.Glob(arg); expanded != nil {
+				result = append(result, expanded...)
+				continue
+			}
+			if trimUnmatch {
+				continue
+			}
 		}
+		result = append(result, arg)
 	}
 	return
 }
+
+// GlobFunc returns an array of string representing the expansion of the supplied arguments using filepath.Glob function
+func GlobFunc(args ...interface{}) []string { return globFunc(false, args...) }
+
+// GlobFuncTrim returns an array of string representing the expansion of the supplied arguments using filepath.Glob function, it removes the unmatched arguments
+func GlobFuncTrim(args ...interface{}) []string { return globFunc(true, args...) }
 
 // Pwd returns the current folder
 func Pwd() string {
