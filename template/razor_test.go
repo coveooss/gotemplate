@@ -13,7 +13,7 @@ import (
 
 func TestTemplate_applyRazor(t *testing.T) {
 	context := make(map[string]interface{})
-	template := NewTemplate(context, "")
+	template := NewTemplate(context, "", nil)
 
 	files, err := filepath.Glob("../doc_test/*.md")
 	if err != nil {
@@ -49,7 +49,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			template.RazorSyntax = tt.razor != ""
+			template.options[Razor] = tt.razor != ""
 
 			content := load(tt.path)
 			if tt.razor != "" {
