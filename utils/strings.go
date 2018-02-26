@@ -38,6 +38,7 @@ func (s String) LastIndex(substr string) int         { return strings.LastIndex(
 func (s String) LastIndexAny(chars string) int       { return strings.LastIndexAny(string(s), chars) }
 func (s String) LastIndexByte(c byte) int            { return strings.LastIndexByte(string(s), c) }
 func (s String) LastIndexFunc(f func(rune) bool) int { return strings.LastIndexFunc(string(s), f) }
+func (s String) Lines() StringArray                  { return s.Split("\n") }
 func (s String) Map(mapping func(rune) rune) String  { return String(strings.Map(mapping, string(s))) }
 func (s String) Repeat(count int) String             { return String(strings.Repeat(string(s), count)) }
 func (s String) Replace(old, new string, n int) String {

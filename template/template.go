@@ -24,63 +24,43 @@ var templateExt = []string{".gt", ".template"}
 // Template let us extend the functionalities of base template
 type Template struct {
 	*template.Template
-	Overwrite    bool
-	Quiet        bool
-	OutputStdout bool
-	TempFolder   string
-	RazorSyntax  bool
-	Disabled     bool
-	substitutes  []utils.RegexReplacer
-	context      interface{}
-	delimiters   []string
-	parent       *Template
-	folder       string
-	children     map[string]*Template
-	aliases      *map[string]interface{}
-	functions    template.FuncMap
-	include      IncludedLibraries
+	TempFolder  string
+	substitutes []utils.RegexReplacer
+	context     interface{}
+	delimiters  []string
+	parent      *Template
+	folder      string
+	children    map[string]*Template
+	aliases     *map[string]interface{}
+	functions   funcTableMap
+	options     OptionsSet
 }
 
 // ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2)
 var ExtensionDepth = 2
 
-// Libraries defines the default template libraries that should be included on template initialization (default = all)
-var Libraries IncludedLibraries = AllLibraries
-
-// Extension defines if gotemplate extension should be enabled (default = true)
-var Extension = true
-
-// RazorMode defines if razor mode should be enabled (default = true)
-var RazorMode = true
-
-// IncludedLibraries defines the type that hold the various libraries that should be included
-type IncludedLibraries int
-
-const (
-	_ IncludedLibraries = iota << 2
-	Math
-	Sprig
-	AllLibraries = 0xFFFF
-)
-
 var toStrings = utils.ToStrings
 
 // NewTemplate creates an Template object with default initialization
-func NewTemplate(context interface{}, delimiters string, substitutes ...string) *Template {
+func NewTemplate(context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
 	t := Template{Template: template.New("Main")}
 	errors.Must(t.Parse(""))
 	t.context = context
 	t.aliases = &map[string]interface{}{}
 	t.delimiters = []string{"{{", "}}", "@"}
+	if options != nil {
+		t.options = options
+	} else {
+		t.options = DefaultOptions()
+	}
 
 	// Set the regular expression replacements
 	baseRegex := []string{`/(?m)^\s*#!\s*$/`}
 	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
 
-	if Extension {
+	if options[Extension] {
 		ext := t.GetNewContext(utils.Pwd(), false)
-		ext.RazorSyntax = true
-		ext.include = AllLibraries
+		ext.options = DefaultOptions()
 		ext.init(utils.Pwd())
 
 		// We temporary set the logging level one grade lower
@@ -111,8 +91,6 @@ func NewTemplate(context interface{}, delimiters string, substitutes ...string) 
 	}
 
 	// Set the options supplied by caller
-	t.include = Libraries
-	t.RazorSyntax = RazorMode
 	t.init(utils.Pwd())
 	if delimiters != "" {
 		for i, delimiter := range strings.Split(delimiters, ",") {
@@ -144,18 +122,6 @@ func (t Template) RightDelim() string { return t.delimiters[1] }
 // RazorDelim returns the razor delimiter
 func (t Template) RazorDelim() string { return t.delimiters[2] }
 
-// Funcs overrides the base Funcs to get a copy of the functins added to the template
-func (t *Template) Funcs(funcMap template.FuncMap) *Template {
-	if t.functions == nil {
-		t.functions = make(template.FuncMap)
-	}
-	for key, value := range funcMap {
-		t.functions[key] = value
-	}
-	t.Template.Funcs(funcMap)
-	return t
-}
-
 // ProcessContent loads and runs the file template
 func (t Template) ProcessContent(content, source string) (string, error) {
 	Log.Notice("GoTemplate processing of", source)
@@ -169,11 +135,11 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 		}
 	}
 
-	if t.RazorSyntax && t.IsRazor(content) {
+	if t.options[Razor] && t.IsRazor(content) {
 		content = string(t.applyRazor([]byte(content)))
 	}
 
-	if t.Disabled || !t.IsCode(content) {
+	if t.options[RenderingDisabled] || !t.IsCode(content) {
 		// There is no template element to evaluate or the template rendering is off
 		return content, nil
 	}
@@ -232,12 +198,12 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 			// We do not save anything for an empty resulting template that has no extension
 			return "", nil
 		}
-		if !t.Overwrite {
+		if !t.options[Overwrite] {
 			resultFile = fmt.Sprint(strings.TrimSuffix(resultFile, ext), ".generated", ext)
 		}
 	}
 
-	if t.OutputStdout {
+	if t.options[OutputStdout] {
 		err = t.printResult(template, resultFile, result)
 		if err != nil {
 			errors.Print(err)
@@ -250,16 +216,16 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 	}
 
 	mode := errors.Must(os.Stat(template)).(os.FileInfo).Mode()
-	if !isTemplate && !t.Overwrite {
+	if !isTemplate && !t.options[Overwrite] {
 		newName := template + ".original"
-		t.trace("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
+		Log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
 		errors.Must(os.Rename(template, template+".original"))
 	}
 
 	if sourceFolder != targetFolder {
 		errors.Must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
-	t.trace(utils.Relative(t.folder, resultFile))
+	Log.Notice(utils.Relative(t.folder, resultFile))
 
 	if utils.IsShebangScript(result) {
 		mode = 0755
@@ -269,7 +235,7 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 		return
 	}
 
-	if isTemplate && t.Overwrite && sourceFolder == targetFolder {
+	if isTemplate && t.options[Overwrite] && sourceFolder == targetFolder {
 		os.Remove(template)
 	}
 	return
@@ -290,13 +256,6 @@ func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates 
 		}
 	}
 	return
-}
-
-func (t Template) trace(format string, args ...interface{}) {
-	if t.Quiet {
-		return
-	}
-	fmt.Fprintln(os.Stderr, color.GreenString(fmt.Sprintf(format, args...)))
 }
 
 func (t Template) isTemplate(file string) bool {
@@ -336,10 +295,10 @@ func (t Template) printFunctionsDetailed(functions []string) {
 	fmt.Fprintln(w, "Function\tParameters\tOutputs")
 	fmt.Fprintln(w, "--------\t----------\t-------")
 	for i := range functions {
-		function := t.functions[functions[i]]
+		funcTable := t.functions[functions[i]]
 		var in, out string
-		if function != nil {
-			signature := reflect.ValueOf(function).Type()
+		if funcTable.function != nil {
+			signature := reflect.ValueOf(funcTable.function).Type()
 			var parameters, outputs []string
 			for i := 0; i < signature.NumIn(); i++ {
 				parameters = append(parameters, strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "generic", -1))
@@ -358,10 +317,10 @@ func (t Template) printFunctionsDetailed(functions []string) {
 }
 
 // PrintFunctions output the list of functions available
-func (t Template) PrintFunctions(filters ...string) {
+func (t Template) PrintFunctions(all, long bool, filters ...string) {
 	const nbColumn = 5
 	functions := t.filterFunctions(filters...)
-	if getLogLevel() >= 3 {
+	if long {
 		t.printFunctionsDetailed(functions)
 		return
 	}
@@ -393,7 +352,7 @@ func (t Template) PrintFunctions(filters ...string) {
 }
 
 // PrintTemplates output the list of templates available
-func (t Template) PrintTemplates(all bool) {
+func (t Template) PrintTemplates(all, long bool) {
 	templates := t.getTemplateNames()
 	var maxLen int
 	for _, template := range templates {
@@ -493,7 +452,7 @@ func (t Template) printResult(source, target, result string) (err error) {
 		result = string(bytes)
 	}
 
-	if !t.isTemplate(source) && !t.Overwrite {
+	if !t.isTemplate(source) && !t.options[Overwrite] {
 		source += ".original"
 	}
 
@@ -502,9 +461,9 @@ func (t Template) printResult(source, target, result string) (err error) {
 		target = relTarget
 	}
 	if source != target {
-		t.trace("# %s => %s", source, target)
+		Log.Noticef("%s => %s", source, target)
 	} else {
-		t.trace("# %s", target)
+		Log.Notice(target)
 	}
 	fmt.Printf(result)
 	fmt.Fprintln(os.Stderr)

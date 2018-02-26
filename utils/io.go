@@ -98,13 +98,10 @@ func MustFindFilesMaxDepth(folder string, maxDepth int, followLinks bool, patter
 // GlobFunc returns an array of string representing the expansion of the supplied arguments using filepath.Glob function
 func GlobFunc(args ...interface{}) (result []string) {
 	for _, arg := range ToStrings(args) {
-		if strings.ContainsAny(arg, "*?[]") {
-			if expanded, _ := filepath.Glob(arg); expanded != nil {
-				result = append(result, expanded...)
-				continue
-			}
+		if expanded, _ := filepath.Glob(arg); expanded != nil {
+			result = append(result, expanded...)
+			continue
 		}
-		result = append(result, arg)
 	}
 	return
 }

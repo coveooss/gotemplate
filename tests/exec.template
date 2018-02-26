@@ -47,7 +47,7 @@ for i in `seq 1 ${1:-10}`
 do
     echo "- $i"
 done
-@end
+@end template
 
 @template(generate_list, 10)
 @template(generate_list, 100)

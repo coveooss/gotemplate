@@ -30,49 +30,98 @@ func main() {
 	defer cleanup()
 
 	var (
-		app          = kingpin.New(os.Args[0], description)
-		includeMath  = true
-		includeSprig = true
+		app        = kingpin.New(os.Args[0], description)
+		forceColor = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
+		getVersion = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
+
+		run              = app.Command("run", "")
+		delimiters       = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
+		varFiles         = run.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
+		namedVars        = run.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
+		includePatterns  = run.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
+		excludedPatterns = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
+		overwrite        = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
+		substitutes      = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
+		recursive        = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
+		recursionDepth   = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
+		sourceFolder     = run.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").ExistingDir()
+		targetFolder     = run.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
+		forceStdin       = run.Flag("stdin", "Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)").Short('I').Bool()
+		followSymLinks   = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
+		print            = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
+		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
+		logLevel         = run.Flag("log-level", "Set the logging level (0-5)").Short('L').Default("2").Int8()
+		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
+		templates        = run.Arg("templates", "Template files or commands to process").Strings()
+
+		list          = app.Command("list", "Get detailed help on gotemplate functions")
+		listFunctions = list.Flag("functions", "Get detailed help on function").Short('f').Bool()
+		listTemplates = list.Flag("templates", "List the available templates").Short('t').Bool()
+		listLong      = list.Flag("long", "Get detailed list").Short('l').Bool()
+		listAll       = list.Flag("all", "List all").Short('a').Bool()
+		listFilters   = list.Arg("filters", "List only functions that contains one of the filter").Strings()
 	)
 
-	var (
-		delimiters       = app.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
-		varFiles         = app.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
-		namedVars        = app.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
-		includePatterns  = app.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
-		excludedPatterns = app.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
-		overwrite        = app.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
-		substitutes      = app.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
-		recursive        = app.Flag("recursive", "Process all template files recursively").Short('r').Bool()
-		recursionDepth   = app.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
-		sourceFolder     = app.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").ExistingDir()
-		targetFolder     = app.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
-		forceStdin       = app.Flag("stdin", "Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)").Short('I').Bool()
-		followSymLinks   = app.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
-		print            = app.Flag("print", "Output the result directly to stdout").Short('P').Bool()
-		listFunctions    = app.Flag("list-functions", "List the available functions").Short('l').Bool()
-		listTemplates    = app.Flag("list-templates", "List the available templates function (--lt)").Bool()
-		listALlTemplates = app.Flag("all-templates", "List all templates (--at)").Bool()
-		quiet            = app.Flag("quiet", "Don not print out the name of the generated files").Short('q').Bool()
-		getVersion       = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
-		disableRender    = app.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
-		forceColor       = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
-		logLevel         = app.Flag("log-level", "Set the logging level (0-5)").Short('L').Default("2").Int8()
-		logSimple        = app.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
-		templates        = app.Arg("templates", "Template files or command to process").Strings()
-	)
-	app.Flag("razor", "Allow razor like expressions (@variable), ON by default --no-razor to disable").BoolVar(&template.RazorMode)
-	app.Flag("math", "Include Math library, ON by default --no-math to disable").BoolVar(&includeMath)
-	app.Flag("sprig", "Include Sprig library, ON by default --no-sprig to disable").BoolVar(&includeSprig)
-	app.Flag("extension", "Activate gotemplate extension, ON by default, --no-extension or --no-ext to disable").BoolVar(&template.Extension)
+	_ = listFilters
 
-	app.Flag("lt", "short version of --list-template").Hidden().BoolVar(listTemplates)
-	app.Flag("at", "short version of --all-templates").Hidden().BoolVar(listALlTemplates)
+	quiet := app.Flag("quiet", "Deprecated").Hidden().Short('q').Bool()
 	app.Flag("ll", "short version of --log-level").Hidden().Int8Var(logLevel)
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "").Hidden().StringVar(delimiters)
-	app.Flag("ext", "short version of --extension").Hidden().BoolVar(&template.Extension)
 
+	// Set the options for the available options (most of them are on by default)
+	optionsOff := app.Flag("base", "Turn off all extensions (they could then be enabled explicitly)").Bool()
+	options := make([]bool, template.OptionOnByDefaultCount)
+	for i := range options {
+		opt := template.Options(i)
+		optName := strings.ToLower(fmt.Sprint(opt))
+		options[i] = true
+		app.Flag(optName, fmt.Sprintf("Option %v, on by default, --no-%s to disable", opt, optName)).BoolVar(&options[i])
+	}
+	app.Flag("ext", "short version of --extension").Hidden().BoolVar(&options[template.Extension])
+
+	if len(os.Args) > 1 {
+		// If no command is specified, we default to run
+		switch os.Args[1] {
+		case "run", "list":
+			break
+		default:
+			os.Args = append([]string{os.Args[0]}, append([]string{"run"}, os.Args[1:]...)...)
+		}
+	}
+	for i := range os.Args {
+		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
+		if strings.HasPrefix(os.Args[i], "@") {
+			os.Args[i] = "#" + os.Args[i]
+		}
+		if os.Args[i] == "--base" {
+			for n := range options {
+				options[n] = false
+			}
+		}
+	}
+
+	// Actually parse the parameters (do not evaluate args before that point since parameter values are not yet set)
+	kingpin.CommandLine = app
+	kingpin.CommandLine.HelpFlag.Short('h')
+	command := kingpin.Parse()
+
+	// Build the optionsSet
+	var optionsSet template.OptionsSet
+	if *optionsOff {
+		optionsSet = make(template.OptionsSet)
+	} else {
+		optionsSet = template.DefaultOptions()
+	}
+
+	optionsSet[template.RenderingDisabled] = *disableRender
+	optionsSet[template.Overwrite] = *overwrite
+	optionsSet[template.OutputStdout] = *print
+	for i := range options {
+		optionsSet[template.Options(i)] = options[i]
+	}
+
+	// Set the recursion level
 	if *recursionDepth != 0 {
 		template.ExtensionDepth = *recursionDepth
 	}
@@ -80,17 +129,6 @@ func main() {
 		// If recursive is specified, but there is not recursion depth, we set it to a huge depth
 		*recursionDepth = 1 << 16
 	}
-
-	for i := range os.Args {
-		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
-		if strings.HasPrefix(os.Args[i], "@") {
-			os.Args[i] = "#" + os.Args[i]
-		}
-	}
-
-	kingpin.CommandLine = app
-	kingpin.CommandLine.HelpFlag.Short('h')
-	kingpin.Parse()
 
 	if *forceColor {
 		color.NoColor = false
@@ -102,6 +140,10 @@ func main() {
 	}
 
 	template.InitLogging(logging.Level(*logLevel), *logSimple)
+
+	if *quiet {
+		template.Log.Warning("--quiet options is deprecated, use --logginglevel instead")
+	}
 
 	if *targetFolder == "" {
 		// Target folder default to source folder
@@ -118,31 +160,20 @@ func main() {
 		*forceStdin = true
 	}
 
-	template.Libraries = 0
-	if includeMath {
-		template.Libraries |= template.Math
-	}
-	if includeSprig {
-		template.Libraries |= template.Sprig
-	}
-
-	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, *substitutes...)
-	t.Quiet = *quiet
-	t.Disabled = *disableRender
-	t.Overwrite = *overwrite
-	t.OutputStdout = *print
+	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, optionsSet, *substitutes...)
 	t.TempFolder = tempFolder
 
-	if *listFunctions || *listTemplates || *listALlTemplates {
+	if command == list.FullCommand() {
+		if !(*listFunctions || *listTemplates) {
+			// If neither list functions or templates is selected, we default to list functions
+			*listFunctions = true
+		}
 		t = t.GetNewContext("", false)
 		if *listFunctions {
-			t.PrintFunctions(*templates...)
+			t.PrintFunctions(*listAll, *listLong, *listFilters...)
 		}
 		if *listTemplates {
-			t.PrintTemplates(false)
-		}
-		if *listALlTemplates {
-			t.PrintTemplates(true)
+			t.PrintTemplates(*listAll, *listLong)
 		}
 		os.Exit(0)
 	}
