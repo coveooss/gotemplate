@@ -26,6 +26,9 @@ func (ftm funcTableMap) convert() template.FuncMap {
 
 	result := make(map[string]interface{}, len(ftm))
 	for key, val := range ftm {
+		if val.function == nil {
+			continue
+		}
 		result[key] = val.function
 		for i := range val.aliases {
 			result[val.aliases[i]] = val.function
@@ -48,14 +51,16 @@ func (t *Template) AddFunctions(funcMap funcTableMap) *Template {
 }
 
 // List the available functions in the template
-func (t Template) getFunctions() []string {
-	functions := []string{
-		"and", "call", "html", "index", "js", "len", "not", "or", "print", "printf", "println", "urlquery",
-		"eq", "ge", "gt", "le", "lt", "ne",
-	}
-
+func (t Template) getFunctions(all bool) []string {
+	var functions []string
 	for name := range t.functions {
 		functions = append(functions, name)
+		if all {
+			aliases := t.functions[name].aliases
+			for i := range aliases {
+				functions = append(functions, aliases[i])
+			}
+		}
 	}
 	sort.Strings(functions)
 	return functions

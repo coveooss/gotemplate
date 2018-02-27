@@ -30,9 +30,10 @@ func main() {
 	defer cleanup()
 
 	var (
-		app        = kingpin.New(os.Args[0], description)
-		forceColor = app.Flag("color", "Force rendering of colors event if output is redirected").Short('c').Bool()
-		getVersion = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
+		app          = kingpin.New(os.Args[0], description)
+		forceColor   = app.Flag("color", "Force rendering of colors event if output is redirected").Bool()
+		forceNoColor = app.Flag("no-color", "Force rendering of colors event if output is redirected").Bool()
+		getVersion   = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
 
 		run              = app.Command("run", "")
 		delimiters       = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
@@ -61,8 +62,6 @@ func main() {
 		listAll       = list.Flag("all", "List all").Short('a').Bool()
 		listFilters   = list.Arg("filters", "List only functions that contains one of the filter").Strings()
 	)
-
-	_ = listFilters
 
 	quiet := app.Flag("quiet", "Deprecated").Hidden().Short('q').Bool()
 	app.Flag("ll", "short version of --log-level").Hidden().Int8Var(logLevel)
@@ -130,7 +129,9 @@ func main() {
 		*recursionDepth = 1 << 16
 	}
 
-	if *forceColor {
+	if *forceNoColor {
+		color.NoColor = true
+	} else if *forceColor {
 		color.NoColor = false
 	}
 

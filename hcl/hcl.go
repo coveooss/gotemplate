@@ -145,7 +145,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 					if head {
 						results[i] = fmt.Sprintf(`%s%s%s`, id(key), ifIndent(" = ", ""), results[i])
 					} else {
-						results[i] = fmt.Sprintf(`%s "%s" %s`, specialFormat, key, results[i])
+						results[i] = fmt.Sprintf(`%s %s %s`, specialFormat, id(key), results[i])
 					}
 				}
 			}
@@ -173,7 +173,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 			if element, err = marshalHCL(value[key], fullHcl, false, "", indent); err != nil {
 				return
 			}
-			result = fmt.Sprintf(`"%s" %s`, key, element)
+			result = fmt.Sprintf(`%s %s`, id(key), element)
 			break
 		}
 

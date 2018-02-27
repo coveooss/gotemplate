@@ -15,81 +15,77 @@ const (
 	mathUtilities    = "Mathematic (utilities)"
 )
 
-var mathFuncs funcTableMap
+var mathFuncs = funcTableMap{
+	// Base
+	"add":   {add, mathBase, []string{"sum"}, []string{}, ""},
+	"sub":   {subtract, mathBase, []string{"subtract"}, []string{}, ""},
+	"div":   {divide, mathBase, []string{"divide", "quotient"}, []string{}, ""},
+	"mul":   {multiply, mathBase, []string{"multiply", "prod", "product"}, []string{}, ""},
+	"mod":   {modulo, mathBase, []string{"modulo"}, []string{}, ""},
+	"modf":  {modf, mathBase, []string{}, []string{}, ""},
+	"rem":   {remainder, mathBase, []string{"remainder"}, []string{}, ""},
+	"pow":   {power, mathBase, []string{"power"}, []string{}, ""},
+	"pow10": {power10, mathBase, []string{"power10"}, []string{}, ""},
+	"exp":   {exp, mathBase, []string{"exponent"}, []string{}, ""},
+	"exp2":  {exp2, mathBase, []string{"exponent2"}, []string{}, ""},
+	"expm1": {expm1, mathBase, []string{}, []string{}, ""},
+
+	// Statistics
+	"avg": {average, mathStatistics, []string{"average"}, []string{}, ""},
+	"min": {min, mathStatistics, []string{"minimum", "smallest"}, []string{}, ""},
+	"max": {max, mathStatistics, []string{"maximum", "biggest"}, []string{}, ""},
+
+	// Trigonometry
+	"rad":    {rad, mathTrigonometry, []string{"radian"}, []string{}, ""},
+	"deg":    {deg, mathTrigonometry, []string{"degree"}, []string{}, ""},
+	"acos":   {acos, mathTrigonometry, []string{"arcCosine", "arcCosinus"}, []string{}, ""},
+	"acosh":  {acosh, mathTrigonometry, []string{"arcHyperbolicCosine", "arcHyperbolicCosinus"}, []string{}, ""},
+	"asin":   {asin, mathTrigonometry, []string{"arcSine", "arcSinus"}, []string{}, ""},
+	"asinh":  {asinh, mathTrigonometry, []string{"arcHyperbolicSine", "arcHyperbolicSinus"}, []string{}, ""},
+	"atan":   {atan, mathTrigonometry, []string{"arcTangent"}, []string{}, ""},
+	"atan2":  {atan2, mathTrigonometry, []string{"arcTangent2"}, []string{}, ""},
+	"atanh":  {atanh, mathTrigonometry, []string{"arcHyperbolicTangent"}, []string{}, ""},
+	"cos":    {cos, mathTrigonometry, []string{"cosine", "cosinus"}, []string{}, ""},
+	"cosh":   {cosh, mathTrigonometry, []string{"hyperbolicCosine", "hyperbolicCosinus"}, []string{}, ""},
+	"sin":    {sin, mathTrigonometry, []string{"sine", "sinus"}, []string{}, ""},
+	"sinh":   {sinh, mathTrigonometry, []string{"hyperbolicSine", "hyperbolicSinus"}, []string{}, ""},
+	"sincos": {sincos, mathTrigonometry, []string{"sineCosine", "sinusCosinus"}, []string{}, ""},
+	"ilogb":  {ilogb, mathTrigonometry, []string{}, []string{}, ""},
+	"log":    {logFunc, mathTrigonometry, []string{}, []string{}, ""},
+	"log10":  {log10, mathTrigonometry, []string{}, []string{}, ""},
+	"log1p":  {log1p, mathTrigonometry, []string{}, []string{}, ""},
+	"log2":   {log2, mathTrigonometry, []string{}, []string{}, ""},
+	"logb":   {logb, mathTrigonometry, []string{}, []string{}, ""},
+	"tan":    {tan, mathTrigonometry, []string{"tangent"}, []string{}, ""},
+	"tanh":   {tanh, mathTrigonometry, []string{"hyperbolicTangent"}, []string{}, ""},
+
+	// Binary operators
+	"lshift": {leftShift, mathBits, []string{"leftShift"}, []string{}, ""},
+	"rshift": {rightShift, mathBits, []string{"rightShift"}, []string{}, ""},
+	"bor":    {bitwiseOr, mathBits, []string{"bitwiseOR"}, []string{}, ""},
+	"band":   {bitwiseAnd, mathBits, []string{"bitwiseAND"}, []string{}, ""},
+	"bxor":   {bitwiseXor, mathBits, []string{"bitwiseXOR"}, []string{}, ""},
+	"bclear": {bitwiseClear, mathBits, []string{"bitwiseClear"}, []string{}, ""},
+
+	// Utilities
+	"abs":       {abs, mathUtilities, []string{}, []string{}, ""},
+	"sqrt":      {sqrt, mathUtilities, []string{}, []string{}, ""},
+	"to":        {to, mathUtilities, []string{}, []string{}, ""},
+	"until":     {until, mathUtilities, []string{}, []string{}, ""},
+	"frexp":     {frexp, mathUtilities, []string{}, []string{}, ""},
+	"ldexp":     {ldexp, mathUtilities, []string{}, []string{}, ""},
+	"gamma":     {gamma, mathUtilities, []string{}, []string{}, ""},
+	"lgamma":    {lgamma, mathUtilities, []string{}, []string{}, ""},
+	"hypot":     {hypot, mathUtilities, []string{}, []string{}, ""},
+	"isInf":     {isInfinity, mathUtilities, []string{"isInfinity"}, []string{}, ""},
+	"isNaN":     {isNaN, mathUtilities, []string{}, []string{}, ""},
+	"nextAfter": {nextAfter, mathUtilities, []string{}, []string{}, ""},
+	"signBit":   {signBit, mathUtilities, []string{}, []string{}, ""},
+	"hex":       {hex, mathUtilities, []string{"hexa", "hexaDecimal"}, []string{}, ""},
+	"dec":       {decimal, mathUtilities, []string{"decimal"}, []string{}, ""},
+}
 
 func (t *Template) addMathFuncs() {
-	if mathFuncs == nil {
-		mathFuncs = funcTableMap{
-			// Base
-			"add":   {add, mathBase, []string{"sum"}, []string{}, ""},
-			"sub":   {subtract, mathBase, []string{"subtract"}, []string{}, ""},
-			"div":   {divide, mathBase, []string{"divide", "quotient"}, []string{}, ""},
-			"mul":   {multiply, mathBase, []string{"multiply", "prod", "product"}, []string{}, ""},
-			"mod":   {modulo, mathBase, []string{"modulo"}, []string{}, ""},
-			"modf":  {modf, mathBase, []string{}, []string{}, ""},
-			"rem":   {remainder, mathBase, []string{"remainder"}, []string{}, ""},
-			"pow":   {power, mathBase, []string{"power"}, []string{}, ""},
-			"pow10": {power10, mathBase, []string{"power10"}, []string{}, ""},
-			"exp":   {exp, mathBase, []string{"exponent"}, []string{}, ""},
-			"exp2":  {exp2, mathBase, []string{"exponent2"}, []string{}, ""},
-			"expm1": {expm1, mathBase, []string{}, []string{}, ""},
-
-			// Statistics
-			"avg": {average, mathStatistics, []string{"average"}, []string{}, ""},
-			"min": {min, mathStatistics, []string{"minimum", "smallest"}, []string{}, ""},
-			"max": {max, mathStatistics, []string{"maximum", "biggest"}, []string{}, ""},
-
-			// Trigonometry
-			"rad":    {rad, mathTrigonometry, []string{"radian"}, []string{}, ""},
-			"deg":    {deg, mathTrigonometry, []string{"degree"}, []string{}, ""},
-			"acos":   {acos, mathTrigonometry, []string{"arcCosine", "arcCosinus"}, []string{}, ""},
-			"acosh":  {acosh, mathTrigonometry, []string{"arcHyperbolicCosine", "arcHyperbolicCosinus"}, []string{}, ""},
-			"asin":   {asin, mathTrigonometry, []string{"arcSine", "arcSinus"}, []string{}, ""},
-			"asinh":  {asinh, mathTrigonometry, []string{"arcHyperbolicSine", "arcHyperbolicSinus"}, []string{}, ""},
-			"atan":   {atan, mathTrigonometry, []string{"arcTangent"}, []string{}, ""},
-			"atan2":  {atan2, mathTrigonometry, []string{"arcTangent2"}, []string{}, ""},
-			"atanh":  {atanh, mathTrigonometry, []string{"arcHyperbolicTangent"}, []string{}, ""},
-			"cos":    {cos, mathTrigonometry, []string{"cosine", "cosinus"}, []string{}, ""},
-			"cosh":   {cosh, mathTrigonometry, []string{"hyperbolicCosine", "hyperbolicCosinus"}, []string{}, ""},
-			"sin":    {sin, mathTrigonometry, []string{"sine", "sinus"}, []string{}, ""},
-			"sinh":   {sinh, mathTrigonometry, []string{"hyperbolicSine", "hyperbolicSinus"}, []string{}, ""},
-			"sincos": {sincos, mathTrigonometry, []string{"sineCosine", "sinusCosinus"}, []string{}, ""},
-			"ilogb":  {ilogb, mathTrigonometry, []string{}, []string{}, ""},
-			"log":    {logFunc, mathTrigonometry, []string{}, []string{}, ""},
-			"log10":  {log10, mathTrigonometry, []string{}, []string{}, ""},
-			"log1p":  {log1p, mathTrigonometry, []string{}, []string{}, ""},
-			"log2":   {log2, mathTrigonometry, []string{}, []string{}, ""},
-			"logb":   {logb, mathTrigonometry, []string{}, []string{}, ""},
-			"tan":    {tan, mathTrigonometry, []string{"tangent"}, []string{}, ""},
-			"tanh":   {tanh, mathTrigonometry, []string{"hyperbolicTangent"}, []string{}, ""},
-
-			// Binary operators
-			"lshift": {leftShift, mathBits, []string{"leftShift"}, []string{}, ""},
-			"rshift": {rightShift, mathBits, []string{"rightShift"}, []string{}, ""},
-			"bor":    {bitwiseOr, mathBits, []string{"bitwiseOR"}, []string{}, ""},
-			"band":   {bitwiseAnd, mathBits, []string{"bitwiseAND"}, []string{}, ""},
-			"bxor":   {bitwiseXor, mathBits, []string{"bitwiseXOR"}, []string{}, ""},
-			"bclear": {bitwiseClear, mathBits, []string{"bitwiseClear"}, []string{}, ""},
-
-			// Utilities
-			"abs":       {abs, mathUtilities, []string{}, []string{}, ""},
-			"sqrt":      {sqrt, mathUtilities, []string{}, []string{}, ""},
-			"to":        {to, mathUtilities, []string{}, []string{}, ""},
-			"until":     {until, mathUtilities, []string{}, []string{}, ""},
-			"frexp":     {frexp, mathUtilities, []string{}, []string{}, ""},
-			"ldexp":     {ldexp, mathUtilities, []string{}, []string{}, ""},
-			"gamma":     {gamma, mathUtilities, []string{}, []string{}, ""},
-			"lgamma":    {lgamma, mathUtilities, []string{}, []string{}, ""},
-			"hypot":     {hypot, mathUtilities, []string{}, []string{}, ""},
-			"isInf":     {isInfinity, mathUtilities, []string{"isInfinity"}, []string{}, ""},
-			"isNaN":     {isNaN, mathUtilities, []string{}, []string{}, ""},
-			"nextAfter": {nextAfter, mathUtilities, []string{}, []string{}, ""},
-			"signBit":   {signBit, mathUtilities, []string{}, []string{}, ""},
-			"hex":       {hex, mathUtilities, []string{"hexa", "hexaDecimal"}, []string{}, ""},
-			"dec":       {decimal, mathUtilities, []string{"decimal"}, []string{}, ""},
-		}
-	}
-
 	// Enhance mathematic functions
 	t.AddFunctions(mathFuncs)
 
