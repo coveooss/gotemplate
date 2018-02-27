@@ -19,52 +19,48 @@ const (
 	dataConversion = "Data conversion functions"
 )
 
-var dataFuncs funcTableMap
+var dataFuncs = funcTableMap{
+	// Base
+	"array":     {array, dataBase, nil, []string{"value"}, "Ensure that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value)."},
+	"bool":      {strconv.ParseBool, dataBase, nil, []string{"str"}, "Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)"},
+	"char":      {toChar, dataBase, nil, []string{"value"}, "Returns the character corresponging to the supplied integer value"},
+	"content":   {content, dataBase, nil, []string{"keymap"}, "Returns the content of a single element map (used to retrieve content in a declaration like `value \"name\" { a = 1 b = 3}`)"},
+	"extract":   {extract, dataBase, nil, []string{"source", "indexes"}, "Extract values from a slice or a map, indexes could be either integers for slice or strings for maps"},
+	"get":       {get, dataBase, nil, []string{"map", "key"}, "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)"},
+	"key":       {key, dataBase, nil, []string{}, ""},
+	"lenc":      {utf8.RuneCountInString, dataBase, nil, []string{"nbChars"}, "Returns the number of actual character in a string"},
+	"merge":     {utils.MergeMaps, dataBase, nil, []string{}, ""},
+	"omit":      {omit, dataBase, nil, []string{}, ""},
+	"pick":      {pick, dataBase, nil, []string{}, ""},
+	"pickv":     {pickv, dataBase, nil, []string{}, ""},
+	"safeIndex": {safeIndex, dataBase, nil, []string{}, ""},
+	"set":       {set, dataBase, nil, []string{}, ""},
+	"slice":     {slice, dataBase, nil, []string{}, ""},
+	"string":    {toString, dataBase, nil, []string{}, ""},
+	"undef":     {utils.IfUndef, dataBase, []string{"ifUndef"}, []string{}, ""},
+
+	// Conversion to
+	"toBash":         {utils.ToBash, dataConversion, nil, []string{}, ""},
+	"toHcl":          {toHCL, dataConversion, []string{"toHCL"}, []string{}, ""},
+	"toJson":         {toJSON, dataConversion, []string{"toJSON"}, []string{}, ""},
+	"toPrettyHcl":    {toPrettyHCL, dataConversion, []string{"toPrettyHCL"}, []string{}, ""},
+	"toPrettyJson":   {toPrettyJSON, dataConversion, []string{"toPrettyJSON"}, []string{}, ""},
+	"toPrettyTFVars": {toPrettyTFVars, dataConversion, nil, []string{}, ""},
+	"toQuotedHcl":    {toQuotedHCL, dataConversion, []string{"toQuotedHCL"}, []string{}, ""},
+	"toQuotedJson":   {toQuotedJSON, dataConversion, []string{"toQuotedJSON"}, []string{}, ""},
+	"toQuotedTFVars": {toQuotedTFVars, dataConversion, nil, []string{}, ""},
+	"toTFVars":       {toTFVars, dataConversion, nil, []string{}, ""},
+	"toYaml":         {utils.ToYaml, dataConversion, []string{"toYAML"}, []string{}, ""},
+}
 
 func (t *Template) addDataFuncs() {
-	if dataFuncs == nil {
-		dataFuncs = funcTableMap{
-			// Base
-			"array":     {array, dataBase, nil, []string{"value"}, "Ensure that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value)."},
-			"bool":      {strconv.ParseBool, dataBase, nil, []string{"str"}, "Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)"},
-			"char":      {toChar, dataBase, nil, []string{"value"}, "Returns the character corresponging to the supplied integer value"},
-			"content":   {content, dataBase, nil, []string{"keymap"}, "Returns the content of a single element map (used to retrieve content in a declaration like `value \"name\" { a = 1 b = 3}`)"},
-			"extract":   {extract, dataBase, nil, []string{"source", "indexes"}, "Extract values from a slice or a map, indexes could be either integers for slice or strings for maps"},
-			"get":       {get, dataBase, nil, []string{"map", "key"}, "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)"},
-			"key":       {key, dataBase, nil, []string{}, ""},
-			"lenc":      {utf8.RuneCountInString, dataBase, nil, []string{"nbChars"}, "Returns the number of actual character in a string"},
-			"merge":     {utils.MergeMaps, dataBase, nil, []string{}, ""},
-			"omit":      {omit, dataBase, nil, []string{}, ""},
-			"pick":      {pick, dataBase, nil, []string{}, ""},
-			"pickv":     {pickv, dataBase, nil, []string{}, ""},
-			"safeIndex": {safeIndex, dataBase, nil, []string{}, ""},
-			"set":       {set, dataBase, nil, []string{}, ""},
-			"slice":     {slice, dataBase, nil, []string{}, ""},
-			"string":    {toString, dataBase, nil, []string{}, ""},
-			"undef":     {utils.IfUndef, dataBase, []string{"ifUndef"}, []string{}, ""},
-
-			// Conversion from
-			"data": {t.fromData, dataConversion, []string{"DATA", "fromData", "fromDATA"}, []string{}, ""},
-			"hcl":  {t.fromHCL, dataConversion, []string{"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"}, []string{}, ""},
-			"json": {t.fromJSON, dataConversion, []string{"JSON", "fromJson", "fromJSON"}, []string{}, ""},
-			"yaml": {t.fromYAML, dataConversion, []string{"YAML", "fromYaml", "fromYAML"}, []string{}, ""},
-
-			// Conversion to
-			"toBash":         {utils.ToBash, dataConversion, nil, []string{}, ""},
-			"toHcl":          {toHCL, dataConversion, []string{"toHCL"}, []string{}, ""},
-			"toJson":         {toJSON, dataConversion, []string{"toJSON"}, []string{}, ""},
-			"toPrettyHcl":    {toPrettyHCL, dataConversion, []string{"toPrettyHCL"}, []string{}, ""},
-			"toPrettyJson":   {toPrettyJSON, dataConversion, []string{"toPrettyJSON"}, []string{}, ""},
-			"toPrettyTFVars": {toPrettyTFVars, dataConversion, nil, []string{}, ""},
-			"toQuotedHcl":    {toQuotedHCL, dataConversion, []string{"toQuotedHCL"}, []string{}, ""},
-			"toQuotedJson":   {toQuotedJSON, dataConversion, []string{"toQuotedJSON"}, []string{}, ""},
-			"toQuotedTFVars": {toQuotedTFVars, dataConversion, nil, []string{}, ""},
-			"toTFVars":       {toTFVars, dataConversion, nil, []string{}, ""},
-			"toYaml":         {utils.ToYaml, dataConversion, []string{"toYAML"}, []string{}, ""},
-		}
-	}
-
 	t.AddFunctions(dataFuncs)
+	t.AddFunctions(funcTableMap{
+		"data": {t.fromData, dataConversion, []string{"DATA", "fromData", "fromDATA"}, []string{}, ""},
+		"hcl":  {t.fromHCL, dataConversion, []string{"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"}, []string{}, ""},
+		"json": {t.fromJSON, dataConversion, []string{"JSON", "fromJson", "fromJSON"}, []string{}, ""},
+		"yaml": {t.fromYAML, dataConversion, []string{"YAML", "fromYaml", "fromYAML"}, []string{}, ""},
+	})
 }
 
 func (t Template) fromData(source interface{}, context ...interface{}) (interface{}, error) {

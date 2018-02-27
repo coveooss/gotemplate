@@ -18,27 +18,21 @@ const (
 	runtimeFunc = "Runtime functions"
 )
 
-var runtimeFuncs funcTableMap
-
 func (t *Template) addRuntimeFuncs() {
-	if runtimeFuncs == nil {
-		runtimeFuncs = funcTableMap{
-			"functions":     {t.getFunctions, runtimeFunc, nil, []string{}, ""},
-			"substitute":    {t.substitute, runtimeFunc, nil, []string{}, ""},
-			"templateNames": {t.Templates, runtimeFunc, nil, []string{}, ""},
-			"ellipsis":      {t.ellipsis, runtimeFunc, nil, []string{}, ""},
-			"alias":         {t.alias, runtimeFunc, nil, []string{}, ""},
-			"localAlias":    {t.localAlias, runtimeFunc, nil, []string{}, ""},
-			"func":          {t.defineFunc, runtimeFunc, nil, []string{}, ""},
-			"exec":          {t.execCommand, runtimeFunc, nil, []string{}, ""},
-			"run":           {t.runCommand, runtimeFunc, nil, []string{}, ""},
-			"include":       {t.include, runtimeFunc, nil, []string{}, ""},
-			"current":       {t.current, runtimeFunc, nil, []string{}, ""},
-			"exit":          {exit, runtimeFunc, nil, []string{}, ""},
-		}
-	}
-
-	t.AddFunctions(runtimeFuncs)
+	t.AddFunctions(funcTableMap{
+		"functions":     {func() []string { return t.getFunctions(false) }, runtimeFunc, nil, []string{}, ""},
+		"substitute":    {t.substitute, runtimeFunc, nil, []string{}, ""},
+		"templateNames": {t.Templates, runtimeFunc, nil, []string{}, ""},
+		"ellipsis":      {t.ellipsis, runtimeFunc, nil, []string{}, ""},
+		"alias":         {t.alias, runtimeFunc, nil, []string{}, ""},
+		"localAlias":    {t.localAlias, runtimeFunc, nil, []string{}, ""},
+		"func":          {t.defineFunc, runtimeFunc, nil, []string{}, ""},
+		"exec":          {t.execCommand, runtimeFunc, nil, []string{}, ""},
+		"run":           {t.runCommand, runtimeFunc, nil, []string{}, ""},
+		"include":       {t.include, runtimeFunc, nil, []string{}, ""},
+		"current":       {t.current, runtimeFunc, nil, []string{}, ""},
+		"exit":          {exit, runtimeFunc, nil, []string{}, ""},
+	})
 }
 
 func exit(exitValue int) int       { os.Exit(exitValue); return exitValue }
@@ -208,6 +202,9 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 func (t Template) runTemplate(source string, context ...interface{}) (resultContent, filename string, err error) {
 	var out bytes.Buffer
 
+	if len(context) == 0 {
+		context = []interface{}{t.context}
+	}
 	// We first try to find a template named <source>
 	internalTemplate := t.Lookup(source)
 	if internalTemplate == nil {

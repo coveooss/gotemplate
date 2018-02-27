@@ -11,26 +11,22 @@ const (
 	utilsBase = "Other utilities functions"
 )
 
-var utilsFuncs funcTableMap
+var utilsFuncs = funcTableMap{
+	"concat":     {utils.Concat, utilsBase, nil, []string{}, ""},
+	"formatList": {utils.FormatList, utilsBase, nil, []string{"format", "list"}, ""},
+	"joinLines":  {utils.JoinLines, utilsBase, nil, nil, ""},
+	"mergeList":  {utils.MergeLists, utilsBase, nil, []string{"lists"}, ""},
+	"splitLines": {utils.SplitLines, utilsBase, nil, []string{}, ""},
+	"id":         {id, utilsBase, nil, []string{"identifier", "replaceChar"}, ""},
+	"center":     {utils.CenterString, utilsBase, nil, []string{}, ""},
+	"glob":       {glob, utilsBase, nil, nil, ""},
+	"pwd":        {utils.Pwd, utilsBase, nil, nil, "Returns the current working directory"},
+	"iif":        {utils.IIf, utilsBase, nil, []string{"test", "valueIfTrue", "valueIfFalse"}, ""},
+	"lorem":      {lorem, utilsBase, nil, []string{"funcName"}, ""},
+	"color":      {utils.SprintColor, utilsBase, nil, nil, ""},
+}
 
 func (t *Template) addUtilsFuncs() {
-	if utilsFuncs == nil {
-		utilsFuncs = funcTableMap{
-			"concat":     {utils.Concat, utilsBase, nil, []string{}, ""},
-			"formatList": {utils.FormatList, utilsBase, nil, []string{"format", "list"}, ""},
-			"joinLines":  {utils.JoinLines, utilsBase, nil, nil, ""},
-			"mergeList":  {utils.MergeLists, utilsBase, nil, []string{"lists"}, ""},
-			"splitLines": {utils.SplitLines, utilsBase, nil, []string{}, ""},
-			"id":         {id, utilsBase, nil, []string{"identifier", "replaceChar"}, ""},
-			"center":     {utils.CenterString, utilsBase, nil, []string{}, ""},
-			"glob":       {glob, utilsBase, nil, nil, ""},
-			"pwd":        {utils.Pwd, utilsBase, nil, nil, "Returns the current working directory"},
-			"iif":        {utils.IIf, utilsBase, nil, []string{"test", "valueIfTrue", "valueIfFalse"}, ""},
-			"lorem":      {lorem, utilsBase, nil, []string{"funcName"}, ""},
-			"color":      {utils.SprintColor, utilsBase, nil, nil, ""},
-		}
-	}
-
 	t.AddFunctions(utilsFuncs)
 }
 

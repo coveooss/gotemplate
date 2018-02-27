@@ -267,8 +267,8 @@ func (t Template) isTemplate(file string) bool {
 	return false
 }
 
-func (t Template) filterFunctions(filters ...string) []string {
-	functions := t.getFunctions()
+func (t Template) filterFunctions(all bool, filters ...string) []string {
+	functions := t.getFunctions(all)
 	if len(filters) == 0 {
 		return functions
 	}
@@ -333,7 +333,7 @@ func (t Template) printFunctionsDetailed(functions []string) {
 // PrintFunctions output the list of functions available
 func (t Template) PrintFunctions(all, long bool, filters ...string) {
 	const nbColumn = 5
-	functions := t.filterFunctions(filters...)
+	functions := t.filterFunctions(all, filters...)
 	if long {
 		t.printFunctionsDetailed(functions)
 		return
@@ -358,7 +358,12 @@ func (t Template) PrintFunctions(all, long bool, filters ...string) {
 	// Print the columns
 	for i := range list[0] {
 		for _, column := range list {
-			fmt.Printf("%-[1]*[2]s", maxLength+2, column[i])
+			l := 0
+			if _, isFunc := t.functions[column[i]]; !isFunc {
+				l = len(color.HiBlackString(""))
+				column[i] = color.HiBlackString(column[i])
+			}
+			fmt.Printf("%-[1]*[2]s", maxLength+2+l, column[i])
 		}
 		fmt.Println()
 	}
