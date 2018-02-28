@@ -40,7 +40,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 	for i := range lines {
 		lines[i] = fmt.Sprintf("%*d %s", n, i+1, lines[i])
 	}
-	Log.Noticef("Generated content\n%s", color.GreenString(strings.Join(lines, "\n")))
+	Log.Noticef("Generated content\n\n%s\n", color.HiCyanString(strings.Join(lines, "\n")))
 	return content
 }
 

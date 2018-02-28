@@ -85,8 +85,11 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	if !context {
-		(*t.aliases)[name] = func(args ...interface{}) (result interface{}, err error) {
-			return f(utils.Interface2string(source), append(defaultArgs, args...)...)
+		t.aliases[name] = funcTable{
+			function: func(args ...interface{}) (result interface{}, err error) {
+				return f(utils.Interface2string(source), append(defaultArgs, args...)...)
+			},
+			group: "User defined aliases",
 		}
 		return
 	}
@@ -113,34 +116,38 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		}
 	}
 
-	(*t.aliases)[name] = func(args ...interface{}) (result interface{}, err error) {
-		context := make(map[string]interface{})
-		parentContext, isMap := t.context.(map[string]interface{})
-		if !isMap {
-			context["DEFAULT"] = t.context
-		}
-		switch len(args) {
-		case 1:
-			if arg1, isMap := args[0].(map[string]interface{}); isMap {
-				utils.MergeMaps(context, arg1, init, parentContext)
-				break
+	t.aliases[name] = funcTable{
+		function: func(args ...interface{}) (result interface{}, err error) {
+			context := make(map[string]interface{})
+			parentContext, isMap := t.context.(map[string]interface{})
+			if !isMap {
+				context["DEFAULT"] = t.context
 			}
-			if utils.ConvertData(fmt.Sprint(args[0]), &context) == nil {
-				utils.MergeMaps(context, init, parentContext)
-				break
-			}
-			fallthrough
-		default:
-			utils.MergeMaps(context, init, t.context.(map[string]interface{}))
-			for i := range args {
-				if i >= len(argNames) {
-					context["ARGS"] = args[i:]
+			switch len(args) {
+			case 1:
+				if arg1, isMap := args[0].(map[string]interface{}); isMap {
+					utils.MergeMaps(context, arg1, init, parentContext)
 					break
 				}
-				context[argNames[i]] = args[i]
+				if utils.ConvertData(fmt.Sprint(args[0]), &context) == nil {
+					utils.MergeMaps(context, init, parentContext)
+					break
+				}
+				fallthrough
+			default:
+				utils.MergeMaps(context, init, t.context.(map[string]interface{}))
+				for i := range args {
+					if i >= len(argNames) {
+						context["ARGS"] = args[i:]
+						break
+					}
+					context[argNames[i]] = args[i]
+				}
 			}
-		}
-		return f(utils.Interface2string(source), context)
+			return f(utils.Interface2string(source), context)
+		},
+		group:    "User defined functions",
+		argNames: argNames,
 	}
 	return
 }
@@ -174,6 +181,7 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Dir = t.folder
+	Log.Notice("Launching", cmd.Args, "in", cmd.Dir)
 
 	if err = cmd.Run(); err == nil {
 		result = stdout.String()

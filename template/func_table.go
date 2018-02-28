@@ -16,10 +16,13 @@ type funcTable struct {
 
 type funcTableMap map[string]funcTable
 
-var converted = make(map[uintptr]template.FuncMap)
+var converted = make(map[uint]template.FuncMap)
 
 func (ftm funcTableMap) convert() template.FuncMap {
-	index := reflect.ValueOf(ftm).Pointer()
+	// The index is a combination of the map address & the length of the map,
+	// if either of those change, the item will be updated in the converted
+	// cache
+	index := uint(reflect.ValueOf(ftm).Pointer()) + uint(len(ftm))
 	if result := converted[index]; result != nil {
 		return result
 	}

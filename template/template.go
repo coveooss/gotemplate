@@ -31,7 +31,7 @@ type Template struct {
 	parent      *Template
 	folder      string
 	children    map[string]*Template
-	aliases     *map[string]interface{}
+	aliases     funcTableMap
 	functions   funcTableMap
 	options     OptionsSet
 }
@@ -46,7 +46,7 @@ func NewTemplate(context interface{}, delimiters string, options OptionsSet, sub
 	t := Template{Template: template.New("Main")}
 	errors.Must(t.Parse(""))
 	t.context = context
-	t.aliases = &map[string]interface{}{}
+	t.aliases = make(funcTableMap)
 	t.delimiters = []string{"{{", "}}", "@"}
 	if options != nil {
 		t.options = options
@@ -77,7 +77,7 @@ func NewTemplate(context interface{}, delimiters string, options OptionsSet, sub
 
 			// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
 			if _, err := ext.ProcessContent(content, file); err != nil {
-				Log.Notice(color.New(color.FgRed).Sprintf("Error while processing %v", err))
+				Log.Noticef(color.RedString("Error while processing %v"), err)
 			}
 		}
 
@@ -124,7 +124,6 @@ func (t Template) RazorDelim() string { return t.delimiters[2] }
 
 // ProcessContent loads and runs the file template
 func (t Template) ProcessContent(content, source string) (string, error) {
-	Log.Notice("GoTemplate processing of", source)
 	content = t.substitute(content)
 
 	if strings.HasPrefix(content, "#!") {
@@ -144,6 +143,7 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 		return content, nil
 	}
 
+	Log.Notice("GoTemplate processing of", source)
 	context := t.GetNewContext(filepath.Dir(source), true)
 	newTemplate, err := context.New(source).Parse(content)
 	if err != nil {
@@ -225,7 +225,7 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 	if sourceFolder != targetFolder {
 		errors.Must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
-	Log.Notice(utils.Relative(t.folder, resultFile))
+	Log.Notice("Writing file", utils.Relative(t.folder, resultFile))
 
 	if utils.IsShebangScript(result) {
 		mode = 0755
@@ -446,7 +446,7 @@ func (t Template) GetNewContext(folder string, useCache bool) *Template {
 	newTemplate.Template = template.New(folder)
 	newTemplate.init(folder)
 	newTemplate.parent = &t
-	newTemplate.Funcs(*t.aliases)
+	newTemplate.AddFunctions(t.aliases)
 	newTemplate.importTemplates(t)
 
 	// We register the new template as a child of the main template
