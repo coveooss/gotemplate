@@ -88,10 +88,13 @@ func main() {
 			os.Args = append([]string{os.Args[0]}, append([]string{"run"}, os.Args[1:]...)...)
 		}
 	}
+
+	var changedArgs []int
 	for i := range os.Args {
 		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
 		if strings.HasPrefix(os.Args[i], "@") {
-			os.Args[i] = "#" + os.Args[i]
+			os.Args[i] = "#!!" + os.Args[i]
+			changedArgs = append(changedArgs, i)
 		}
 		if os.Args[i] == "--base" {
 			for n := range options {
@@ -104,6 +107,13 @@ func main() {
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
 	command := kingpin.Parse()
+
+	// We restore back the modified arguments
+	for i := range *templates {
+		if strings.HasPrefix((*templates)[i], "#!!") {
+			(*templates)[i] = (*templates)[i][3:]
+		}
+	}
 
 	// Build the optionsSet
 	var optionsSet template.OptionsSet
