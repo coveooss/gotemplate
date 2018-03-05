@@ -148,7 +148,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 
 		if getLogLevel() >= logging.DEBUG {
 			defer func() {
-				if !debug && result != expression {
+				if !debug && result != match {
 					Log.Debug("Resulting expression =", result)
 				}
 			}()
