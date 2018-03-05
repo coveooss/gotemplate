@@ -53,7 +53,7 @@ var customMetaclass = [][2]string{
 	{"function;", `@(?P<expr>[id]\([sp][expr][sp]\))`},
 	{"assign;", `(?P<assign>(?:\$[id][ \t,]*){1,2}:=[sp])?`}, // Optional assignment
 	{"index;", `(?P<index>\[[expr]\])`},                      // Extended index operator that support picky selection using ',' as element separator
-	{"selector;", `(?P<sel>\.[^@{};\n]+)`},                   // Optional selector following expression indicating that the expression must include the content after the closing ) (i.e. @function(args).selection)
+	{"selector;", `(?P<sel>\.[expr])`},                       // Optional selector following expression indicating that the expression must include the content after the closing ) (i.e. @function(args).selection)
 	{"reduce;", `(?P<reduce>-?)`},                            // Optional reduce sign (-) indicating that the generated code must start with {{-
 	{"endexpr;", `(?:[sp];)?`},                               // Optional end expression (spaces + ;)
 	{"[sp]", `[[:blank:]]*`},                                 // Optional spaces
@@ -64,7 +64,7 @@ var customMetaclass = [][2]string{
 }
 
 // Expression (any character that is not a new line, a start of razor expression or a semicolumn)
-var expressionList = []string{`[^\n]+`, `[^@\n]+`, `[^@;\n]+`, `[^@{\n]+`, `[^@;{\n]+`}
+var expressionList = []string{`[\p{L}_\.]+`, `[^\n]+`, `[^@\n]+`, `[^@;\n]+`, `[^@{\n]+`, `[^@;{\n]+`}
 
 const expressionKey = "[expr]"
 
@@ -92,24 +92,24 @@ var expressions = [][]interface{}{
 	{"Function call with slice - @func(args...)[...]", `reduce;function;index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Function call - @func(args...)", `reduce;function;endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError)},
 	{"Function unmanaged - @func(value | func)", `reduce;@(?P<function>[id])\([sp](?P<args>[expr])[sp]\)endexpr;`, `{{${reduce} ${function} ${args} }}`},
-	{"Global variables followed by expression", `reduce;@(?P<name>[idSel])selector;endexpr;`, `${reduce}@($$.${name}${sel})`},
-	{"Global variables with slice - @var[...]", `reduce;@(?P<name>[idSel])index;endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Context variables special with slice", `reduce;@\.(?P<name>[id2])index;endexpr;`, `{{${reduce} ${slicer} (get . "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Global variables special with slice", `reduce;@(?P<name>[id2])index;endexpr;`, `{{${reduce} ${slicer} (get $$ "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Local variables with slice", `reduce;@(?P<name>[\$\.][\p{L}\d_\.]*)index;endexpr;`, `{{${reduce} ${slicer} ${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
+	{"Global variables followed by expression", `reduce;@(?P<expr>[idSel]selector;)endexpr;`, `${reduce}@($$.${expr})`, replacementFunc(expressionParserSkipError)},
+	{"Global variables with slice - @var[...]", `reduce;@(?P<expr>(?P<name>[idSel])index;)endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
+	{"Context variables special with slice", `reduce;@\.(?P<expr>(?P<name>[id2])index;)endexpr;`, `{{${reduce} ${slicer} (get . "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
+	{"Global variables special with slice", `reduce;@(?P<expr>(?P<name>[id2])index;)endexpr;`, `{{${reduce} ${slicer} (get $$ "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
+	{"Local variables with slice", `reduce;@(?P<expr>(?P<name>[\$\.][\p{L}\d_\.]*)index;)endexpr;`, `{{${reduce} ${slicer} ${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Global variables - @var", `reduce;@(?P<name>[idSel])endexpr;`, `{{${reduce} $$.${name} }}`},
 	{"Context variables special - @var", `reduce;@\.(?P<name>[id2])endexpr;`, `{{${reduce} get . "${name}" }}`},
 	{"Global variables special - @var", `reduce;@(?P<name>[id2])endexpr;`, `{{${reduce} get $$ "${name}" }}`},
 	{"Local variables - @$var or @.var", `reduce;@(?P<name>[\$\.][\p{L}\d_\.]*)endexpr;`, `{{${reduce} ${name} }}`},
 	{"Expression @(var).selector", `@\([sp](?P<name>[idSel])[sp]\)selector;endexpr;`, `@($$.${name}${sel})`},
-	{"Expression @(var)[...]", `reduce;@\([sp](?P<name>[idSel])[sp]\)index;endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Expression @(var)", `reduce;@\([sp](?P<name>[idSel])[sp]\)endexpr;`, `{{${reduce} $$.${name} }}`, replacementFunc(expressionParserSkipError)},
+	{"Expression @(var)[...]", `reduce;@(?P<expr>\([sp](?P<name>[idSel])[sp]\)index;)endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
+	{"Expression @(var)", `reduce;@\([sp](?P<expr>[idSel])[sp]\)endexpr;`, `{{${reduce} $$.${expr} }}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr).selector", `@\([sp](?P<expr>[expr])[sp]\)selector;endexpr;`, `@(${expr}${sel})`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)[...]", `reduce;@\([sp](?P<expr>[expr])[sp]\)index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)", `reduce;@\([sp](?P<expr>[expr])[sp]\)endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"Inline content", `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},
-	{"a", assign, "{{- $$"},
-	{"b", literalAt, "@"},
+	{"", assign, "{{- $$"},
+	{"", literalAt, "@"},
 }
 
 const (
@@ -148,7 +148,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 
 		if getLogLevel() >= logging.DEBUG {
 			defer func() {
-				if !debug && result != expression {
+				if !debug && result != match {
 					Log.Debug("Resulting expression =", result)
 				}
 			}()
@@ -165,6 +165,8 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		}
 		// We add support to partial slice
 		expr = indexExpression(expr)
+	} else {
+		Log.Warning("Expression %s should contains at least one expression", repl.name)
 	}
 
 	if index, err := findName("index", repl.re.SubexpNames()); err == nil {
@@ -476,7 +478,7 @@ func printDebugInfo(r replacement, content string) {
 		allUnique[found] = allUnique[found] + 1
 	}
 
-	if len(allUnique) == 0 && getLogLevel() < logging.DEBUG {
+	if len(allUnique) == 0 && getLogLevel() < 6 {
 		return
 	}
 
