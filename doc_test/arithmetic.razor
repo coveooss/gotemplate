@@ -93,7 +93,7 @@ Note that you cannot combine razor extended expression (+, -,  /, *, etc.) with 
 | {{ band 65535 512 }}          | {{ band 65535 512 }}        | 512    | **Bitwise AND**
 | {{ band 12345 678 }}       | {{ band 12345 678 }}        | 32     | *or band*
 | {{ bitwiseAND 222 111 }}   | {{ bitwiseAND 222 111 }}    | 78     | *or bitwiseAND*
-| @(1 &#124; 2 &#124; 4);  | {{ bor (bor 1 2) 4 }}       | 7      | **Bitwise OR**
+| @(1 &#124; 2 &#124; 4); | {{ bor (bor 1 2) 4 }}       | 7      | **Bitwise OR**
 | {{ bor 100 200 300 }}     | {{ bor 100 200 300 }}       | 492    | *or bor*
 | {{ bitwiseOR 64 256 4 }}  | {{ bitwiseOR 64 256 4 }}    | 324    | *or bitwiseOR
 | {{ bxor (bxor 1 2) 4 }}            | {{ bxor (bxor 1 2) 4 }}     | 7      | **Bitwise XOR**

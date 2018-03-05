@@ -17,6 +17,7 @@ import (
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
 	logging "github.com/op/go-logging"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var templateExt = []string{".gt", ".template"}
@@ -484,8 +485,11 @@ func (t Template) printResult(source, target, result string) (err error) {
 	} else {
 		Log.Notice(target)
 	}
-	fmt.Printf(result)
-	fmt.Fprintln(os.Stderr)
+	fmt.Print(result)
+	if result != "" && terminal.IsTerminal(int(os.Stdout.Fd())) {
+		fmt.Println()
+	}
+
 	return
 }
 
