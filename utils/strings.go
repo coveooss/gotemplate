@@ -41,7 +41,10 @@ func (s String) LastIndexFunc(f func(rune) bool) int { return strings.LastIndexF
 func (s String) Lines() StringArray                  { return s.Split("\n") }
 func (s String) Map(mapping func(rune) rune) String  { return String(strings.Map(mapping, string(s))) }
 func (s String) Repeat(count int) String             { return String(strings.Repeat(string(s), count)) }
-func (s String) Replace(old, new string, n int) String {
+func (s String) Replace(old, new string) String {
+	return String(strings.Replace(string(s), old, new, -1))
+}
+func (s String) ReplaceN(old, new string, n int) String {
 	return String(strings.Replace(string(s), old, new, n))
 }
 func (s String) Split(sep string) StringArray { return stringArray(strings.Split(string(s), sep)) }
@@ -283,7 +286,7 @@ func IndentN(s string, indent int) string { return Indent(s, strings.Repeat(" ",
 func PrettyPrintStruct(object interface{}) string {
 	var out string
 	isZero := func(x interface{}) bool {
-		return reflect.DeepEqual(x, reflect.Zero(reflect.TypeOf(x)).Interface())
+		return x == nil || reflect.DeepEqual(x, reflect.Zero(reflect.TypeOf(x)).Interface())
 	}
 
 	val := reflect.ValueOf(object)

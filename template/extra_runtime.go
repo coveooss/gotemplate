@@ -262,7 +262,9 @@ func (t Template) runTemplateItf(source string, context ...interface{}) (interfa
 // This function is used to call a function that requires its last argument to be expanded ...
 func (t Template) ellipsis(function string, args ...interface{}) (interface{}, error) {
 	last := len(args) - 1
-	if last < 0 || reflect.TypeOf(args[last]).Kind() != reflect.Slice {
+	if last >= 0 && args[last] == nil {
+		args[last] = []interface{}{}
+	} else if last < 0 || reflect.TypeOf(args[last]).Kind() != reflect.Slice {
 		return nil, fmt.Errorf("The last argument must be a slice")
 	}
 
