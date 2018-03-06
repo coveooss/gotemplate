@@ -51,20 +51,20 @@ var iif = utils.IIf
 // Warning: The declaration order is important
 var customMetaclass = [][2]string{
 	{"function;", `@(?P<expr>[id]\([sp][expr][sp]\))`},
-	{"assign;", `(?P<assign>(?:\$[id][ \t,]*){1,2}:=[sp])?`}, // Optional assignment
-	{"index;", `(?P<index>\[[expr]\])`},                      // Extended index operator that support picky selection using ',' as element separator
-	{"selector;", `(?P<sel>\.[expr])`},                       // Optional selector following expression indicating that the expression must include the content after the closing ) (i.e. @function(args).selection)
-	{"reduce;", `(?P<reduce>-?)`},                            // Optional reduce sign (-) indicating that the generated code must start with {{-
-	{"endexpr;", `(?:[sp];)?`},                               // Optional end expression (spaces + ;)
-	{"[sp]", `[[:blank:]]*`},                                 // Optional spaces
-	{"[id]", `[\p{L}\d_]+`},                                  // Go language id
-	{"[id2]", `[map_id;][map_id;\.]*`},                       // Id with additional character that could be used to create variables in maps
-	{"[idSel]", `[\p{L}_][\p{L}\d_\.]*`},                     // Id with optional selection (object.selection.subselection)
-	{"map_id;", `\p{L}\d_\-\+\*%#!~`},                        // Id with additional character that could be used to create variables in maps
+	{"assign;", `(?P<assign>(?:\$[id][ \t,]*){1,2}:=[sp])`}, // Optional assignment
+	{"index;", `(?P<index>\[[expr]\])`},                     // Extended index operator that support picky selection using ',' as element separator
+	{"selector;", `(?P<sel>\.[expr])`},                      // Optional selector following expression indicating that the expression must include the content after the closing ) (i.e. @function(args).selection)
+	{"reduce;", `(?P<reduce>-?)`},                           // Optional reduce sign (-) indicating that the generated code must start with {{-
+	{"endexpr;", `(?:[sp];)?`},                              // End expression (spaces + ; or end of line)
+	{"[sp]", `[[:blank:]]*`},                                // Optional spaces
+	{"[id]", `[\p{L}\d_]+`},                                 // Go language id
+	{"[id2]", `[map_id;][map_id;\.]*`},                      // Id with additional character that could be used to create variables in maps
+	{"[idSel]", `[\p{L}_][\p{L}\d_\.]*`},                    // Id with optional selection (object.selection.subselection)
+	{"map_id;", `\p{L}\d_\-\+\*%#!~`},                       // Id with additional character that could be used to create variables in maps
 }
 
 // Expression (any character that is not a new line, a start of razor expression or a semicolumn)
-var expressionList = []string{`[\p{L}_\.]+`, `[^\n]+`, `[^@\n]+`, `[^@;\n]+`, `[^@{\n]+`, `[^@;{\n]+`}
+var expressionList = []string{`[^\n]+`, `[^@\n]+`, `[^@;\n]+`, `[^@{\n]+`, `[^@;{\n]+`, `[\p{L}_\.]+`}
 
 const expressionKey = "[expr]"
 
@@ -77,16 +77,16 @@ var expressions = [][]interface{}{
 	{"Real comments - ##|/// @ comment", `(?m)^[sp](?:##|///)[sp]@.*$`, ""},
 	{"Line comment - @// or @#", `(?m)@(#|//)[sp](?P<line_comment>.*)[sp]$`, "{{/* ${line_comment} */}}"},
 	{"Block comment - @/* */", `(?s)@/\*(?P<block_comment>.*?)\*/`, "{{/*${block_comment}*/}}"},
-	{"Single line command - @command (expr) action;", `@(?P<command>if|with|range)[sp]\([sp]assign;[sp](?P<expr>[expr])[sp]\)[sp](?P<action>[^\n]+?)[sp];`, `{{- ${command} ${assign}${expr} }}${action}{{- end }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
-	{"Single line command - @command (expr) { action }", `(?m)@(?P<command>if|with|range)[sp]\([sp]assign;[sp](?P<expr>[expr])[sp]\)[sp]{[sp](?P<action>[^\n]+?)}[sp]$`, `{{- ${command} ${assign}${expr} }}${action}{{- end }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
-	{"Assign local flexible - @$var := value", `@\$(?P<id>[id])[sp]:=[sp](?P<expr>[expr])endexpr;`, fmt.Sprintf(`%s${id} := ${expr} }}`, assign), replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
-	{"Assign local strict - $var := value", `\$(?P<id>[id])[sp]:=[sp](?P<expr>[expr])endexpr;`, fmt.Sprintf(`%s${id} := ${expr} }}`, assign), replacementFunc(expressionParserSkipError)},
+	{"Command - @with (expr)", `@(?P<command>if|else if|block|with|define|range)[sp]\([sp]assign;?[sp](?P<expr>[expr])[sp]\)[sp]`, `{{- ${command} ${assign}${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"Single line command - @command (expr) action;", `@(?P<command>if|with|range)[sp]\([sp]assign;?[sp](?P<expr>[expr])[sp]\)[sp](?P<action>[^\n]+?)[sp];`, `{{- ${command} ${assign}${expr} }}${action}{{- end }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"Single line command - @command (expr) { action }", `(?m)@(?P<command>if|with|range)[sp]\([sp]assign;?[sp](?P<expr>[expr])[sp]\)[sp]{[sp](?P<action>[^\n]+?)}[sp]$`, `{{- ${command} ${assign}${expr} }}${action}{{- end }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"Assign local flexible - @$var := value", `(?mU)@assign;(?P<expr>[expr])(?:;|$)`, `{{ ${assign}${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"Assign local strict - $var := value", `(?P<converted>{{-?[sp](?:if|range|with)?[sp])?assign;(?P<expr>[expr])endexpr;`, `{{ ${assign}${expr} }}`, replacementFunc(assignExpression)},
 	{"Assign context - @.var := value", `@\.(?P<id>[id2])[sp]:=[sp](?P<expr>[expr])endexpr;`, `{{- set . "${id}" (${expr}) }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"Assign global - @var := value", `@(?P<id>[id2])[sp]:=[sp](?P<expr>[expr])endexpr;`, `{{- set $ "${id}" (${expr}) }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"various ends", `@(?P<command>end[sp](if|range|define|block|with|))endexpr;`, "{{- end }}"},
 	{"Define template", `@define\([sp](?P<args>.+)[sp]\)`, `{{- define ${args} -}}`},
 	{"elseif", `@else[sp]if`, `@else if`},
-	{"Command - @with (expr)", `@(?P<command>if|else if|block|with|define|range)[sp]\([sp]assign;[sp](?P<expr>[expr])[sp]\)[sp]`, `{{- ${command} ${assign}${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"else", `@else`, "{{- else }}"},
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@((${expr})${sel})`, replacementFunc(expressionParserSkipError)},
 	{"Function call with slice - @func(args...)[...]", `reduce;function;index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
@@ -108,7 +108,6 @@ var expressions = [][]interface{}{
 	{"Expression @(expr)[...]", `reduce;@\([sp](?P<expr>[expr])[sp]\)index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)", `reduce;@\([sp](?P<expr>[expr])[sp]\)endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"Inline content", `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},
-	{"", assign, "{{- $$"},
 	{"", literalAt, "@"},
 }
 
@@ -123,6 +122,14 @@ const (
 )
 
 var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*)`)
+
+func assignExpression(repl replacement, match string) string {
+	if strings.HasPrefix(match, "{{") {
+		// This is an already go template assignation
+		return match
+	}
+	return expressionParserSkipError(repl, match)
+}
 
 func expressionParser(repl replacement, match string) string {
 	return expressionParserInternal(repl, match, false, false)
@@ -411,8 +418,12 @@ func (t *Template) ensureInit() {
 		replacements = make([]replacement, 0, len(expressions))
 		for _, expr := range expressions {
 			comment := expr[0].(string)
-			re := expr[1].(string)
-			replace := expr[2].(string)
+			re := strings.Replace(expr[1].(string), "@", t.delimiters[2], -1)
+			replace := strings.Replace(strings.Replace(strings.Replace(expr[2].(string), "{{", t.delimiters[0], -1), "}}", t.delimiters[1], -1), "@", t.delimiters[2], -1)
+			var exprParser replacementFunc
+			if len(expr) >= 4 {
+				exprParser = expr[3].(replacementFunc)
+			}
 
 			// We apply replacements in regular expression to make them regex compliant
 			for i := range customMetaclass {
@@ -422,29 +433,23 @@ func (t *Template) ensureInit() {
 
 			subExpressions := []string{re}
 			if strings.Contains(re, expressionKey) {
+				// If regex contains the generic expression token [expr], we generate several expression evaluator
+				// that go from the most generic expression to the most specific one
 				subExpressions = make([]string, len(expressionList))
 				for i := range expressionList {
-					j := len(expressionList) - i - 1
-					subExpressions[i] = strings.Replace(re, expressionKey, expressionList[j], -1)
+					subExpressions[i] = strings.Replace(re, expressionKey, expressionList[i], -1)
 				}
 			}
 
-			for i, re := range subExpressions {
-				var exprParser replacementFunc
-				if len(expr) >= 4 {
-					exprParser = expr[3].(replacementFunc)
-					if i == len(subExpressions)-1 && len(expr) == 5 {
-						exprParser = expr[4].(replacementFunc)
-					}
-				}
+			for i := range subExpressions {
+				re := regexp.MustCompile(subExpressions[i])
+				replacements = append(replacements, replacement{comment, subExpressions[i], replace, re, exprParser})
+			}
 
-				replacements = append(replacements, replacement{
-					comment,
-					re,
-					strings.Replace(strings.Replace(strings.Replace(replace, "{{", t.delimiters[0], -1), "}}", t.delimiters[1], -1), "@", t.delimiters[2], -1),
-					regexp.MustCompile(strings.Replace(re, "@", t.delimiters[2], -1)),
-					exprParser,
-				})
+			if len(subExpressions) > 1 && len(expr) == 5 {
+				// If there is a fallback expression evaluator, we apply it on the first replacement alternative
+				re := regexp.MustCompile(subExpressions[0])
+				replacements = append(replacements, replacement{comment, subExpressions[0], replace, re, expr[4].(replacementFunc)})
 			}
 		}
 	}
