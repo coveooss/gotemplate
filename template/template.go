@@ -132,6 +132,7 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 		lines := strings.Split(content, "\n")
 		if strings.Contains(lines[0], "gotemplate") {
 			content = strings.Join(lines[1:], "\n")
+			t.options[OutputStdout] = true
 		}
 	}
 
@@ -246,7 +247,10 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates ...string) (resultFiles []string, errors errors.Array) {
 	resultFiles = make([]string, 0, len(templates))
 
+	print := t.options[OutputStdout]
+
 	for i := range templates {
+		t.options[OutputStdout] = print // Some file may change this option at runtime, so we restore it back to its original value between each file
 		resultFile, err := t.ProcessTemplate(templates[i], sourceFolder, targetFolder)
 		if err == nil {
 			if resultFile != "" {
@@ -449,6 +453,7 @@ func (t Template) GetNewContext(folder string, useCache bool) *Template {
 	newTemplate.parent = &t
 	newTemplate.AddFunctions(t.aliases)
 	newTemplate.importTemplates(t)
+	newTemplate.options = make(OptionsSet)
 
 	// We register the new template as a child of the main template
 	if !useCache {
