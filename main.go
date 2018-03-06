@@ -27,7 +27,16 @@ See: https://github.com/coveo/gotemplate/blob/master/README.md for complete docu
 `
 
 func main() {
-	defer cleanup()
+	var exitCode int
+
+	defer func() {
+		if rec := recover(); rec != nil {
+			fmt.Printf(color.RedString("Recovered %v\n"), rec)
+			exitCode = -1
+		}
+		cleanup()
+		os.Exit(exitCode)
+	}()
 
 	var (
 		app          = kingpin.New(os.Args[0], description)
@@ -208,6 +217,7 @@ func main() {
 	resultFiles, err := t.ProcessTemplates(*sourceFolder, *targetFolder, *templates...)
 	if err != nil {
 		errors.Print(err)
+		exitCode = 1
 	}
 
 	if *forceStdin && stdinContent == "" {
@@ -217,6 +227,7 @@ func main() {
 			fmt.Println(result)
 		} else {
 			errors.Print(err)
+			exitCode = 2
 		}
 	}
 
