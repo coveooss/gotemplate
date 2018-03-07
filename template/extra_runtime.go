@@ -228,7 +228,7 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 					return
 				}
 			} else {
-				source = string(fileContent)
+				source = string(t.applyRazor(fileContent))
 				filename = tryFile
 			}
 		}
