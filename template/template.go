@@ -136,9 +136,7 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 		}
 	}
 
-	if t.options[Razor] && t.IsRazor(content) {
-		content = string(t.applyRazor([]byte(content)))
-	}
+	content = string(t.applyRazor([]byte(content)))
 
 	if t.options[RenderingDisabled] || !t.IsCode(content) {
 		// There is no template element to evaluate or the template rendering is off

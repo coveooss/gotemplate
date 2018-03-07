@@ -1,7 +1,6 @@
 package template
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -19,7 +18,7 @@ import (
 
 // Add additional functions to the go template context
 func (t *Template) applyRazor(content []byte) []byte {
-	if !bytes.Contains(content, []byte(t.delimiters[2])) {
+	if !t.options[Razor] || !t.IsRazor(string(content)) {
 		return content
 	}
 	t.ensureInit()
@@ -79,14 +78,13 @@ var expressions = [][]interface{}{
 	{"Block comment - @/* */", `(?s)@/\*(?P<block_comment>.*?)\*/`, "{{/*${block_comment}*/}}"},
 	{"Single line command - @command (expr) action;", `@(?P<command>if|with|range)[sp]\([sp]assign;?[sp](?P<expr>[expr])[sp]\)[sp](?P<action>[^\n]+?)[sp];`, `{{- ${command} ${assign}${expr} }}${action}{{- end }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"Single line command - @command (expr) { action }", `(?m)@(?P<command>if|with|range)[sp]\([sp]assign;?[sp](?P<expr>[expr])[sp]\)[sp]{[sp](?P<action>[^\n]+?)}[sp]$`, `{{- ${command} ${assign}${expr} }}${action}{{- end }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
-	{"Command - @with (expr)", `@(?P<command>if|else if|block|with|define|range)[sp]\([sp]assign;?[sp](?P<expr>[expr])[sp]\)[sp]`, `{{- ${command} ${assign}${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"Command - @with (expr)", `@(?P<command>if|else[sp]if|block|with|define|range)[sp]\([sp]assign;?[sp](?P<expr>[expr])[sp]\)[sp]`, `{{- ${command} ${assign}${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"Assign local flexible - @$var := value", `(?mU)@assign;(?P<expr>[expr])(?:;|$)`, `{{- ${assign}${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"Assign local strict - $var := value", `(?P<converted>{{-?[sp](?:if|range|with)?[sp])?assign;(?P<expr>[expr])endexpr;`, `{{- ${assign}${expr} }}`, replacementFunc(assignExpression)},
 	{"Assign context - @.var := value", `@\.(?P<id>[id2])[sp]:=[sp](?P<expr>[expr])endexpr;`, `{{- set . "${id}" (${expr}) }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"Assign global - @var := value", `@(?P<id>[id2])[sp]:=[sp](?P<expr>[expr])endexpr;`, `{{- set $ "${id}" (${expr}) }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"various ends", `@(?P<command>end[sp](if|range|define|block|with|))endexpr;`, "{{- end }}"},
 	{"Define template", `@define\([sp](?P<args>.+)[sp]\)`, `{{- define ${args} -}}`},
-	{"elseif", `@else[sp]if`, `@else if`},
 	{"else", `@else`, "{{- else }}"},
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@((${expr})${sel});`, replacementFunc(expressionParserSkipError)},
 	{"Function call with slice - @func(args...)[...]", `reduce;function;index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
