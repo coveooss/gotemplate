@@ -43,7 +43,8 @@ var ExtensionDepth = 2
 var toStrings = utils.ToStrings
 
 // NewTemplate creates an Template object with default initialization
-func NewTemplate(context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
+func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
+	folder = iif(folder != "", folder, utils.Pwd()).(string)
 	t := Template{Template: template.New("Main")}
 	errors.Must(t.Parse(""))
 	t.context = context
@@ -60,9 +61,9 @@ func NewTemplate(context interface{}, delimiters string, options OptionsSet, sub
 	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
 
 	if options[Extension] {
-		ext := t.GetNewContext(utils.Pwd(), false)
+		ext := t.GetNewContext(folder, false)
 		ext.options = DefaultOptions()
-		ext.init(utils.Pwd())
+		ext.init(folder)
 
 		// We temporary set the logging level one grade lower
 		logLevel := logging.GetLevel(logger)
@@ -92,7 +93,7 @@ func NewTemplate(context interface{}, delimiters string, options OptionsSet, sub
 	}
 
 	// Set the options supplied by caller
-	t.init(utils.Pwd())
+	t.init(folder)
 	if delimiters != "" {
 		for i, delimiter := range strings.Split(delimiters, ",") {
 			if i == len(t.delimiters) {
@@ -122,6 +123,9 @@ func (t Template) RightDelim() string { return t.delimiters[1] }
 
 // RazorDelim returns the razor delimiter
 func (t Template) RazorDelim() string { return t.delimiters[2] }
+
+// SetOption allows setting of template option after initialization
+func (t *Template) SetOption(option Options, value bool) { t.options[option] = value }
 
 // ProcessContent loads and runs the file template
 func (t Template) ProcessContent(content, source string) (string, error) {
@@ -243,6 +247,8 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 
 // ProcessTemplates loads and runs the file template or execute the content if it is not a file
 func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates ...string) (resultFiles []string, errors errors.Array) {
+	sourceFolder = iif(sourceFolder == "", t.folder, sourceFolder).(string)
+	targetFolder = iif(targetFolder == "", t.folder, targetFolder).(string)
 	resultFiles = make([]string, 0, len(templates))
 
 	print := t.options[OutputStdout]
