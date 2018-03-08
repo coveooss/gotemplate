@@ -1,22 +1,31 @@
 language: go
 go:
-- 1.9.x
+  - 1.9.x
 
 sudo: false
 
+before_install:
+  - go get github.com/Masterminds/glide
+  - go get github.com/mattn/goveralls
+
 install:
-- if [ ${TRAVIS_TAG::1} = v ];
-  then
-    go get github.com/Masterminds/glide &&
-    glide install;
-  fi
+  - make install
+
+before_script:
+  - make doc
+  - if [[ `git status --porcelain` ]]; then
+      echo "'make doc' was not run before commiting";
+      exit 1;
+    fi
+  - go test ./...
 
 script:
-- if [ ${TRAVIS_TAG::1} = v ];
-  then
-    go test ./... &&
-    curl -sL https://git.io/goreleaser | bash;
-  fi
+  - if [ "${TRAVIS_TAG::1}" = "v" ]; then
+      curl -sL https://git.io/goreleaser | bash;
+    fi
+
+after_success:
+  - make coveralls
 
 notifications:
   email: false

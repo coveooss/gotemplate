@@ -1,5 +1,8 @@
 # gotemplate
 
+[![Build Status](https://travis-ci.org/coveo/gotemplate.svg?branch=master)](https://travis-ci.org/coveo/gotemplate)
+[![Coverage Status](https://coveralls.io/repos/github/coveo/gotemplate/badge.svg?branch=coverage)](https://coveralls.io/github/coveo/gotemplate?branch=master)
+
 ## Description
 
 Apply go template over files ending with .template in the current directory.
