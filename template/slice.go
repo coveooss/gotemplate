@@ -163,7 +163,7 @@ func getSingleMapElement(m interface{}) (key, value interface{}, err error) {
 		if len(keys) != 1 {
 			return
 		}
-		return keys[0], v.MapIndex(keys[0]).Interface(), nil
+		return keys[0].Interface(), v.MapIndex(keys[0]).Interface(), nil
 	case reflect.Slice:
 		length := v.Len()
 		keys := make([]interface{}, length)

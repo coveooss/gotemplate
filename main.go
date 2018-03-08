@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
@@ -32,6 +33,7 @@ func main() {
 	defer func() {
 		if rec := recover(); rec != nil {
 			fmt.Printf(color.RedString("Recovered %v\n"), rec)
+			debug.PrintStack()
 			exitCode = -1
 		}
 		cleanup()

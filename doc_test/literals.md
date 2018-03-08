@@ -4,7 +4,7 @@
 
 The razor convertor is designed to detect email address such as `john.doe@company.com` or `alert@127.0.0.1`.
 
-But it you type something like `@john.doe@(company.com)`, it will try to resolve variable john.doe and company.com.
+But it you type something like `@john.doe@company.com`, it will try to resolve variable john.doe and company.com.
 
 The result would be `<no value><no value>` unless you have defined:
 

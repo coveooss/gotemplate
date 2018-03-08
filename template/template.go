@@ -44,26 +44,21 @@ var toStrings = utils.ToStrings
 
 // NewTemplate creates an Template object with default initialization
 func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
-	folder = iif(folder != "", folder, utils.Pwd()).(string)
 	t := Template{Template: template.New("Main")}
 	errors.Must(t.Parse(""))
+	t.options = iif(options != nil, options, DefaultOptions()).(OptionsSet)
+	t.folder, _ = filepath.Abs(iif(folder != "", folder, utils.Pwd()).(string))
 	t.context = context
 	t.aliases = make(funcTableMap)
 	t.delimiters = []string{"{{", "}}", "@"}
-	if options != nil {
-		t.options = options
-	} else {
-		t.options = DefaultOptions()
-	}
 
 	// Set the regular expression replacements
 	baseRegex := []string{`/(?m)^\s*#!\s*$/`}
 	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
 
-	if options[Extension] {
-		ext := t.GetNewContext(folder, false)
+	if t.options[Extension] {
+		ext := t.GetNewContext("", false)
 		ext.options = DefaultOptions()
-		ext.init(folder)
 
 		// We temporary set the logging level one grade lower
 		logLevel := logging.GetLevel(logger)
@@ -71,7 +66,7 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 		defer func() { logging.SetLevel(logLevel, logger) }()
 
 		// Retrieve the template extension files
-		for _, file := range utils.MustFindFilesMaxDepth(t.folder, ExtensionDepth, false, "*.gte") {
+		for _, file := range utils.MustFindFilesMaxDepth(ext.folder, ExtensionDepth, false, "*.gte") {
 			// We just load all the template files available to ensure that all template definition are loaded
 			// We do not use ParseFiles because it names the template with the base name of the file
 			// which result in overriding templates with the same base name in different folders.
@@ -93,7 +88,7 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	}
 
 	// Set the options supplied by caller
-	t.init(folder)
+	t.init("")
 	if delimiters != "" {
 		for i, delimiter := range strings.Split(delimiters, ",") {
 			if i == len(t.delimiters) {
@@ -410,7 +405,9 @@ func (t Template) PrintTemplates(all, long bool) {
 
 // Initialize a new template with same attributes as the current context
 func (t *Template) init(folder string) {
-	t.folder = folder
+	if folder != "" {
+		t.folder, _ = filepath.Abs(folder)
+	}
 	t.addFuncs()
 	t.Parse("")
 	t.children = make(map[string]*Template)
@@ -446,7 +443,7 @@ func (t *Template) importTemplates(source Template) {
 
 // GetNewContext returns a distint context for each folder
 func (t Template) GetNewContext(folder string, useCache bool) *Template {
-	folder, _ = filepath.Abs(folder)
+	folder = iif(folder != "", folder, t.folder).(string)
 	if context, found := t.children[folder]; useCache && found {
 		return context
 	}
