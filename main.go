@@ -180,7 +180,7 @@ func main() {
 		*forceStdin = true
 	}
 
-	t := template.NewTemplate(createContext(*varFiles, *namedVars), *delimiters, optionsSet, *substitutes...)
+	t := template.NewTemplate("", createContext(*varFiles, *namedVars), *delimiters, optionsSet, *substitutes...)
 	t.TempFolder = tempFolder
 
 	if command == list.FullCommand() {
