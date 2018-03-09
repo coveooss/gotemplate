@@ -241,13 +241,14 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 }
 
 // ProcessTemplates loads and runs the file template or execute the content if it is not a file
-func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates ...string) (resultFiles []string, errors errors.Array) {
+func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates ...string) (resultFiles []string, err error) {
 	sourceFolder = iif(sourceFolder == "", t.folder, sourceFolder).(string)
 	targetFolder = iif(targetFolder == "", t.folder, targetFolder).(string)
 	resultFiles = make([]string, 0, len(templates))
 
 	print := t.options[OutputStdout]
 
+	var errors errors.Array
 	for i := range templates {
 		t.options[OutputStdout] = print // Some file may change this option at runtime, so we restore it back to its original value between each file
 		resultFile, err := t.ProcessTemplate(templates[i], sourceFolder, targetFolder)
@@ -258,6 +259,9 @@ func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates 
 		} else {
 			errors = append(errors, err)
 		}
+	}
+	if len(errors) > 0 {
+		err = errors
 	}
 	return
 }
