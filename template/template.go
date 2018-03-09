@@ -25,16 +25,17 @@ var templateExt = []string{".gt", ".template"}
 // Template let us extend the functionalities of base template
 type Template struct {
 	*template.Template
-	TempFolder  string
-	substitutes []utils.RegexReplacer
-	context     interface{}
-	delimiters  []string
-	parent      *Template
-	folder      string
-	children    map[string]*Template
-	aliases     funcTableMap
-	functions   funcTableMap
-	options     OptionsSet
+	TempFolder           string
+	substitutes          []utils.RegexReplacer
+	context              interface{}
+	delimiters           []string
+	parent               *Template
+	folder               string
+	children             map[string]*Template
+	aliases              funcTableMap
+	functions            funcTableMap
+	options              OptionsSet
+	mathConstantInjected bool
 }
 
 // ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2)
@@ -48,7 +49,7 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	errors.Must(t.Parse(""))
 	t.options = iif(options != nil, options, DefaultOptions()).(OptionsSet)
 	t.folder, _ = filepath.Abs(iif(folder != "", folder, utils.Pwd()).(string))
-	t.context = context
+	t.context = iif(context != nil, context, make(map[string]interface{}))
 	t.aliases = make(funcTableMap)
 	t.delimiters = []string{"{{", "}}", "@"}
 

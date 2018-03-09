@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/coveo/gotemplate/utils"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 const (
@@ -24,6 +25,7 @@ var utilsFuncs = funcTableMap{
 	"iif":        {utils.IIf, utilsBase, nil, []string{"test", "valueIfTrue", "valueIfFalse"}, ""},
 	"lorem":      {lorem, utilsBase, nil, []string{"funcName"}, ""},
 	"color":      {utils.SprintColor, utilsBase, nil, nil, ""},
+	"diff":       {diff, utilsBase, nil, nil, ""},
 }
 
 func (t *Template) addUtilsFuncs() {
@@ -61,3 +63,9 @@ func id(id string, replace ...interface{}) string {
 var validChars = regexp.MustCompile(`[^\p{L}\d_]`)
 var duplicateUnderscore = regexp.MustCompile(`_+`)
 var regexSpecial = regexp.MustCompile(`[\+\.\?\(\)\[\]\{\}\\]`)
+
+func diff(text1, text2 interface{}) interface{} {
+	dmp := diffmatchpatch.New()
+	diffs := dmp.DiffMain(fmt.Sprint(text1), fmt.Sprint(text2), true)
+	return dmp.DiffPrettyText(diffs)
+}

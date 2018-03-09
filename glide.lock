@@ -1,5 +1,5 @@
 hash: d6775831eb4a216531158f0c39b27183e666154386de11fd65b9c79d1a3e00b3
-updated: 2018-03-05T12:30:38.503517-05:00
+updated: 2018-03-09T12:12:47.612206-05:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -42,14 +42,18 @@ imports:
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: github.com/satori/go.uuid
   version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
+- name: github.com/sergi/go-diff
+  version: da645544ed44df016359bd4c0e3dc60ee3a0da43
+  subpackages:
+  - diffmatchpatch
 - name: golang.org/x/crypto
-  version: 91a49db82a88618983a78a06c1cbd4e00ab749ab
+  version: c7dcf104e3a7a1417abc0230cb0d5240d764159d
   subpackages:
   - pbkdf2
   - scrypt
   - ssh/terminal
 - name: golang.org/x/sys
-  version: dd2ff4accc098aceecb86b36eaa7829b2a17b1c9
+  version: 7dca6fe1f43775aa6d1334576870ff63f978f539
   subpackages:
   - unix
   - windows
