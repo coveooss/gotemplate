@@ -20,3 +20,40 @@ In that case, the result of `@john.doe@(company.com)` will be `123.453.141592653
 You can also render the &#64; characters by writing &#64;&#64;.
 
 So this `@@` will render &#64;.
+
+## Space management
+
+With go template, the way to indicate that previous or leading spaces between expression should be removed is expressed
+that way `{{- "expression" -}}`. The minus sign at the beginning and at the end mean that the spaces should be remove while
+`{{- "expression" }}` means to remove only at the beginning and `{{ "expression" -}}` means to remove only at the end.
+
+The `{{ "expression" }}` will keep the spaces before and after expression as they are.
+
+With razor, assignation and flow control expression (if, else, elseif, end, range, with, etc.) will render go template code with - at both end.
+
+@expr := "expression"
+
+results in:
+
+ {{- set $ "expr" ("expression") -}}
+
+But for variables, you have to specify the expected behavior.
+
+This signify that in the following sentence:
+
+    *The word @expr will stay in the normal flow,
+    but @-expr will be struck on the previous word*
+
+results in:
+
+    *The word expression will stay in the normal flow,
+    butexpression will be struck on the previous one*
+
+You can also specify that the expression should be preceded by a new line:
+
+    *The word @<expr will be on a new line*
+
+results in:
+
+    *The word
+expression will be on a new line*
