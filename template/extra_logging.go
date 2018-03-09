@@ -41,8 +41,14 @@ func logBasef(f func(string, ...interface{}), format string, args ...interface{}
 // Log is the logger used to log message during template processing
 var Log = logging.MustGetLogger(logger)
 
-func getLogLevel() logging.Level {
+// GetLogLevel returns the current logging level for gotemplate
+func GetLogLevel() logging.Level {
 	return logging.GetLevel(logger)
+}
+
+// SetLogLevel set the logging level for gotemplate
+func SetLogLevel(level logging.Level) {
+	logging.SetLevel(level, logger)
 }
 
 // InitLogging allows configuration of the default logging level
@@ -52,5 +58,5 @@ func InitLogging(level logging.Level, simple bool) {
 		format = `[%{level}] %{message}`
 	}
 	logging.SetBackend(logging.NewBackendFormatter(logging.NewLogBackend(os.Stderr, "", 0), logging.MustStringFormatter(format)))
-	logging.SetLevel(level, logger)
+	SetLogLevel(level)
 }

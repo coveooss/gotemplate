@@ -179,6 +179,15 @@ func ToNativeRepresentation(value interface{}) interface{} {
 
 // ConvertData returns a go representation of the supplied string (YAML, JSON or HCL)
 func ConvertData(data string, out interface{}) (err error) {
+	defer func() {
+		// YAML converter returns a string if it encounter invalid data, so we
+		// check the result to ensure that is is different from the input.
+		if out, isItf := out.(*interface{}); isItf && data == fmt.Sprint(*out) {
+			err = fmt.Errorf("Unable to find template of file named %s", data)
+			*out = nil
+		}
+	}()
+
 	var errs errors.Array
 	if HCLConvert != nil {
 		if err = HCLConvert([]byte(data), out); err == nil {

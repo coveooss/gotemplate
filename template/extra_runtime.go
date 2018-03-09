@@ -60,6 +60,9 @@ func (t *Template) runCommand(command interface{}, args ...interface{}) (interfa
 
 func (t *Template) include(source interface{}, context ...interface{}) (interface{}, error) {
 	content, _, err := t.runTemplate(utils.Interface2string(source), context...)
+	if source == content {
+		return nil, fmt.Errorf("Unable to find a template or a file named %s", source)
+	}
 	return content, err
 }
 

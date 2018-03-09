@@ -155,7 +155,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 	if pos, err := findName("expr", repl.re.SubexpNames()); err == nil {
 		expression = repl.re.FindStringSubmatch(match)[pos]
 
-		if getLogLevel() >= logging.DEBUG {
+		if GetLogLevel() >= logging.DEBUG {
 			defer func() {
 				if !debug && result != match {
 					Log.Debug("Resulting expression =", result)
@@ -220,7 +220,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 				return repl.re.ReplaceAllString(match, repl.replace)
 			}
 		}
-		if !debug && err != nil && getLogLevel() >= 6 {
+		if !debug && err != nil && GetLogLevel() >= 6 {
 			Log.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
 		}
 		if skipError {
@@ -362,7 +362,7 @@ func nodeValue(node ast.Node) (result string, err error) {
 	default:
 		err = fmt.Errorf("Unknown: %v", reflect.TypeOf(node))
 	}
-	if !debug && getLogLevel() >= 6 {
+	if !debug && GetLogLevel() >= 6 {
 		Log.Debugf(color.HiBlueString("%T => %s"), node, result)
 	}
 	return
@@ -460,7 +460,7 @@ func (t *Template) ensureInit() {
 }
 
 func printDebugInfo(r replacement, content string) {
-	if r.name == "" || getLogLevel() < logging.INFO {
+	if r.name == "" || GetLogLevel() < logging.INFO {
 		return
 	}
 
@@ -487,7 +487,7 @@ func printDebugInfo(r replacement, content string) {
 		allUnique[found] = allUnique[found] + 1
 	}
 
-	if len(allUnique) == 0 && getLogLevel() < 6 {
+	if len(allUnique) == 0 && GetLogLevel() < 6 {
 		return
 	}
 

@@ -9,15 +9,17 @@ import (
 	"testing"
 
 	"github.com/coveo/gotemplate/errors"
+	logging "github.com/op/go-logging"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 func TestTemplate_applyRazor(t *testing.T) {
-	context := make(map[string]interface{})
-	template := NewTemplate("", context, "", nil)
-
-	files, err := filepath.Glob("../doc_test/*.md")
+	dmp := diffmatchpatch.New()
+	SetLogLevel(logging.WARNING)
+	template := NewTemplate("../doc_test", nil, "", nil)
+	files, err := filepath.Glob(filepath.Join(template.folder, "*.md"))
 	if err != nil {
-		t.Fatalf("Unable to read test files (documentation in ../doc)")
+		t.Fatalf("Unable to read test files (documentation in %s)", template.folder)
 		t.Fail()
 	}
 
@@ -47,6 +49,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 			render: ifExist(path + ".rendered"),
 		})
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template.options[Razor] = tt.razor != ""
@@ -56,11 +59,12 @@ func TestTemplate_applyRazor(t *testing.T) {
 				result := load(tt.razor)
 				got := template.applyRazor(content)
 				if !reflect.DeepEqual(got, result) {
-					t.Errorf("Template.applyRazor()\n\nExpected:\n%s\n\nGot:\n%s\n", string(result), string(got))
+					diffs := dmp.DiffMain(string(got), string(result), true)
+					t.Errorf("Differences on Razor result for %s\n%s", tt.razor, dmp.DiffPrettyText(diffs))
 				}
 			}
 
-			got, err := template.ProcessContent(string(content), tt.name)
+			got, err := template.ProcessContent(string(content), tt.path)
 			if err != nil {
 				t.Errorf("Template.ProcessContent(), err=%v", err)
 			}
@@ -68,7 +72,8 @@ func TestTemplate_applyRazor(t *testing.T) {
 			if tt.render != "" {
 				result := string(load(tt.render))
 				if !reflect.DeepEqual(got, result) {
-					t.Errorf("Template.ProcessContent()\n\nExpected:\n%s\n\nGot:\n%s\n", result, got)
+					diffs := dmp.DiffMain(string(got), string(result), true)
+					t.Errorf("Differences on Rendered for %s\n%s", tt.render, dmp.DiffPrettyText(diffs))
 				}
 			}
 		})
