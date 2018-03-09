@@ -9,15 +9,16 @@ import (
 	"testing"
 
 	"github.com/coveo/gotemplate/errors"
+	logging "github.com/op/go-logging"
 )
 
 func TestTemplate_applyRazor(t *testing.T) {
 	context := make(map[string]interface{})
-	template := NewTemplate("", context, "", nil)
-
-	files, err := filepath.Glob("../doc_test/*.md")
+	SetLogLevel(logging.WARNING)
+	template := NewTemplate("../doc_test", context, "", nil)
+	files, err := filepath.Glob(filepath.Join(template.folder, "*.md"))
 	if err != nil {
-		t.Fatalf("Unable to read test files (documentation in ../doc)")
+		t.Fatalf("Unable to read test files (documentation in %s)", template.folder)
 		t.Fail()
 	}
 
@@ -60,7 +61,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 				}
 			}
 
-			got, err := template.ProcessContent(string(content), tt.name)
+			got, err := template.ProcessContent(string(content), tt.path)
 			if err != nil {
 				t.Errorf("Template.ProcessContent(), err=%v", err)
 			}

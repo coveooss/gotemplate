@@ -3,5 +3,5 @@
 for file in doc_test/*.md
 do
     gotemplate --no-ext -dP $file > ${file%.*}.razor
-    gotemplate --no-ext -P $file > ${file%.*}.render
+    gotemplate --no-ext -P $file > ${file%.*}.rendered
 done
