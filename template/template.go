@@ -421,7 +421,7 @@ func (t Template) printFunctionsDetailed(functions []string, maxLength int) {
 			}
 			out = strings.Join(outputs, ", ")
 		} else {
-			in = "Check go template documentation"
+			in, out = funcInfo.in, funcInfo.out
 		}
 		if funcInfo.desc != "" {
 			fmt.Printf(color.GreenString("%s\n"), funcInfo.desc)

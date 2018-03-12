@@ -15,6 +15,7 @@ type FuncInfo struct {
 	aliases []string
 	args    []string
 	desc    string
+	in, out string
 	alias   *FuncInfo
 }
 

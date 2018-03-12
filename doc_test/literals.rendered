@@ -13,15 +13,15 @@ The result would be `<no value><no value>` unless you have defined:
 
 In that case, the result of `123.453.141592653589793` will be `123.453.141592653589793`.
 
-## &#64; protection
+## "&#64;" protection
 
-You can also render the &#64; characters by writing &#64;&#64;.
+You can also render the "&#64;" characters by writing &#64;&#64;.
 
 So this `@` will render &#64;.
 
-## &#123;&#123; protection
+## "&#123;&#123;" protection
 
-You can also render the &#64; characters by writing &#64;&#64;.
+You can also render "&#123;&#123;" without being interpretated by go template using the following syntax `{{`.
 
 So this `{{` will render &#123;&#123;.
 

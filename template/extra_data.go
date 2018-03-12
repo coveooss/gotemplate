@@ -40,26 +40,26 @@ var dataFuncs = funcTableMap{
 	"undef":     {f: utils.IfUndef, group: dataBase, aliases: []string{"ifUndef"}, desc: ""},
 
 	// Conversion to
-	"toBash":         {f: utils.ToBash, group: dataConversion, desc: ""},
-	"toHcl":          {f: toHCL, group: dataConversion, aliases: []string{"toHCL"}, desc: ""},
-	"toJson":         {f: toJSON, group: dataConversion, aliases: []string{"toJSON"}, desc: ""},
-	"toPrettyHcl":    {f: toPrettyHCL, group: dataConversion, aliases: []string{"toPrettyHCL"}, desc: ""},
-	"toPrettyJson":   {f: toPrettyJSON, group: dataConversion, aliases: []string{"toPrettyJSON"}, desc: ""},
-	"toPrettyTFVars": {f: toPrettyTFVars, group: dataConversion, desc: ""},
-	"toQuotedHcl":    {f: toQuotedHCL, group: dataConversion, aliases: []string{"toQuotedHCL"}, desc: ""},
-	"toQuotedJson":   {f: toQuotedJSON, group: dataConversion, args: []string{"toQuotedJSON"}, desc: ""},
-	"toQuotedTFVars": {f: toQuotedTFVars, group: dataConversion, desc: ""},
-	"toTFVars":       {f: toTFVars, group: dataConversion, desc: ""},
-	"toYaml":         {f: utils.ToYaml, group: dataConversion, aliases: []string{"toYAML"}, desc: ""},
+	"toBash":         {f: utils.ToBash, group: dataConversion, desc: "Convert the supplied value to bash compatible representation.", args: []string{"value"}},
+	"toHcl":          {f: toHCL, group: dataConversion, aliases: []string{"toHCL"}, desc: "Convert the supplied value to compact HCL representation.", args: []string{"value"}},
+	"toJson":         {f: toJSON, group: dataConversion, aliases: []string{"toJSON"}, desc: "Convert the supplied value to compact JSON representation.", args: []string{"value"}},
+	"toPrettyHcl":    {f: toPrettyHCL, group: dataConversion, aliases: []string{"toPrettyHCL"}, desc: "Convert the supplied value to pretty HCL representation.", args: []string{"value"}},
+	"toPrettyJson":   {f: toPrettyJSON, group: dataConversion, aliases: []string{"toPrettyJSON"}, desc: "Convert the supplied value to pretty JSON representation.", args: []string{"value"}},
+	"toPrettyTFVars": {f: toPrettyTFVars, group: dataConversion, desc: "Convert the supplied value to pretty HCL representation (without multiple map declarations).", args: []string{"value"}},
+	"toQuotedHcl":    {f: toQuotedHCL, group: dataConversion, aliases: []string{"toQuotedHCL"}, desc: "Convert the supplied value to compact quoted HCL representation.", args: []string{"value"}},
+	"toQuotedJson":   {f: toQuotedJSON, group: dataConversion, aliases: []string{"toQuotedJSON"}, desc: "Convert the supplied value to compact quoted JSON representation.", args: []string{"value"}},
+	"toQuotedTFVars": {f: toQuotedTFVars, group: dataConversion, desc: "Convert the supplied value to compact HCL representation (without multiple map declarations).", args: []string{"value"}},
+	"toTFVars":       {f: toTFVars, group: dataConversion, desc: "Convert the supplied value to compact HCL representation (without multiple map declarations).", args: []string{"value"}},
+	"toYaml":         {f: utils.ToYaml, group: dataConversion, aliases: []string{"toYAML"}, desc: "Convert the supplied value to YAML representation.", args: []string{"value"}},
 }
 
 func (t *Template) addDataFuncs() {
 	t.AddFunctions(dataFuncs)
 	t.AddFunctions(funcTableMap{
-		"data": {f: t.fromData, group: dataConversion, aliases: []string{"DATA", "fromData", "fromDATA"}, args: []string{}, desc: ""},
-		"hcl":  {f: t.fromHCL, group: dataConversion, aliases: []string{"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"}, args: []string{}, desc: ""},
-		"json": {f: t.fromJSON, group: dataConversion, aliases: []string{"JSON", "fromJson", "fromJSON"}, args: []string{}, desc: ""},
-		"yaml": {f: t.fromYAML, group: dataConversion, aliases: []string{"YAML", "fromYaml", "fromYAML"}, args: []string{}, desc: ""},
+		"data": {f: t.fromData, group: dataConversion, aliases: []string{"DATA", "fromData", "fromDATA"}, args: []string{"data", "context"}, desc: "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used."},
+		"hcl":  {f: t.fromHCL, group: dataConversion, aliases: []string{"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"}, args: []string{"hcl", "context"}, desc: "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used."},
+		"json": {f: t.fromJSON, group: dataConversion, aliases: []string{"JSON", "fromJson", "fromJSON"}, args: []string{"json", "context"}, desc: "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used."},
+		"yaml": {f: t.fromYAML, group: dataConversion, aliases: []string{"YAML", "fromYaml", "fromYAML"}, args: []string{"yaml", "context"}, desc: "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used."},
 	})
 }
 
