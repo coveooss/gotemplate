@@ -8,22 +8,22 @@ import (
 
 const (
 	logger      = "gotemplate"
-	loggingBase = "Data conversion functions"
+	loggingBase = "Logging"
 )
 
 var loggingFuncs = funcTableMap{
-	"fatal":    {func(args ...interface{}) string { return logBase(Log.Fatal, args...) }, loggingBase, nil, nil, ""},
-	"fatalf":   {func(format string, args ...interface{}) string { return logBasef(Log.Fatalf, format, args...) }, loggingBase, nil, []string{"format"}, ""},
-	"error":    {func(args ...interface{}) string { return logBase(Log.Error, args...) }, loggingBase, nil, nil, ""},
-	"errorf":   {func(format string, args ...interface{}) string { return logBasef(Log.Errorf, format, args...) }, loggingBase, nil, []string{"format"}, ""},
-	"warning":  {func(args ...interface{}) string { return logBase(Log.Warning, args...) }, loggingBase, nil, nil, ""},
-	"warningf": {func(format string, args ...interface{}) string { return logBasef(Log.Warningf, format, args...) }, loggingBase, nil, []string{"format"}, ""},
-	"notice":   {func(args ...interface{}) string { return logBase(Log.Notice, args...) }, loggingBase, nil, nil, ""},
-	"noticef":  {func(format string, args ...interface{}) string { return logBasef(Log.Noticef, format, args...) }, loggingBase, nil, []string{"format"}, ""},
-	"info":     {func(args ...interface{}) string { return logBase(Log.Info, args...) }, loggingBase, nil, nil, ""},
-	"infof":    {func(format string, args ...interface{}) string { return logBasef(Log.Infof, format, args...) }, loggingBase, nil, []string{"format"}, ""},
-	"debug":    {func(args ...interface{}) string { return logBase(Log.Debug, args...) }, loggingBase, nil, nil, ""},
-	"debugf":   {func(format string, args ...interface{}) string { return logBasef(Log.Debugf, format, args...) }, loggingBase, nil, []string{"format"}, ""},
+	"fatal":    {f: func(args ...interface{}) string { return logBase(Log.Fatal, args...) }, group: loggingBase, desc: ""},
+	"fatalf":   {f: func(format string, args ...interface{}) string { return logBasef(Log.Fatalf, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
+	"error":    {f: func(args ...interface{}) string { return logBase(Log.Error, args...) }, group: loggingBase, desc: ""},
+	"errorf":   {f: func(format string, args ...interface{}) string { return logBasef(Log.Errorf, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
+	"warning":  {f: func(args ...interface{}) string { return logBase(Log.Warning, args...) }, group: loggingBase, desc: ""},
+	"warningf": {f: func(format string, args ...interface{}) string { return logBasef(Log.Warningf, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
+	"notice":   {f: func(args ...interface{}) string { return logBase(Log.Notice, args...) }, group: loggingBase, desc: ""},
+	"noticef":  {f: func(format string, args ...interface{}) string { return logBasef(Log.Noticef, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
+	"info":     {f: func(args ...interface{}) string { return logBase(Log.Info, args...) }, group: loggingBase, desc: ""},
+	"infof":    {f: func(format string, args ...interface{}) string { return logBasef(Log.Infof, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
+	"debug":    {f: func(args ...interface{}) string { return logBase(Log.Debug, args...) }, group: loggingBase, desc: ""},
+	"debugf":   {f: func(format string, args ...interface{}) string { return logBasef(Log.Debugf, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
 }
 
 func (t *Template) addLoggingFuncs() { t.AddFunctions(loggingFuncs) }

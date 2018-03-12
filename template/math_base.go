@@ -3,7 +3,11 @@ package template
 import (
 	"fmt"
 	"math"
+	"reflect"
+	"strconv"
 	"strings"
+
+	"github.com/coveo/gotemplate/utils"
 )
 
 func add(a interface{}, args ...interface{}) (r interface{}, err error) {
@@ -15,9 +19,23 @@ func add(a interface{}, args ...interface{}) (r interface{}, err error) {
 		if len(args) == 2 {
 			// If the first argument is an array of float, we process it with the generic processor function
 			if af, err := toArrayOfFloats(args[0]); err == nil {
-				return processFloat2(af, args[1], func(a, b float64) float64 {
-					return a + b
-				})
+				if _, err := strconv.ParseFloat(fmt.Sprintf("%v", args[1]), 64); err == nil {
+					return processFloat2(af, args[1], func(a, b float64) float64 {
+						return a + b
+					})
+				}
+			}
+		}
+
+		switch reflect.TypeOf(args[0]).Kind() {
+		case reflect.String:
+			break
+		case reflect.Array, reflect.Slice:
+			switch reflect.TypeOf(args[1]).Kind() {
+			case reflect.Array, reflect.Slice:
+				return utils.MergeLists(convertArgs(args[0]), convertArgs(args[1])), nil
+			default:
+				return append(convertArgs(args[0]), args[1]), nil
 			}
 		}
 
@@ -43,9 +61,19 @@ func multiply(a interface{}, args ...interface{}) (r interface{}, err error) {
 		if len(args) == 2 {
 			// If the first argument is an array of float, we process it with the generic processor function
 			if af, err := toArrayOfFloats(args[0]); err == nil {
-				return processFloat2(af, args[1], func(a, b float64) float64 {
-					return a * b
-				})
+				if _, err := strconv.ParseFloat(fmt.Sprintf("%v", args[1]), 64); err == nil {
+					return processFloat2(af, args[1], func(a, b float64) float64 {
+						return a * b
+					})
+				}
+				if af2, err := toArrayOfFloats(args[1]); err == nil {
+					// If the second argument is also an array of float, we then multiply the two arrays
+					result := make([]interface{}, len(af2))
+					for i := range af2 {
+						result[i], err = multiply(af, af2[i])
+					}
+					return result, nil
+				}
 			}
 
 			switch a := args[0].(type) {

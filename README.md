@@ -145,7 +145,7 @@ lenc | string | Returns the actual number of characters in a string according to
 local_alias | name, function, source, args ... | Defines an alias (go template function) using the function (`exec`, `run`, `include`, `template`). Executed in the context of the function it maps to.
 lorem | type string, min, max int | Returns a random string. Valid types are be `word`, `words`, `sentence`, `para`, `paragraph`, `host`, `email`, `url`.
 mergeLists | lists | Return a single list containing all elements from the lists supplied.
-pwd | | Return the current working directory.
+pwd | | Returns the current working directory.
 run | command string, args ... | Returns the result of the shell command as string.
 safeIndex | array, index int, default | Returns the element at index position or default if index is outside bounds.
 slice | object start [end] | Returns a slice of the supplied object (equivalent to object[from:to]).

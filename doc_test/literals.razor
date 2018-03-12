@@ -21,6 +21,12 @@ You can also render the &#64; characters by writing &#64;&#64;.
 
 So this `@` will render &#64;.
 
+## &#123;&#123; protection
+
+You can also render the &#64; characters by writing &#64;&#64;.
+
+So this `{{ "{{" }}` will render &#123;&#123;.
+
 ## Space management
 
 With go template, the way to indicate that previous or leading spaces between expression should be removed is expressed
@@ -29,31 +35,27 @@ that way `{{- "expression" -}}`. The minus sign at the beginning and at the end 
 
 The `{{ "expression" }}` will keep the spaces before and after expression as they are.
 
-With razor, assignation and flow control expression (if, else, elseif, end, range, with, etc.) will render go template code with - at both end.
+With razor, assignation and flow control expression (if, else, elseif, end, range, with, etc.) will render go template code with - on left side.
 
-{{- set $ "expr" ("expression") }}
-
-results in:
-
- {{- set $ "expr" ("expression") -}}
+`{{- set $ "expr" ("expression") }}` => `{{- set $ "expr" ("expression") }}`
 
 But for variables, you have to specify the expected behavior.
 
 This signify that in the following sentence:
 
-    *The word {{ $.expr }} will stay in the normal flow,
-    but {{- $.expr }} will be struck on the previous word*
+    The word {{ $.expr }} will stay in the normal flow,
+    but {{- $.expr }} will be struck on the previous word
 
 results in:
 
-    *The word expression will stay in the normal flow,
-    butexpression will be struck on the previous one*
+    The word expression will stay in the normal flow,
+    butexpression will be struck on the previous one
 
 You can also specify that the expression should be preceded by a new line:
 
-    *The word {{- $.NEWLINE }}{{ $.expr }} will be on a new line*
+    The word {{- $.NEWLINE }}{{ $.expr }} will be on a new line
 
 results in:
 
-    *The word
-expression will be on a new line*
+    The word
+    expression will be on a new line

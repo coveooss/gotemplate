@@ -15,23 +15,24 @@ import (
 )
 
 const (
-	runtimeFunc = "Runtime functions"
+	runtimeFunc = "Runtime"
 )
 
 func (t *Template) addRuntimeFuncs() {
 	t.AddFunctions(funcTableMap{
-		"functions":     {func() []string { return t.getFunctions(false) }, runtimeFunc, nil, []string{}, ""},
-		"substitute":    {t.substitute, runtimeFunc, nil, []string{}, ""},
-		"templateNames": {t.Templates, runtimeFunc, nil, []string{}, ""},
-		"ellipsis":      {t.ellipsis, runtimeFunc, nil, []string{}, ""},
-		"alias":         {t.alias, runtimeFunc, nil, []string{}, ""},
-		"localAlias":    {t.localAlias, runtimeFunc, nil, []string{}, ""},
-		"func":          {t.defineFunc, runtimeFunc, nil, []string{}, ""},
-		"exec":          {t.execCommand, runtimeFunc, nil, []string{}, ""},
-		"run":           {t.runCommand, runtimeFunc, nil, []string{}, ""},
-		"include":       {t.include, runtimeFunc, nil, []string{}, ""},
-		"current":       {t.current, runtimeFunc, nil, []string{}, ""},
-		"exit":          {exit, runtimeFunc, nil, []string{}, ""},
+		"functions":     {f: t.getFunctions, group: runtimeFunc, args: []string{}, desc: ""},
+		"function":      {f: t.getFunction, group: runtimeFunc, args: []string{"name"}, desc: "Returns the information relative to a specific function"},
+		"substitute":    {f: t.substitute, group: runtimeFunc, args: []string{}, desc: ""},
+		"templateNames": {f: t.Templates, group: runtimeFunc, args: []string{}, desc: ""},
+		"ellipsis":      {f: t.ellipsis, group: runtimeFunc, args: []string{}, desc: ""},
+		"alias":         {f: t.alias, group: runtimeFunc, args: []string{}, desc: ""},
+		"localAlias":    {f: t.localAlias, group: runtimeFunc, args: []string{}, desc: ""},
+		"func":          {f: t.defineFunc, group: runtimeFunc, args: []string{}, desc: ""},
+		"exec":          {f: t.execCommand, group: runtimeFunc, args: []string{}, desc: ""},
+		"run":           {f: t.runCommand, group: runtimeFunc, args: []string{}, desc: ""},
+		"include":       {f: t.include, group: runtimeFunc, args: []string{}, desc: ""},
+		"current":       {f: t.current, group: runtimeFunc, args: []string{}, desc: ""},
+		"exit":          {f: exit, group: runtimeFunc, args: []string{}, desc: ""},
 	})
 }
 
@@ -88,8 +89,8 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	if !context {
-		t.aliases[name] = funcTable{
-			function: func(args ...interface{}) (result interface{}, err error) {
+		t.aliases[name] = FuncInfo{
+			f: func(args ...interface{}) (result interface{}, err error) {
 				return f(utils.Interface2string(source), append(defaultArgs, args...)...)
 			},
 			group: "User defined aliases",
@@ -119,8 +120,8 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		}
 	}
 
-	t.aliases[name] = funcTable{
-		function: func(args ...interface{}) (result interface{}, err error) {
+	t.aliases[name] = FuncInfo{
+		f: func(args ...interface{}) (result interface{}, err error) {
 			context := make(map[string]interface{})
 			parentContext, isMap := t.context.(map[string]interface{})
 			if !isMap {
@@ -149,8 +150,8 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			}
 			return f(utils.Interface2string(source), context)
 		},
-		group:    "User defined functions",
-		argNames: argNames,
+		group: "User defined functions",
+		args:  argNames,
 	}
 	return
 }

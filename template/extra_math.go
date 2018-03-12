@@ -7,82 +7,85 @@ import (
 )
 
 const (
-	mathBase         = "Mathematic (base)"
-	mathStatistics   = "Mathematic (stats)"
-	mathTrigonometry = "Mathematic (trigonometry)"
-	mathBits         = "Mathematic (bit operations)"
-	mathConstants    = "Mathematic (constants)"
-	mathUtilities    = "Mathematic (utilities)"
+	mathBase         = "Mathematic Fundamental"
+	mathStatistics   = "Mathematic Stats"
+	mathTrigonometry = "Mathematic Trigonometry"
+	mathBits         = "Mathematic Bit Operations"
+	mathUtilities    = "Mathematic Utilities"
 )
 
 var mathFuncs = funcTableMap{
 	// Base
-	"add":   {add, mathBase, []string{"sum"}, []string{}, ""},
-	"sub":   {subtract, mathBase, []string{"subtract"}, []string{}, ""},
-	"div":   {divide, mathBase, []string{"divide", "quotient"}, []string{}, ""},
-	"mul":   {multiply, mathBase, []string{"multiply", "prod", "product"}, []string{}, ""},
-	"mod":   {modulo, mathBase, []string{"modulo"}, []string{}, ""},
-	"modf":  {modf, mathBase, []string{}, []string{}, ""},
-	"rem":   {remainder, mathBase, []string{"remainder"}, []string{}, ""},
-	"pow":   {power, mathBase, []string{"power"}, []string{}, ""},
-	"pow10": {power10, mathBase, []string{"power10"}, []string{}, ""},
-	"exp":   {exp, mathBase, []string{"exponent"}, []string{}, ""},
-	"exp2":  {exp2, mathBase, []string{"exponent2"}, []string{}, ""},
-	"expm1": {expm1, mathBase, []string{}, []string{}, ""},
+	"add":   {f: add, group: mathBase, aliases: []string{"sum"}, args: []string{}, desc: ""},
+	"ceil":  {f: ceil, group: mathBase, aliases: []string{"roundUp", "roundup"}, args: []string{}, desc: ""},
+	"dim":   {f: dim, group: mathBase, aliases: []string{}, args: []string{}, desc: ""},
+	"div":   {f: divide, group: mathBase, aliases: []string{"divide", "quotient"}, args: []string{}, desc: ""},
+	"exp":   {f: exp, group: mathBase, aliases: []string{"exponent"}, args: []string{}, desc: ""},
+	"exp2":  {f: exp2, group: mathBase, aliases: []string{"exponent2"}, args: []string{}, desc: ""},
+	"expm1": {f: expm1, group: mathBase, aliases: []string{}, args: []string{}, desc: ""},
+	"floor": {f: floor, group: mathBase, aliases: []string{"roundDown", "rounddown", "int", "integer"}, args: []string{}, desc: ""},
+	"mod":   {f: modulo, group: mathBase, aliases: []string{"modulo"}, args: []string{}, desc: ""},
+	"modf":  {f: modf, group: mathBase, aliases: []string{}, args: []string{}, desc: ""},
+	"mul":   {f: multiply, group: mathBase, aliases: []string{"multiply", "prod", "product"}, args: []string{}, desc: ""},
+	"pow":   {f: power, group: mathBase, aliases: []string{"power"}, args: []string{}, desc: ""},
+	"pow10": {f: power10, group: mathBase, aliases: []string{"power10"}, args: []string{}, desc: ""},
+	"rem":   {f: remainder, group: mathBase, aliases: []string{"remainder"}, args: []string{}, desc: ""},
+	"sub":   {f: subtract, group: mathBase, aliases: []string{"subtract"}, args: []string{}, desc: ""},
+	"trunc": {f: trunc, group: mathBase, aliases: []string{"truncate"}, args: []string{}, desc: ""},
 
 	// Statistics
-	"avg": {average, mathStatistics, []string{"average"}, []string{}, ""},
-	"min": {min, mathStatistics, []string{"minimum", "smallest"}, []string{}, ""},
-	"max": {max, mathStatistics, []string{"maximum", "biggest"}, []string{}, ""},
+	"avg": {f: average, group: mathStatistics, aliases: []string{"average"}, args: []string{}, desc: ""},
+	"min": {f: min, group: mathStatistics, aliases: []string{"minimum", "smallest"}, args: []string{}, desc: ""},
+	"max": {f: max, group: mathStatistics, aliases: []string{"maximum", "biggest"}, args: []string{}, desc: ""},
 
 	// Trigonometry
-	"rad":    {rad, mathTrigonometry, []string{"radian"}, []string{}, ""},
-	"deg":    {deg, mathTrigonometry, []string{"degree"}, []string{}, ""},
-	"acos":   {acos, mathTrigonometry, []string{"arcCosine", "arcCosinus"}, []string{}, ""},
-	"acosh":  {acosh, mathTrigonometry, []string{"arcHyperbolicCosine", "arcHyperbolicCosinus"}, []string{}, ""},
-	"asin":   {asin, mathTrigonometry, []string{"arcSine", "arcSinus"}, []string{}, ""},
-	"asinh":  {asinh, mathTrigonometry, []string{"arcHyperbolicSine", "arcHyperbolicSinus"}, []string{}, ""},
-	"atan":   {atan, mathTrigonometry, []string{"arcTangent"}, []string{}, ""},
-	"atan2":  {atan2, mathTrigonometry, []string{"arcTangent2"}, []string{}, ""},
-	"atanh":  {atanh, mathTrigonometry, []string{"arcHyperbolicTangent"}, []string{}, ""},
-	"cos":    {cos, mathTrigonometry, []string{"cosine", "cosinus"}, []string{}, ""},
-	"cosh":   {cosh, mathTrigonometry, []string{"hyperbolicCosine", "hyperbolicCosinus"}, []string{}, ""},
-	"sin":    {sin, mathTrigonometry, []string{"sine", "sinus"}, []string{}, ""},
-	"sinh":   {sinh, mathTrigonometry, []string{"hyperbolicSine", "hyperbolicSinus"}, []string{}, ""},
-	"sincos": {sincos, mathTrigonometry, []string{"sineCosine", "sinusCosinus"}, []string{}, ""},
-	"ilogb":  {ilogb, mathTrigonometry, []string{}, []string{}, ""},
-	"log":    {logFunc, mathTrigonometry, []string{}, []string{}, ""},
-	"log10":  {log10, mathTrigonometry, []string{}, []string{}, ""},
-	"log1p":  {log1p, mathTrigonometry, []string{}, []string{}, ""},
-	"log2":   {log2, mathTrigonometry, []string{}, []string{}, ""},
-	"logb":   {logb, mathTrigonometry, []string{}, []string{}, ""},
-	"tan":    {tan, mathTrigonometry, []string{"tangent"}, []string{}, ""},
-	"tanh":   {tanh, mathTrigonometry, []string{"hyperbolicTangent"}, []string{}, ""},
+	"rad":    {f: rad, group: mathTrigonometry, aliases: []string{"radian"}, args: []string{}, desc: ""},
+	"deg":    {f: deg, group: mathTrigonometry, aliases: []string{"degree"}, args: []string{}, desc: ""},
+	"acos":   {f: acos, group: mathTrigonometry, aliases: []string{"arcCosine", "arcCosinus"}, args: []string{}, desc: ""},
+	"acosh":  {f: acosh, group: mathTrigonometry, aliases: []string{"arcHyperbolicCosine", "arcHyperbolicCosinus"}, args: []string{}, desc: ""},
+	"asin":   {f: asin, group: mathTrigonometry, aliases: []string{"arcSine", "arcSinus"}, args: []string{}, desc: ""},
+	"asinh":  {f: asinh, group: mathTrigonometry, aliases: []string{"arcHyperbolicSine", "arcHyperbolicSinus"}, args: []string{}, desc: ""},
+	"atan":   {f: atan, group: mathTrigonometry, aliases: []string{"arcTangent"}, args: []string{}, desc: ""},
+	"atan2":  {f: atan2, group: mathTrigonometry, aliases: []string{"arcTangent2"}, args: []string{}, desc: ""},
+	"atanh":  {f: atanh, group: mathTrigonometry, aliases: []string{"arcHyperbolicTangent"}, args: []string{}, desc: ""},
+	"cos":    {f: cos, group: mathTrigonometry, aliases: []string{"cosine", "cosinus"}, args: []string{}, desc: ""},
+	"cosh":   {f: cosh, group: mathTrigonometry, aliases: []string{"hyperbolicCosine", "hyperbolicCosinus"}, args: []string{}, desc: ""},
+	"ilogb":  {f: ilogb, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
+	"log":    {f: logFunc, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
+	"log10":  {f: log10, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
+	"log1p":  {f: log1p, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
+	"log2":   {f: log2, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
+	"logb":   {f: logb, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
+	"sin":    {f: sin, group: mathTrigonometry, aliases: []string{"sine", "sinus"}, args: []string{}, desc: ""},
+	"sincos": {f: sincos, group: mathTrigonometry, aliases: []string{"sineCosine", "sinusCosinus"}, args: []string{}, desc: ""},
+	"sinh":   {f: sinh, group: mathTrigonometry, aliases: []string{"hyperbolicSine", "hyperbolicSinus"}, args: []string{}, desc: ""},
+	"tan":    {f: tan, group: mathTrigonometry, aliases: []string{"tangent"}, args: []string{}, desc: ""},
+	"tanh":   {f: tanh, group: mathTrigonometry, aliases: []string{"hyperbolicTangent"}, args: []string{}, desc: ""},
 
 	// Binary operators
-	"lshift": {leftShift, mathBits, []string{"leftShift"}, []string{}, ""},
-	"rshift": {rightShift, mathBits, []string{"rightShift"}, []string{}, ""},
-	"bor":    {bitwiseOr, mathBits, []string{"bitwiseOR"}, []string{}, ""},
-	"band":   {bitwiseAnd, mathBits, []string{"bitwiseAND"}, []string{}, ""},
-	"bxor":   {bitwiseXor, mathBits, []string{"bitwiseXOR"}, []string{}, ""},
-	"bclear": {bitwiseClear, mathBits, []string{"bitwiseClear"}, []string{}, ""},
+	"lshift": {f: leftShift, group: mathBits, aliases: []string{"leftShift"}, args: []string{}, desc: ""},
+	"rshift": {f: rightShift, group: mathBits, aliases: []string{"rightShift"}, args: []string{}, desc: ""},
+	"bor":    {f: bitwiseOr, group: mathBits, aliases: []string{"bitwiseOR"}, args: []string{}, desc: ""},
+	"band":   {f: bitwiseAnd, group: mathBits, aliases: []string{"bitwiseAND"}, args: []string{}, desc: ""},
+	"bxor":   {f: bitwiseXor, group: mathBits, aliases: []string{"bitwiseXOR"}, args: []string{}, desc: ""},
+	"bclear": {f: bitwiseClear, group: mathBits, aliases: []string{"bitwiseClear"}, args: []string{}, desc: ""},
 
 	// Utilities
-	"abs":       {abs, mathUtilities, []string{}, []string{}, ""},
-	"sqrt":      {sqrt, mathUtilities, []string{}, []string{}, ""},
-	"to":        {to, mathUtilities, []string{}, []string{}, ""},
-	"until":     {until, mathUtilities, []string{}, []string{}, ""},
-	"frexp":     {frexp, mathUtilities, []string{}, []string{}, ""},
-	"ldexp":     {ldexp, mathUtilities, []string{}, []string{}, ""},
-	"gamma":     {gamma, mathUtilities, []string{}, []string{}, ""},
-	"lgamma":    {lgamma, mathUtilities, []string{}, []string{}, ""},
-	"hypot":     {hypot, mathUtilities, []string{}, []string{}, ""},
-	"isInf":     {isInfinity, mathUtilities, []string{"isInfinity"}, []string{}, ""},
-	"isNaN":     {isNaN, mathUtilities, []string{}, []string{}, ""},
-	"nextAfter": {nextAfter, mathUtilities, []string{}, []string{}, ""},
-	"signBit":   {signBit, mathUtilities, []string{}, []string{}, ""},
-	"hex":       {hex, mathUtilities, []string{"hexa", "hexaDecimal"}, []string{}, ""},
-	"dec":       {decimal, mathUtilities, []string{"decimal"}, []string{}, ""},
+	"abs":       {f: abs, group: mathUtilities, aliases: []string{"absolute"}, args: []string{}, desc: ""},
+	"sqrt":      {f: sqrt, group: mathUtilities, aliases: []string{"squareRoot"}, args: []string{}, desc: ""},
+	"to":        {f: to, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"until":     {f: until, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"frexp":     {f: frexp, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"ldexp":     {f: ldexp, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"gamma":     {f: gamma, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"lgamma":    {f: lgamma, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"hypot":     {f: hypot, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"isInf":     {f: isInfinity, group: mathUtilities, aliases: []string{"isInfinity"}, args: []string{}, desc: ""},
+	"isNaN":     {f: isNaN, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"nextAfter": {f: nextAfter, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"signBit":   {f: signBit, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
+	"hex":       {f: hex, group: mathUtilities, aliases: []string{"hexa", "hexaDecimal"}, args: []string{}, desc: ""},
+	"dec":       {f: decimal, group: mathUtilities, aliases: []string{"decimal"}, args: []string{}, desc: ""},
 }
 
 func (t *Template) addMathFuncs() {
@@ -134,30 +137,43 @@ func until(params ...interface{}) (interface{}, error) { return generateNumericA
 
 func abs(a interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
-	return simplify(math.Abs(toFloat(a))), nil
+	return processFloat(a, math.Abs)
+}
+
+func ceil(a interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return processFloat(a, math.Ceil)
 }
 
 // math.Cbrt
-// math.Ceil
 // math.Copysign
 
-// math.Dim
+func dim(a, b interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return processFloat2(a, b, math.Dim)
+}
+
 // math.Erf
 // math.Erfc
 
 func exp(a interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
-	return simplify(math.Exp(toFloat(a))), nil
+	return processFloat(a, math.Exp)
 }
 
 func exp2(a interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
-	return simplify(math.Exp2(toFloat(a))), nil
+	return processFloat(a, math.Exp2)
 }
 
 func expm1(a interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
-	return simplify(math.Expm1(toFloat(a))), nil
+	return processFloat(a, math.Expm1)
+}
+
+func floor(a interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return processFloat(a, math.Floor)
 }
 
 func frexp(a interface{}) (r interface{}, err error) {
@@ -168,7 +184,7 @@ func frexp(a interface{}) (r interface{}, err error) {
 
 func gamma(a interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
-	return simplify(math.Gamma(toFloat(a))), nil
+	return processFloat(a, math.Gamma)
 }
 
 func infinity(a interface{}) (r interface{}, err error) {
@@ -221,7 +237,11 @@ func sqrt(a interface{}) (r interface{}, err error) {
 	return processFloat(a, math.Sqrt)
 }
 
-// math.Trunc
+func trunc(a interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return processFloat(a, math.Trunc)
+}
+
 // math.Y0
 // math.Y2
 // math.Yn
