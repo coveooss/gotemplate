@@ -10,6 +10,7 @@ import (
 // LoremKind represents the various Lorem Ipsum generator type
 type LoremKind int
 
+// Constant used to describe the different kind of lorem generator
 const (
 	_ LoremKind = iota
 	Word
@@ -17,7 +18,7 @@ const (
 	Paragraph
 	Host
 	EMail
-	Url
+	URL
 )
 
 // GetLoremKind converts a name to LoremKind
@@ -34,7 +35,7 @@ func GetLoremKind(name string) (kind LoremKind, err error) {
 	case "5", "email":
 		kind = EMail
 	case "6", "url":
-		kind = Url
+		kind = URL
 	default:
 		err = fmt.Errorf("Undefined Lorem kind %s", name)
 	}
@@ -62,7 +63,7 @@ func Lorem(kind LoremKind, params ...int) (string, error) {
 		return goLorem.Host(), nil
 	case EMail:
 		return goLorem.Email(), nil
-	case Url:
+	case URL:
 		return goLorem.Url(), nil
 	default:
 		return "", fmt.Errorf("Unknown lorem type %v", kind)

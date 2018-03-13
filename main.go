@@ -71,6 +71,7 @@ func main() {
 		listTemplates = list.Flag("templates", "List the available templates").Short('t').Bool()
 		listLong      = list.Flag("long", "Get detailed list").Short('l').Bool()
 		listAll       = list.Flag("all", "List all").Short('a').Bool()
+		listCategory  = list.Flag("category", "Group functions by category").Short('c').Bool()
 		listFilters   = list.Arg("filters", "List only functions that contains one of the filter").Strings()
 	)
 
@@ -192,7 +193,7 @@ func main() {
 		}
 		t = t.GetNewContext("", false)
 		if *listFunctions {
-			t.PrintFunctions(*listAll, *listLong, *listFilters...)
+			t.PrintFunctions(*listAll, *listLong, *listCategory, *listFilters...)
 		}
 		if *listTemplates {
 			t.PrintTemplates(*listAll, *listLong)

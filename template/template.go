@@ -9,8 +9,8 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
-	"text/tabwriter"
 	"text/template"
 
 	"github.com/coveo/gotemplate/errors"
@@ -22,7 +22,7 @@ import (
 
 var templateExt = []string{".gt", ".template"}
 
-// Template let us extend the functionalities of base template
+// Template let us extend the functionalities of base go template library.
 type Template struct {
 	*template.Template
 	TempFolder           string
@@ -38,12 +38,12 @@ type Template struct {
 	mathConstantInjected bool
 }
 
-// ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2)
+// ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2).
 var ExtensionDepth = 2
 
 var toStrings = utils.ToStrings
 
-// NewTemplate creates an Template object with default initialization
+// NewTemplate creates an Template object with default initialization.
 func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
 	t := Template{Template: template.New("Main")}
 	errors.Must(t.Parse(""))
@@ -101,29 +101,29 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	return &t
 }
 
-// IsCode determines if the supplied code appears to have gotemplate code
+// IsCode determines if the supplied code appears to have gotemplate code.
 func (t Template) IsCode(code string) bool {
 	return t.IsRazor(code) || strings.Contains(code, t.LeftDelim()) || strings.Contains(code, t.RightDelim())
 }
 
-// IsRazor determines if the supplied code appears to have razor code
+// IsRazor determines if the supplied code appears to have Razor code.
 func (t Template) IsRazor(code string) bool {
 	return strings.Contains(code, t.RazorDelim())
 }
 
-// LeftDelim returns the left delimiter
+// LeftDelim returns the left delimiter.
 func (t Template) LeftDelim() string { return t.delimiters[0] }
 
-// RightDelim returns the right delimiter
+// RightDelim returns the right delimiter.
 func (t Template) RightDelim() string { return t.delimiters[1] }
 
-// RazorDelim returns the razor delimiter
+// RazorDelim returns the razor delimiter.
 func (t Template) RazorDelim() string { return t.delimiters[2] }
 
-// SetOption allows setting of template option after initialization
+// SetOption allows setting of template option after initialization.
 func (t *Template) SetOption(option Options, value bool) { t.options[option] = value }
 
-// ProcessContent loads and runs the file template
+// ProcessContent loads and runs the file template.
 func (t Template) ProcessContent(content, source string) (string, error) {
 	content = t.substitute(content)
 
@@ -163,7 +163,7 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 	return t.substitute(out.String()), nil
 }
 
-// ProcessTemplate loads and runs the template if it is a file, otherwise, it simply process the content
+// ProcessTemplate loads and runs the template if it is a file, otherwise, it simply process the content.
 func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (resultFile string, err error) {
 	isCode := t.IsCode(template)
 	var content string
@@ -241,7 +241,7 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 	return
 }
 
-// ProcessTemplates loads and runs the file template or execute the content if it is not a file
+// ProcessTemplates loads and runs the file template or execute the content if it is not a file.
 func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates ...string) (resultFiles []string, err error) {
 	sourceFolder = iif(sourceFolder == "", t.folder, sourceFolder).(string)
 	targetFolder = iif(targetFolder == "", t.folder, targetFolder).(string)
@@ -276,9 +276,9 @@ func (t Template) isTemplate(file string) bool {
 	return false
 }
 
-func (t Template) filterFunctions(all bool, filters ...string) []string {
-	functions := t.getFunctions(all)
-	if len(filters) == 0 {
+func (t Template) filterFunctions(all, category, detailed bool, filters ...string) []string {
+	functions := t.getFunctions()
+	if all && len(filters) == 0 {
 		return functions
 	}
 
@@ -288,8 +288,29 @@ func (t Template) filterFunctions(all bool, filters ...string) []string {
 
 	filtered := make([]string, 0, len(functions))
 	for i := range functions {
+		funcInfo := t.functions[functions[i]]
+		if funcInfo.alias != nil {
+			if !all {
+				continue
+			}
+			funcInfo = *funcInfo.alias
+		}
+
+		if len(filters) == 0 {
+			filtered = append(filtered, functions[i])
+			continue
+		}
+
+		search := strings.ToLower(functions[i])
+		if category {
+			search += strings.ToLower(funcInfo.group)
+		}
+		if detailed {
+			search += strings.ToLower(funcInfo.desc)
+		}
+
 		for f := range filters {
-			if strings.Contains(strings.ToLower(functions[i]), filters[f]) {
+			if strings.Contains(search, filters[f]) {
 				filtered = append(filtered, functions[i])
 				break
 			}
@@ -298,22 +319,90 @@ func (t Template) filterFunctions(all bool, filters ...string) []string {
 	return filtered
 }
 
-func (t Template) printFunctionsDetailed(functions []string) {
-	w := new(tabwriter.Writer)
-	w.Init(os.Stdout, 0, 1, 1, ' ', 0)
-	fmt.Fprintln(w, "Function\tParameters\tOutputs")
-	fmt.Fprintln(w, "--------\t----------\t-------")
+// PrintFunctions outputs the list of functions available.
+func (t Template) PrintFunctions(all, long, groupByCategory bool, filters ...string) {
+	functions := t.filterFunctions(all, groupByCategory, long, filters...)
+
+	maxLength := 0
+	categories := make(map[string][]string)
 	for i := range functions {
-		funcTable := t.functions[functions[i]]
+		var group string
+		if groupByCategory {
+			funcInfo := t.functions[functions[i]]
+			if funcInfo.alias != nil {
+				funcInfo = *funcInfo.alias
+			}
+			group = funcInfo.group
+		}
+		categories[group] = append(categories[group], functions[i])
+		maxLength = int(math.Max(float64(len(functions[i])), float64(maxLength)))
+	}
+
+	keys := make([]string, 0, len(categories))
+	for key := range categories {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	print := t.printFunctionsShort
+	if long {
+		print = t.printFunctionsDetailed
+	}
+
+	for _, key := range keys {
+		if key != "" {
+			title, link := utils.Split2(key, ", http")
+			title = color.New(color.Underline, color.FgYellow).Sprint(title)
+			if link != "" {
+				link = color.BlackString(fmt.Sprintf(" http%s", link))
+			}
+			fmt.Printf("%s%s\n\n", title, link)
+		}
+		print(categories[key], maxLength)
+		fmt.Println()
+	}
+}
+
+func (t Template) printFunctionsShort(functions []string, maxLength int) {
+	const nbColumn = 5
+	l := len(functions)
+	colLength := int(math.Ceil(float64(l) / float64(nbColumn)))
+	for i := 0; i < colLength*nbColumn; i += nbColumn {
+		for j := 0; j < nbColumn; j++ {
+			pos := j*colLength + i/nbColumn
+			if pos >= l {
+				continue
+			}
+			item, extraLen := functions[pos], 0
+
+			if t.functions[item].alias != nil {
+				ex := len(color.HiBlackString(""))
+				fmt.Printf("%-[1]*[2]s", maxLength+2+ex, color.HiBlackString(item))
+			} else {
+				fmt.Printf("%-[1]*[2]s", maxLength+2+extraLen, item)
+			}
+		}
+		fmt.Println()
+	}
+}
+
+func (t Template) printFunctionsDetailed(functions []string, maxLength int) {
+	for i := range functions {
+		col := color.HiBlueString
+		funcInfo := t.functions[functions[i]]
+		if funcInfo.alias != nil {
+			funcInfo = *funcInfo.alias
+			col = color.HiBlackString
+		}
 		var in, out string
-		if funcTable.function != nil {
-			signature := reflect.ValueOf(funcTable.function).Type()
+		if funcInfo.f != nil {
+			signature := reflect.ValueOf(funcInfo.f).Type()
 			var parameters, outputs []string
 			for i := 0; i < signature.NumIn(); i++ {
 				arg := strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "interface{}", -1)
 				var argName string
-				if i < len(funcTable.argNames) {
-					argName = funcTable.argNames[i]
+				if i < len(funcInfo.args) {
+					argName = funcInfo.args[i]
 				} else {
 					if signature.IsVariadic() && i == signature.NumIn()-1 {
 						argName = "args"
@@ -324,7 +413,7 @@ func (t Template) printFunctionsDetailed(functions []string) {
 				if signature.IsVariadic() && i == signature.NumIn()-1 {
 					arg = "..." + arg[2:]
 				}
-				parameters = append(parameters, fmt.Sprintf("%s %s", argName, arg))
+				parameters = append(parameters, fmt.Sprintf("%s %s", argName, color.CyanString(arg)))
 			}
 			in = strings.Join(parameters, ", ")
 			for i := 0; i < signature.NumOut(); i++ {
@@ -332,54 +421,17 @@ func (t Template) printFunctionsDetailed(functions []string) {
 			}
 			out = strings.Join(outputs, ", ")
 		} else {
-			in = "Check go template documentation"
+			in, out = funcInfo.in, funcInfo.out
 		}
-		fmt.Fprintf(w, "%s\t%s\t%s\n", functions[i], in, out)
-	}
-	w.Flush()
-}
-
-// PrintFunctions output the list of functions available
-func (t Template) PrintFunctions(all, long bool, filters ...string) {
-	const nbColumn = 5
-	functions := t.filterFunctions(all, filters...)
-	if long {
-		t.printFunctionsDetailed(functions)
-		return
-	}
-
-	colLength := int(math.Ceil(float64(len(functions)) / float64(nbColumn)))
-
-	// Initialize the columns to sort function per column
-	var list [nbColumn][]string
-	for i := range list {
-		list[i] = make([]string, colLength)
-	}
-
-	// Place functions into columns
-	maxLength := 0
-	for i := range functions {
-		column := list[i/colLength]
-		column[i%colLength] = functions[i]
-		maxLength = int(math.Max(float64(len(functions[i])), float64(maxLength)))
-	}
-
-	// Print the columns
-	for i := range list[0] {
-		for _, column := range list {
-			l := 0
-			if _, isFunc := t.functions[column[i]]; !isFunc {
-				l = len(color.HiBlackString(""))
-				column[i] = color.HiBlackString(column[i])
-			}
-			fmt.Printf("%-[1]*[2]s", maxLength+2+l, column[i])
+		if funcInfo.desc != "" {
+			fmt.Printf(color.GreenString("%s\n"), funcInfo.desc)
 		}
+		fmt.Printf("%s(%s) %s\n", col(functions[i]), in, color.HiBlackString(out))
 		fmt.Println()
 	}
-	fmt.Println()
 }
 
-// PrintTemplates output the list of templates available
+// PrintTemplates output the list of templates available.
 func (t Template) PrintTemplates(all, long bool) {
 	templates := t.getTemplateNames()
 	var maxLen int
@@ -408,7 +460,7 @@ func (t Template) PrintTemplates(all, long bool) {
 	fmt.Fprintln(os.Stderr)
 }
 
-// Initialize a new template with same attributes as the current context
+// Initialize a new template with same attributes as the current context.
 func (t *Template) init(folder string) {
 	if folder != "" {
 		t.folder, _ = filepath.Abs(folder)
@@ -437,7 +489,7 @@ func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...str
 	}
 }
 
-// Import templates from another template
+// Import templates from another template.
 func (t *Template) importTemplates(source Template) {
 	for _, subTemplate := range source.Templates() {
 		if subTemplate.Name() != subTemplate.ParseName {
@@ -446,7 +498,7 @@ func (t *Template) importTemplates(source Template) {
 	}
 }
 
-// GetNewContext returns a distint context for each folder
+// GetNewContext returns a distint context for each folder.
 func (t Template) GetNewContext(folder string, useCache bool) *Template {
 	folder = iif(folder != "", folder, t.folder).(string)
 	if context, found := t.children[folder]; useCache && found {

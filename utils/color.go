@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 )
 
+// Attribute is imported from color attribute
 type Attribute color.Attribute
 
 // The following constant are copied from the color package in order to get
@@ -25,6 +26,7 @@ const (
 	CrossedOut
 )
 
+// Foreground attributes
 const (
 	FgBlack Attribute = iota + 30
 	FgRed
@@ -36,6 +38,7 @@ const (
 	FgWhite
 )
 
+// Foreground attributes high intensity
 const (
 	FgHiBlack Attribute = iota + 90
 	FgHiRed
@@ -47,6 +50,7 @@ const (
 	FgHiWhite
 )
 
+// Background attributes
 const (
 	BgBlack Attribute = iota + 40
 	BgRed
@@ -58,6 +62,7 @@ const (
 	BgWhite
 )
 
+// Background attributes high intensity
 const (
 	BgHiBlack Attribute = iota + 100
 	BgHiRed
@@ -91,7 +96,7 @@ func Color(attributes ...string) (*color.Color, error) {
 	var containsColor bool
 	var err errors.Array
 	for _, attr := range attributes {
-		for _, attr := range String(attr).FieldsId().Strings() {
+		for _, attr := range String(attr).FieldsID().Strings() {
 			if a, match := nameValues[strings.ToLower(attr)]; match {
 				result.Add(a)
 				containsColor = true

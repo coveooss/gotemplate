@@ -1,20 +1,53 @@
 package template
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"text/template"
 )
 
-type funcTable struct {
-	function    interface{}
-	group       string
-	aliases     []string
-	argNames    []string
-	description string
+// FuncInfo contains the information related to a function made available to go template
+type FuncInfo struct {
+	f       interface{}
+	group   string
+	aliases []string
+	args    []string
+	desc    string
+	in, out string
+	alias   *FuncInfo
 }
 
-type funcTableMap map[string]funcTable
+// Group returns the group name associated to the entry
+func (fi FuncInfo) Group() string { return fi.group }
+
+// Aliases returns the aliases related to the entry
+func (fi FuncInfo) Aliases() []string { return fi.aliases }
+
+// Description returns the description related to the entry
+func (fi FuncInfo) Description() string { return fi.desc }
+
+// String returns the presentation of the FuncInfo entry
+func (fi FuncInfo) String() (result string) {
+	var r []string
+	if fi.alias != nil {
+		fi = *fi.alias
+	}
+	if fi.group != "" {
+		r = append(r, fmt.Sprint("Group = ", fi.group))
+	}
+	if fi.desc != "" {
+		r = append(r, fmt.Sprint("Description = ", fi.desc))
+	}
+	if len(fi.aliases) > 0 {
+		r = append(r, fmt.Sprint("Aliases = ", strings.Join(fi.aliases, ", ")))
+	}
+	r = append(r, fmt.Sprint("Arguments = ", strings.Join(fi.args, ", ")))
+	return strings.Join(r, "\n")
+}
+
+type funcTableMap map[string]FuncInfo
 
 var converted = make(map[uint]template.FuncMap)
 
@@ -29,12 +62,16 @@ func (ftm funcTableMap) convert() template.FuncMap {
 
 	result := make(map[string]interface{}, len(ftm))
 	for key, val := range ftm {
-		if val.function == nil {
+		if val.f == nil {
 			continue
 		}
-		result[key] = val.function
+		result[key] = val.f
 		for i := range val.aliases {
-			result[val.aliases[i]] = val.function
+			result[val.aliases[i]] = val.f
+			// It is necessary here to take a distinct copy of the variable since
+			// val will change over the iteration and we cannot rely on its address
+			copy := val
+			ftm[val.aliases[i]] = FuncInfo{alias: &copy}
 		}
 	}
 	converted[index] = result
@@ -54,17 +91,15 @@ func (t *Template) AddFunctions(funcMap funcTableMap) *Template {
 }
 
 // List the available functions in the template
-func (t Template) getFunctions(all bool) []string {
-	var functions []string
+func (t Template) getFunctions() (result []string) {
 	for name := range t.functions {
-		functions = append(functions, name)
-		if all {
-			aliases := t.functions[name].aliases
-			for i := range aliases {
-				functions = append(functions, aliases[i])
-			}
-		}
+		result = append(result, name)
 	}
-	sort.Strings(functions)
-	return functions
+	sort.Strings(result)
+	return
+}
+
+// List the available functions in the template
+func (t Template) getFunction(name string) FuncInfo {
+	return t.functions[name]
 }
