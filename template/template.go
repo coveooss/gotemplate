@@ -58,34 +58,7 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
 
 	if t.options[Extension] {
-		ext := t.GetNewContext("", false)
-		ext.options = DefaultOptions()
-
-		// We temporary set the logging level one grade lower
-		logLevel := logging.GetLevel(logger)
-		logging.SetLevel(logLevel-1, logger)
-		defer func() { logging.SetLevel(logLevel, logger) }()
-
-		// Retrieve the template extension files
-		for _, file := range utils.MustFindFilesMaxDepth(ext.folder, ExtensionDepth, false, "*.gte") {
-			// We just load all the template files available to ensure that all template definition are loaded
-			// We do not use ParseFiles because it names the template with the base name of the file
-			// which result in overriding templates with the same base name in different folders.
-			content := string(errors.Must(ioutil.ReadFile(file)).([]byte))
-
-			// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
-			if _, err := ext.ProcessContent(content, file); err != nil {
-				Log.Noticef(color.RedString("Error while processing %v"), err)
-			}
-		}
-
-		// Add the children contexts to the main context
-		for _, context := range ext.children {
-			t.importTemplates(*context)
-		}
-
-		// We reset the list of templates
-		t.children = make(map[string]*Template)
+		t.initExtension()
 	}
 
 	// Set the options supplied by caller
@@ -99,6 +72,46 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 		}
 	}
 	return &t
+}
+
+func (t *Template) initExtension() {
+	ext := t.GetNewContext("", false)
+	ext.options = DefaultOptions()
+
+	// We temporary set the logging level one grade lower
+	logLevel := logging.GetLevel(logger)
+	logging.SetLevel(logLevel-1, logger)
+	defer func() { logging.SetLevel(logLevel, logger) }()
+
+	var extensionfiles []string
+	if extensionFolders := strings.TrimSpace(os.Getenv("GOTEMPLATE_PATH")); extensionFolders != "" {
+		for _, path := range strings.Split(extensionFolders, string(os.PathListSeparator)) {
+			files, _ := utils.FindFilesMaxDepth(path, ExtensionDepth, false, "*.gte")
+			extensionfiles = append(extensionfiles, files...)
+		}
+	}
+	extensionfiles = append(extensionfiles, utils.MustFindFilesMaxDepth(ext.folder, ExtensionDepth, false, "*.gte")...)
+
+	// Retrieve the template extension files
+	for _, file := range extensionfiles {
+		// We just load all the template files available to ensure that all template definition are loaded
+		// We do not use ParseFiles because it names the template with the base name of the file
+		// which result in overriding templates with the same base name in different folders.
+		content := string(errors.Must(ioutil.ReadFile(file)).([]byte))
+
+		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
+		if _, err := ext.ProcessContent(content, file); err != nil {
+			log.Errorf("Error while processing %s: %v", file, err)
+		}
+	}
+
+	// Add the children contexts to the main context
+	for _, context := range ext.children {
+		t.importTemplates(*context)
+	}
+
+	// We reset the list of templates
+	t.children = make(map[string]*Template)
 }
 
 // IsCode determines if the supplied code appears to have gotemplate code.
@@ -143,7 +156,7 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 		return content, nil
 	}
 
-	Log.Notice("GoTemplate processing of", source)
+	log.Notice("GoTemplate processing of", source)
 	context := t.GetNewContext(filepath.Dir(source), true)
 	newTemplate, err := context.New(source).Parse(content)
 	if err != nil {
@@ -218,14 +231,14 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 	mode := errors.Must(os.Stat(template)).(os.FileInfo).Mode()
 	if !isTemplate && !t.options[Overwrite] {
 		newName := template + ".original"
-		Log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
+		log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
 		errors.Must(os.Rename(template, template+".original"))
 	}
 
 	if sourceFolder != targetFolder {
 		errors.Must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
-	Log.Notice("Writing file", utils.Relative(t.folder, resultFile))
+	log.Notice("Writing file", utils.Relative(t.folder, resultFile))
 
 	if utils.IsShebangScript(result) {
 		mode = 0755
@@ -544,9 +557,9 @@ func (t Template) printResult(source, target, result string) (err error) {
 		target = relTarget
 	}
 	if source != target {
-		Log.Noticef("%s => %s", source, target)
+		log.Noticef("%s => %s", source, target)
 	} else {
-		Log.Notice(target)
+		log.Notice(target)
 	}
 	fmt.Print(result)
 	if result != "" && terminal.IsTerminal(int(os.Stdout.Fd())) {

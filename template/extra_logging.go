@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	logger      = "gotemplate"
-	loggingBase = "Logging"
+	logger         = "gotemplate"
+	loggerInternal = "gotemplate-int"
+	loggingBase    = "Logging"
 )
 
 var loggingFuncs = funcTableMap{
@@ -41,6 +42,12 @@ func logBasef(f func(string, ...interface{}), format string, args ...interface{}
 // Log is the logger used to log message during template processing
 var Log = logging.MustGetLogger(logger)
 
+var log = logging.MustGetLogger(loggerInternal)
+
+func getLogLevelInternal() logging.Level {
+	return logging.GetLevel(loggerInternal)
+}
+
 // GetLogLevel returns the current logging level for gotemplate
 func GetLogLevel() logging.Level {
 	return logging.GetLevel(logger)
@@ -52,11 +59,12 @@ func SetLogLevel(level logging.Level) {
 }
 
 // InitLogging allows configuration of the default logging level
-func InitLogging(level logging.Level, simple bool) {
+func InitLogging(level, internalLevel logging.Level, simple bool) {
 	format := `[%{module}] %{time:2006/01/02 15:04:05.000} %{color}%{level:-8s} %{message}%{color:reset}`
 	if simple {
 		format = `[%{level}] %{message}`
 	}
 	logging.SetBackend(logging.NewBackendFormatter(logging.NewLogBackend(os.Stderr, "", 0), logging.MustStringFormatter(format)))
 	SetLogLevel(level)
+	logging.SetLevel(internalLevel, loggerInternal)
 }

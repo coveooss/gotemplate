@@ -39,7 +39,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 	for i := range lines {
 		lines[i] = fmt.Sprintf("%*d %s", n, i+1, lines[i])
 	}
-	Log.Noticef("Generated content\n\n%s\n", color.HiCyanString(strings.Join(lines, "\n")))
+	log.Noticef("Generated content\n\n%s\n", color.HiCyanString(strings.Join(lines, "\n")))
 	return content
 }
 
@@ -161,10 +161,10 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 	if pos, err := findName("expr", repl.re.SubexpNames()); err == nil {
 		expression = repl.re.FindStringSubmatch(match)[pos]
 
-		if GetLogLevel() >= logging.DEBUG {
+		if getLogLevelInternal() >= logging.DEBUG {
 			defer func() {
 				if !debug && result != match {
-					Log.Debug("Resulting expression =", result)
+					log.Debug("Resulting expression =", result)
 				}
 			}()
 		}
@@ -183,7 +183,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		// We add support to partial slice
 		expr = indexExpression(expr)
 	} else {
-		Log.Warning("Expression %s should contains at least one expression", repl.name)
+		log.Warning("Expression %s should contains at least one expression", repl.name)
 	}
 
 	if index, err := findName("index", repl.re.SubexpNames()); err == nil {
@@ -200,7 +200,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		}
 		values := strings.Split(indexExpr, sep)
 		if !debug && limit2 && len(values) > 2 {
-			Log.Errorf("Only one : character is allowed in slice expression: %s", match)
+			log.Errorf("Only one : character is allowed in slice expression: %s", match)
 		}
 		for i := range values {
 			if values[i], err = expressionParserInternal(exprRepl, values[i], true, true); err != nil {
@@ -238,8 +238,8 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 				return repl.re.ReplaceAllString(match, repl.replace), nil
 			}
 		}
-		if !debug && err != nil && GetLogLevel() >= 6 {
-			Log.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
+		if !debug && err != nil && getLogLevelInternal() >= 6 {
+			log.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
 		}
 		if skipError {
 			return match, err
@@ -380,8 +380,8 @@ func nodeValue(node ast.Node) (result string, err error) {
 	default:
 		err = fmt.Errorf("Unknown: %v", reflect.TypeOf(node))
 	}
-	if !debug && GetLogLevel() >= 6 {
-		Log.Debugf(color.HiBlueString("%T => %s"), node, result)
+	if !debug && getLogLevelInternal() >= 6 {
+		log.Debugf(color.HiBlueString("%T => %s"), node, result)
 	}
 	return
 }
@@ -478,7 +478,7 @@ func (t *Template) ensureInit() {
 }
 
 func printDebugInfo(r replacement, content string) {
-	if r.name == "" || GetLogLevel() < logging.INFO {
+	if r.name == "" || getLogLevelInternal() < logging.INFO {
 		return
 	}
 
@@ -505,7 +505,7 @@ func printDebugInfo(r replacement, content string) {
 		allUnique[found] = allUnique[found] + 1
 	}
 
-	if len(allUnique) == 0 && GetLogLevel() < 6 {
+	if len(allUnique) == 0 && getLogLevelInternal() < 6 {
 		return
 	}
 
@@ -520,7 +520,7 @@ func printDebugInfo(r replacement, content string) {
 		matches = append(matches, key)
 	}
 
-	Log.Infof("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
+	log.Infof("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
 	if len(matches) > 0 {
 		fmt.Fprintln(os.Stderr)
 	}
