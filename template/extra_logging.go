@@ -68,3 +68,9 @@ func InitLogging(level, internalLevel logging.Level, simple bool) {
 	SetLogLevel(level)
 	logging.SetLevel(internalLevel, loggerInternal)
 }
+
+// Default package init
+var _ = func() int {
+	logging.SetLevel(logging.WARNING, loggerInternal)
+	return 0
+}()
