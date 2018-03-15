@@ -101,7 +101,7 @@ func (t *Template) initExtension() {
 
 		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
 		if _, err := ext.ProcessContent(content, file); err != nil {
-			Log.Noticef(color.RedString("Error while processing %v"), err)
+			log.Errorf("Error while processing %s: %v", file, err)
 		}
 	}
 
@@ -156,7 +156,7 @@ func (t Template) ProcessContent(content, source string) (string, error) {
 		return content, nil
 	}
 
-	Log.Notice("GoTemplate processing of", source)
+	log.Notice("GoTemplate processing of", source)
 	context := t.GetNewContext(filepath.Dir(source), true)
 	newTemplate, err := context.New(source).Parse(content)
 	if err != nil {
@@ -231,14 +231,14 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 	mode := errors.Must(os.Stat(template)).(os.FileInfo).Mode()
 	if !isTemplate && !t.options[Overwrite] {
 		newName := template + ".original"
-		Log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
+		log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
 		errors.Must(os.Rename(template, template+".original"))
 	}
 
 	if sourceFolder != targetFolder {
 		errors.Must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
-	Log.Notice("Writing file", utils.Relative(t.folder, resultFile))
+	log.Notice("Writing file", utils.Relative(t.folder, resultFile))
 
 	if utils.IsShebangScript(result) {
 		mode = 0755
@@ -557,9 +557,9 @@ func (t Template) printResult(source, target, result string) (err error) {
 		target = relTarget
 	}
 	if source != target {
-		Log.Noticef("%s => %s", source, target)
+		log.Noticef("%s => %s", source, target)
 	} else {
-		Log.Notice(target)
+		log.Notice(target)
 	}
 	fmt.Print(result)
 	if result != "" && terminal.IsTerminal(int(os.Stdout.Fd())) {

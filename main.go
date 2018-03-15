@@ -62,7 +62,8 @@ func main() {
 		followSymLinks   = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
 		print            = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
 		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
-		logLevel         = run.Flag("log-level", "Set the logging level (0-5)").Short('L').Default("2").Int8()
+		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level (0-9)").Default(utils.GetEnv("GOTEMPLATE_DEBUG", "2")).Int8()
+		logLevel         = run.Flag("log-level", "Set the logging level (0-9)").Short('L').Default("4").Int8()
 		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
 		templates        = run.Arg("templates", "Template files or commands to process").Strings()
 
@@ -77,6 +78,7 @@ func main() {
 
 	quiet := app.Flag("quiet", "Deprecated").Hidden().Short('q').Bool()
 	app.Flag("ll", "short version of --log-level").Hidden().Int8Var(logLevel)
+	app.Flag("dl", "short version of --debug-log-level").Hidden().Int8Var(debugLogLevel)
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "").Hidden().StringVar(delimiters)
 
@@ -162,7 +164,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	template.InitLogging(logging.Level(*logLevel), *logSimple)
+	template.InitLogging(logging.Level(*logLevel), logging.Level(*debugLogLevel), *logSimple)
 
 	if *quiet {
 		template.Log.Warning("--quiet options is deprecated, use --logginglevel instead")

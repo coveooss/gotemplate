@@ -124,3 +124,11 @@ func getDefaultShell() string {
 }
 
 var defaultShell string
+
+// GetEnv returns the environment variable value or defaultValue if it does not exist.
+func GetEnv(varName, defaultValue string) string {
+	if value, exist := os.LookupEnv(varName); exist {
+		return value
+	}
+	return defaultValue
+}
