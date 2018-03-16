@@ -2,11 +2,16 @@ package template
 
 import (
 	"os"
+	"strconv"
 
+	"github.com/coveo/gotemplate/utils"
 	logging "github.com/op/go-logging"
 )
 
 const (
+	// DebugEnvVar is the name of the environment variable used to set the debug logging level
+	DebugEnvVar = "GOTEMPLATE_DEBUG"
+
 	logger         = "gotemplate"
 	loggerInternal = "gotemplate-int"
 	loggingBase    = "Logging"
@@ -58,8 +63,8 @@ func SetLogLevel(level logging.Level) {
 	logging.SetLevel(level, logger)
 }
 
-// InitLogging allows configuration of the default logging level
-func InitLogging(level, internalLevel logging.Level, simple bool) {
+// ConfigureLogging allows configuration of the default logging level
+func ConfigureLogging(level, internalLevel logging.Level, simple bool) {
 	format := `[%{module}] %{time:2006/01/02 15:04:05.000} %{color}%{level:-8s} %{message}%{color:reset}`
 	if simple {
 		format = `[%{level}] %{message}`
@@ -69,8 +74,15 @@ func InitLogging(level, internalLevel logging.Level, simple bool) {
 	logging.SetLevel(internalLevel, loggerInternal)
 }
 
-// Default package init
-var _ = func() int {
-	logging.SetLevel(logging.WARNING, loggerInternal)
+// InitLogging allows configuration of the default logging level
+func InitLogging() int {
+	if level, err := strconv.Atoi(utils.GetEnv(DebugEnvVar, "2")); err != nil {
+		log.Warningf("Unable to convert %s into integer: %s", DebugEnvVar, os.Getenv(DebugEnvVar))
+	} else {
+		logging.SetLevel(logging.Level(level), loggerInternal)
+	}
 	return 0
-}()
+}
+
+// Default package init
+var _ = InitLogging()
