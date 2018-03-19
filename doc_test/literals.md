@@ -59,3 +59,13 @@ results in:
 
     The word
     expression will be on a new line
+
+### Indent using current indentation
+
+This line will be rendered with 4 spaces before each word:
+
+    @aIndent(wrap(1, "This is a long line that should be wrapped to be rendered with a maximum of one word per line"))
+
+While this line will be rendered with 4 spaces and a caret before each word:
+
+    - @aIndent(wrap(1, "This is a long line that should be wrapped to be rendered with a maximum of one word per line"))

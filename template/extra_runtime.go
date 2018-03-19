@@ -18,23 +18,66 @@ const (
 	runtimeFunc = "Runtime"
 )
 
+var runtimeFuncsArgs = map[string][]string{
+	"alias":      {"name", "function", "source"},
+	"ellipsis":   {"function"},
+	"exec":       {"command"},
+	"exit":       {"exitValue"},
+	"func":       {"name", "function", "source", "config"},
+	"function":   {"name"},
+	"include":    {"source", "context"},
+	"localAlias": {"name", "function", "source"},
+	"run":        {"command"},
+	"substitute": {"content"},
+}
+
+var runtimeFuncsAliases = map[string][]string{
+	"exec": {"execute"},
+}
+
+var runtimeFuncsHelp = map[string]string{
+	"alias":         "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
+	"aliases":       "Returns the list of all functions that are simply an alias of another function.",
+	"allFunctions":  "Returns the list of all available functions.",
+	"current":       "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
+	"ellipsis":      "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
+	"exec":          "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
+	"exit":          "Exits the current program execution.",
+	"func":          "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
+	"function":      "Returns the information relative to a specific function.",
+	"functions":     "Returns the list of all available functions (excluding aliases).",
+	"include":       "Returns the result of the named template rendering (like template but it is possible to capture the output).",
+	"localAlias":    "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.",
+	"run":           "Returns the result of the shell command as string.",
+	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
+	"templateNames": "Returns the list of available templates names.",
+	"templates":     "Returns the list of available templates.",
+}
+
 func (t *Template) addRuntimeFuncs() {
-	t.addFunctions(funcTableMap{
-		"functions":     {function: t.getFunctions, group: runtimeFunc, arguments: []string{}, description: ""},
-		"allFunctions":  {function: t.getAllFunctions, group: runtimeFunc, arguments: []string{}, description: ""},
-		"aliases":       {function: t.getAliases, group: runtimeFunc, arguments: []string{}, description: ""},
-		"function":      {function: t.getFunction, group: runtimeFunc, arguments: []string{"name"}, description: "Returns the information relative to a specific function"},
-		"substitute":    {function: t.substitute, group: runtimeFunc, arguments: []string{}, description: ""},
-		"templateNames": {function: t.Templates, group: runtimeFunc, arguments: []string{}, description: ""},
-		"ellipsis":      {function: t.ellipsis, group: runtimeFunc, arguments: []string{}, description: ""},
-		"alias":         {function: t.alias, group: runtimeFunc, arguments: []string{}, description: ""},
-		"localAlias":    {function: t.localAlias, group: runtimeFunc, arguments: []string{}, description: ""},
-		"func":          {function: t.defineFunc, group: runtimeFunc, arguments: []string{}, description: ""},
-		"exec":          {function: t.execCommand, group: runtimeFunc, arguments: []string{}, description: ""},
-		"run":           {function: t.runCommand, group: runtimeFunc, arguments: []string{}, description: ""},
-		"include":       {function: t.include, group: runtimeFunc, arguments: []string{}, description: ""},
-		"current":       {function: t.current, group: runtimeFunc, arguments: []string{}, description: ""},
-		"exit":          {function: exit, group: runtimeFunc, arguments: []string{}, description: ""},
+	var funcs = map[string]interface{}{
+		"alias":         t.alias,
+		"aliases":       t.getAliases,
+		"allFunctions":  t.getAllFunctions,
+		"current":       t.current,
+		"ellipsis":      t.ellipsis,
+		"exec":          t.execCommand,
+		"exit":          exit,
+		"func":          t.defineFunc,
+		"function":      t.getFunction,
+		"functions":     t.getFunctions,
+		"include":       t.include,
+		"localAlias":    t.localAlias,
+		"run":           t.runCommand,
+		"substitute":    t.substitute,
+		"templates":     t.Templates,
+		"templateNames": t.getTemplateNames,
+	}
+
+	t.AddFunctions(funcs, runtimeFunc, funcOptions{
+		funcHelp:    runtimeFuncsHelp,
+		funcArgs:    runtimeFuncsArgs,
+		funcAliases: runtimeFuncsAliases,
 	})
 }
 

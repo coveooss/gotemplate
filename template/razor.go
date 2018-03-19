@@ -74,6 +74,7 @@ var expressions = [][]interface{}{
 	{"Protect email", `(\W|^)[\w.!#$%&'*+/=?^_{|}~-]+@[\w-]{1,61}(?:\.[\w-]{1,61})+`, "", replacementFunc(protectEmail)},
 	{"", `@@`, literalAt},
 	{"", `@{{`, literalStart},
+	{"Auto indent", `(?m)^(?P<spaces>.*)@(?:autoIndent|aindent|aIndent)\(`, "@<-sIndent(\"${spaces}\", "},
 	{"Newline", `@<;`, `{{- $.NEWLINE }}`},
 	{"Newline expression", `@<`, `{{- $.NEWLINE }}@`},
 	{"Pseudo line comments - # @", `(?m)(?:^[sp](?:#|//)[sp])@`, "@"},

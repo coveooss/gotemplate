@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
@@ -14,26 +15,99 @@ const (
 	utilsBase = "Other utilities"
 )
 
-var utilsFuncs = funcTableMap{
-	"concat":     {function: utils.Concat, group: utilsBase, description: ""},
-	"formatList": {function: utils.FormatList, group: utilsBase, arguments: []string{"format", "list"}, description: ""},
-	"joinLines":  {function: utils.JoinLines, group: utilsBase, description: ""},
-	"mergeList":  {function: utils.MergeLists, group: utilsBase, arguments: []string{"lists"}, description: ""},
-	"splitLines": {function: utils.SplitLines, group: utilsBase, arguments: []string{}, description: ""},
-	"id":         {function: id, group: utilsBase, arguments: []string{"identifier", "replaceChar"}, description: ""},
-	"center":     {function: center, group: utilsBase, arguments: []string{"width", "str"}, description: ""},
-	"glob":       {function: glob, group: utilsBase, description: ""},
-	"wrap":       {function: wrap, group: utilsBase, arguments: []string{"width", "s"}, description: ""},
-	"pwd":        {function: utils.Pwd, group: utilsBase, description: "Returns the current working directory"},
-	"iif":        {function: utils.IIf, group: utilsBase, arguments: []string{"test", "valueIfTrue", "valueIfFalse"}, description: ""},
-	"lorem":      {function: lorem, group: utilsBase, arguments: []string{"funcName"}, description: ""},
-	"color":      {function: utils.SprintColor, group: utilsBase, description: ""},
-	"diff":       {function: diff, group: utilsBase, description: ""},
-	"repeat":     {function: repeat, group: utilsBase, arguments: []string{"n", "item"}, description: "Returns an array with the item repeated n times."},
+var utilsFuncs = map[string]interface{}{
+	"center":     center,
+	"color":      utils.SprintColor,
+	"concat":     utils.Concat,
+	"diff":       diff,
+	"formatList": utils.FormatList,
+	"glob":       glob,
+	"id":         id,
+	"iif":        utils.IIf,
+	"joinLines":  utils.JoinLines,
+	"lorem":      lorem,
+	"mergeList":  utils.MergeLists,
+	"pwd":        utils.Pwd,
+	"repeat":     repeat,
+	"sIndent":    indent,
+	"splitLines": utils.SplitLines,
+	"wrap":       wrap,
+}
+
+var utilsFuncsArgs = map[string][]string{
+	"center":     {"width"},
+	"diff":       {"text1", "text2"},
+	"formatList": {"format", "list"},
+	"id":         {"identifier", "replaceChar"},
+	"iif":        {"testValue", "valueTrue", "valueFalse"},
+	"joinLines":  {"format"},
+	"lorem":      {"loremType", "params"},
+	"mergeList":  {"lists"},
+	"repeat":     {"n", "element"},
+	"sIndent":    {"spacer"},
+	"splitLines": {"content"},
+	"wrap":       {"width"},
+}
+
+var utilsFuncsAliases = map[string][]string{
+	"center":  {"centered"},
+	"color":   {"colored", "enhanced"},
+	"diff":    {"difference"},
+	"glob":    {"expand"},
+	"id":      {"identifier"},
+	"lorem":   {"loremIpsum"},
+	"pwd":     {"currentDir"},
+	"sIndent": {"sindent", "spaceIndent"},
+	"wrap":    {"wrapped"},
+}
+
+var utilsFuncsHelp = map[string]string{
+	"center": "Returns the concatenation of supplied arguments centered within width.",
+	"color": strings.TrimSpace(utils.UnIndent(`
+		Colors the rendered string.
+
+		The first arguments are interpretated as color attributes until the first non color attribute. Attributes are case insensitive.
+
+		Valid attributes are:
+		    Reset, Bold, Faint, Italic, Underline, BlinkSlow, BlinkRapid, ReverseVideo, Concealed, CrossedOut
+
+		Valid color are:
+		    Black, Red, Green, Yellow, Blue, Magenta, Cyan, White
+
+		Color can be prefixed by:
+		    Fg:   Meaning foreground (Fg is assumed if not specified)
+		    FgHi: Meaning high intensity forground
+		    Bg:   Meaning background"
+		    BgHi: Meaning high intensity background
+	`)),
+	"concat":     "Returns the concatenation (without separator) of the string representation of objects.",
+	"diff":       "Returns a colored string that highlight differences between supplied texts.",
+	"formatList": "Return a list of strings by applying the format to each element of the supplied list.",
+	"glob":       "Returns the expanded list of supplied arguments (expand *[]? on filename).",
+	"id":         "Returns a valid go identifier from the supplied string (replacing any non compliant character by replacement, default _ ).",
+	"iif":        "If testValue is empty, returns falseValue, otherwise returns trueValue.\n    WARNING: All arguments are evaluated and must by valid.",
+	"joinLines":  "Merge the supplied objects into a newline separated string.",
+	"lorem":      "Returns a random string. Valid types are be word, words, sentence, para, paragraph, host, email, url.",
+	"mergeList":  "Return a single list containing all elements from the lists supplied.",
+	"pwd":        "Returns the current working directory.",
+	"repeat":     "Returns an array with the item repeated n times.",
+	"sIndent": strings.TrimSpace(utils.UnIndent(`
+		Intents the the elements using the provided spacer.
+		
+		You can also use autoIndent as Razor expression if you don't want to specify the spacer.
+		Spacer will then be auto determined by the spaces that precede the expression.
+		Valid aliases for autoIndent are: aIndent, aindent.
+	`)),
+	"splitLines": "Returns a list of strings from the supplied object with newline as the separator.",
+	"wrap":       "Wraps the rendered arguments within width.",
 }
 
 func (t *Template) addUtilsFuncs() {
-	t.addFunctions(utilsFuncs)
+	t.AddFunctions(utilsFuncs, utilsBase, funcOptions{
+		funcHelp:    utilsFuncsHelp,
+		funcArgs:    utilsFuncsArgs,
+		funcAliases: utilsFuncsAliases,
+	})
 }
 
 func glob(args ...interface{}) []string { return utils.GlobFuncTrim(args...) }
@@ -46,14 +120,18 @@ func lorem(funcName interface{}, params ...int) (result string, err error) {
 	return
 }
 
-func center(width, s interface{}) string {
+func center(width interface{}, args ...interface{}) string {
 	w := errors.Must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
-	return utils.CenterString(fmt.Sprint(s), w)
+	return utils.CenterString(fmt.Sprint(args...), w)
 }
 
-func wrap(width, s interface{}) string {
+func wrap(width interface{}, args ...interface{}) string {
 	w := errors.Must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
-	return utils.WrapString(fmt.Sprint(s), w)
+	return utils.WrapString(fmt.Sprint(args...), w)
+}
+
+func indent(spacer string, args ...interface{}) string {
+	return utils.Indent(fmt.Sprint(args...), spacer)
 }
 
 func id(id string, replace ...interface{}) string {
