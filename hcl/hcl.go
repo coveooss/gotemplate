@@ -47,9 +47,11 @@ func flatten(source interface{}) interface{} {
 		case 1:
 			source = flatten(value[0])
 		default:
+			result := make([]Map, len(value))
 			for i := range value {
-				value[i] = flatten(value[i]).(map[string]interface{})
+				result[i] = flatten(value[i]).(Map)
 			}
+			source = result
 		}
 	}
 	return source
@@ -69,6 +71,14 @@ func Unmarshal(bs []byte, out interface{}) (err error) {
 		reflect.ValueOf(out).Elem().Set(reflect.ValueOf(temp["_"]))
 	}
 	result := flatten(reflect.ValueOf(out).Elem().Interface())
+
+	if _, isMap := out.(*map[string]interface{}); isMap {
+		// If the result is expected to be map[string]interface{}, we convert it back
+		// from interanal Map type.
+		reflect.ValueOf(out).Elem().Set(reflect.ValueOf(map[string]interface{}(result.(Map))))
+		return
+	}
+
 	reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
 	return
 }
