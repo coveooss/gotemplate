@@ -27,6 +27,7 @@ var dataFuncsBase = map[string]interface{}{
 	"extract":   extract,
 	"get":       get,
 	"key":       key,
+	"keys":      keys,
 	"lenc":      utf8.RuneCountInString,
 	"merge":     utils.MergeMaps,
 	"omit":      omit,
@@ -66,6 +67,7 @@ var dataFuncsArgs = map[string][]string{
 	"hcl":            {"hcl", "context"},
 	"json":           {"json", "context"},
 	"key":            {"value"},
+	"keys":           {"dictionary"},
 	"lenc":           {"str"},
 	"merge":          {"destination", "sources"},
 	"omit":           {"dict", "keys"},
@@ -120,6 +122,7 @@ var dataFuncsHelp = map[string]string{
 	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
 	"json":           "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.",
 	"key":            "Returns the key name of a single element map (used to retrieve name in a declaration like `value \"name\" { a = 1 b = 3}`)",
+	"keys":           "Returns a list of all of the keys in a dict (in alphabetical order).",
 	"lenc":           "Returns the number of actual character in a string",
 	"merge":          "Merges two or more dictionaries into one, giving precedence to the dest dictionary.",
 	"omit":           "Returns a new dict with all the keys that do not match the given keys.",
@@ -371,6 +374,7 @@ func (t Template) dataConverter(str string, context ...interface{}) (result inte
 
 var sprigPick = sprig.GenericFuncMap()["pick"].(func(map[string]interface{}, ...string) map[string]interface{})
 var sprigOmit = sprig.GenericFuncMap()["omit"].(func(map[string]interface{}, ...string) map[string]interface{})
+var sprigKeys = sprig.GenericFuncMap()["keys"].(func(map[string]interface{}) []string)
 
 func pick(dict interface{}, keys ...interface{}) (interface{}, error) {
 	args := toStrings(convertArgs(nil, keys...))
@@ -419,6 +423,21 @@ func omit(dict interface{}, keys ...interface{}) (interface{}, error) {
 		return hcl.Map(sprigOmit(dict, args...)), nil
 	case map[string]interface{}:
 		return sprigOmit(dict, args...), nil
+	default:
+		return nil, fmt.Errorf("dict is of wrong type, must be a map[string]interface{}: %T", dict)
+	}
+}
+
+func keys(dict interface{}) (interface{}, error) {
+	switch dict := dict.(type) {
+	case hcl.Map:
+		keys := sprigKeys(dict)
+		sort.Strings(keys)
+		return hcl.List(utils.ToInterfaces(keys...)), nil
+	case map[string]interface{}:
+		keys := sprigKeys(dict)
+		sort.Strings(keys)
+		return utils.ToInterfaces(keys...), nil
 	default:
 		return nil, fmt.Errorf("dict is of wrong type, must be a map[string]interface{}: %T", dict)
 	}
