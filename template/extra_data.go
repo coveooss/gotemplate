@@ -372,15 +372,30 @@ func (t Template) dataConverter(str string, context ...interface{}) (result inte
 var sprigPick = sprig.GenericFuncMap()["pick"].(func(map[string]interface{}, ...string) map[string]interface{})
 var sprigOmit = sprig.GenericFuncMap()["omit"].(func(map[string]interface{}, ...string) map[string]interface{})
 
-func pick(dict map[string]interface{}, keys ...interface{}) map[string]interface{} {
-	return sprigPick(dict, toStrings(convertArgs(nil, keys...))...)
+func pick(dict interface{}, keys ...interface{}) (interface{}, error) {
+	args := toStrings(convertArgs(nil, keys...))
+
+	switch dict := dict.(type) {
+	case hcl.Map:
+		return hcl.Map(sprigPick(dict, args...)), nil
+	case map[string]interface{}:
+		return sprigPick(dict, args...), nil
+	default:
+		return nil, fmt.Errorf("dict is of wrong type, must be a map[string]interface{}: %T", dict)
+	}
 }
 
-func pickv(dict map[string]interface{}, message string, keys ...interface{}) (map[string]interface{}, error) {
-	omit := omit(dict, keys...)
-	if len(omit) > 0 {
-		over := make([]string, 0, len(omit))
-		for key := range omit {
+func pickv(dict interface{}, message string, keys ...interface{}) (interface{}, error) {
+	var result map[string]interface{}
+	if o, err := omit(dict, keys...); err != nil {
+		return nil, err
+	} else {
+		result = o.(map[string]interface{})
+	}
+
+	if len(result) > 0 {
+		over := make([]string, 0, len(result))
+		for key := range result {
 			over = append(over, key)
 		}
 		sort.Strings(over)
@@ -393,9 +408,18 @@ func pickv(dict map[string]interface{}, message string, keys ...interface{}) (ma
 		}
 		return nil, fmt.Errorf(message)
 	}
-	return pick(dict, keys...), nil
+	return pick(dict, keys...)
 }
 
-func omit(dict map[string]interface{}, keys ...interface{}) map[string]interface{} {
-	return sprigOmit(dict, toStrings(convertArgs(nil, keys...))...)
+func omit(dict interface{}, keys ...interface{}) (interface{}, error) {
+	args := toStrings(convertArgs(nil, keys...))
+
+	switch dict := dict.(type) {
+	case hcl.Map:
+		return hcl.Map(sprigOmit(dict, args...)), nil
+	case map[string]interface{}:
+		return sprigOmit(dict, args...), nil
+	default:
+		return nil, fmt.Errorf("dict is of wrong type, must be a map[string]interface{}: %T", dict)
+	}
 }

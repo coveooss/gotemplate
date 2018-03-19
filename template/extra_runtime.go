@@ -36,15 +36,26 @@ var runtimeFuncsAliases = map[string][]string{
 }
 
 var runtimeFuncsHelp = map[string]string{
-	"alias":         "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
-	"aliases":       "Returns the list of all functions that are simply an alias of another function.",
-	"allFunctions":  "Returns the list of all available functions.",
-	"current":       "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
-	"ellipsis":      "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
-	"exec":          "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
-	"exit":          "Exits the current program execution.",
-	"func":          "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
-	"function":      "Returns the information relative to a specific function.",
+	"alias":        "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
+	"aliases":      "Returns the list of all functions that are simply an alias of another function.",
+	"allFunctions": "Returns the list of all available functions.",
+	"current":      "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
+	"ellipsis":     "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
+	"exec":         "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
+	"exit":         "Exits the current program execution.",
+	"func":         "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
+	"function": strings.TrimSpace(utils.UnIndent(`
+		Returns the information relative to a specific function.
+
+		The returned value is a FuncInfo object with the following properties:
+		    Name        string
+		    Description string
+		    Signature   string
+		    Group       string
+		    Aliases     []string
+		    Arguments   string
+		    Result      string
+	`)),
 	"functions":     "Returns the list of all available functions (excluding aliases).",
 	"include":       "Returns the result of the named template rendering (like template but it is possible to capture the output).",
 	"localAlias":    "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.",
@@ -170,7 +181,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			switch val := val.(type) {
 			case []string:
 				config["args"] = val
-			case []interface{}:
+			case []interface{}, hcl.List:
 				config["args"] = toStrings(val)
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
@@ -180,18 +191,22 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			switch val := val.(type) {
 			case []string:
 				config["aliases"] = val
-			case []interface{}:
+			case []interface{}, hcl.List:
 				config["aliases"] = toStrings(val)
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
 				return
 			}
 		case "def", "default", "defaults":
-			if _, ok = val.(map[string]interface{}); !ok {
+			switch val := val.(type) {
+			case hcl.Map:
+				config["def"] = map[string]interface{}(val)
+			case map[string]interface{}:
+				config["def"] = val
+			default:
 				err = fmt.Errorf("%s must be a map", key)
 				return
 			}
-			config["def"] = val
 		default:
 			return "", fmt.Errorf("Unknown configuration %s", key)
 		}

@@ -28,18 +28,20 @@ var _ = func() int {
 	return 0
 }()
 
-// flatten converts array of map to single map if there is only one element in the array
-// By default, hc.Unmarshal returns array of map even if there is only a single map in the definition
+// flatten converts array of map to single map if there is only one element in the array.
+// By default, hc.Unmarshal returns array of map even if there is only a single map in the definition.
 func flatten(source interface{}) interface{} {
 	switch value := source.(type) {
 	case []interface{}:
 		for i, sub := range value {
 			value[i] = flatten(sub)
 		}
+		source = List(value)
 	case map[string]interface{}:
 		for key := range value {
 			value[key] = flatten(value[key])
 		}
+		source = Map(value)
 	case []map[string]interface{}:
 		switch len(value) {
 		case 1:

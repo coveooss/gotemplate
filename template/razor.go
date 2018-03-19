@@ -97,7 +97,7 @@ var expressions = [][]interface{}{
 	{"Function call with slice - @func(args...)[...]", `function;index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Function call - @func(args...)", `function;endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError)},
 	{"Function unmanaged - @func(value | func)", `@reduce;(?P<function>[id])\([sp](?P<args>[expr]+)[sp]\)endexpr;`, `{{${reduce} ${function} ${args} }}`},
-	{"Global variables followed by expression", `@reduce;(?P<expr>[idSel]selector;)endexpr;`, `${reduce}@($$.${expr});`, replacementFunc(expressionParserSkipError)},
+	{"Global variables followed by expression", `@reduce;(?P<expr>[idSel]selector;)endexpr;`, `@${reduce}($$.${expr});`, replacementFunc(expressionParserSkipError)},
 	{"Global variables with slice - @var[...]", `@reduce;(?P<expr>(?P<name>[idSel])index;)endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Context variables special with slice", `@reduce;\.(?P<expr>(?P<name>[id2])index;)endexpr;`, `{{${reduce} ${slicer} (get . "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Global variables special with slice", `@reduce;(?P<expr>(?P<name>[id2])index;)endexpr;`, `{{${reduce} ${slicer} (get $$ "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},

@@ -48,7 +48,7 @@ func IfUndef(def interface{}, values ...interface{}) interface{} {
 	case 0:
 		return def
 	case 1:
-		if values[0] == nil {
+		if values[0] == nil || reflect.TypeOf(values[0]).Kind() == reflect.Ptr && IsEmptyValue(reflect.ValueOf(values[0])) {
 			return def
 		}
 		return values[0]
