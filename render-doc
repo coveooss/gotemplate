@@ -5,3 +5,17 @@ do
     gotemplate --no-ext -dP $file > ${file%.*}.razor
     gotemplate --no-ext -P $file > ${file%.*}.rendered
 done
+
+DOC_FOLDER="."
+
+echo """\`\`\`text
+$(gotemplate list --no-extension -c)
+\`\`\`""" &> $DOC_FOLDER/_functions.md
+
+echo """\`\`\`text
+$(gotemplate --help-long)
+\`\`\`""" &> $DOC_FOLDER/_usage.md
+
+echo """\`\`\`text
+$(gotemplate list --no-extension -l)
+\`\`\`""" &> $DOC_FOLDER/functions_long.md
