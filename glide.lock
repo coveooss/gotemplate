@@ -1,5 +1,5 @@
 hash: d6775831eb4a216531158f0c39b27183e666154386de11fd65b9c79d1a3e00b3
-updated: 2018-03-09T12:12:47.612206-05:00
+updated: 2018-03-17T08:42:21.617393-04:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -14,7 +14,7 @@ imports:
 - name: github.com/fatih/color
   version: 507f6050b8568533fb3f5504de8e5205fa62a114
 - name: github.com/go-errors/errors
-  version: a6af135bd4e28680facf08a3d206b454abc877a4
+  version: 3afebba5a48dbc89b574d890b6b34d9ee10b4785
 - name: github.com/hashicorp/hcl
   version: 23c074d0eceb2b8a5bfdbb271ab780cde70f05a8
   subpackages:
@@ -47,13 +47,13 @@ imports:
   subpackages:
   - diffmatchpatch
 - name: golang.org/x/crypto
-  version: c7dcf104e3a7a1417abc0230cb0d5240d764159d
+  version: 49796115aa4b964c318aad4f3084fdb41e9aa067
   subpackages:
   - pbkdf2
   - scrypt
   - ssh/terminal
 - name: golang.org/x/sys
-  version: 7dca6fe1f43775aa6d1334576870ff63f978f539
+  version: 88d2dcc510266da9f7f8c7f34e1940716cab5f5c
   subpackages:
   - unix
   - windows

@@ -19,20 +19,22 @@ const (
 )
 
 func (t *Template) addRuntimeFuncs() {
-	t.AddFunctions(funcTableMap{
-		"functions":     {f: t.getFunctions, group: runtimeFunc, args: []string{}, desc: ""},
-		"function":      {f: t.getFunction, group: runtimeFunc, args: []string{"name"}, desc: "Returns the information relative to a specific function"},
-		"substitute":    {f: t.substitute, group: runtimeFunc, args: []string{}, desc: ""},
-		"templateNames": {f: t.Templates, group: runtimeFunc, args: []string{}, desc: ""},
-		"ellipsis":      {f: t.ellipsis, group: runtimeFunc, args: []string{}, desc: ""},
-		"alias":         {f: t.alias, group: runtimeFunc, args: []string{}, desc: ""},
-		"localAlias":    {f: t.localAlias, group: runtimeFunc, args: []string{}, desc: ""},
-		"func":          {f: t.defineFunc, group: runtimeFunc, args: []string{}, desc: ""},
-		"exec":          {f: t.execCommand, group: runtimeFunc, args: []string{}, desc: ""},
-		"run":           {f: t.runCommand, group: runtimeFunc, args: []string{}, desc: ""},
-		"include":       {f: t.include, group: runtimeFunc, args: []string{}, desc: ""},
-		"current":       {f: t.current, group: runtimeFunc, args: []string{}, desc: ""},
-		"exit":          {f: exit, group: runtimeFunc, args: []string{}, desc: ""},
+	t.addFunctions(funcTableMap{
+		"functions":     {function: t.getFunctions, group: runtimeFunc, arguments: []string{}, description: ""},
+		"allFunctions":  {function: t.getAllFunctions, group: runtimeFunc, arguments: []string{}, description: ""},
+		"aliases":       {function: t.getAliases, group: runtimeFunc, arguments: []string{}, description: ""},
+		"function":      {function: t.getFunction, group: runtimeFunc, arguments: []string{"name"}, description: "Returns the information relative to a specific function"},
+		"substitute":    {function: t.substitute, group: runtimeFunc, arguments: []string{}, description: ""},
+		"templateNames": {function: t.Templates, group: runtimeFunc, arguments: []string{}, description: ""},
+		"ellipsis":      {function: t.ellipsis, group: runtimeFunc, arguments: []string{}, description: ""},
+		"alias":         {function: t.alias, group: runtimeFunc, arguments: []string{}, description: ""},
+		"localAlias":    {function: t.localAlias, group: runtimeFunc, arguments: []string{}, description: ""},
+		"func":          {function: t.defineFunc, group: runtimeFunc, arguments: []string{}, description: ""},
+		"exec":          {function: t.execCommand, group: runtimeFunc, arguments: []string{}, description: ""},
+		"run":           {function: t.runCommand, group: runtimeFunc, arguments: []string{}, description: ""},
+		"include":       {function: t.include, group: runtimeFunc, arguments: []string{}, description: ""},
+		"current":       {function: t.current, group: runtimeFunc, arguments: []string{}, description: ""},
+		"exit":          {function: exit, group: runtimeFunc, arguments: []string{}, description: ""},
 	})
 }
 
@@ -47,8 +49,8 @@ func (t *Template) localAlias(name, function string, source interface{}, args ..
 	return t.addAlias(name, function, source, true, false, args...)
 }
 
-func (t *Template) defineFunc(name, function string, source, def, argNames interface{}) (string, error) {
-	return t.addAlias(name, function, source, true, true, def, argNames)
+func (t *Template) defineFunc(name, function string, source, config interface{}) (string, error) {
+	return t.addAlias(name, function, source, true, true, config)
 }
 
 func (t *Template) execCommand(command interface{}, args ...interface{}) (interface{}, error) {
@@ -90,7 +92,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 
 	if !context {
 		t.aliases[name] = FuncInfo{
-			f: func(args ...interface{}) (result interface{}, err error) {
+			function: func(args ...interface{}) (result interface{}, err error) {
 				return f(utils.Interface2string(source), append(defaultArgs, args...)...)
 			},
 			group: "User defined aliases",
@@ -98,61 +100,110 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		return
 	}
 
-	init := make(map[string]interface{})
-	switch value := defaultArgs[0].(type) {
-	case map[string]interface{}:
-		init = value
-	default:
-		if err = utils.ConvertData(fmt.Sprint(value), &init); err != nil {
-			return
-		}
-	}
+	var config map[string]interface{}
+	var ok bool
 
-	var argNames []string
-	switch value := defaultArgs[1].(type) {
-	case []string:
-		argNames = value
-	case []interface{}:
-		argNames = toStrings(value)
-	default:
-		if err = utils.ConvertData(fmt.Sprint(value), &argNames); err != nil {
-			return
-		}
-	}
-
-	t.aliases[name] = FuncInfo{
-		f: func(args ...interface{}) (result interface{}, err error) {
-			context := make(map[string]interface{})
-			parentContext, isMap := t.context.(map[string]interface{})
-			if !isMap {
-				context["DEFAULT"] = t.context
+	switch len(defaultArgs) {
+	case 0:
+		config = make(map[string]interface{})
+	case 1:
+		if config, ok = defaultArgs[0].(map[string]interface{}); !ok {
+			if err = utils.ConvertData(fmt.Sprint(defaultArgs[0]), &config); err != nil {
+				err = fmt.Errorf("Function configuration must be a valid map definition: %[1]T %[1]v", defaultArgs[0])
+				return
 			}
-			switch len(args) {
-			case 1:
+		}
+	default:
+		return "", fmt.Errorf("Too many parameter supplied")
+	}
+
+	for key, val := range config {
+		switch strings.ToLower(key) {
+		case "d", "desc", "description":
+			config["description"] = val
+		case "g", "group":
+			config["group"] = val
+		case "a", "args", "arguments":
+			switch val := val.(type) {
+			case []string:
+				config["args"] = val
+			case []interface{}:
+				config["args"] = toStrings(val)
+			default:
+				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
+				return
+			}
+		case "aliases":
+			switch val := val.(type) {
+			case []string:
+				config["aliases"] = val
+			case []interface{}:
+				config["aliases"] = toStrings(val)
+			default:
+				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
+				return
+			}
+		case "def", "default", "defaults":
+			if _, ok = val.(map[string]interface{}); !ok {
+				err = fmt.Errorf("%s must be a map", key)
+				return
+			}
+			config["def"] = val
+		default:
+			return "", fmt.Errorf("Unknown configuration %s", key)
+		}
+	}
+
+	fi := FuncInfo{
+		name:        name,
+		group:       defval(config["group"], "User defined functions").(string),
+		description: defval(config["description"], "").(string),
+		arguments:   defval(config["args"], []string{}).([]string),
+		aliases:     defval(config["aliases"], []string{}).([]string),
+	}
+
+	defaultValues := defval(config["def"], make(map[string]interface{})).(map[string]interface{})
+
+	fi.in = fmt.Sprintf("%s", strings.Join(fi.arguments, ", "))
+	for i := range fi.arguments {
+		// We only keep the arg name and get rid of any supplemental information (likely type)
+		fi.arguments[i] = strings.Fields(fi.arguments[i])[0]
+	}
+
+	fi.function = func(args ...interface{}) (result interface{}, err error) {
+		context := make(map[string]interface{})
+		parentContext, isMap := t.context.(map[string]interface{})
+		if !isMap {
+			context["DEFAULT"] = t.context
+		}
+
+		switch len(args) {
+		case 1:
+			if len(fi.arguments) != 1 {
 				if arg1, isMap := args[0].(map[string]interface{}); isMap {
-					utils.MergeMaps(context, arg1, init, parentContext)
+					utils.MergeMaps(context, arg1, defaultValues, parentContext)
 					break
 				}
 				if utils.ConvertData(fmt.Sprint(args[0]), &context) == nil {
-					utils.MergeMaps(context, init, parentContext)
+					utils.MergeMaps(context, defaultValues, parentContext)
 					break
 				}
-				fallthrough
-			default:
-				utils.MergeMaps(context, init, t.context.(map[string]interface{}))
-				for i := range args {
-					if i >= len(argNames) {
-						context["ARGS"] = args[i:]
-						break
-					}
-					context[argNames[i]] = args[i]
-				}
 			}
-			return f(utils.Interface2string(source), context)
-		},
-		group: "User defined functions",
-		args:  argNames,
+			fallthrough
+		default:
+			utils.MergeMaps(context, defaultValues, t.context.(map[string]interface{}))
+			for i := range args {
+				if i >= len(fi.arguments) {
+					context["ARGS"] = args[i:]
+					break
+				}
+				context[fi.arguments[i]] = args[i]
+			}
+		}
+		return f(utils.Interface2string(source), context)
 	}
+
+	t.aliases[name] = fi
 	return
 }
 
@@ -185,7 +236,7 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Dir = t.folder
-	Log.Notice("Launching", cmd.Args, "in", cmd.Dir)
+	log.Notice("Launching", cmd.Args, "in", cmd.Dir)
 
 	if err = cmd.Run(); err == nil {
 		result = stdout.String()

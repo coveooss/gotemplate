@@ -89,6 +89,12 @@ func MarshalIndent(value interface{}, prefix, indent string) ([]byte, error) {
 	return []byte(result), err
 }
 
+// MarshalInternal serialize values to hcl format for result used in outer hcl struct
+func MarshalInternal(value interface{}) ([]byte, error) {
+	result, err := marshalHCL(utils.ToNativeRepresentation(value), false, false, "", "")
+	return []byte(result), err
+}
+
 // MarshalTFVars serialize values to hcl format (without hcl map format)
 func MarshalTFVars(value interface{}) ([]byte, error) { return MarshalTFVarsIndent(value, "", "") }
 

@@ -10,5 +10,5 @@
   @end range
 @end define
 
-@func("ChristmasTree", "template", "draw_fir", "size=15 bg=Green fg=Red char='✾' reverse=false", "[size, bg, fg, char, reverse]")
-@func("Fir", "template", "draw_fir", "size=10 bg=Green fg=White char=' ' reverse=false", "[size, bg, fg, char, reverse]")
+@func("ChristmasTree", "template", "draw_fir", `default { size=20 bg="Green" fg="Red" char="✾" reverse=false } args = ["size int" , "bg string", "fg string", "char string", "reverse bool"] description = "Draw a christmas tree." group = "Funny demo functions" aliases=["ct"]`)
+@func("Fir", "template", "draw_fir", `default { size=15 bg="Green" fg="White" char=" " reverse=false } args = ["size int" , "bg string", "fg string", "char string", "reverse bool"] description = "Draw a plain regular fir." group = "Funny demo functions" aliases=["fir"]`)

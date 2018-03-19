@@ -19,48 +19,148 @@ const (
 	dataConversion = "Data Conversion"
 )
 
-var dataFuncs = funcTableMap{
-	// Base
-	"array":     {f: array, group: dataBase, args: []string{"value"}, desc: "Ensure that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value)."},
-	"bool":      {f: strconv.ParseBool, group: dataBase, args: []string{"str"}, desc: "Convert the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)"},
-	"char":      {f: toChar, group: dataBase, args: []string{"value"}, desc: "Returns the character corresponging to the supplied integer value"},
-	"content":   {f: content, group: dataBase, args: []string{"keymap"}, desc: "Returns the content of a single element map (used to retrieve content in a declaration like `value \"name\" { a = 1 b = 3}`)"},
-	"extract":   {f: extract, group: dataBase, args: []string{"source", "indexes"}, desc: "Extract values from a slice or a map, indexes could be either integers for slice or strings for maps"},
-	"get":       {f: get, group: dataBase, args: []string{"map", "key"}, desc: "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)"},
-	"key":       {f: key, group: dataBase, args: []string{}, desc: ""},
-	"lenc":      {f: utf8.RuneCountInString, group: dataBase, aliases: []string{"nbChars"}, desc: "Returns the number of actual character in a string"},
-	"merge":     {f: utils.MergeMaps, group: dataBase, args: []string{}, desc: ""},
-	"omit":      {f: omit, group: dataBase, args: []string{}, desc: ""},
-	"pick":      {f: pick, group: dataBase, args: []string{}, desc: ""},
-	"pickv":     {f: pickv, group: dataBase, args: []string{}, desc: ""},
-	"safeIndex": {f: safeIndex, group: dataBase, args: []string{}, desc: ""},
-	"set":       {f: set, group: dataBase, args: []string{}, desc: ""},
-	"slice":     {f: slice, group: dataBase, args: []string{}, desc: ""},
-	"string":    {f: toString, group: dataBase, args: []string{}, desc: ""},
-	"undef":     {f: utils.IfUndef, group: dataBase, aliases: []string{"ifUndef"}, desc: ""},
+var dataFuncsBase = map[string]interface{}{
+	"array":     array,
+	"bool":      strconv.ParseBool,
+	"char":      toChar,
+	"content":   content,
+	"extract":   extract,
+	"get":       get,
+	"key":       key,
+	"lenc":      utf8.RuneCountInString,
+	"merge":     utils.MergeMaps,
+	"omit":      omit,
+	"pick":      pick,
+	"pickv":     pickv,
+	"safeIndex": safeIndex,
+	"set":       set,
+	"slice":     slice,
+	"string":    toString,
+	"String":    toStringClass,
+	"undef":     utils.IfUndef,
+}
 
-	// Conversion to
-	"toBash":         {f: utils.ToBash, group: dataConversion, desc: "Convert the supplied value to bash compatible representation.", args: []string{"value"}},
-	"toHcl":          {f: toHCL, group: dataConversion, aliases: []string{"toHCL"}, desc: "Convert the supplied value to compact HCL representation.", args: []string{"value"}},
-	"toJson":         {f: toJSON, group: dataConversion, aliases: []string{"toJSON"}, desc: "Convert the supplied value to compact JSON representation.", args: []string{"value"}},
-	"toPrettyHcl":    {f: toPrettyHCL, group: dataConversion, aliases: []string{"toPrettyHCL"}, desc: "Convert the supplied value to pretty HCL representation.", args: []string{"value"}},
-	"toPrettyJson":   {f: toPrettyJSON, group: dataConversion, aliases: []string{"toPrettyJSON"}, desc: "Convert the supplied value to pretty JSON representation.", args: []string{"value"}},
-	"toPrettyTFVars": {f: toPrettyTFVars, group: dataConversion, desc: "Convert the supplied value to pretty HCL representation (without multiple map declarations).", args: []string{"value"}},
-	"toQuotedHcl":    {f: toQuotedHCL, group: dataConversion, aliases: []string{"toQuotedHCL"}, desc: "Convert the supplied value to compact quoted HCL representation.", args: []string{"value"}},
-	"toQuotedJson":   {f: toQuotedJSON, group: dataConversion, aliases: []string{"toQuotedJSON"}, desc: "Convert the supplied value to compact quoted JSON representation.", args: []string{"value"}},
-	"toQuotedTFVars": {f: toQuotedTFVars, group: dataConversion, desc: "Convert the supplied value to compact HCL representation (without multiple map declarations).", args: []string{"value"}},
-	"toTFVars":       {f: toTFVars, group: dataConversion, desc: "Convert the supplied value to compact HCL representation (without multiple map declarations).", args: []string{"value"}},
-	"toYaml":         {f: utils.ToYaml, group: dataConversion, aliases: []string{"toYAML"}, desc: "Convert the supplied value to YAML representation.", args: []string{"value"}},
+var dataFuncsConversion = map[string]interface{}{
+	"toBash":         utils.ToBash,
+	"toHcl":          toHCL,
+	"toInternalHcl":  toInternalHCL,
+	"toJson":         toJSON,
+	"toPrettyHcl":    toPrettyHCL,
+	"toPrettyJson":   toPrettyJSON,
+	"toPrettyTFVars": toPrettyTFVars,
+	"toQuotedHcl":    toQuotedHCL,
+	"toQuotedJson":   toQuotedJSON,
+	"toQuotedTFVars": toQuotedTFVars,
+	"toTFVars":       toTFVars,
+	"toYaml":         utils.ToYaml,
+}
+
+var dataFuncsArgs = map[string][]string{
+	"array":          {"value"},
+	"bool":           {"str"},
+	"char":           {"value"},
+	"content":        {"keymap"},
+	"data":           {"data", "context"},
+	"extract":        {"source", "indexes"},
+	"get":            {"map", "key"},
+	"hcl":            {"hcl", "context"},
+	"json":           {"json", "context"},
+	"key":            {"value"},
+	"lenc":           {"str"},
+	"merge":          {"destination", "sources"},
+	"omit":           {"dict", "keys"},
+	"pick":           {"dict", "keys"},
+	"pickv":          {"dict", "message", "keys"},
+	"safeIndex":      {"value", "index", "default"},
+	"set":            {"dict", "key", "value"},
+	"slice":          {"value", "args"},
+	"string":         {"value"},
+	"String":         {"value"},
+	"toBash":         {"value"},
+	"toHcl":          {"value"},
+	"toInternalHcl":  {"value"},
+	"toJson":         {"value"},
+	"toPrettyHcl":    {"value"},
+	"toPrettyJson":   {"value"},
+	"toPrettyTFVars": {"value"},
+	"toQuotedHcl":    {"value"},
+	"toQuotedJson":   {"value"},
+	"toQuotedTFVars": {"value"},
+	"toTFVars":       {"value"},
+	"toYaml":         {"value"},
+	"undef":          {"default", "values"},
+	"yaml":           {"yaml", "context"},
+}
+
+var dataFuncsAliases = map[string][]string{
+	"data":          {"DATA", "fromData", "fromDATA"},
+	"hcl":           {"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"},
+	"json":          {"JSON", "fromJson", "fromJSON"},
+	"lenc":          {"nbChars"},
+	"toHcl":         {"toHCL"},
+	"toInternalHcl": {"toInternalHCL", "toIHCL", "toIHcl"},
+	"toJson":        {"toJSON"},
+	"toPrettyHcl":   {"toPrettyHCL"},
+	"toPrettyJson":  {"toPrettyJSON"},
+	"toQuotedHcl":   {"toQuotedHCL"},
+	"toQuotedJson":  {"toQuotedJSON"},
+	"toYaml":        {"toYAML"},
+	"undef":         {"ifUndef"},
+	"yaml":          {"YAML", "fromYaml", "fromYAML"},
+}
+
+var dataFuncsHelp = map[string]string{
+	"array":          "Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value).",
+	"bool":           "Converts the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)",
+	"char":           "Returns the character corresponging to the supplied integer value",
+	"content":        "Returns the content of a single element map (used to retrieve content in a declaration like `value \"name\" { a = 1 b = 3}`)",
+	"data":           "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.",
+	"extract":        "Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps",
+	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)",
+	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
+	"json":           "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.",
+	"key":            "Returns the key name of a single element map (used to retrieve name in a declaration like `value \"name\" { a = 1 b = 3}`)",
+	"lenc":           "Returns the number of actual character in a string",
+	"merge":          "",
+	"omit":           "",
+	"pick":           "",
+	"pickv":          "",
+	"safeIndex":      "Returns the element at index position or default if index is outside bounds.",
+	"set":            "Adds the value to the supplied map using key as identifier.",
+	"slice":          "Returns a slice of the supplied object (equivalent to object[from:to]).",
+	"string":         "Converts the supplied value into its string representation.",
+	"String":         "Returns a String class object that allows invoking standard string operations as method.",
+	"toBash":         "Converts the supplied value to bash compatible representation.",
+	"toHcl":          "Converts the supplied value to compact HCL representation.",
+	"toInternalHcl":  "Converts the supplied value to compact HCL representation used inside outer HCL definition.",
+	"toJson":         "Converts the supplied value to compact JSON representation.",
+	"toPrettyHcl":    "Converts the supplied value to pretty HCL representation.",
+	"toPrettyJson":   "Converts the supplied value to pretty JSON representation.",
+	"toPrettyTFVars": "Converts the supplied value to pretty HCL representation (without multiple map declarations).",
+	"toQuotedHcl":    "Converts the supplied value to compact quoted HCL representation.",
+	"toQuotedJson":   "Converts the supplied value to compact quoted JSON representation.",
+	"toQuotedTFVars": "Converts the supplied value to compact HCL representation (without multiple map declarations).",
+	"toTFVars":       "Converts the supplied value to compact HCL representation (without multiple map declarations).",
+	"toYaml":         "Converts the supplied value to YAML representation.",
+	"undef":          "Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, \"\" are not considered as unset).",
+	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",
 }
 
 func (t *Template) addDataFuncs() {
-	t.AddFunctions(dataFuncs)
-	t.AddFunctions(funcTableMap{
-		"data": {f: t.fromData, group: dataConversion, aliases: []string{"DATA", "fromData", "fromDATA"}, args: []string{"data", "context"}, desc: "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used."},
-		"hcl":  {f: t.fromHCL, group: dataConversion, aliases: []string{"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"}, args: []string{"hcl", "context"}, desc: "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used."},
-		"json": {f: t.fromJSON, group: dataConversion, aliases: []string{"JSON", "fromJson", "fromJSON"}, args: []string{"json", "context"}, desc: "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used."},
-		"yaml": {f: t.fromYAML, group: dataConversion, aliases: []string{"YAML", "fromYaml", "fromYAML"}, args: []string{"yaml", "context"}, desc: "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used."},
-	})
+	options := funcOptions{
+		funcHelp:    dataFuncsHelp,
+		funcArgs:    dataFuncsArgs,
+		funcAliases: dataFuncsAliases,
+	}
+	t.AddFunctions(dataFuncsBase, dataBase, options)
+	t.AddFunctions(dataFuncsConversion, dataConversion, options)
+	t.AddFunctions(map[string]interface{}{
+		"data": t.fromData,
+		"hcl":  t.fromHCL,
+		"json": t.fromJSON,
+		"yaml": t.fromYAML,
+	}, dataConversion, options)
+	t.optionsEnabled[Data] = true
 }
 
 func (t Template) fromData(source interface{}, context ...interface{}) (interface{}, error) {
@@ -86,10 +186,16 @@ func toChar(value interface{}) (r interface{}, err error) {
 	})
 }
 
-func toString(s interface{}) utils.String { return utils.String(fmt.Sprint(s)) }
+func toString(s interface{}) string            { return fmt.Sprint(s) }
+func toStringClass(s interface{}) utils.String { return utils.String(toString(s)) }
 
 func toHCL(v interface{}) (string, error) {
 	output, err := hcl.Marshal(v)
+	return string(output), err
+}
+
+func toInternalHCL(v interface{}) (string, error) {
+	output, err := hcl.MarshalInternal(v)
 	return string(output), err
 }
 

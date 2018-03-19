@@ -66,6 +66,11 @@ func IIf(testValue, valueTrue, valueFalse interface{}) interface{} {
 	return valueTrue
 }
 
+// Default returns the value if it is not empty or default value.
+func Default(value, defaultValue interface{}) interface{} {
+	return IIf(value, value, defaultValue)
+}
+
 // MergeMaps merges several maps into one privileging the leftmost
 func MergeMaps(destination map[string]interface{}, sources ...map[string]interface{}) (map[string]interface{}, error) {
 	for i := range sources {

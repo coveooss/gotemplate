@@ -15,25 +15,25 @@ const (
 )
 
 var utilsFuncs = funcTableMap{
-	"concat":     {f: utils.Concat, group: utilsBase, desc: ""},
-	"formatList": {f: utils.FormatList, group: utilsBase, args: []string{"format", "list"}, desc: ""},
-	"joinLines":  {f: utils.JoinLines, group: utilsBase, desc: ""},
-	"mergeList":  {f: utils.MergeLists, group: utilsBase, args: []string{"lists"}, desc: ""},
-	"splitLines": {f: utils.SplitLines, group: utilsBase, args: []string{}, desc: ""},
-	"id":         {f: id, group: utilsBase, args: []string{"identifier", "replaceChar"}, desc: ""},
-	"center":     {f: center, group: utilsBase, args: []string{"width", "str"}, desc: ""},
-	"glob":       {f: glob, group: utilsBase, desc: ""},
-	"wrap":       {f: wrap, group: utilsBase, args: []string{"width", "s"}, desc: ""},
-	"pwd":        {f: utils.Pwd, group: utilsBase, desc: "Returns the current working directory"},
-	"iif":        {f: utils.IIf, group: utilsBase, args: []string{"test", "valueIfTrue", "valueIfFalse"}, desc: ""},
-	"lorem":      {f: lorem, group: utilsBase, args: []string{"funcName"}, desc: ""},
-	"color":      {f: utils.SprintColor, group: utilsBase, desc: ""},
-	"diff":       {f: diff, group: utilsBase, desc: ""},
-	"repeat":     {f: repeat, group: utilsBase, args: []string{"n", "item"}, desc: "Returns an array with the item repeated n times."},
+	"concat":     {function: utils.Concat, group: utilsBase, description: ""},
+	"formatList": {function: utils.FormatList, group: utilsBase, arguments: []string{"format", "list"}, description: ""},
+	"joinLines":  {function: utils.JoinLines, group: utilsBase, description: ""},
+	"mergeList":  {function: utils.MergeLists, group: utilsBase, arguments: []string{"lists"}, description: ""},
+	"splitLines": {function: utils.SplitLines, group: utilsBase, arguments: []string{}, description: ""},
+	"id":         {function: id, group: utilsBase, arguments: []string{"identifier", "replaceChar"}, description: ""},
+	"center":     {function: center, group: utilsBase, arguments: []string{"width", "str"}, description: ""},
+	"glob":       {function: glob, group: utilsBase, description: ""},
+	"wrap":       {function: wrap, group: utilsBase, arguments: []string{"width", "s"}, description: ""},
+	"pwd":        {function: utils.Pwd, group: utilsBase, description: "Returns the current working directory"},
+	"iif":        {function: utils.IIf, group: utilsBase, arguments: []string{"test", "valueIfTrue", "valueIfFalse"}, description: ""},
+	"lorem":      {function: lorem, group: utilsBase, arguments: []string{"funcName"}, description: ""},
+	"color":      {function: utils.SprintColor, group: utilsBase, description: ""},
+	"diff":       {function: diff, group: utilsBase, description: ""},
+	"repeat":     {function: repeat, group: utilsBase, arguments: []string{"n", "item"}, description: "Returns an array with the item repeated n times."},
 }
 
 func (t *Template) addUtilsFuncs() {
-	t.AddFunctions(utilsFuncs)
+	t.addFunctions(utilsFuncs)
 }
 
 func glob(args ...interface{}) []string { return utils.GlobFuncTrim(args...) }

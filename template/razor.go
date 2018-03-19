@@ -45,6 +45,8 @@ func (t *Template) applyRazor(content []byte) []byte {
 
 var highlight = color.New(color.BgHiBlack, color.FgBlack).SprintFunc()
 var iif = utils.IIf
+var ifUndef = utils.IfUndef
+var defval = utils.Default
 
 // This is indented to simplify the following regular expression for patterns that are repeated several times
 // Warning: The declaration order is important
@@ -163,7 +165,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 
 		if getLogLevelInternal() >= logging.DEBUG {
 			defer func() {
-				if !debug && result != match {
+				if !debugMode && result != match {
 					log.Debug("Resulting expression =", result)
 				}
 			}()
@@ -199,7 +201,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 			sep, slicer, limit2 = ":", "slice", true
 		}
 		values := strings.Split(indexExpr, sep)
-		if !debug && limit2 && len(values) > 2 {
+		if !debugMode && limit2 && len(values) > 2 {
 			log.Errorf("Only one : character is allowed in slice expression: %s", match)
 		}
 		for i := range values {
@@ -238,7 +240,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 				return repl.re.ReplaceAllString(match, repl.replace), nil
 			}
 		}
-		if !debug && err != nil && getLogLevelInternal() >= 6 {
+		if !debugMode && err != nil && getLogLevelInternal() >= 6 {
 			log.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
 		}
 		if skipError {
@@ -380,7 +382,7 @@ func nodeValue(node ast.Node) (result string, err error) {
 	default:
 		err = fmt.Errorf("Unknown: %v", reflect.TypeOf(node))
 	}
-	if !debug && getLogLevelInternal() >= 6 {
+	if !debugMode && getLogLevelInternal() >= 6 {
 		log.Debugf(color.HiBlueString("%T => %s"), node, result)
 	}
 	return
@@ -482,8 +484,8 @@ func printDebugInfo(r replacement, content string) {
 		return
 	}
 
-	debug = true
-	defer func() { debug = false }()
+	debugMode = true
+	defer func() { debugMode = false }()
 
 	// We only report each match once
 	allUnique := make(map[string]int)
@@ -526,4 +528,4 @@ func printDebugInfo(r replacement, content string) {
 	}
 }
 
-var debug bool
+var debugMode bool

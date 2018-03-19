@@ -6,50 +6,104 @@ import (
 	"sort"
 	"strings"
 	"text/template"
+
+	"github.com/fatih/color"
 )
 
-// FuncInfo contains the information related to a function made available to go template
+// FuncInfo contains the information related to a function made available to go template.
 type FuncInfo struct {
-	f       interface{}
-	group   string
-	aliases []string
-	args    []string
-	desc    string
-	in, out string
-	alias   *FuncInfo
+	name        string
+	function    interface{}
+	group       string
+	aliases     []string
+	arguments   []string
+	description string
+	in, out     string
+	alias       *FuncInfo
 }
 
-// Group returns the group name associated to the entry
-func (fi FuncInfo) Group() string { return fi.group }
+// Name returns the name related to the entry.
+func (fi FuncInfo) Name() string { return fi.name }
 
-// Aliases returns the aliases related to the entry
-func (fi FuncInfo) Aliases() []string { return fi.aliases }
+// Group returns the group name associated to the entry.
+func (fi FuncInfo) Group() string { return ifUndef(&fi, fi.alias).(*FuncInfo).group }
 
-// Description returns the description related to the entry
-func (fi FuncInfo) Description() string { return fi.desc }
+// Aliases returns the aliases related to the entry.
+func (fi FuncInfo) Aliases() []string { return ifUndef(&fi, fi.alias).(*FuncInfo).aliases }
 
-// String returns the presentation of the FuncInfo entry
+// Description returns the description related to the entry.
+func (fi FuncInfo) Description() string { return ifUndef(&fi, fi.alias).(*FuncInfo).description }
+
+// Signature returns the function signature
+func (fi FuncInfo) Signature() string {
+	col := color.HiBlueString
+	name := fi.name
+	if fi.alias != nil {
+		fi = *fi.alias
+		col = color.HiBlackString
+	}
+
+	return fmt.Sprintf("%s(%s) %s", col(name), fi.Arguments(), color.HiBlackString(fi.Result()))
+}
+
+// String returns the presentation of the FuncInfo entry.
 func (fi FuncInfo) String() (result string) {
-	var r []string
+	signature := fi.Signature()
 	if fi.alias != nil {
 		fi = *fi.alias
 	}
+
 	if fi.group != "" {
-		r = append(r, fmt.Sprint("Group = ", fi.group))
+		result += fmt.Sprintf(color.GreenString("Group: %s\n"), fi.group)
 	}
-	if fi.desc != "" {
-		r = append(r, fmt.Sprint("Description = ", fi.desc))
+	if fi.description != "" {
+		result += fmt.Sprintf(color.GreenString("%s\n"), fi.description)
 	}
-	if len(fi.aliases) > 0 {
-		r = append(r, fmt.Sprint("Aliases = ", strings.Join(fi.aliases, ", ")))
+	return result + signature
+}
+
+// Arguments returns the list of arguments that must be supplied to the function.
+func (fi FuncInfo) Arguments() string {
+	if fi.in != "" {
+		return fi.in
 	}
-	r = append(r, fmt.Sprint("Arguments = ", strings.Join(fi.args, ", ")))
-	return strings.Join(r, "\n")
+
+	signature := reflect.ValueOf(fi.function).Type()
+	var parameters []string
+	for i := 0; i < signature.NumIn(); i++ {
+		arg := strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "interface{}", -1)
+		var argName string
+		if i < len(fi.arguments) {
+			argName = fi.arguments[i]
+		} else {
+			if signature.IsVariadic() && i == signature.NumIn()-1 {
+				argName = "args"
+			} else {
+				argName = fmt.Sprintf("arg%d", i+1)
+			}
+		}
+		if signature.IsVariadic() && i == signature.NumIn()-1 {
+			arg = "..." + arg[2:]
+		}
+		parameters = append(parameters, fmt.Sprintf("%s %s", argName, color.CyanString(arg)))
+	}
+	return strings.Join(parameters, ", ")
+}
+
+// Result returns the list of output produced by the function.
+func (fi FuncInfo) Result() string {
+	if fi.out != "" {
+		return fi.out
+	}
+	signature := reflect.ValueOf(fi.function).Type()
+	var outputs []string
+	for i := 0; i < signature.NumOut(); i++ {
+		outputs = append(outputs, strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "interface{}", -1))
+	}
+	return strings.Join(outputs, ", ")
 }
 
 type funcTableMap map[string]FuncInfo
-
-var converted = make(map[uint]template.FuncMap)
 
 func (ftm funcTableMap) convert() template.FuncMap {
 	// The index is a combination of the map address & the length of the map,
@@ -62,42 +116,85 @@ func (ftm funcTableMap) convert() template.FuncMap {
 
 	result := make(map[string]interface{}, len(ftm))
 	for key, val := range ftm {
-		if val.f == nil {
+		if val.function == nil {
 			continue
 		}
-		result[key] = val.f
-		for i := range val.aliases {
-			result[val.aliases[i]] = val.f
-			// It is necessary here to take a distinct copy of the variable since
-			// val will change over the iteration and we cannot rely on its address
-			copy := val
-			ftm[val.aliases[i]] = FuncInfo{alias: &copy}
-		}
+		result[key] = val.function
 	}
 	converted[index] = result
 	return result
 }
 
+var converted = make(map[uint]template.FuncMap)
+
+type funcOptionsSet int8
+
+const (
+	funcHelp funcOptionsSet = iota
+	funcArgs
+	funcAliases
+	funcGroup
+)
+
+type funcOptions map[funcOptionsSet]interface{}
+
 // AddFunctions add functions to the template, but keep a detailled definition of the function added for helping purpose
-func (t *Template) AddFunctions(funcMap funcTableMap) *Template {
+func (t *Template) AddFunctions(funcs map[string]interface{}, group string, options funcOptions) *Template {
+	ft := make(funcTableMap, len(funcs))
+	help := defval(options[funcHelp], map[string]string{}).(map[string]string)
+	aliasaes := defval(options[funcAliases], map[string][]string{}).(map[string][]string)
+	arguments := defval(options[funcArgs], map[string][]string{}).(map[string][]string)
+	groups := defval(options[funcGroup], map[string]string{}).(map[string]string)
+	for key, val := range funcs {
+		ft[key] = FuncInfo{
+			function:    val,
+			group:       defval(group, groups[key]).(string),
+			aliases:     aliasaes[key],
+			arguments:   arguments[key],
+			description: help[key],
+		}
+	}
+
+	return t.addFunctions(ft)
+}
+
+func (t *Template) addFunctions(funcMap funcTableMap) *Template {
 	if t.functions == nil {
 		t.functions = make(funcTableMap)
 	}
 	for key, value := range funcMap {
+		value.name = key
 		t.functions[key] = value
+		for i := range value.aliases {
+			// It is necessary here to take a distinct copy of the variable since
+			// val will change over the iteration and we cannot rely on its address
+			copy := value
+			funcMap[value.aliases[i]] = FuncInfo{alias: &copy, function: value.function, name: value.aliases[i]}
+			t.functions[value.aliases[i]] = funcMap[value.aliases[i]]
+		}
 	}
 	t.Funcs(funcMap.convert())
 	return t
 }
 
 // List the available functions in the template
-func (t Template) getFunctions() (result []string) {
+func (t Template) getFunctionsInternal(original, alias bool) (result []string) {
 	for name := range t.functions {
-		result = append(result, name)
+		fi := t.functions[name]
+		if original && fi.alias == nil {
+			result = append(result, name)
+		}
+		if alias && fi.alias != nil {
+			result = append(result, name)
+		}
 	}
 	sort.Strings(result)
 	return
 }
+
+func (t Template) getAliases() []string      { return t.getFunctionsInternal(false, true) }
+func (t Template) getAllFunctions() []string { return t.getFunctionsInternal(true, true) }
+func (t Template) getFunctions() []string    { return t.getFunctionsInternal(true, false) }
 
 // List the available functions in the template
 func (t Template) getFunction(name string) FuncInfo {

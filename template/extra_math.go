@@ -8,89 +8,291 @@ import (
 
 const (
 	mathBase         = "Mathematic Fundamental"
+	mathBits         = "Mathematic Bit Operations"
 	mathStatistics   = "Mathematic Stats"
 	mathTrigonometry = "Mathematic Trigonometry"
-	mathBits         = "Mathematic Bit Operations"
 	mathUtilities    = "Mathematic Utilities"
 )
 
-var mathFuncs = funcTableMap{
-	// Base
-	"add":   {f: add, group: mathBase, aliases: []string{"sum"}, args: []string{}, desc: ""},
-	"ceil":  {f: ceil, group: mathBase, aliases: []string{"roundUp", "roundup"}, args: []string{}, desc: ""},
-	"dim":   {f: dim, group: mathBase, aliases: []string{}, args: []string{}, desc: ""},
-	"div":   {f: divide, group: mathBase, aliases: []string{"divide", "quotient"}, args: []string{}, desc: ""},
-	"exp":   {f: exp, group: mathBase, aliases: []string{"exponent"}, args: []string{}, desc: ""},
-	"exp2":  {f: exp2, group: mathBase, aliases: []string{"exponent2"}, args: []string{}, desc: ""},
-	"expm1": {f: expm1, group: mathBase, aliases: []string{}, args: []string{}, desc: ""},
-	"floor": {f: floor, group: mathBase, aliases: []string{"roundDown", "rounddown", "int", "integer"}, args: []string{}, desc: ""},
-	"mod":   {f: modulo, group: mathBase, aliases: []string{"modulo"}, args: []string{}, desc: ""},
-	"modf":  {f: modf, group: mathBase, aliases: []string{}, args: []string{}, desc: ""},
-	"mul":   {f: multiply, group: mathBase, aliases: []string{"multiply", "prod", "product"}, args: []string{}, desc: ""},
-	"pow":   {f: power, group: mathBase, aliases: []string{"power"}, args: []string{}, desc: ""},
-	"pow10": {f: power10, group: mathBase, aliases: []string{"power10"}, args: []string{}, desc: ""},
-	"rem":   {f: remainder, group: mathBase, aliases: []string{"remainder"}, args: []string{}, desc: ""},
-	"sub":   {f: subtract, group: mathBase, aliases: []string{"subtract"}, args: []string{}, desc: ""},
-	"trunc": {f: trunc, group: mathBase, aliases: []string{"truncate"}, args: []string{}, desc: ""},
+var mathBaseFuncs = map[string]interface{}{
+	"add":   add,
+	"ceil":  ceil,
+	"cbrt":  cbrt,
+	"dim":   dim,
+	"div":   divide,
+	"exp":   exp,
+	"exp2":  exp2,
+	"expm1": expm1,
+	"floor": floor,
+	"mod":   modulo,
+	"modf":  modf,
+	"mul":   multiply,
+	"pow":   power,
+	"pow10": power10,
+	"rem":   remainder,
+	"sub":   subtract,
+	"trunc": trunc,
+}
 
-	// Statistics
-	"avg": {f: average, group: mathStatistics, aliases: []string{"average"}, args: []string{}, desc: ""},
-	"min": {f: min, group: mathStatistics, aliases: []string{"minimum", "smallest"}, args: []string{}, desc: ""},
-	"max": {f: max, group: mathStatistics, aliases: []string{"maximum", "biggest"}, args: []string{}, desc: ""},
+var mathStatFuncs = map[string]interface{}{
+	"avg": average,
+	"max": max,
+	"min": min,
+}
 
-	// Trigonometry
-	"rad":    {f: rad, group: mathTrigonometry, aliases: []string{"radian"}, args: []string{}, desc: ""},
-	"deg":    {f: deg, group: mathTrigonometry, aliases: []string{"degree"}, args: []string{}, desc: ""},
-	"acos":   {f: acos, group: mathTrigonometry, aliases: []string{"arcCosine", "arcCosinus"}, args: []string{}, desc: ""},
-	"acosh":  {f: acosh, group: mathTrigonometry, aliases: []string{"arcHyperbolicCosine", "arcHyperbolicCosinus"}, args: []string{}, desc: ""},
-	"asin":   {f: asin, group: mathTrigonometry, aliases: []string{"arcSine", "arcSinus"}, args: []string{}, desc: ""},
-	"asinh":  {f: asinh, group: mathTrigonometry, aliases: []string{"arcHyperbolicSine", "arcHyperbolicSinus"}, args: []string{}, desc: ""},
-	"atan":   {f: atan, group: mathTrigonometry, aliases: []string{"arcTangent"}, args: []string{}, desc: ""},
-	"atan2":  {f: atan2, group: mathTrigonometry, aliases: []string{"arcTangent2"}, args: []string{}, desc: ""},
-	"atanh":  {f: atanh, group: mathTrigonometry, aliases: []string{"arcHyperbolicTangent"}, args: []string{}, desc: ""},
-	"cos":    {f: cos, group: mathTrigonometry, aliases: []string{"cosine", "cosinus"}, args: []string{}, desc: ""},
-	"cosh":   {f: cosh, group: mathTrigonometry, aliases: []string{"hyperbolicCosine", "hyperbolicCosinus"}, args: []string{}, desc: ""},
-	"ilogb":  {f: ilogb, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
-	"log":    {f: logFunc, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
-	"log10":  {f: log10, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
-	"log1p":  {f: log1p, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
-	"log2":   {f: log2, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
-	"logb":   {f: logb, group: mathTrigonometry, aliases: []string{}, args: []string{}, desc: ""},
-	"sin":    {f: sin, group: mathTrigonometry, aliases: []string{"sine", "sinus"}, args: []string{}, desc: ""},
-	"sincos": {f: sincos, group: mathTrigonometry, aliases: []string{"sineCosine", "sinusCosinus"}, args: []string{}, desc: ""},
-	"sinh":   {f: sinh, group: mathTrigonometry, aliases: []string{"hyperbolicSine", "hyperbolicSinus"}, args: []string{}, desc: ""},
-	"tan":    {f: tan, group: mathTrigonometry, aliases: []string{"tangent"}, args: []string{}, desc: ""},
-	"tanh":   {f: tanh, group: mathTrigonometry, aliases: []string{"hyperbolicTangent"}, args: []string{}, desc: ""},
+var mathTrigFuncs = map[string]interface{}{
+	"acos":   acos,
+	"acosh":  acosh,
+	"asin":   asin,
+	"asinh":  asinh,
+	"atan":   atan,
+	"atan2":  atan2,
+	"atanh":  atanh,
+	"cos":    cos,
+	"cosh":   cosh,
+	"deg":    deg,
+	"ilogb":  ilogb,
+	"j0":     j0,
+	"j1":     j1,
+	"jn":     jn,
+	"log":    logFunc,
+	"log10":  log10,
+	"log1p":  log1p,
+	"log2":   log2,
+	"logb":   logb,
+	"rad":    rad,
+	"sin":    sin,
+	"sincos": sincos,
+	"sinh":   sinh,
+	"tan":    tan,
+	"tanh":   tanh,
+	"y0":     y0,
+	"y1":     y1,
+	"yn":     yn,
+}
 
-	// Binary operators
-	"lshift": {f: leftShift, group: mathBits, aliases: []string{"leftShift"}, args: []string{}, desc: ""},
-	"rshift": {f: rightShift, group: mathBits, aliases: []string{"rightShift"}, args: []string{}, desc: ""},
-	"bor":    {f: bitwiseOr, group: mathBits, aliases: []string{"bitwiseOR"}, args: []string{}, desc: ""},
-	"band":   {f: bitwiseAnd, group: mathBits, aliases: []string{"bitwiseAND"}, args: []string{}, desc: ""},
-	"bxor":   {f: bitwiseXor, group: mathBits, aliases: []string{"bitwiseXOR"}, args: []string{}, desc: ""},
-	"bclear": {f: bitwiseClear, group: mathBits, aliases: []string{"bitwiseClear"}, args: []string{}, desc: ""},
+var mathBitsFuncs = map[string]interface{}{
+	"band":   bitwiseAnd,
+	"bclear": bitwiseClear,
+	"bor":    bitwiseOr,
+	"bxor":   bitwiseXor,
+	"lshift": leftShift,
+	"rshift": rightShift,
+}
 
-	// Utilities
-	"abs":       {f: abs, group: mathUtilities, aliases: []string{"absolute"}, args: []string{}, desc: ""},
-	"sqrt":      {f: sqrt, group: mathUtilities, aliases: []string{"squareRoot"}, args: []string{}, desc: ""},
-	"to":        {f: to, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"until":     {f: until, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"frexp":     {f: frexp, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"ldexp":     {f: ldexp, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"gamma":     {f: gamma, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"lgamma":    {f: lgamma, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"hypot":     {f: hypot, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"isInf":     {f: isInfinity, group: mathUtilities, aliases: []string{"isInfinity"}, args: []string{}, desc: ""},
-	"isNaN":     {f: isNaN, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"nextAfter": {f: nextAfter, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"signBit":   {f: signBit, group: mathUtilities, aliases: []string{}, args: []string{}, desc: ""},
-	"hex":       {f: hex, group: mathUtilities, aliases: []string{"hexa", "hexaDecimal"}, args: []string{}, desc: ""},
-	"dec":       {f: decimal, group: mathUtilities, aliases: []string{"decimal"}, args: []string{}, desc: ""},
+var mathUtilFuncs = map[string]interface{}{
+	"abs":       abs,
+	"dec":       decimal,
+	"frexp":     frexp,
+	"gamma":     gamma,
+	"hex":       hex,
+	"hypot":     hypot,
+	"isInf":     isInfinity,
+	"isNaN":     isNaN,
+	"ldexp":     ldexp,
+	"lgamma":    lgamma,
+	"nextAfter": nextAfter,
+	"signBit":   signBit,
+	"sqrt":      sqrt,
+	"to":        to,
+	"until":     until,
+}
+
+var mathFuncsAliases = map[string][]string{
+	"abs":    {"absolute"},
+	"acos":   {"arcCosine", "arcCosinus"},
+	"acosh":  {"arcHyperbolicCosine", "arcHyperbolicCosinus"},
+	"add":    {"sum"},
+	"asin":   {"arcSine", "arcSinus"},
+	"asinh":  {"arcHyperbolicSine", "arcHyperbolicSinus"},
+	"atan":   {"arcTangent"},
+	"atan2":  {"arcTangent2"},
+	"atanh":  {"arcHyperbolicTangent"},
+	"avg":    {"average"},
+	"band":   {"bitwiseAND"},
+	"bclear": {"bitwiseClear"},
+	"bor":    {"bitwiseOR"},
+	"bxor":   {"bitwiseXOR"},
+	"ceil":   {"roundUp", "roundup"},
+	"cos":    {"cosine", "cosinus"},
+	"cosh":   {"hyperbolicCosine", "hyperbolicCosinus"},
+	"dec":    {"decimal"},
+	"deg":    {"degree"},
+	"div":    {"divide", "quotient"},
+	"exp":    {"exponent"},
+	"exp2":   {"exponent2"},
+	"floor":  {"roundDown", "rounddown", "int", "integer"},
+	"hex":    {"hexa", "hexaDecimal"},
+	"hypot":  {"hypotenuse"},
+	"isInf":  {"isInfinity"},
+	"j0":     {"firstBessel0"},
+	"j1":     {"firstBessel1"},
+	"jn":     {"firstBesselN"},
+	"lshift": {"leftShift"},
+	"max":    {"maximum", "biggest"},
+	"min":    {"minimum", "smallest"},
+	"mod":    {"modulo"},
+	"mul":    {"multiply", "prod", "product"},
+	"pow":    {"power"},
+	"pow10":  {"power10"},
+	"rad":    {"radian"},
+	"rem":    {"remainder"},
+	"rshift": {"rightShift"},
+	"sin":    {"sine", "sinus"},
+	"sincos": {"sineCosine", "sinusCosinus"},
+	"sinh":   {"hyperbolicSine", "hyperbolicSinus"},
+	"sqrt":   {"squareRoot"},
+	"sub":    {"subtract"},
+	"tan":    {"tangent"},
+	"tanh":   {"hyperbolicTangent"},
+	"trunc":  {"truncate"},
+	"y0":     {"secondBessel0"},
+	"y1":     {"secondBessel1"},
+	"yn":     {"secondBesselN"},
+}
+
+var mathFuncsArgs = map[string][]string{
+	"abs":             {"x"},
+	"acos":            {"x"},
+	"acosh":           {"x"},
+	"asin":            {"x"},
+	"asinh":           {"x"},
+	"atan":            {"x"},
+	"atan2":           {"x", "y"},
+	"atanh":           {"x"},
+	"cbrt":            {"x"},
+	"ceil":            {"x"},
+	"copysign":        {"x", "y"},
+	"cos":             {"x"},
+	"cosh":            {"x"},
+	"dim":             {"x", "y"},
+	"erf":             {"x"},
+	"erfc":            {"x"},
+	"exp":             {"x"},
+	"exp2":            {"x"},
+	"expm1":           {"x"},
+	"float32bits":     {"f"},
+	"float32frombits": {"b"},
+	"float64bits":     {"f"},
+	"float64frombits": {"b"},
+	"floor":           {"x"},
+	"frexp":           {"f"},
+	"gamma":           {"x"},
+	"hypot":           {"p", "q"},
+	"ilogb":           {"x"},
+	"inf":             {"sign"},
+	"isInf":           {"f"},
+	"isNaN":           {"f"},
+	"j0":              {"x"},
+	"j1":              {"x"},
+	"jn":              {"n", "x"},
+	"ldexp":           {"frac", "exp"},
+	"lgamma":          {"x"},
+	"log":             {"x"},
+	"log10":           {"x"},
+	"log1p":           {"x"},
+	"log2":            {"x"},
+	"logb":            {"x"},
+	"max":             {"x", "y"},
+	"min":             {"x", "y"},
+	"mod":             {"x", "y"},
+	"modf":            {"f"},
+	"nextafter":       {"x", "y"},
+	"nextafter32":     {"x", "y"},
+	"pow":             {"x", "y"},
+	"pow10":           {"n"},
+	"remainder":       {"x", "y"},
+	"signbit":         {"x"},
+	"sin":             {"x"},
+	"sincos":          {"x"},
+	"sinh":            {"x"},
+	"sqrt":            {"x"},
+	"tan":             {"x"},
+	"tanh":            {"x"},
+	"trunc":           {"x"},
+	"y0":              {"x"},
+	"y1":              {"x"},
+	"yn":              {"n", "x"},
+}
+
+var mathFuncsHelp = map[string]string{
+	"abs":             "Returns the absolute value of x.\nSpecial cases are:\n    abs(±Inf) = +Inf\n    abs(NaN) = NaN",
+	"acos":            "Returns the arccosine, in radians, of x.\nSpecial case is:\n    acos(x) = NaN if x < -1 or x > 1",
+	"acosh":           "Returns the inverse hyperbolic cosine of x.\nSpecial cases are:\n    acosh(+Inf) = +Inf\n    acosh(x) = NaN if x < 1\n    acosh(NaN) = NaN",
+	"asin":            "Returns the arcsine, in radians, of x.\nSpecial cases are:\n    asin(±0) = ±0\n    asin(x) = NaN if x < -1 or x > 1",
+	"asinh":           "Returns the inverse hyperbolic sine of x.\nSpecial cases are:\n    asinh(±0) = ±0\n    asinh(±Inf) = ±Inf\n    asinh(NaN) = NaN",
+	"atan":            "Returns the arctangent, in radians, of x.\nSpecial cases are:\n    atan(±0) = ±0\n    atan(±Inf) = ±Pi/2",
+	"atan2":           "Returns the arc tangent of y/x, using the signs of the two to determine the quadrant of the return value.\nSpecial cases are (in order):\n    atan2(y, NaN) = NaN\n    atan2(NaN, x) = NaN\n    atan2(+0, x>=0) = +0\n    atan2(-0, x>=0) = -0\n    atan2(+0, x<=-0) = +Pi\n    atan2(-0, x<=-0) = -Pi\n    atan2(y>0, 0) = +Pi/2\n    atan2(y<0, 0) = -Pi/2\n    atan2(+Inf, +Inf) = +Pi/4\n    atan2(-Inf, +Inf) = -Pi/4\n    atan2(+Inf, -Inf) = 3Pi/4\n    atan2(-Inf, -Inf) = -3Pi/4\n    atan2(y, +Inf) = 0\n    atan2(y>0, -Inf) = +Pi\n    atan2(y<0, -Inf) = -Pi\n    atan2(+Inf, x) = +Pi/2\n    atan2(-Inf, x) = -Pi/2",
+	"atanh":           "Returns the inverse hyperbolic tangent of x.\nSpecial cases are:\n    atanh(1) = +Inf\n    atanh(±0) = ±0\n    atanh(-1) = -Inf\n    atanh(x) = NaN if x < -1 or x > 1\n    atanh(NaN) = NaN",
+	"cbrt":            "Returns the cube root of x.\nSpecial cases are:\n    cbrt(±0) = ±0\n    cbrt(±Inf) = ±Inf\n    cbrt(NaN) = NaN",
+	"ceil":            "Returns the least integer value greater than or equal to x.\nSpecial cases are:\n    ceil(±0) = ±0\n    ceil(±Inf) = ±Inf\n    ceil(NaN) = NaN",
+	"copysign":        "Returns a value with the magnitude of x and the sign of y",
+	"cos":             "Returns the cosine of the radian argument x.\nSpecial cases are:\n    cos(±Inf) = NaN\n    cos(NaN) = NaN",
+	"cosh":            "Returns the hyperbolic cosine of x.\nSpecial cases are:\n    cosh(±0) = 1\n    cosh(±Inf) = +Inf\n    cosh(NaN) = NaN",
+	"dim":             "Returns the maximum of x-y or 0.\nSpecial cases are:\n    dim(+Inf, +Inf) = NaN\n    dim(-Inf, -Inf) = NaN\n    dim(x, NaN) = dim(NaN, x) = NaN",
+	"erf":             "Returns the error function of x.\nSpecial cases are:\n    Erf(+Inf) = 1\nErf(-Inf) = -1\nErf(NaN) = NaN",
+	"erfc":            "Returns the complementary error function of x.\nSpecial cases are:\n    Erfc(+Inf) = 0\nErfc(-Inf) = 2\nErfc(NaN) = NaN",
+	"exp":             "Returns e**x, the base-e exponential of x.\nSpecial cases are:\n    exp(+Inf) = +Inf\n    exp(NaN) = NaN\nVery large values overflow to 0 or +Inf. Very small values underflow to 1.",
+	"exp2":            "Returns 2**x, the base-2 exponential of x.\nSpecial cases are the same as exp.",
+	"expm1":           "Returns e**x - 1, the base-e exponential of x minus 1. It is more\naccurate than exp(x) - 1 when x is near zero.\nSpecial cases are:\n    expm1(+Inf) = +Inf\n    expm1(-Inf) = -1\n    expm1(NaN) = NaN\nVery large values overflow to -1 or +Inf",
+	"float32bits":     "Returns the IEEE 754 binary representation of f",
+	"float32frombits": "Returns the floating point number corresponding to the\nIEEE 754 binary representation b",
+	"float64bits":     "Returns the IEEE 754 binary representation of f",
+	"float64frombits": "Returns the floating point number corresponding the IEEE\n754 binary representation b",
+	"floor":           "Returns the greatest integer value less than or equal to x.\nSpecial cases are:\n    floor(±0) = ±0\n    floor(±Inf) = ±Inf\n    floor(NaN) = NaN",
+	"frexp":           "Breaks f into a normalized fraction and an integral power of two. Returns frac and exp satisfying f == frac × 2**exp, with the absolute value of frac in the interval [½, 1).\nSpecial cases are:\n    frexp(±0) = ±0, 0\n    frexp(±Inf) = ±Inf, 0\n    frexp(NaN) = NaN, 0",
+	"gamma":           "Returns the Gamma function of x.\nSpecial cases are:\n    gamma(+Inf) = +Inf\n    gamma(+0) = +Inf\n    gamma(-0) = -Inf\n    gamma(x) = NaN for integer x < 0\n    gamma(-Inf) = NaN\n    gamma(NaN) = NaN",
+	"hypot":           "Returns Sqrt(p*p + q*q), taking care to avoid unnecessary overflow and underflow.\nSpecial cases are:\n    hypot(±Inf, q) = +Inf\n    hypot(p, ±Inf) = +Inf\n    hypot(NaN, q) = NaN\n    hypot(p, NaN) = NaN",
+	"ilogb":           "Returns the binary exponent of x as an integer.\nSpecial cases are:\n    ilogb(±Inf) = MaxInt32\n    ilogb(0) = MinInt32\n    ilogb(NaN) = MaxInt32",
+	"inf":             "Returns positive infinity if sign >= 0, negative infinity if sign <\n0",
+	"isInf":           "Reports whether f is an infinity, according to sign. If sign > 0, isInf reports whether f is positive infinity. If sign < 0, IsInf reports whether f is negative infinity. If sign == 0, IsInf reports whether f is either infinity",
+	"isNaN":           "Reports whether f is an IEEE 754 'not-a-number' value",
+	"j0":              "Returns the order-zero Bessel function of the first kind.\nSpecial cases are:\n    j0(±Inf) = 0\n    j0(0) = 1\n    j0(NaN) = NaN",
+	"j1":              "Returns the order-one Bessel function of the first kind.\nSpecial cases are:\n    j1(±Inf) = 0\n    j1(NaN) = NaN",
+	"jn":              "Returns the order-n Bessel function of the first kind.\nSpecial cases are:\n    jn(n, ±Inf) = 0\n    jn(n, NaN) = NaN",
+	"ldexp":           "Ldexp is the inverse of Frexp. Returns frac × 2**exp.\nSpecial cases are:\n    ldexp(±0, exp) = ±0\n    ldexp(±Inf, exp) = ±Inf\n    ldexp(NaN, exp) = NaN",
+	"lgamma":          "Returns the natural logarithm and sign (-1 or +1) of Gamma(x).\nSpecial cases are:\n    lgamma(+Inf) = +Inf\n    lgamma(0) = +Inf\n    lgamma(-integer) = +Inf\n    lgamma(-Inf) = -Inf\n    lgamma(NaN) = NaN",
+	"log":             "Returns the natural logarithm of x.\nSpecial cases are:\n    log(+Inf) = +Inf\n    log(0) = -Inf\n    log(x < 0) = NaN\n    log(NaN) = NaN",
+	"log10":           "Returns the decimal logarithm of x. The special cases are the same as for log.",
+	"log1p":           "Returns the natural logarithm of 1 plus its argument x. It is more accurate than log(1 + x) when x is near zero.\nSpecial cases are:\n    log1p(+Inf) = +Inf\n    log1p(±0) = ±0\n    log1p(-1) = -Inf\n    log1p(x < -1) = NaN\n    log1p(NaN) = NaN",
+	"log2":            "Returns the binary logarithm of x. The special cases are the same as for log.",
+	"logb":            "Returns the binary exponent of x.\nSpecial cases are:\n    logb(±Inf) = +Inf\n    logb(0) = -Inf\n    logb(NaN) = NaN",
+	"max":             "Returns the larger of x or y.\nSpecial cases are:\n    max(x, +Inf) = max(+Inf, x) = +Inf\n    max(x, NaN) = max(NaN, x) = NaN\n    max(+0, ±0) = max(±0, +0) = +0\n    max(-0, -0) = -0",
+	"min":             "Returns the smaller of x or y.\nSpecial cases are:\n    min(x, -Inf) = min(-Inf, x) = -Inf\n    min(x, NaN) = min(NaN, x) = NaN\n    min(-0, ±0) = min(±0, -0) = -0",
+	"mod":             "Returns the floating-point remainder of x/y. The magnitude of the result is less than y and its sign agrees with that of x.\nSpecial cases are:\n    mod(±Inf, y) = NaN\n    mod(NaN, y) = NaN\n    mod(x, 0) = NaN\n    mod(x, ±Inf) = x\n    mod(x, NaN) = NaN",
+	"modf":            "Returns integer and fractional floating-point numbers that sum to f. Both values have the same sign as f.\nSpecial cases are:\n    modf(±Inf) = ±Inf, NaN\n    modf(NaN) = NaN, NaN",
+	"naN":             "Returns an IEEE 754 'not-a-number' value.",
+	"nextAfter":       "Returns the next representable float64 value after x towards y.\nSpecial cases are:\n    Nextafter(x, x)   = x\nNextafter(NaN, y) = NaN\nNextafter(x, NaN) = NaN",
+	"nextAfter32":     "Returns the next representable float32 value after x towards y.\nSpecial cases are:\n    Nextafter32(x, x)   = x\nNextafter32(NaN, y) = NaN\nNextafter32(x, NaN) = NaN",
+	"pow":             "Returns x**y, the base-x exponential of y.\nSpecial cases are (in order):\n    pow(x, ±0) = 1 for any x\n    pow(1, y) = 1 for any y\n    pow(x, 1) = x for any x\n    pow(NaN, y) = NaN\n    pow(x, NaN) = NaN\n    pow(±0, y) = ±Inf for y an odd integer < 0\n    pow(±0, -Inf) = +Inf\n    pow(±0, +Inf) = +0\n    pow(±0, y) = +Inf for finite y < 0 and not an odd integer\n    pow(±0, y) = ±0 for y an odd integer > 0\n    pow(±0, y) = +0 for finite y > 0 and not an odd integer\n    pow(-1, ±Inf) = 1\n    pow(x, +Inf) = +Inf for |x| > 1\n    pow(x, -Inf) = +0 for |x| > 1\n    pow(x, +Inf) = +0 for |x| < 1\n    pow(x, -Inf) = +Inf for |x| < 1\n    pow(+Inf, y) = +Inf for y > 0\n    pow(+Inf, y) = +0 for y < 0\n    pow(-Inf, y) = Pow(-0, -y)\n    pow(x, y) = NaN for finite x < 0 and finite non-integer y",
+	"pow10":           "Returns 10**n, the base-10 exponential of n.\nSpecial cases are:\n    pow10(n) =0 for n < -323\n    pow10(n) = +Inf for n > 308",
+	"rem":             "Returns the IEEE 754 floating-point remainder of x/y.\nSpecial cases are:\n    rem(±Inf, y) = NaN\n    rem(NaN, y) = NaN\n    rem(x, 0) = NaN\n    rem(x, ±Inf) = x\n    rem(x, NaN) = NaN",
+	"signbit":         "Returns true if x is negative or negative zero",
+	"sin":             "Returns the sine of the radian argument x.\nSpecial cases are:\n    sin(±0) = ±0\n    sin(±Inf) = NaN\n    sin(NaN) = NaN",
+	"sincos":          "Returns Sin(x), Cos(x).\nSpecial cases are:\n    sincos(±0) = ±0, 1\n    sincos(±Inf) = NaN, NaN\n    sincos(NaN) = NaN, NaN",
+	"sinh":            "Returns the hyperbolic sine of x.\nSpecial cases are:\n    sinh(±0) = ±0\n    sinh(±Inf) = ±Inf\n    sinh(NaN) = NaN",
+	"sqrt":            "Returns the square root of x.\nSpecial cases are:\n    sqrt(+Inf) = +Inf\n    sqrt(±0) = ±0\n    sqrt(x < 0) = NaN\n    sqrt(NaN) = NaN",
+	"tan":             "Returns the tangent of the radian argument x.\nSpecial cases are:\n    tan(±0) = ±0\n    tan(±Inf) = NaN\n    tan(NaN) = NaN",
+	"tanh":            "Returns the hyperbolic tangent of x.\nSpecial cases are:\n    tanh(±0) = ±0\n    tanh(±Inf) = ±1\n    tanh(NaN) = NaN",
+	"trunc":           "Returns the integer value of x.\nSpecial cases are:\n    trunc(±0) = ±0\n    trunc(±Inf) = ±Inf\n    trunc(NaN) = NaN",
+	"y0":              "Returns the order-zero Bessel function of the second kind.\nSpecial cases are:\n    y0(+Inf) = 0\n    y0(0) = -Inf\n    y0(x < 0) = NaN\n    y0(NaN) = NaN",
+	"y1":              "Returns the order-one Bessel function of the second kind.\nSpecial cases are:\n    y1(+Inf) = 0\n    y1(0) = -Inf\n    y1(x < 0) = NaN\n    y1(NaN) = NaN",
+	"yn":              "Returns the order-n Bessel function of the second kind.\nSpecial cases are:\n    yn(n, +Inf) = 0\n    yn(n ≥ 0, 0) = -Inf\n    yn(n < 0, 0) = +Inf if n is odd, -Inf if n is even\n    yn(n, x < 0) = NaN\n    yn(n, NaN) = NaN",
 }
 
 func (t *Template) addMathFuncs() {
 	// Enhance mathematic functions
-	t.AddFunctions(mathFuncs)
+	options := funcOptions{
+		funcHelp:    mathFuncsHelp,
+		funcArgs:    mathFuncsArgs,
+		funcAliases: mathFuncsAliases,
+	}
+
+	t.AddFunctions(mathBaseFuncs, mathBase, options)
+	t.AddFunctions(mathStatFuncs, mathStatistics, options)
+	t.AddFunctions(mathTrigFuncs, mathTrigonometry, options)
+	t.AddFunctions(mathBitsFuncs, mathBits, options)
+	t.AddFunctions(mathUtilFuncs, mathUtilities, options)
 
 	constants := map[string]interface{}{
 		"E":                      math.E,
@@ -122,16 +324,15 @@ func (t *Template) addMathFuncs() {
 		"NegInf":                 math.Inf(-1),
 	}
 
-	if !t.mathConstantInjected {
-		// We do not want to inject the math constant twice
+	// We do not want to inject the math constant twice
+	if !t.optionsEnabled[Math] {
 		t.setConstant(true, constants, "Math", "MATH")
-		t.mathConstantInjected = true
+		t.optionsEnabled[Math] = true
 	}
 }
 
 var round = sprig.GenericFuncMap()["round"].(func(a interface{}, p int, r_opt ...float64) float64)
 
-// To classify
 func to(params ...interface{}) (interface{}, error)    { return generateNumericArray(true, params...) }
 func until(params ...interface{}) (interface{}, error) { return generateNumericArray(false, params...) }
 
@@ -140,12 +341,16 @@ func abs(a interface{}) (r interface{}, err error) {
 	return processFloat(a, math.Abs)
 }
 
+func cbrt(a interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return processFloat(a, math.Cbrt)
+}
+
 func ceil(a interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return processFloat(a, math.Ceil)
 }
 
-// math.Cbrt
 // math.Copysign
 
 func dim(a, b interface{}) (r interface{}, err error) {
@@ -202,9 +407,20 @@ func isNaN(a interface{}) (r interface{}, err error) {
 	return math.IsNaN(toFloat(a)), nil
 }
 
-// math.J0
-// math.J1
-// math.Jn
+func j0(a interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return processFloat(a, math.J0)
+}
+
+func j1(a interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return processFloat(a, math.J1)
+}
+
+func jn(n, x interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return math.Jn(toInt(n), toFloat(x)), nil
+}
 
 func ldexp(a, b interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
@@ -242,6 +458,17 @@ func trunc(a interface{}) (r interface{}, err error) {
 	return processFloat(a, math.Trunc)
 }
 
-// math.Y0
-// math.Y2
-// math.Yn
+func y0(a interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return processFloat(a, math.Y0)
+}
+
+func y1(a interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return processFloat(a, math.Y1)
+}
+
+func yn(n, x interface{}) (r interface{}, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return math.Yn(toInt(n), toFloat(x)), nil
+}
