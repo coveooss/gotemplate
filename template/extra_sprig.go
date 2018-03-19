@@ -56,6 +56,7 @@ var sprigFuncRef = map[string]struct {
 	"dateModify":     {group: sprigDate, description: "The dateModify takes a modification and a date and returns the timestamp.", arguments: []string{"fmt", "date"}, aliases: []string{"date_modify"}},
 	"ago":            {group: sprigDate, description: "The ago function returns duration from time.Now in seconds resolution.", arguments: []string{"date"}},
 	"toDate":         {group: sprigDate, description: "Converts a string to a date. The first argument is the date layout and the second the date string. If the string can’t be convert it returns the zero value.", arguments: []string{"fmt", "str"}},
+
 	// Strings functions
 	"abbrev":       {group: sprigString, description: "Truncates a string with ellipses (...).", arguments: []string{"width", "str"}},
 	"abbrevboth":   {group: sprigString, description: "Abbreviates both sides with ellipses (...).", arguments: []string{"left", "right", "str"}},

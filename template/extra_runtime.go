@@ -20,6 +20,7 @@ const (
 
 var runtimeFuncsArgs = map[string][]string{
 	"alias":      {"name", "function", "source"},
+	"categories": {"functionsGroups"},
 	"ellipsis":   {"function"},
 	"exec":       {"command"},
 	"exit":       {"exitValue"},
@@ -39,15 +40,22 @@ var runtimeFuncsHelp = map[string]string{
 	"alias":        "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
 	"aliases":      "Returns the list of all functions that are simply an alias of another function.",
 	"allFunctions": "Returns the list of all available functions.",
-	"current":      "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
-	"ellipsis":     "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
-	"exec":         "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
-	"exit":         "Exits the current program execution.",
-	"func":         "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
+	"categories": strings.TrimSpace(utils.UnIndent(`
+		Returns all functions group by categories.
+
+		The returned value has the following properties:
+		    Name        string
+		    Functions    []string
+	`)),
+	"current":  "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
+	"ellipsis": "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
+	"exec":     "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
+	"exit":     "Exits the current program execution.",
+	"func":     "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
 	"function": strings.TrimSpace(utils.UnIndent(`
 		Returns the information relative to a specific function.
 
-		The returned value is a FuncInfo object with the following properties:
+		The returned value has the following properties:
 		    Name        string
 		    Description string
 		    Signature   string
@@ -77,6 +85,7 @@ func (t *Template) addRuntimeFuncs() {
 		"func":          t.defineFunc,
 		"function":      t.getFunction,
 		"functions":     t.getFunctions,
+		"categories":    t.getCategories,
 		"include":       t.include,
 		"localAlias":    t.localAlias,
 		"run":           t.runCommand,
