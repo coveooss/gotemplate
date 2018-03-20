@@ -1,3 +1,5 @@
+{% include navigation.html %}
+{% raw %}
 # Literals protection
 
 ## E-Mail protection
@@ -69,3 +71,5 @@ This line will be rendered with 4 spaces before each word:
 While this line will be rendered with 4 spaces and a caret before each word:
 
     - @aIndent(wrap(1, "This is a long line that should be wrapped to be rendered with a maximum of one word per line"))
+
+{% endraw %}

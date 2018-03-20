@@ -1,3 +1,5 @@
+{% include navigation.html %}
+{% raw %}
 # Assignation
 
 ## Global variables
@@ -58,3 +60,4 @@
     value = @$value
 @end with
 ```
+{% endraw %}
