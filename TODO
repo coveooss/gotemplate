@@ -1,0 +1,4 @@
+Cases found to be problematic:
+
+@.razorDict[$key] gives {{ extract .razorDict  }} when it should give {{ extract .razorDict $key }}
+@.razorList[$index] gives {{ extract .razorList [$index] }} when it should give {{ extract .razorList $index }}
