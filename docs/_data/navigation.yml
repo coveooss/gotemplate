@@ -27,3 +27,5 @@
       url: /doc_test/single-lines
     - title: Templates
       url: /doc_test/templates
+- title: Sprig (External)
+  url: http://masterminds.github.io/sprig/
