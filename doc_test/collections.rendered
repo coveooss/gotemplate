@@ -1,3 +1,5 @@
+{% include navigation.html %}
+{% raw %}
 # Data collections (lists/slices and dicts/maps)
 
 ## Maps
@@ -9,3 +11,4 @@
 | | | Update |
 | | | Merge (First dict has priority) |
 | 4 | 4 | Should be 4
+{% endraw %}

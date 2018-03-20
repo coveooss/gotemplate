@@ -1,3 +1,5 @@
+{% include navigation.html %}
+{% raw %}
 # Basic mathematic operations
 
 ## Operators mixin
@@ -116,3 +118,4 @@ There are special behavior for certain operators depending of the arguments:
 ****************************************************************************************************
 
 #### Math operation on array
+{% endraw %}

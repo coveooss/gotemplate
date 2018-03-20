@@ -1,3 +1,5 @@
+{% include navigation.html %}
+{% raw %}
 # Assignation
 
 ## Global variables
@@ -68,3 +70,4 @@
 ```go
     value = 4
 ```
+{% endraw %}

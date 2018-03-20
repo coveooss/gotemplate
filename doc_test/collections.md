@@ -1,3 +1,5 @@
+{% include navigation.html %}
+{% raw %}
 # Data collections (lists/slices and dicts/maps)
 
 ## Maps
@@ -9,3 +11,4 @@
 | @.razorDict.test3 := 4; | {{- set . "goDict.test3" 4 }} | Update |
 | @.razorDict := merge(.razorDict, .razorDict2); | {{- set . "goDict" (merge .goDict .goDict2) }} | Merge (First dict has priority) |
 | @.razorDict.test3; | {{ get . "goDict.test3" }} | Should be 4
+{% endraw %}

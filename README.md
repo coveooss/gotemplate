@@ -12,3 +12,5 @@ For more information on Go Template functionality, check this [link](https://gol
 This little utility just scan the current folder for `*.template` files and apply the [go template](https://golang.org/pkg/text/template) over them.
 
 Every matching `*.ext.template` file will render a file named `*.generated.ext`. Other matched file (if --pattern is supplied) will replace the file with the rendered content and rename the original file `*.ext.original`.
+
+[Documentation](https://coveo.github.io/gotemplate/)
