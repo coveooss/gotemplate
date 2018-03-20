@@ -1,0 +1,29 @@
+# Belongs at: /_data/navigation.yml
+
+- title: Home
+  url: /index
+
+- title: Functions
+  url: /functions_long
+
+- title: Usage
+  url: /usage_long
+  sublinks:
+    - title: Arithmetic
+      url: /doc_test/arithmetic
+    - title: Assignation
+      url: /doc_test/assignation
+    - title: Collections
+      url: /doc_test/collections
+    - title: Comments
+      url: /doc_test/comments
+    - title: Data
+      url: /doc_test/data
+    - title: Functions
+      url: /doc_test/functions
+    - title: Literals
+      url: /doc_test/literals
+    - title: Single lines
+      url: /doc_test/single-lines
+    - title: Templates
+      url: /doc_test/templates

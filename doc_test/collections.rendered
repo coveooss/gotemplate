@@ -1,0 +1,14 @@
+{% include navigation.html %}
+{% raw %}
+# Data collections (lists/slices and dicts/maps)
+
+## Maps
+| Razor | Gotemplate | Note |
+| --- | --- | --- |
+| | | Creation |
+| | | Creation |
+| | | Update |
+| | | Update |
+| | | Merge (First dict has priority) |
+| 4 | 4 | Should be 4
+{% endraw %}

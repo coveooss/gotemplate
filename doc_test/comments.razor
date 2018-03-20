@@ -1,3 +1,5 @@
+{% include navigation.html %}
+{% raw %}
 # Comments in gotemplate
 
 ## Pseudo comment
@@ -17,7 +19,7 @@ To solve that problem, it is possible to inject pseudo comment into you code to 
 
 ### Example with JSON code
 
-```json
+```go
 {{- $value := add 2 (mul 8 15) }}
 {
     "Str": "string",
@@ -34,7 +36,7 @@ To solve that problem, it is possible to inject pseudo comment into you code to 
 
 will give :
 
-```json
+```go
 {
     "Str": "string",
     "Int": 123,
@@ -50,7 +52,7 @@ will give :
 
 ### Example with HCL code
 
-```json
+```go
 {{- set $ "value" (add 2 (mul 8 15)) }}
 
 Str              = "string"
@@ -65,7 +67,7 @@ Computed = {{ $.value }}
 ```
 
 will give:
-```json
+```go
 Str              = "string"
 Int              = 123
 Float            = 1.23
@@ -76,3 +78,4 @@ ComputedAsString = "122"
 Pi       = 3.141592653589793
 Computed = 122
 ```
+{% endraw %}
