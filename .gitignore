@@ -3,3 +3,4 @@ dist
 vendor
 launch.json
 tasks.json
+coverage.sh
