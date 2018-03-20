@@ -1,6 +1,6 @@
 #! /usr/bin/env bash 
 
-for file in doc_test/*.md
+for file in docs/doc_test/*.md
 do
     gotemplate --no-ext -dP $file > ${file%.*}.razor
     gotemplate --no-ext -P $file > ${file%.*}.rendered

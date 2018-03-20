@@ -1,3 +1,5 @@
+{% include navigation.html %}
+{% raw %}
 # Literals protection
 
 ## E-Mail protection
@@ -59,3 +61,4 @@ results in:
 
     The word
     expression will be on a new line
+{% endraw %}
