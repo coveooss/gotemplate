@@ -1,4 +1,0 @@
-IntegerValue = 1
-FloatValue = 1.23
-StringValue = "Foo bar"
-EquationResult = @(2 + 2 * 3 ** 6)
