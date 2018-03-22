@@ -1,4 +1,4 @@
-package utils
+package types
 
 import (
 	"fmt"
@@ -34,7 +34,10 @@ func WrapString(s string, width int) string {
 				result = append(result, strings.Join(words[start:j], " "))
 				start, length = j, 0
 			}
-			length += len(words[j]) + IIf(j-start > 0, 1, 0).(int)
+			length += len(words[j])
+			if j-start > 0 {
+				length++
+			}
 		}
 		result = append(result, strings.Join(words[start:len(words)], " "))
 	}

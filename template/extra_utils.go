@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -15,26 +16,26 @@ const (
 	utilsBase = "Other utilities"
 )
 
-var utilsFuncs = map[string]interface{}{
+var utilsFuncs = dictionary{
 	"center":     center,
 	"color":      utils.SprintColor,
-	"concat":     utils.Concat,
+	"concat":     types.Concat,
 	"diff":       diff,
 	"formatList": utils.FormatList,
 	"glob":       glob,
 	"id":         id,
 	"iif":        utils.IIf,
-	"joinLines":  utils.JoinLines,
+	"joinLines":  types.JoinLines,
 	"lorem":      lorem,
 	"mergeList":  utils.MergeLists,
 	"pwd":        utils.Pwd,
 	"repeat":     repeat,
 	"sIndent":    indent,
-	"splitLines": utils.SplitLines,
+	"splitLines": types.SplitLines,
 	"wrap":       wrap,
 }
 
-var utilsFuncsArgs = map[string][]string{
+var utilsFuncsArgs = arguments{
 	"center":     {"width"},
 	"diff":       {"text1", "text2"},
 	"formatList": {"format", "list"},
@@ -49,7 +50,7 @@ var utilsFuncsArgs = map[string][]string{
 	"wrap":       {"width"},
 }
 
-var utilsFuncsAliases = map[string][]string{
+var utilsFuncsAliases = aliases{
 	"center":  {"centered"},
 	"color":   {"colored", "enhanced"},
 	"diff":    {"difference"},
@@ -61,9 +62,9 @@ var utilsFuncsAliases = map[string][]string{
 	"wrap":    {"wrapped"},
 }
 
-var utilsFuncsHelp = map[string]string{
+var utilsFuncsHelp = descriptions{
 	"center": "Returns the concatenation of supplied arguments centered within width.",
-	"color": strings.TrimSpace(utils.UnIndent(`
+	"color": strings.TrimSpace(types.UnIndent(`
 		Colors the rendered string.
 
 		The first arguments are interpretated as color attributes until the first non color attribute. Attributes are case insensitive.
@@ -91,7 +92,7 @@ var utilsFuncsHelp = map[string]string{
 	"mergeList":  "Return a single list containing all elements from the lists supplied.",
 	"pwd":        "Returns the current working directory.",
 	"repeat":     "Returns an array with the item repeated n times.",
-	"sIndent": strings.TrimSpace(utils.UnIndent(`
+	"sIndent": strings.TrimSpace(types.UnIndent(`
 		Intents the the elements using the provided spacer.
 		
 		You can also use autoIndent as Razor expression if you don't want to specify the spacer.
@@ -122,16 +123,16 @@ func lorem(funcName interface{}, params ...int) (result string, err error) {
 
 func center(width interface{}, args ...interface{}) string {
 	w := errors.Must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
-	return utils.CenterString(fmt.Sprint(args...), w)
+	return types.CenterString(fmt.Sprint(args...), w)
 }
 
 func wrap(width interface{}, args ...interface{}) string {
 	w := errors.Must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
-	return utils.WrapString(fmt.Sprint(args...), w)
+	return types.WrapString(fmt.Sprint(args...), w)
 }
 
 func indent(spacer string, args ...interface{}) string {
-	return utils.Indent(fmt.Sprint(args...), spacer)
+	return types.Indent(fmt.Sprint(args...), spacer)
 }
 
 func id(id string, replace ...interface{}) string {

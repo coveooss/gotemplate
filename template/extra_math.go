@@ -14,7 +14,7 @@ const (
 	mathUtilities    = "Mathematic Utilities"
 )
 
-var mathBaseFuncs = map[string]interface{}{
+var mathBaseFuncs = dictionary{
 	"add":   add,
 	"ceil":  ceil,
 	"cbrt":  cbrt,
@@ -34,13 +34,13 @@ var mathBaseFuncs = map[string]interface{}{
 	"trunc": trunc,
 }
 
-var mathStatFuncs = map[string]interface{}{
+var mathStatFuncs = dictionary{
 	"avg": average,
 	"max": max,
 	"min": min,
 }
 
-var mathTrigFuncs = map[string]interface{}{
+var mathTrigFuncs = dictionary{
 	"acos":   acos,
 	"acosh":  acosh,
 	"asin":   asin,
@@ -71,7 +71,7 @@ var mathTrigFuncs = map[string]interface{}{
 	"yn":     yn,
 }
 
-var mathBitsFuncs = map[string]interface{}{
+var mathBitsFuncs = dictionary{
 	"band":   bitwiseAnd,
 	"bclear": bitwiseClear,
 	"bor":    bitwiseOr,
@@ -80,7 +80,7 @@ var mathBitsFuncs = map[string]interface{}{
 	"rshift": rightShift,
 }
 
-var mathUtilFuncs = map[string]interface{}{
+var mathUtilFuncs = dictionary{
 	"abs":       abs,
 	"dec":       decimal,
 	"frexp":     frexp,
@@ -98,7 +98,7 @@ var mathUtilFuncs = map[string]interface{}{
 	"until":     until,
 }
 
-var mathFuncsAliases = map[string][]string{
+var mathFuncsAliases = aliases{
 	"abs":    {"absolute"},
 	"acos":   {"arcCosine", "arcCosinus"},
 	"acosh":  {"arcHyperbolicCosine", "arcHyperbolicCosinus"},
@@ -151,7 +151,7 @@ var mathFuncsAliases = map[string][]string{
 	"yn":     {"secondBesselN"},
 }
 
-var mathFuncsArgs = map[string][]string{
+var mathFuncsArgs = arguments{
 	"abs":             {"x"},
 	"acos":            {"x"},
 	"acosh":           {"x"},
@@ -215,7 +215,7 @@ var mathFuncsArgs = map[string][]string{
 	"yn":              {"n", "x"},
 }
 
-var mathFuncsHelp = map[string]string{
+var mathFuncsHelp = descriptions{
 	"abs":             "Returns the absolute value of x.\nSpecial cases are:\n    abs(±Inf) = +Inf\n    abs(NaN) = NaN",
 	"acos":            "Returns the arccosine, in radians, of x.\nSpecial case is:\n    acos(x) = NaN if x < -1 or x > 1",
 	"acosh":           "Returns the inverse hyperbolic cosine of x.\nSpecial cases are:\n    acosh(+Inf) = +Inf\n    acosh(x) = NaN if x < 1\n    acosh(NaN) = NaN",
@@ -294,7 +294,7 @@ func (t *Template) addMathFuncs() {
 	t.AddFunctions(mathBitsFuncs, mathBits, options)
 	t.AddFunctions(mathUtilFuncs, mathUtilities, options)
 
-	constants := map[string]interface{}{
+	constants := dictionary{
 		"E":                      math.E,
 		"Pi":                     math.Pi,
 		"Phi":                    math.Phi,

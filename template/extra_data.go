@@ -1,17 +1,18 @@
 package template
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Masterminds/sprig"
 	"github.com/coveo/gotemplate/hcl"
+	"github.com/coveo/gotemplate/json"
+	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/xml"
+	"github.com/coveo/gotemplate/yaml"
 )
 
 const (
@@ -19,29 +20,33 @@ const (
 	dataConversion = "Data Conversion"
 )
 
-var dataFuncsBase = map[string]interface{}{
+var dataFuncsBase = dictionary{
+	"String":    toStringClass,
 	"array":     array,
 	"bool":      strconv.ParseBool,
 	"char":      toChar,
 	"content":   content,
+	"dict":      createDict,
 	"extract":   extract,
 	"get":       get,
+	"hasKey":    hasKey,
 	"key":       key,
 	"keys":      keys,
 	"lenc":      utf8.RuneCountInString,
-	"merge":     utils.MergeMaps,
+	"merge":     merge,
 	"omit":      omit,
 	"pick":      pick,
 	"pickv":     pickv,
+	"pluck":     pluck,
 	"safeIndex": safeIndex,
 	"set":       set,
 	"slice":     slice,
 	"string":    toString,
-	"String":    toStringClass,
 	"undef":     utils.IfUndef,
+	"unset":     unset,
 }
 
-var dataFuncsConversion = map[string]interface{}{
+var dataFuncsConversion = dictionary{
 	"toBash":         utils.ToBash,
 	"toHcl":          toHCL,
 	"toInternalHcl":  toInternalHCL,
@@ -53,10 +58,12 @@ var dataFuncsConversion = map[string]interface{}{
 	"toQuotedJson":   toQuotedJSON,
 	"toQuotedTFVars": toQuotedTFVars,
 	"toTFVars":       toTFVars,
-	"toYaml":         utils.ToYaml,
+	//"toXml":          toXML,
+	"toYaml": toYAML,
 }
 
-var dataFuncsArgs = map[string][]string{
+var dataFuncsArgs = arguments{
+	"String":         {"value"},
 	"array":          {"value"},
 	"bool":           {"str"},
 	"char":           {"value"},
@@ -64,6 +71,7 @@ var dataFuncsArgs = map[string][]string{
 	"data":           {"data", "context"},
 	"extract":        {"source", "indexes"},
 	"get":            {"map", "key"},
+	"hasKey":         {"dictionary", "key"},
 	"hcl":            {"hcl", "context"},
 	"json":           {"json", "context"},
 	"key":            {"value"},
@@ -73,11 +81,11 @@ var dataFuncsArgs = map[string][]string{
 	"omit":           {"dict", "keys"},
 	"pick":           {"dict", "keys"},
 	"pickv":          {"dict", "message", "keys"},
+	"pluck":          {"key", "dictionaries"},
 	"safeIndex":      {"value", "index", "default"},
 	"set":            {"dict", "key", "value"},
 	"slice":          {"value", "args"},
 	"string":         {"value"},
-	"String":         {"value"},
 	"toBash":         {"value"},
 	"toHcl":          {"value"},
 	"toInternalHcl":  {"value"},
@@ -91,11 +99,15 @@ var dataFuncsArgs = map[string][]string{
 	"toTFVars":       {"value"},
 	"toYaml":         {"value"},
 	"undef":          {"default", "values"},
+	"unset":          {"dictionary", "key"},
+	"xml":            {"yaml", "context"},
 	"yaml":           {"yaml", "context"},
 }
 
-var dataFuncsAliases = map[string][]string{
+var dataFuncsAliases = aliases{
 	"data":          {"DATA", "fromData", "fromDATA"},
+	"dict":          {"dictionary"},
+	"hasKey":        {"has"},
 	"hcl":           {"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"},
 	"json":          {"JSON", "fromJson", "fromJSON"},
 	"lenc":          {"nbChars"},
@@ -104,21 +116,28 @@ var dataFuncsAliases = map[string][]string{
 	"toJson":        {"toJSON"},
 	"toPrettyHcl":   {"toPrettyHCL"},
 	"toPrettyJson":  {"toPrettyJSON"},
+	"toPrettyXml":   {"toPrettyXML"},
 	"toQuotedHcl":   {"toQuotedHCL"},
 	"toQuotedJson":  {"toQuotedJSON"},
+	"toXml":         {"toXML"},
 	"toYaml":        {"toYAML"},
 	"undef":         {"ifUndef"},
+	"unset":         {"delete", "remove"},
+	"xml":           {"XML", "fromXml", "fromXML"},
 	"yaml":          {"YAML", "fromYaml", "fromYAML"},
 }
 
-var dataFuncsHelp = map[string]string{
+var dataFuncsHelp = descriptions{
+	"String":         "Returns a String class object that allows invoking standard string operations as method.",
 	"array":          "Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value).",
 	"bool":           "Converts the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)",
 	"char":           "Returns the character corresponging to the supplied integer value",
 	"content":        "Returns the content of a single element map (used to retrieve content in a declaration like `value \"name\" { a = 1 b = 3}`)",
 	"data":           "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.",
+	"dict":           "Returns a new dictionary from a list of pairs (key, value).",
 	"extract":        "Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps",
 	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)",
+	"hasKey":         "Returns true if the dictionary contains the specified key.",
 	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
 	"json":           "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.",
 	"key":            "Returns the key name of a single element map (used to retrieve name in a declaration like `value \"name\" { a = 1 b = 3}`)",
@@ -127,12 +146,12 @@ var dataFuncsHelp = map[string]string{
 	"merge":          "Merges two or more dictionaries into one, giving precedence to the dest dictionary.",
 	"omit":           "Returns a new dict with all the keys that do not match the given keys.",
 	"pick":           "Selects just the given keys out of a dictionary, creating a new dict.",
-	"pickv":          "Same as pick, but returns an error message if there are intruders in supplied dictionnary.",
+	"pickv":          "Same as pick, but returns an error message if there are intruders in supplied dictionary.",
+	"pluck":          "Extracts a list of values matching the supplied key from a list of dictionary.",
 	"safeIndex":      "Returns the element at index position or default if index is outside bounds.",
 	"set":            "Adds the value to the supplied map using key as identifier.",
 	"slice":          "Returns a slice of the supplied object (equivalent to object[from:to]).",
 	"string":         "Converts the supplied value into its string representation.",
-	"String":         "Returns a String class object that allows invoking standard string operations as method.",
 	"toBash":         "Converts the supplied value to bash compatible representation.",
 	"toHcl":          "Converts the supplied value to compact HCL representation.",
 	"toInternalHcl":  "Converts the supplied value to compact HCL representation used inside outer HCL definition.",
@@ -140,12 +159,16 @@ var dataFuncsHelp = map[string]string{
 	"toPrettyHcl":    "Converts the supplied value to pretty HCL representation.",
 	"toPrettyJson":   "Converts the supplied value to pretty JSON representation.",
 	"toPrettyTFVars": "Converts the supplied value to pretty HCL representation (without multiple map declarations).",
+	"toPrettyXml":    "Converts the supplied value to pretty XML representation.",
 	"toQuotedHcl":    "Converts the supplied value to compact quoted HCL representation.",
 	"toQuotedJson":   "Converts the supplied value to compact quoted JSON representation.",
 	"toQuotedTFVars": "Converts the supplied value to compact HCL representation (without multiple map declarations).",
 	"toTFVars":       "Converts the supplied value to compact HCL representation (without multiple map declarations).",
+	"toXml":          "Converts the supplied value to XML representation.",
 	"toYaml":         "Converts the supplied value to YAML representation.",
 	"undef":          "Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, \"\" are not considered as unset).",
+	"unset":          "Removes an element from a dictionary.",
+	"xml":            "Converts the supplied xml string into data structure (Go spec). If context is omitted, default context is used.",
 	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",
 }
 
@@ -157,29 +180,14 @@ func (t *Template) addDataFuncs() {
 	}
 	t.AddFunctions(dataFuncsBase, dataBase, options)
 	t.AddFunctions(dataFuncsConversion, dataConversion, options)
-	t.AddFunctions(map[string]interface{}{
-		"data": t.fromData,
-		"hcl":  t.fromHCL,
-		"json": t.fromJSON,
-		"yaml": t.fromYAML,
+	t.AddFunctions(dictionary{
+		"data": t.dataConverter,
+		"hcl":  t.hclConverter,
+		"json": t.jsonConverter,
+		//"xml":  t.xmlConverter,
+		"yaml": t.yamlConverter,
 	}, dataConversion, options)
 	t.optionsEnabled[Data] = true
-}
-
-func (t Template) fromData(source interface{}, context ...interface{}) (interface{}, error) {
-	return t.dataConverter(utils.Interface2string(source), context...)
-}
-
-func (t Template) fromHCL(source interface{}, context ...interface{}) (interface{}, error) {
-	return t.hclConverter(utils.Interface2string(source), context...)
-}
-
-func (t Template) fromJSON(source interface{}, context ...interface{}) (interface{}, error) {
-	return t.jsonConverter(utils.Interface2string(source), context...)
-}
-
-func (t Template) fromYAML(source interface{}, context ...interface{}) (interface{}, error) {
-	return t.yamlConverter(utils.Interface2string(source), context...)
 }
 
 func toChar(value interface{}) (r interface{}, err error) {
@@ -229,6 +237,16 @@ func toQuotedTFVars(v interface{}) (string, error) {
 	return result[1 : len(result)-1], err
 }
 
+func toXML(v interface{}) (string, error) {
+	output, err := xml.Marshal(v)
+	return string(output), err
+}
+
+func toYAML(v interface{}) (string, error) {
+	output, err := yaml.Marshal(v)
+	return string(output), err
+}
+
 func toJSON(v interface{}) (string, error) {
 	output, err := json.Marshal(v)
 	return string(output), err
@@ -257,63 +275,58 @@ func array(value interface{}) interface{} {
 	}
 }
 
-func get(arg1, arg2 interface{}) (result interface{}, err error) {
+func get(arg1, arg2 interface{}) (interface{}, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
-	// put the map as the first parameter. So all following forms are supported:
-	//    get map key
-	//    get key map
-	//    map | get key
-	//    key | get map
-
-	defer func() {
-		if e := recover(); e != nil {
-			err = fmt.Errorf("Cannot retrieve key from undefined map: %v", e)
-		}
-	}()
-
-	var (
-		dict map[string]interface{}
-		key  string
-	)
-	if reflect.TypeOf(arg1).Kind() == reflect.Map {
-		dict = arg1.(map[string]interface{})
-		key = arg2.(string)
+	// put the map as the first parameter.
+	if dict, err := types.AsDictionary(arg1); err == nil {
+		return dict.Get(arg2), nil
+	} else if dict, err = types.AsDictionary(arg2); err == nil {
+		return dict.Get(arg1), nil
 	} else {
-		key = arg1.(string)
-		dict = arg2.(map[string]interface{})
+		return nil, fmt.Errorf("Must supply dictionary object")
 	}
-	return dict[key], nil
 }
 
-func set(arg1, arg2, arg3 interface{}) (result string, err error) {
+func hasKey(arg1, arg2 interface{}) (interface{}, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
-	// put the map as the first parameter. So all following forms are supported:
-	//    set map key value
-	//    set key value map
-	//    map | set key value
-	//    value | set map key
-	defer func() {
-		if e := recover(); e != nil {
-			err = fmt.Errorf("Cannot set key from undefined map: %v", e)
-		}
-	}()
-
-	var (
-		dict  map[string]interface{}
-		key   string
-		value interface{}
-	)
-	if reflect.TypeOf(arg1).Kind() == reflect.Map {
-		dict = arg1.(map[string]interface{})
-		key = arg2.(string)
-		value = arg3
+	// put the map as the first parameter.
+	if dict, err := types.AsDictionary(arg1); err == nil {
+		return dict.Has(arg2), nil
+	} else if dict, err = types.AsDictionary(arg2); err == nil {
+		return dict.Has(arg1), nil
 	} else {
-		key = arg1.(string)
-		value = arg2
-		dict = arg3.(map[string]interface{})
+		return nil, fmt.Errorf("Must supply dictionary object")
 	}
-	dict[key] = value
+}
+
+func set(arg1, arg2, arg3 interface{}) (string, error) {
+	// In pipe execution, the map is often the last parameter, but we also support to
+	// put the map as the first parameter.
+	if dict, err := types.AsDictionary(arg1); err == nil {
+		dict.Set(arg2, arg3)
+	} else if dict, err = types.AsDictionary(arg3); err == nil {
+		dict.Set(arg1, arg2)
+	} else {
+		return "", fmt.Errorf("Must supply dictionary object")
+	}
 	return "", nil
+}
+
+func unset(arg1, arg2 interface{}) (string, error) {
+	// In pipe execution, the map is often the last parameter, but we also support to
+	// put the map as the first parameter.
+	if dict, err := types.AsDictionary(arg1); err == nil {
+		dict.Delete(arg2)
+	} else if dict, err = types.AsDictionary(arg2); err == nil {
+		dict.Delete(arg1)
+	} else {
+		return "", fmt.Errorf("Must supply dictionary object")
+	}
+	return "", nil
+}
+
+func merge(target iDict, dicts ...iDict) (iDict, error) {
+	return target.Merge(dicts...)
 }
 
 func key(v interface{}) (interface{}, error) {
@@ -326,13 +339,14 @@ func content(v interface{}) (interface{}, error) {
 	return value, err
 }
 
-type dataConverter func([]byte, interface{}) error
+type marshaler func(interface{}) ([]byte, error)
+type unMarshaler func([]byte, interface{}) error
 
 // Internal function used to actually convert the supplied string and apply a conversion function over it to get a go map
-func (t Template) converter(converter dataConverter, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
-	if err = converter([]byte(content), &result); err != nil && sourceWithError {
+func (t Template) converter(from unMarshaler, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
+	if err = from([]byte(content), &result); err != nil && sourceWithError {
 		source := "\n"
-		for i, line := range utils.SplitLines(content) {
+		for i, line := range types.SplitLines(content) {
 			source += fmt.Sprintf("%4d %s\n", i+1, line)
 		}
 		err = fmt.Errorf("%s\n%v", source, err)
@@ -341,104 +355,96 @@ func (t Template) converter(converter dataConverter, content string, sourceWithE
 }
 
 // Apply a converter to the result of the template execution of the supplied string
-func (t Template) templateConverter(converter dataConverter, str string, context ...interface{}) (result interface{}, err error) {
+func (t Template) templateConverter(to marshaler, from unMarshaler, source interface{}, context ...interface{}) (result interface{}, err error) {
+	if source == nil {
+		return nil, nil
+	}
+	if reflect.TypeOf(source).Kind() != reflect.String {
+		if source, err = to(source); err != nil {
+			return
+		}
+		source = string(source.([]byte))
+	}
+
 	var content string
-	if content, _, err = t.runTemplate(str, context...); err == nil {
-		result, err = t.converter(converter, content, true, context...)
+	if content, _, err = t.runTemplate(fmt.Sprint(source), context...); err == nil {
+		result, err = t.converter(from, content, true, context...)
 	}
 	return
 }
 
-// converts the supplied string containing yaml to go map
-func (t Template) yamlConverter(str string, context ...interface{}) (interface{}, error) {
-	return t.templateConverter(utils.YamlUnmarshal, str, context...)
+func (t Template) xmlConverter(source interface{}, context ...interface{}) (interface{}, error) {
+	return t.templateConverter(xml.Marshal, xml.Unmarshal, source, context...)
 }
 
-// converts the supplied string containing json to go map
-func (t Template) jsonConverter(str string, context ...interface{}) (interface{}, error) {
-	return t.templateConverter(json.Unmarshal, str, context...)
+func (t Template) yamlConverter(source interface{}, context ...interface{}) (interface{}, error) {
+	return t.templateConverter(yaml.Marshal, yaml.Unmarshal, source, context...)
 }
 
-// Converts the supplied string containing terraform/hcl to go map
-func (t Template) hclConverter(str string, context ...interface{}) (result interface{}, err error) {
-	return t.templateConverter(hcl.Unmarshal, str, context...)
+func (t Template) jsonConverter(source interface{}, context ...interface{}) (interface{}, error) {
+	return t.templateConverter(json.Marshal, json.Unmarshal, source, context...)
 }
 
-// Converts the supplied string containing yaml, json or terraform/hcl to go map
-func (t Template) dataConverter(str string, context ...interface{}) (result interface{}, err error) {
-	converter := func(bs []byte, out interface{}) (err error) {
-		return utils.ConvertData(string(bs), out)
-	}
-	return t.templateConverter(converter, str, context...)
+func (t Template) hclConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
+	return t.templateConverter(hcl.Marshal, hcl.Unmarshal, source, context...)
 }
 
-var sprigPick = sprig.GenericFuncMap()["pick"].(func(map[string]interface{}, ...string) map[string]interface{})
-var sprigOmit = sprig.GenericFuncMap()["omit"].(func(map[string]interface{}, ...string) map[string]interface{})
-var sprigKeys = sprig.GenericFuncMap()["keys"].(func(map[string]interface{}) []string)
-
-func pick(dict interface{}, keys ...interface{}) (interface{}, error) {
-	args := toStrings(convertArgs(nil, keys...))
-
-	switch dict := dict.(type) {
-	case hcl.Map:
-		return hcl.Map(sprigPick(dict, args...)), nil
-	case map[string]interface{}:
-		return sprigPick(dict, args...), nil
-	default:
-		return nil, fmt.Errorf("dict is of wrong type, must be a map[string]interface{}: %T", dict)
-	}
+func (t Template) dataConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
+	return t.templateConverter(
+		func(in interface{}) ([]byte, error) { return []byte(fmt.Sprint(in)), nil },
+		func(bs []byte, out interface{}) error { return utils.ConvertData(string(bs), out) },
+		source, context...)
 }
 
-func pickv(dict interface{}, message string, keys ...interface{}) (interface{}, error) {
-	var result map[string]interface{}
-	if o, err := omit(dict, keys...); err != nil {
-		return nil, err
-	} else {
-		result = o.(map[string]interface{})
-	}
+type iDict = types.IDictionary
+type iList = types.IGenericList
+type dictionary = types.Dictionary
+type genList = types.GenericList
 
-	if len(result) > 0 {
-		over := make([]string, 0, len(result))
-		for key := range result {
-			over = append(over, key)
-		}
-		sort.Strings(over)
+func pick(dict iDict, keys ...interface{}) iDict {
+	return dict.Clone(keys...)
+}
 
+func omit(dict iDict, keys ...interface{}) iDict {
+	return dict.Omit(keys...)
+}
+
+func pickv(dict iDict, message string, keys ...interface{}) (interface{}, error) {
+	o := dict.Omit(keys...)
+
+	if o.Len() > 0 {
+		over := strings.Join(toStrings(o.Keys()), ", ")
 		if strings.Contains(message, "%v") {
-			message = fmt.Sprintf(message, strings.Join(over, ", "))
+			message = fmt.Sprintf(message, over)
 		} else {
 			message = iif(message == "", "Unwanted values", message).(string)
-			message = fmt.Sprintf("%s %s", message, strings.Join(over, ", "))
+			message = fmt.Sprintf("%s %s", message, over)
 		}
 		return nil, fmt.Errorf(message)
 	}
-	return pick(dict, keys...)
+	return pick(dict, keys...), nil
 }
 
-func omit(dict interface{}, keys ...interface{}) (interface{}, error) {
-	args := toStrings(convertArgs(nil, keys...))
+func keys(dict iDict) iList { return dict.Keys() }
 
-	switch dict := dict.(type) {
-	case hcl.Map:
-		return hcl.Map(sprigOmit(dict, args...)), nil
-	case map[string]interface{}:
-		return sprigOmit(dict, args...), nil
-	default:
-		return nil, fmt.Errorf("dict is of wrong type, must be a map[string]interface{}: %T", dict)
+func createDict(v ...interface{}) (iDict, error) {
+	if len(v)%2 != 0 {
+		return nil, fmt.Errorf("Must supply even number of arguments (keypair)")
 	}
+
+	result := make(dictionary, len(v)/2)
+	for i := 0; i < len(v); i += 2 {
+		result.Set(v[i], v[i+1])
+	}
+	return result, nil
 }
 
-func keys(dict interface{}) (interface{}, error) {
-	switch dict := dict.(type) {
-	case hcl.Map:
-		keys := sprigKeys(dict)
-		sort.Strings(keys)
-		return hcl.List(utils.ToInterfaces(keys...)), nil
-	case map[string]interface{}:
-		keys := sprigKeys(dict)
-		sort.Strings(keys)
-		return utils.ToInterfaces(keys...), nil
-	default:
-		return nil, fmt.Errorf("dict is of wrong type, must be a map[string]interface{}: %T", dict)
+func pluck(key interface{}, dicts ...iDict) iList {
+	result := make(genList, 0, len(dicts))
+	for i := range dicts {
+		if dicts[i].Has(key) {
+			result = append(result, dicts[i].Get(key))
+		}
 	}
+	return result
 }

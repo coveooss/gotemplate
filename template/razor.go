@@ -9,8 +9,10 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 
+	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
 	"github.com/op/go-logging"
@@ -74,6 +76,7 @@ var expressions = [][]interface{}{
 	{"Protect email", `(\W|^)[\w.!#$%&'*+/=?^_{|}~-]+@[\w-]{1,61}(?:\.[\w-]{1,61})+`, "", replacementFunc(protectEmail)},
 	{"", `@@`, literalAt},
 	{"", `@{{`, literalStart},
+	{"", "(?s)`+.*?`+", "", replacementFunc(protectMultiLineStrings)},
 	{"Auto indent", `(?m)^(?P<spaces>.*)@(?:autoIndent|aindent|aIndent)\(`, "@<-sIndent(\"${spaces}\", "},
 	{"Newline", `@<;`, `{{- $.NEWLINE }}`},
 	{"Newline expression", `@<`, `{{- $.NEWLINE }}@`},
@@ -93,19 +96,19 @@ var expressions = [][]interface{}{
 	{"various ends", `@(?P<command>end[sp](if|range|define|block|with|for[sp]each|for|))endexpr;`, "{{- end }}"},
 	{"Define template", `@define\([sp](?P<args>.+)[sp]\)`, `{{- define ${args} -}}`},
 	{"else", `@else`, "{{- else }}"},
+	{"Local variables - @{var}", `@reduce;{[sp](?P<name>[\p{L}\d_\.]*)[sp]}(?P<end>endexpr;)`, `@${reduce}$$${name}${end}`},
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@${reduce}((${expr})${selection});`, replacementFunc(expressionParserSkipError)},
 	{"Function call with slice - @func(args...)[...]", `function;index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Function call - @func(args...)", `function;endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError)},
 	{"Function unmanaged - @func(value | func)", `@reduce;(?P<function>[id])\([sp](?P<args>[expr]+)[sp]\)endexpr;`, `{{${reduce} ${function} ${args} }}`},
 	{"Global variables followed by expression", `@reduce;(?P<expr>[idSel]selector;)endexpr;`, `@${reduce}($$.${expr});`, replacementFunc(expressionParserSkipError)},
-	{"Global variables with slice - @var[...]", `@reduce;(?P<expr>(?P<name>[idSel])index;)endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
+	{"Global variables with slice - @var[...]", `@reduce;(?P<name>[idSel])index;endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Context variables special with slice", `@reduce;\.(?P<expr>(?P<name>[id2])index;)endexpr;`, `{{${reduce} ${slicer} (get . "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Global variables special with slice", `@reduce;(?P<expr>(?P<name>[id2])index;)endexpr;`, `{{${reduce} ${slicer} (get $$ "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Local variables with slice", `@reduce;(?P<expr>(?P<name>[\$\.][\p{L}\d_\.]*)index;)endexpr;`, `{{${reduce} ${slicer} ${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Global variables - @var", `@reduce;(?P<name>[idSel])endexpr;`, `{{${reduce} $$.${name} }}`},
 	{"Context variables special - @.var", `@reduce;\.(?P<name>[id2])endexpr;`, `{{${reduce} get . "${name}" }}`},
 	{"Global variables special - @var", `@reduce;(?P<name>[id2])endexpr;`, `{{${reduce} get $$ "${name}" }}`},
-	{"Local variables - @{var}", `@reduce;{[sp](?P<name>[\p{L}\d_\.]*)[sp]}endexpr;`, `{{${reduce} $$${name} }}`},
 	{"Local variables - @$var or @.var", `@reduce;(?P<name>[\$\.][\p{L}\d_\.]*)endexpr;`, `{{${reduce} ${name} }}`},
 	{"Expression @(var).selector", `@\([sp](?P<name>[idSel])[sp]\)selector;endexpr;`, `@($$.${name}${selection});`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(var)[...]", `@reduce;(?P<expr>\([sp](?P<name>[idSel])[sp]\)index;)endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
@@ -114,20 +117,22 @@ var expressions = [][]interface{}{
 	{"Expression @(expr)[...]", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"Inline content", `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},
-	{"Dot after expression", `}}\\\.`, "}}."},
-	{"Literal @", literalAt, "@"},
+	{"", `}}\\\.`, "}}."},
+	{"", literalAt, "@"},
+	{"x", fmt.Sprintf(`\x60%s(?P<num>\d+)\x60`, protectString), "", replacementFunc(protectMultiLineStrings)},
 }
 
 const (
-	literalAt    = "_=!AT!=_"
-	literalStart = `{{ "{{" }}`
-	assign       = "_ASSIGN_"
-	stringRep    = "_STRING_"
-	rangeExpr    = "_range_"
-	defaultExpr  = "_default_"
-	funcExpr     = "_func_"
-	dotRep       = "_DOT_PREFIX_"
-	ellipsisRep  = "_ELLIPSIS_"
+	protectString = "_=LONG_STRING="
+	literalAt     = "_=!AT!=_"
+	literalStart  = `{{ "{{" }}`
+	assign        = "_ASSIGN_"
+	stringRep     = "_STRING_"
+	rangeExpr     = "_range_"
+	defaultExpr   = "_default_"
+	funcExpr      = "_func_"
+	dotRep        = "_DOT_PREFIX_"
+	ellipsisRep   = "_ELLIPSIS_"
 )
 
 var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*)?`)
@@ -185,17 +190,12 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		}
 		// We add support to partial slice
 		expr = indexExpression(expr)
-	} else {
-		log.Warning("Expression %s should contains at least one expression", repl.name)
 	}
 
 	if index, err := findName("index", repl.re.SubexpNames()); err == nil {
 		indexExpr := repl.re.FindStringSubmatch(match)[index]
 		indexExpr = indexExpression(indexExpr)
 		indexExpr = indexExpr[1 : len(indexExpr)-1]
-		if indexExpr, err = expressionParserInternal(exprRepl, indexExpr, true, true); err != nil {
-			return match, err
-		}
 
 		sep, slicer, limit2 := ",", "extract", false
 		if strings.Contains(indexExpr, ":") {
@@ -210,7 +210,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 				return match, err
 			}
 		}
-		indexExpr = strings.Join(values, " ")
+		indexExpr = strings.Replace(strings.Join(values, " "), `$`, `$$`, -1)
 		repl.replace = strings.Replace(repl.replace, "${index}", indexExpr, -1)
 		repl.replace = strings.Replace(repl.replace, "${slicer}", slicer, -1)
 	}
@@ -268,6 +268,25 @@ func indexExpression(expr string) string {
 }
 
 var negativeSlice = regexp.MustCompile(`\[(?P<index>-\d+):]`)
+
+func protectMultiLineStrings(repl replacement, match string) string {
+	if strings.HasPrefix(match[1:], protectString) {
+		// We restore back the long string
+		index := errors.Must(strconv.Atoi(repl.re.FindStringSubmatch(match)[1])).(int)
+		restore := longStrings[index]
+		longStrings[index] = ""
+		return restore
+	}
+	if !strings.Contains(match, "\n") || strings.Contains(match, "``") {
+		// We do not have to protect lines without newline or non real multiline string
+		return match
+	}
+	// We save the long string in a buffer, they will be restored at the end of razor preprocessing
+	longStrings = append(longStrings, match)
+	return fmt.Sprintf("`%s%d`", protectString, len(longStrings)-1)
+}
+
+var longStrings []string
 
 func protectEmail(repl replacement, match string) string {
 	if match[0] == '@' || match[0] == '#' {
@@ -495,7 +514,7 @@ func printDebugInfo(r replacement, content string) {
 			newContent := r.re.ReplaceAllStringFunc(found, func(match string) string {
 				return r.parser(r, match)
 			})
-			if newContent == found {
+			if newContent == found && getLogLevelInternal() < 6 {
 				// There is no change
 				continue
 			}
@@ -508,7 +527,7 @@ func printDebugInfo(r replacement, content string) {
 		allUnique[found] = allUnique[found] + 1
 	}
 
-	if len(allUnique) == 0 && getLogLevelInternal() < 6 {
+	if len(allUnique) == 0 && getLogLevelInternal() < 7 {
 		return
 	}
 

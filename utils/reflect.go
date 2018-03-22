@@ -2,18 +2,19 @@ package utils
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
-	"regexp"
-	"sort"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/coveo/gotemplate/errors"
-	"github.com/imdario/mergo"
+	"github.com/coveo/gotemplate/types"
 )
+
+type dictionary = types.Dictionary
+
+// String is simply an alias of types.String
+type String = types.String
 
 // IsEmptyValue determines if a value is a zero value
 func IsEmptyValue(v reflect.Value) bool {
@@ -71,16 +72,6 @@ func Default(value, defaultValue interface{}) interface{} {
 	return IIf(value, value, defaultValue)
 }
 
-// MergeMaps merges several maps into one privileging the leftmost
-func MergeMaps(destination map[string]interface{}, sources ...map[string]interface{}) (map[string]interface{}, error) {
-	for i := range sources {
-		if err := mergo.Merge(&destination, sources[i]); err != nil {
-			return destination, err
-		}
-	}
-	return destination, nil
-}
-
 // ToNativeRepresentation converts any object to native (literals, maps, slices)
 func ToNativeRepresentation(value interface{}) interface{} {
 	if value == nil {
@@ -116,14 +107,14 @@ func ToNativeRepresentation(value interface{}) interface{} {
 		return result
 
 	case reflect.Map:
-		result := make(map[string]interface{}, val.Len())
+		result := make(dictionary, val.Len())
 		for _, key := range val.MapKeys() {
 			result[fmt.Sprintf("%v", key)] = ToNativeRepresentation(val.MapIndex(key).Interface())
 		}
 		return result
 
 	case reflect.Struct:
-		result := make(map[string]interface{}, typ.NumField())
+		result := make(dictionary, typ.NumField())
 		for i := 0; i < typ.NumField(); i++ {
 			sf := typ.Field(i)
 			if sf.Anonymous {
@@ -180,134 +171,4 @@ func ToNativeRepresentation(value interface{}) interface{} {
 		fmt.Fprintf(os.Stderr, "Unknown type %T %v : %v\n", value, typ.Kind(), value)
 		return fmt.Sprintf("%v", value)
 	}
-}
-
-// ConvertData returns a go representation of the supplied string (YAML, JSON or HCL)
-func ConvertData(data string, out interface{}) (err error) {
-	defer func() {
-		// YAML converter returns a string if it encounter invalid data, so we
-		// check the result to ensure that is is different from the input.
-		if out, isItf := out.(*interface{}); isItf && data == fmt.Sprint(*out) {
-			err = fmt.Errorf("Unable to find template of file named %s", data)
-			*out = nil
-		}
-	}()
-
-	var errs errors.Array
-	if HCLConvert != nil {
-		if err = HCLConvert([]byte(data), out); err == nil {
-			return
-		}
-		errs = append(errs, err)
-	}
-
-	trySimplified := func() error {
-		if strings.Count(data, "=") == 0 {
-			return fmt.Errorf("Not simplifiable")
-		}
-		// Special case where we want to have a map and the supplied string is simplified such as "a = 10 b = string"
-		// so we try transform the supplied string in valid YAML
-		simplified := regexp.MustCompile(`[ \t]*=[ \t]*`).ReplaceAllString(data, ":")
-		simplified = regexp.MustCompile(`[ \t]+`).ReplaceAllString(simplified, "\n")
-		simplified = strings.Replace(simplified, ":", ": ", -1) + "\n"
-		return YamlUnmarshal([]byte(simplified), out)
-	}
-
-	if _, isInterface := out.(*interface{}); isInterface && trySimplified() == nil {
-		return nil
-	}
-
-	if err := YamlUnmarshal([]byte(data), out); err != nil {
-		if _, isMap := out.(*map[string]interface{}); isMap && trySimplified() == nil {
-			return nil
-		}
-		if len(errs) > 0 {
-			return append(errs, err)
-		}
-		return err
-	}
-	return nil
-}
-
-// LoadData returns a go representation of the supplied file name (YAML, JSON or HCL)
-func LoadData(filename string, out interface{}) (err error) {
-	var content []byte
-	if content, err = ioutil.ReadFile(filename); err == nil {
-		return ConvertData(string(content), out)
-	}
-	return
-}
-
-// HCLConvert is used to avoid circular reference
-var HCLConvert func([]byte, interface{}) error
-
-// ToBash returns the bash 4 variable representation of value
-func ToBash(value interface{}) string {
-	return toBash(ToNativeRepresentation(value), 0)
-}
-
-func toBash(value interface{}, level int) (result string) {
-	switch value := value.(type) {
-	case string:
-		if strings.HasPrefix(value, `"`) && strings.HasSuffix(value, `"`) && !strings.ContainsAny(value, " \t\n[]()") {
-			value = value[1 : len(value)-1]
-		}
-		result = value
-
-	case []interface{}:
-		results := ToStrings(value)
-		for i := range results {
-			results[i] = quote(results[i])
-		}
-		switch level {
-		case 2:
-			result = strings.Join(results, ",")
-		default:
-			result = fmt.Sprintf("(%s)", strings.Join(results, " "))
-		}
-
-	case map[string]interface{}:
-		keys := make([]string, 0, len(value))
-		for key := range value {
-			keys = append(keys, key)
-		}
-		sort.Strings(keys)
-		results := make([]string, len(value))
-		switch level {
-		case 0:
-			for i, key := range keys {
-				val := toBash(value[key], level+1)
-				switch value[key].(type) {
-				case []interface{}:
-					results[i] = fmt.Sprintf("declare -a %[1]s\n%[1]s=%[2]v", key, val)
-				case map[string]interface{}:
-					results[i] = fmt.Sprintf("declare -A %[1]s\n%[1]s=%[2]v", key, val)
-				default:
-					results[i] = fmt.Sprintf("%s=%v", key, val)
-				}
-			}
-			result = strings.Join(results, "\n")
-		case 1:
-			for i := range keys {
-				val := toBash(value[keys[i]], level+1)
-				val = strings.Replace(val, `$`, `\$`, -1)
-				results[i] = fmt.Sprintf("[%s]=%s", keys[i], val)
-			}
-			result = fmt.Sprintf("(%s)", strings.Join(results, " "))
-		default:
-			for i := range keys {
-				val := toBash(value[keys[i]], level+1)
-				results[i] = fmt.Sprintf("%s=%s", keys[i], quote(val))
-			}
-			result = strings.Join(results, ",")
-		}
-	}
-	return
-}
-
-func quote(s string) string {
-	if strings.ContainsAny(s, " \t,[]()") {
-		s = fmt.Sprintf("%q", s)
-	}
-	return s
 }

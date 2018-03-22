@@ -15,10 +15,11 @@ toBash                  toPrettyHcl             toQuotedJson            yaml
 
 Data Manipulation
 
-String                  content                 keys                    pick                    slice                   
-array                   extract                 lenc                    pickv                   string                  
-bool                    get                     merge                   safeIndex               undef                   
-char                    key                     omit                    set                     
+String                  dict                    keys                    pickv                   string                  
+array                   extract                 lenc                    pluck                   undef                   
+bool                    get                     merge                   safeIndex               unset                   
+char                    hasKey                  omit                    set                     
+content                 key                     pick                    slice                   
 
 Logging
 
@@ -88,7 +89,7 @@ coalesce                compact                 default                 empty
 
 Sprig Dictionnary http://masterminds.github.io/sprig/dicst.html
 
-dict                    hasKey                  list                    pluck                   unset                   
+list                    
 
 Sprig Encoding http://masterminds.github.io/sprig/encoding.html
 
@@ -108,8 +109,8 @@ hello                   uuidv4
 
 Sprig List http://masterminds.github.io/sprig/lists.html
 
-append                  has                     last                    rest                    uniq                    
-first                   initial                 prepend                 reverse                 without                 
+append                  initial                 prepend                 reverse                 without                 
+first                   last                    rest                    uniq                    
 
 Sprig OS http://masterminds.github.io/sprig/defaults.html
 

@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
 )
@@ -72,7 +73,7 @@ func (t Template) PrintFunctions(all, long, groupByCategory bool, filters ...str
 
 	for _, key := range keys {
 		if key != "" {
-			title, link := utils.Split2(key, ", http")
+			title, link := types.Split2(key, ", http")
 			title = color.New(color.Underline, color.FgYellow).Sprint(title)
 			if link != "" {
 				link = color.BlackString(fmt.Sprintf(" http%s", link))

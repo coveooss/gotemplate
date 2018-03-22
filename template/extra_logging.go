@@ -17,7 +17,7 @@ const (
 	loggingBase    = "Logging"
 )
 
-var loggingFuncs = map[string]interface{}{
+var loggingFuncs = dictionary{
 	"critical":  func(args ...interface{}) string { return logBase(Log.Critical, args...) },
 	"criticalf": func(format string, args ...interface{}) string { return logBasef(Log.Criticalf, format, args...) },
 	"debug":     func(args ...interface{}) string { return logBase(Log.Debug, args...) },
@@ -36,7 +36,7 @@ var loggingFuncs = map[string]interface{}{
 	"warningf":  func(format string, args ...interface{}) string { return logBasef(Log.Warningf, format, args...) },
 }
 
-var loggingFuncsArgs = map[string][]string{
+var loggingFuncsArgs = arguments{
 	"criticalf": {"format", "args"},
 	"debugf":    {"format", "args"},
 	"errorf":    {"format", "args"},
@@ -47,7 +47,12 @@ var loggingFuncsArgs = map[string][]string{
 	"warningf":  {"format", "args"},
 }
 
-var loggingFuncsHelp = map[string]string{
+var loggingFuncsAliases = aliases{
+	"warning":  {"warn"},
+	"warningf": {"warnf"},
+}
+
+var loggingFuncsHelp = descriptions{
 	"critical":  "logs a message using CRITICAL as log level (0).",
 	"criticalf": "logs a message with format string using CRITICAL as log level (0).",
 	"debug":     "logs a message using DEBUG as log level (5).",
@@ -68,8 +73,9 @@ var loggingFuncsHelp = map[string]string{
 
 func (t *Template) addLoggingFuncs() {
 	t.AddFunctions(loggingFuncs, loggingBase, funcOptions{
-		funcHelp: loggingFuncsHelp,
-		funcArgs: loggingFuncsArgs,
+		funcHelp:    loggingFuncsHelp,
+		funcArgs:    loggingFuncsArgs,
+		funcAliases: loggingFuncsAliases,
 	})
 }
 

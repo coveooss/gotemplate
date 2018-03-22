@@ -2,7 +2,7 @@
 ## Functions
 ```text
 Returns a String class object that allows invoking standard string operations as method.
-String(value interface{}) utils.String
+String(value interface{}) String
 
 Truncates a string with ellipses (...).
 abbrev(width int, str string) string
@@ -242,7 +242,8 @@ deg(arg1 interface{}) interface{}, error
 
 derivePassword(arg1 uint32, arg2 string, arg3 string, arg4 string, arg5 string) string
 
-dict(args ...interface{}) map[string]interface{}
+Returns a new dictionary from a list of pairs (key, value).
+dict(args ...interface{}) IDictionary, error
 
 Returns a colored string that highlight differences between supplied texts.
 diff(text1 interface{}, text2 interface{}) interface{}
@@ -385,9 +386,8 @@ glob(args ...interface{}) []string
 Returns the boolean truth of arg1 > arg2
 gt(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
 
-has(arg1 interface{}, arg2 interface{}) bool
-
-hasKey(arg1 map[string]interface{}, arg2 string) bool
+Returns true if the dictionary contains the specified key.
+hasKey(dictionary interface{}, key interface{}) interface{}, error
 
 Tests whether a string has a given prefix.
 hasPrefix(prefix string, str string) bool
@@ -498,7 +498,7 @@ Returns the key name of a single element map (used to retrieve name in a declara
 key(value interface{}) interface{}, error
 
 Returns a list of all of the keys in a dict (in alphabetical order).
-keys(dictionary interface{}) interface{}, error
+keys(dictionary IDictionary) IGenericList
 
 kindIs(arg1 string, arg2 interface{}) bool
 
@@ -586,7 +586,7 @@ Special cases are:
 max(x ...interface{}) interface{}
 
 Merges two or more dictionaries into one, giving precedence to the dest dictionary.
-merge(destination map[string]interface{}, sources ...map[string]interface{}) map[string]interface{}, error
+merge(destination IDictionary, sources ...IDictionary) IDictionary, error
 
 Return a single list containing all elements from the lists supplied.
 mergeList(lists ...[]interface{}) []interface{}
@@ -644,7 +644,7 @@ The current date/time. Use this in conjunction with other date functions.
 now() time.Time
 
 Returns a new dict with all the keys that do not match the given keys.
-omit(dict interface{}, keys ...interface{}) interface{}, error
+omit(dict IDictionary, keys ...interface{}) IDictionary
 
 Returns the boolean OR of its arguments by returning the first non-empty argument or the last argument, that is, "or x y" behaves as "if x then x else y". All the arguments are evaluated.
 or(or(arg0 reflect.Value, args ...reflect.Value) reflect.Value
@@ -656,12 +656,13 @@ Equivalents to criticalf followed by a call to panic.
 panicf(format string, args ...interface{}) string
 
 Selects just the given keys out of a dictionary, creating a new dict.
-pick(dict interface{}, keys ...interface{}) interface{}, error
+pick(dict IDictionary, keys ...interface{}) IDictionary
 
-Same as pick, but returns an error message if there are intruders in supplied dictionnary.
-pickv(dict interface{}, message string, keys ...interface{}) interface{}, error
+Same as pick, but returns an error message if there are intruders in supplied dictionary.
+pickv(dict IDictionary, message string, keys ...interface{}) interface{}, error
 
-pluck(arg1 string, args ...map[string]interface{}) []interface{}
+Extracts a list of values matching the supplied key from a list of dictionary.
+pluck(key interface{}, dictionaries ...IDictionary) IGenericList
 
 Pluralizes a string.
 plural(one string, many string, count int) string
@@ -957,7 +958,8 @@ undef(default interface{}, values ...interface{}) interface{}
 
 uniq(arg1 interface{}) []interface{}
 
-unset(arg1 map[string]interface{}, arg2 string) map[string]interface{}
+Removes an element from a dictionary.
+unset(dictionary interface{}, key interface{}) string, error
 
 until(args ...interface{}) interface{}, error
 

@@ -156,12 +156,12 @@ var sprigFuncRef = map[string]struct {
 
 	// Data Structures:
 	"list":   {group: sprigDict, aliases: []string{"tuple"}},
-	"dict":   {group: sprigDict},
+	"dict":   {group: sprigDict, aliases: []string{"dictSprig"}},
 	"set":    {group: sprigDict, aliases: []string{"setSprig"}},
-	"unset":  {group: sprigDict},
-	"hasKey": {group: sprigDict},
-	"pluck":  {group: sprigDict},
-	"keys":   {group: sprigDict},
+	"unset":  {group: sprigDict, aliases: []string{"unsetSprig"}},
+	"hasKey": {group: sprigDict, aliases: []string{"hasKeySprig"}},
+	"pluck":  {group: sprigDict, aliases: []string{"pluckSprig"}},
+	"keys":   {group: sprigDict, aliases: []string{"keysSprig"}},
 	"pick":   {group: sprigDict, aliases: []string{"pickSprig"}},
 	"omit":   {group: sprigDict, aliases: []string{"omitSprig"}},
 	"merge":  {group: sprigDict, aliases: []string{"mergeSprig"}},

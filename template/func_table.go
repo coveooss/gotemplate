@@ -72,6 +72,7 @@ func (fi FuncInfo) Arguments() string {
 	var parameters []string
 	for i := 0; i < signature.NumIn(); i++ {
 		arg := strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "interface{}", -1)
+		arg = strings.Replace(arg, "types.", "", -1)
 		var argName string
 		if i < len(fi.arguments) {
 			argName = fi.arguments[i]
@@ -98,7 +99,9 @@ func (fi FuncInfo) Result() string {
 	signature := reflect.ValueOf(fi.function).Type()
 	var outputs []string
 	for i := 0; i < signature.NumOut(); i++ {
-		outputs = append(outputs, strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "interface{}", -1))
+		r := strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "interface{}", -1)
+		r = strings.Replace(r, "types.", "", -1)
+		outputs = append(outputs, r)
 	}
 	return strings.Join(outputs, ", ")
 }
@@ -114,15 +117,15 @@ func (ftm funcTableMap) convert() template.FuncMap {
 		return result
 	}
 
-	result := make(map[string]interface{}, len(ftm))
+	result := make(dictionary, len(ftm))
 	for key, val := range ftm {
 		if val.function == nil {
 			continue
 		}
 		result[key] = val.function
 	}
-	converted[index] = result
-	return result
+	converted[index] = result.AsMap()
+	return result.AsMap()
 }
 
 var converted = make(map[uint]template.FuncMap)
@@ -137,19 +140,23 @@ const (
 )
 
 type funcOptions map[funcOptionsSet]interface{}
+type aliases map[string][]string
+type arguments map[string][]string
+type descriptions map[string]string
+type groups map[string]string
 
 // AddFunctions add functions to the template, but keep a detailled definition of the function added for helping purpose
-func (t *Template) AddFunctions(funcs map[string]interface{}, group string, options funcOptions) *Template {
+func (t *Template) AddFunctions(funcs dictionary, group string, options funcOptions) *Template {
 	ft := make(funcTableMap, len(funcs))
-	help := defval(options[funcHelp], map[string]string{}).(map[string]string)
-	aliasaes := defval(options[funcAliases], map[string][]string{}).(map[string][]string)
-	arguments := defval(options[funcArgs], map[string][]string{}).(map[string][]string)
-	groups := defval(options[funcGroup], map[string]string{}).(map[string]string)
+	help := defval(options[funcHelp], descriptions{}).(descriptions)
+	aliases := defval(options[funcAliases], aliases{}).(aliases)
+	arguments := defval(options[funcArgs], arguments{}).(arguments)
+	groups := defval(options[funcGroup], groups{}).(groups)
 	for key, val := range funcs {
 		ft[key] = FuncInfo{
 			function:    val,
 			group:       defval(group, groups[key]).(string),
-			aliases:     aliasaes[key],
+			aliases:     aliases[key],
 			arguments:   arguments[key],
 			description: help[key],
 		}

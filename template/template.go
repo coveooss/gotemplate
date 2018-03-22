@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 	logging "github.com/op/go-logging"
 )
@@ -32,7 +33,7 @@ type Template struct {
 // ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2).
 var ExtensionDepth = 2
 
-var toStrings = utils.ToStrings
+var toStrings = types.ToStrings
 
 // NewTemplate creates an Template object with default initialization.
 func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
@@ -41,7 +42,7 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	t.options = iif(options != nil, options, DefaultOptions()).(OptionsSet)
 	t.optionsEnabled = make(OptionsSet)
 	t.folder, _ = filepath.Abs(iif(folder != "", folder, utils.Pwd()).(string))
-	t.context = iif(context != nil, context, make(map[string]interface{}))
+	t.context = iif(context != nil, context, make(dictionary))
 	t.aliases = make(funcTableMap)
 	t.delimiters = []string{"{{", "}}", "@"}
 
@@ -173,10 +174,12 @@ func (t *Template) init(folder string) {
 }
 
 func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...string) {
-	context, isMap := t.context.(map[string]interface{})
-	if !isMap {
+	c, err := types.AsDictionary(t.context)
+	if err != nil {
 		return
 	}
+
+	context := c.AsMap()
 	for i := range names {
 		if val, isSet := context[names[i]]; !isSet {
 			context[names[i]] = value
