@@ -1,10 +1,178 @@
 {% include navigation.html %}
 {% raw %}
-# Data manipulation
+## Data manipulation
 
+Using a data file with the following content in a format that doesn't follow a standard.
+```!Data
+IntegerValue = 1
+FloatValue = 1.23
+StringValue = "Foo bar"
+EquationResult = 46658
+ListValue = ["value1", "value2"]
+DictValue = {"key1": "value1", "key2": "value2"}
+```
+
+### toYaml
+
+| Razor | Gotemplate
+| ---   | ---
+| ```DictValue:
+  key1: value1
+  key2: value2
 EquationResult: 46658
 FloatValue: 1.23
 IntegerValue: 1
+ListValue:
+- value1
+- value2
 StringValue: Foo bar
+``` | ```DictValue:
+  key1: value1
+  key2: value2
+EquationResult: 46658
+FloatValue: 1.23
+IntegerValue: 1
+ListValue:
+- value1
+- value2
+StringValue: Foo bar
+```
 
+```
+DictValue:
+  key1: value1
+  key2: value2
+EquationResult: 46658
+FloatValue: 1.23
+IntegerValue: 1
+ListValue:
+- value1
+- value2
+StringValue: Foo bar
+```
+
+### toJson
+
+| Razor | Gotemplate
+| ---   | ---
+| ```{
+  "DictValue": {
+    "key1": "value1",
+    "key2": "value2"
+  },
+  "EquationResult": 46658,
+  "FloatValue": 1.23,
+  "IntegerValue": 1,
+  "ListValue": [
+    "value1",
+    "value2"
+  ],
+  "StringValue": "Foo bar"
+}``` | ```{
+  "DictValue": {
+    "key1": "value1",
+    "key2": "value2"
+  },
+  "EquationResult": 46658,
+  "FloatValue": 1.23,
+  "IntegerValue": 1,
+  "ListValue": [
+    "value1",
+    "value2"
+  ],
+  "StringValue": "Foo bar"
+}```
+
+```
+{
+  "DictValue": {
+    "key1": "value1",
+    "key2": "value2"
+  },
+  "EquationResult": 46658,
+  "FloatValue": 1.23,
+  "IntegerValue": 1,
+  "ListValue": [
+    "value1",
+    "value2"
+  ],
+  "StringValue": "Foo bar"
+}
+```
+
+### toHcl
+
+| Razor | Gotemplate
+| ---   | ---
+| ```EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue {
+  key1 = "value1"
+  key2 = "value2"
+}``` | ```EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue {
+  key1 = "value1"
+  key2 = "value2"
+}```
+
+```
+EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue {
+  key1 = "value1"
+  key2 = "value2"
+}
+```
+
+### Nested conversions
+
+This test shows how you can convert from and to other formats.
+
+| Razor | Gotemplate
+| ---   | ---
+| ```EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue {
+  key1 = "value1"
+  key2 = "value2"
+}``` | ```EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue {
+  key1 = "value1"
+  key2 = "value2"
+}```
+
+```
+EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue {
+  key1 = "value1"
+  key2 = "value2"
+}
+```
 {% endraw %}
