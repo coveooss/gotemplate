@@ -6,12 +6,12 @@
 
 | Razor expression                            | Go Template                                              | Note
 | ----------------                            | -----------                                              | ----
-| `@string := "string value";`                | `{{- set $ "string" ("string value") }}`                 | Global assignation of string
-| `@numeric1 := 10;`                          | `{{- set $ "numeric1" (10) }}`                           | Global assignation of integer
-| `@numeric2 := 1.23;`                        | `{{- set $ "numeric2" (1.23) }}`                         | Global assignation of floating point
-| `@numeric3 := 4E+4;`                        | `{{- set $ "numeric3" (4E+4) }}`                         | Global assignation of large scientific notation number
-| `@numeric4 := 5E-3;`                        | `{{- set $ "numeric4" (5E-3) }}`                         | Global assignation of small scientific notation number
-| `@hexa1 := 0x100;`                          | `{{- set $ "hexa1" (0x100) }}`                           | Global assignation of hexadecimal number
+| `@string := "string value";`                | `{{- set $ "string" "string value" }}`                   | Global assignation of string
+| `@numeric1 := 10;`                          | `{{- set $ "numeric1" 10 }}`                             | Global assignation of integer
+| `@numeric2 := 1.23;`                        | `{{- set $ "numeric2" 1.23 }}`                           | Global assignation of floating point
+| `@numeric3 := 4E+4;`                        | `{{- set $ "numeric3" 4E+4 }}`                           | Global assignation of large scientific notation number
+| `@numeric4 := 5E-3;`                        | `{{- set $ "numeric4" 5E-3 }}`                           | Global assignation of small scientific notation number
+| `@hexa1 := 0x100;`                          | `{{- set $ "hexa1" 0x100 }}`                             | Global assignation of hexadecimal number
 | `@result1 := (2+3)*4;`                      | `{{- set $ "result1" (mul (add 2 3) 4) }}`               | Global assignation of mathematic expression
 | `@result2 := String("hello world!").Title;` | `{{- set $ "result2" ((String "hello world!").Title) }}` | Global assignation of generic expression
 

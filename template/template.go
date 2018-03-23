@@ -97,7 +97,7 @@ func (t Template) IsCode(code string) bool {
 
 // IsRazor determines if the supplied code appears to have Razor code.
 func (t Template) IsRazor(code string) bool {
-	return strings.Contains(code, t.RazorDelim())
+	return strings.Contains(code, t.RazorDelim()) || strings.Contains(code, ":=")
 }
 
 // LeftDelim returns the left delimiter.

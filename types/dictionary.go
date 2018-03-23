@@ -12,10 +12,10 @@ import (
 type IDictionary interface {
 	Clone(keys ...interface{}) IDictionary
 	Omit(keys ...interface{}) IDictionary
-	Set(key interface{}, value interface{})
+	Set(key interface{}, value interface{}) IDictionary
 	Get(key interface{}) interface{}
 	Has(key interface{}) bool
-	Delete(key interface{})
+	Delete(key interface{}) (IDictionary, error)
 	KeysAsString() []string
 	Keys() IGenericList
 	Len() int
@@ -31,7 +31,10 @@ type Dictionary map[string]interface{}
 func (d Dictionary) String() string { return fmt.Sprint(d.AsMap()) }
 
 // Set sets key to value in the dictionary.
-func (d Dictionary) Set(key interface{}, value interface{}) { d[fmt.Sprint(key)] = value }
+func (d Dictionary) Set(key interface{}, value interface{}) IDictionary {
+	d[fmt.Sprint(key)] = value
+	return d
+}
 
 // Get returns the value associated with key.
 func (d Dictionary) Get(key interface{}) interface{} { return d[fmt.Sprint(key)] }
@@ -40,7 +43,13 @@ func (d Dictionary) Get(key interface{}) interface{} { return d[fmt.Sprint(key)]
 func (d Dictionary) Has(key interface{}) bool { _, ok := d[fmt.Sprint(key)]; return ok }
 
 // Delete removes the entry value associated with key.
-func (d Dictionary) Delete(key interface{}) { delete(d, fmt.Sprint(key)) }
+func (d Dictionary) Delete(key interface{}) (IDictionary, error) {
+	if !d.Has(key) {
+		return d, fmt.Errorf("key not found")
+	}
+	delete(d, fmt.Sprint(key))
+	return d, nil
+}
 
 // Len returns the number of keys in the dictionary
 func (d Dictionary) Len() int { return len(d) }
