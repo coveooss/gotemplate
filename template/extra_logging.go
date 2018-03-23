@@ -17,22 +17,67 @@ const (
 	loggingBase    = "Logging"
 )
 
-var loggingFuncs = funcTableMap{
-	"fatal":    {f: func(args ...interface{}) string { return logBase(Log.Fatal, args...) }, group: loggingBase, desc: ""},
-	"fatalf":   {f: func(format string, args ...interface{}) string { return logBasef(Log.Fatalf, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
-	"error":    {f: func(args ...interface{}) string { return logBase(Log.Error, args...) }, group: loggingBase, desc: ""},
-	"errorf":   {f: func(format string, args ...interface{}) string { return logBasef(Log.Errorf, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
-	"warning":  {f: func(args ...interface{}) string { return logBase(Log.Warning, args...) }, group: loggingBase, desc: ""},
-	"warningf": {f: func(format string, args ...interface{}) string { return logBasef(Log.Warningf, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
-	"notice":   {f: func(args ...interface{}) string { return logBase(Log.Notice, args...) }, group: loggingBase, desc: ""},
-	"noticef":  {f: func(format string, args ...interface{}) string { return logBasef(Log.Noticef, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
-	"info":     {f: func(args ...interface{}) string { return logBase(Log.Info, args...) }, group: loggingBase, desc: ""},
-	"infof":    {f: func(format string, args ...interface{}) string { return logBasef(Log.Infof, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
-	"debug":    {f: func(args ...interface{}) string { return logBase(Log.Debug, args...) }, group: loggingBase, desc: ""},
-	"debugf":   {f: func(format string, args ...interface{}) string { return logBasef(Log.Debugf, format, args...) }, group: loggingBase, args: []string{"format"}, desc: ""},
+var loggingFuncs = dictionary{
+	"critical":  func(args ...interface{}) string { return logBase(Log.Critical, args...) },
+	"criticalf": func(format string, args ...interface{}) string { return logBasef(Log.Criticalf, format, args...) },
+	"debug":     func(args ...interface{}) string { return logBase(Log.Debug, args...) },
+	"debugf":    func(format string, args ...interface{}) string { return logBasef(Log.Debugf, format, args...) },
+	"error":     func(args ...interface{}) string { return logBase(Log.Error, args...) },
+	"errorf":    func(format string, args ...interface{}) string { return logBasef(Log.Errorf, format, args...) },
+	"fatal":     func(args ...interface{}) string { return logBase(Log.Fatal, args...) },
+	"fatalf":    func(format string, args ...interface{}) string { return logBasef(Log.Fatalf, format, args...) },
+	"info":      func(args ...interface{}) string { return logBase(Log.Info, args...) },
+	"infof":     func(format string, args ...interface{}) string { return logBasef(Log.Infof, format, args...) },
+	"notice":    func(args ...interface{}) string { return logBase(Log.Notice, args...) },
+	"noticef":   func(format string, args ...interface{}) string { return logBasef(Log.Noticef, format, args...) },
+	"panic":     func(args ...interface{}) string { return logBase(Log.Panic, args...) },
+	"panicf":    func(format string, args ...interface{}) string { return logBasef(Log.Panicf, format, args...) },
+	"warning":   func(args ...interface{}) string { return logBase(Log.Warning, args...) },
+	"warningf":  func(format string, args ...interface{}) string { return logBasef(Log.Warningf, format, args...) },
 }
 
-func (t *Template) addLoggingFuncs() { t.AddFunctions(loggingFuncs) }
+var loggingFuncsArgs = arguments{
+	"criticalf": {"format", "args"},
+	"debugf":    {"format", "args"},
+	"errorf":    {"format", "args"},
+	"fatalf":    {"format", "args"},
+	"infof":     {"format", "args"},
+	"noticef":   {"format", "args"},
+	"panicf":    {"format", "args"},
+	"warningf":  {"format", "args"},
+}
+
+var loggingFuncsAliases = aliases{
+	"warning":  {"warn"},
+	"warningf": {"warnf"},
+}
+
+var loggingFuncsHelp = descriptions{
+	"critical":  "logs a message using CRITICAL as log level (0).",
+	"criticalf": "logs a message with format string using CRITICAL as log level (0).",
+	"debug":     "logs a message using DEBUG as log level (5).",
+	"debugf":    "logs a message with format using DEBUG as log level (5).",
+	"error":     "logs a message using ERROR as log level (1).",
+	"errorf":    "logs a message with format using ERROR as log level (1).",
+	"fatal":     "Equivalents to critical followed by a call to os.Exit(1).",
+	"fatalf":    "Equivalents to criticalf followed by a call to os.Exit(1).",
+	"info":      "logs a message using INFO as log level (4).",
+	"infof":     "logs a message with format using INFO as log level (4).",
+	"notice":    "logs a message using NOTICE as log level (3).",
+	"noticef":   "logs a message with format using NOTICE as log level (3).",
+	"panic":     "Equivalents to critical followed by a call to panic.",
+	"panicf":    "Equivalents to criticalf followed by a call to panic.",
+	"warning":   "logs a message using WARNING as log level (2).",
+	"warningf":  "logs a message with format using WARNING as log level (2).",
+}
+
+func (t *Template) addLoggingFuncs() {
+	t.AddFunctions(loggingFuncs, loggingBase, funcOptions{
+		funcHelp:    loggingFuncsHelp,
+		funcArgs:    loggingFuncsArgs,
+		funcAliases: loggingFuncsAliases,
+	})
+}
 
 func logBase(f func(...interface{}), args ...interface{}) string {
 	f(args...)

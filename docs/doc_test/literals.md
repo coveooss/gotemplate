@@ -39,7 +39,7 @@ The `{{ "expression" }}` will keep the spaces before and after expression as the
 
 With razor, assignation and flow control expression (if, else, elseif, end, range, with, etc.) will render go template code with - on left side.
 
-`@expr := "expression"` => `{{- set $ "expr" ("expression") }}`
+`@expr := "expression"` => `{{- set $ "expr" "expression" }}`
 
 But for variables, you have to specify the expected behavior.
 
@@ -61,4 +61,15 @@ results in:
 
     The word
     expression will be on a new line
+
+### Indent using current indentation
+
+This line will be rendered with 4 spaces before each word:
+
+    @aIndent(wrap(1, "This is a long line that should be wrapped to be rendered with a maximum of one word per line"))
+
+While this line will be rendered with 4 spaces and a caret before each word:
+
+    - @aIndent(wrap(1, "This is a long line that should be wrapped to be rendered with a maximum of one word per line"))
+
 {% endraw %}

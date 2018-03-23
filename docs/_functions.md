@@ -8,22 +8,25 @@ ge                      js                      ne                      printf
 
 Data Conversion
 
-data                    toBash                  toPrettyHcl             toQuotedHcl             toTFVars                
-hcl                     toHcl                   toPrettyJson            toQuotedJson            toYaml                  
-json                    toJson                  toPrettyTFVars          toQuotedTFVars          yaml                    
+data                    toHcl                   toPrettyJson            toQuotedTFVars          
+hcl                     toInternalHcl           toPrettyTFVars          toTFVars                
+json                    toJson                  toQuotedHcl             toYaml                  
+toBash                  toPrettyHcl             toQuotedJson            yaml                    
 
 Data Manipulation
 
-array                   extract                 merge                   safeIndex               undef                   
-bool                    get                     omit                    set                     
-char                    key                     pick                    slice                   
-content                 lenc                    pickv                   string                  
+String                  dict                    keys                    pickv                   string                  
+array                   extract                 lenc                    pluck                   undef                   
+bool                    get                     merge                   safeIndex               unset                   
+char                    hasKey                  omit                    set                     
+content                 key                     pick                    slice                   
 
 Logging
 
-debug                   errorf                  info                    noticef                 
-debugf                  fatal                   infof                   warning                 
-error                   fatalf                  notice                  warningf                
+critical                error                   info                    panic                   
+criticalf               errorf                  infof                   panicf                  
+debug                   fatal                   notice                  warning                 
+debugf                  fatalf                  noticef                 warningf                
 
 Mathematic Bit Operations
 
@@ -32,10 +35,10 @@ bclear                  bxor                    rshift
 
 Mathematic Fundamental
 
-add                     exp                     mod                     pow10                   
+add                     div                     floor                   pow                     trunc                   
+cbrt                    exp                     mod                     pow10                   
 ceil                    exp2                    modf                    rem                     
 dim                     expm1                   mul                     sub                     
-div                     floor                   pow                     trunc                   
 
 Mathematic Stats
 
@@ -43,11 +46,12 @@ avg                     max                     min
 
 Mathematic Trigonometry
 
-acos                    atan2                   ilogb                   logb                    tan                     
-acosh                   atanh                   log                     rad                     tanh                    
-asin                    cos                     log10                   sin                     
-asinh                   cosh                    log1p                   sincos                  
-atan                    deg                     log2                    sinh                    
+acos                    atanh                   j1                      logb                    tanh                    
+acosh                   cos                     jn                      rad                     y0                      
+asin                    cosh                    log                     sin                     y1                      
+asinh                   deg                     log10                   sincos                  yn                      
+atan                    ilogb                   log1p                   sinh                    
+atan2                   j0                      log2                    tan                     
 
 Mathematic Utilities
 
@@ -57,15 +61,17 @@ frexp                   hypot                   ldexp                   signBit 
 
 Other utilities
 
-center                  diff                    id                      lorem                   repeat                  
-color                   formatList              iif                     mergeList               splitLines              
-concat                  glob                    joinLines               pwd                     wrap                    
+center                  formatList              joinLines               repeat                  
+color                   glob                    lorem                   sIndent                 
+concat                  id                      mergeList               splitLines              
+diff                    iif                     pwd                     wrap                    
 
 Runtime
 
-alias                   exec                    function                localAlias              templateNames           
-current                 exit                    functions               run                     
-ellipsis                func                    include                 substitute              
+alias                   current                 func                    localAlias              templates               
+aliases                 ellipsis                function                run                     
+allFunctions            exec                    functions               substitute              
+categories              exit                    include                 templateNames           
 
 Sprig Cryptographic & Security http://masterminds.github.io/sprig/crypto.html
 
@@ -83,8 +89,7 @@ coalesce                compact                 default                 empty
 
 Sprig Dictionnary http://masterminds.github.io/sprig/dicst.html
 
-dict                    keys                    pluck                   
-hasKey                  list                    unset                   
+list                    
 
 Sprig Encoding http://masterminds.github.io/sprig/encoding.html
 
@@ -104,8 +109,8 @@ hello                   uuidv4
 
 Sprig List http://masterminds.github.io/sprig/lists.html
 
-append                  has                     last                    rest                    uniq                    
-first                   initial                 prepend                 reverse                 without                 
+append                  initial                 prepend                 reverse                 without                 
+first                   last                    rest                    uniq                    
 
 Sprig OS http://masterminds.github.io/sprig/defaults.html
 

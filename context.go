@@ -7,11 +7,15 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 )
 
-func createContext(varsFiles []string, namedVars []string) (context map[string]interface{}) {
-	context = map[string]interface{}{}
+type iDict = types.IDictionary
+type dict = types.Dictionary
+
+func createContext(varsFiles []string, namedVars []string) (context dict) {
+	context = make(dict)
 
 	type fileDef struct {
 		name    string
@@ -25,10 +29,10 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 	}
 
 	for i := range namedVars {
-		data := make(map[string]interface{})
+		data := make(dict)
 		if err := utils.ConvertData(namedVars[i], &data); err != nil {
 			var fd fileDef
-			fd.name, fd.value = utils.Split2(namedVars[i], "=")
+			fd.name, fd.value = types.Split2(namedVars[i], "=")
 			if fd.value == "" {
 				fd = fileDef{"", fd.name, true}
 			}
@@ -38,7 +42,7 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 		if len(data) == 0 && strings.Contains(namedVars[i], "=") {
 			// The hcl converter consider "value=" as an empty map instead of empty value in a map
 			// we handle it
-			name, value := utils.Split2(namedVars[i], "=")
+			name, value := types.Split2(namedVars[i], "=")
 			data[name] = value
 		}
 		for key, value := range data {
@@ -48,19 +52,21 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 
 	var unnamed []interface{}
 	for _, nv := range nameValuePairs {
-		var loader func(string) (map[string]interface{}, error)
+		var loader func(string) (iDict, error)
 		filename, _ := reflect.ValueOf(nv.value).Interface().(string)
 		if filename != "" {
-			loader = func(filename string) (map[string]interface{}, error) {
+			loader = func(filename string) (iDict, error) {
 				var content interface{}
 				if err := utils.LoadData(filename, &content); err == nil {
-					if content, isMap := content.(map[string]interface{}); isMap && nv.name == "" && !nv.unnamed {
-						return content, nil
+					if nv.name == "" && !nv.unnamed {
+						if content, err := types.AsDictionary(content); err == nil {
+							return content, nil
+						}
 					}
 					if nv.name == "" {
 						nv.name = strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
 					}
-					return map[string]interface{}{nv.name: content}, nil
+					return dict{nv.name: content}, nil
 				} else if _, isFileErr := err.(*os.PathError); !isFileErr {
 					return nil, err
 				}
@@ -76,22 +82,24 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 				}
 
 				// If it does not work, we just set the value as is
-				return map[string]interface{}{nv.name: content}, nil
+				return dict{nv.name: content}, nil
 			}
 
 			if filename == "-" {
-				loader = func(filename string) (result map[string]interface{}, err error) {
+				loader = func(filename string) (result iDict, err error) {
 					var content interface{}
 					if err = utils.ConvertData(readStdin(), &content); err != nil {
 						return nil, err
 					}
-					if content, isMap := content.(map[string]interface{}); isMap && nv.name == "" {
-						return content, nil
+					if nv.name == "" {
+						if content, err := types.AsDictionary(content); err == nil {
+							return content, nil
+						}
 					}
 					if nv.name == "" {
 						nv.name = "STDIN"
 					}
-					return map[string]interface{}{nv.name: content}, nil
+					return dict{nv.name: content}, nil
 				}
 			}
 		}
@@ -104,7 +112,7 @@ func createContext(varsFiles []string, namedVars []string) (context map[string]i
 		if err != nil {
 			errors.Raise("Error %v while loading vars file %s", nv.value, err)
 		}
-		for key, value := range content {
+		for key, value := range content.AsMap() {
 			context[key] = value
 		}
 	}

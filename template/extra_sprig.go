@@ -36,63 +36,64 @@ func (t *Template) addSprigFuncs() {
 			if info.group == "" {
 				continue
 			}
-			sprigFuncs[key] = FuncInfo{f: value, group: info.group, aliases: info.aliases, args: info.args, desc: info.desc}
+			sprigFuncs[key] = FuncInfo{function: value, group: info.group, aliases: info.aliases, arguments: info.arguments, description: info.description}
 		}
 	}
-	t.AddFunctions(sprigFuncs)
+	t.addFunctions(sprigFuncs)
 }
 
 var sprigFuncRef = map[string]struct {
-	args, aliases []string
-	group, desc   string
+	arguments, aliases []string
+	group, description string
 }{
-	"hello": {group: sprigGen, desc: "Simple hello by Sprig"},
+	"hello": {group: sprigGen, description: "Simple hello by Sprig"},
 	// Date functions
-	"date":           {group: sprigDate, desc: "The date function formats a dat (https://golang.org/pkg/time/#Time.Format).", args: []string{"fmt", "date"}},
-	"now":            {group: sprigDate, desc: "The current date/time. Use this in conjunction with other date functions."},
-	"htmlDate":       {group: sprigDate, desc: "The htmlDate function formates a date for inserting into an HTML date picker input field.", args: []string{"date"}},
-	"htmlDateInZone": {group: sprigDate, desc: "Same as htmlDate, but with a timezone.", args: []string{"date", "zone"}},
-	"dateInZone":     {group: sprigDate, desc: "Same as date, but with a timezone.", args: []string{"fmt", "date", "zone"}, aliases: []string{"date_in_zone"}},
-	"dateModify":     {group: sprigDate, desc: "The dateModify takes a modification and a date and returns the timestamp.", args: []string{"fmt", "date"}, aliases: []string{"date_modify"}},
-	"ago":            {group: sprigDate, desc: "The ago function returns duration from time.Now in seconds resolution.", args: []string{"date"}},
-	"toDate":         {group: sprigDate, desc: "Converts a string to a date. The first argument is the date layout and the second the date string. If the string can’t be convert it returns the zero value.", args: []string{"fmt", "str"}},
+	"date":           {group: sprigDate, description: "The date function formats a dat (https://golang.org/pkg/time/#Time.Format).", arguments: []string{"fmt", "date"}},
+	"now":            {group: sprigDate, description: "The current date/time. Use this in conjunction with other date functions."},
+	"htmlDate":       {group: sprigDate, description: "The htmlDate function formates a date for inserting into an HTML date picker input field.", arguments: []string{"date"}},
+	"htmlDateInZone": {group: sprigDate, description: "Same as htmlDate, but with a timezone.", arguments: []string{"date", "zone"}},
+	"dateInZone":     {group: sprigDate, description: "Same as date, but with a timezone.", arguments: []string{"fmt", "date", "zone"}, aliases: []string{"date_in_zone"}},
+	"dateModify":     {group: sprigDate, description: "The dateModify takes a modification and a date and returns the timestamp.", arguments: []string{"fmt", "date"}, aliases: []string{"date_modify"}},
+	"ago":            {group: sprigDate, description: "The ago function returns duration from time.Now in seconds resolution.", arguments: []string{"date"}},
+	"toDate":         {group: sprigDate, description: "Converts a string to a date. The first argument is the date layout and the second the date string. If the string can’t be convert it returns the zero value.", arguments: []string{"fmt", "str"}},
+
 	// Strings functions
-	"abbrev":       {group: sprigString, desc: "Truncates a string with ellipses (...).", args: []string{"width", "str"}},
-	"abbrevboth":   {group: sprigString, desc: "Abbreviates both sides with ellipses (...).", args: []string{"left", "right", "str"}},
-	"camelcase":    {group: sprigString, desc: "Converts string from snake_case to CamelCase.", args: []string{"str"}},
-	"cat":          {group: sprigString, desc: "Concatenates multiple strings together into one, separating them with spaces."},
-	"contains":     {group: sprigString, desc: "Tests to see if one string is contained inside of another.", args: []string{"substr", "str"}},
-	"hasPrefix":    {group: sprigString, desc: "Tests whether a string has a given prefix.", args: []string{"prefix", "str"}},
-	"hasSuffix":    {group: sprigString, desc: "Tests whether a string has a given suffix.", args: []string{"suffix", "str"}},
-	"indent":       {group: sprigString, desc: "Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.", args: []string{"spaces", "str"}},
-	"initials":     {group: sprigString, desc: "Given multiple words, takes the first letter of each word and combine.", args: []string{"str"}},
-	"lower":        {group: sprigString, desc: "Converts the entire string to lowercase.", args: []string{"str"}},
-	"nindent":      {group: sprigString, desc: "Same as the indent function, but prepends a new line to the beginning of the string.", args: []string{"spaces", "str"}},
-	"nospace":      {group: sprigString, desc: "Removes all whitespace from a string.", args: []string{"str"}},
-	"plural":       {group: sprigString, desc: "Pluralizes a string.", args: []string{"one", "many", "count"}},
-	"quote":        {group: sprigString, desc: "Wraps each argument with double quotes.", args: []string{"str"}},
-	"randAlpha":    {group: sprigString, desc: "Generates random string with letters.", args: []string{"count"}},
-	"randAlphaNum": {group: sprigString, desc: "Generates random string with letters and digits.", args: []string{"count"}},
-	"randAscii":    {group: sprigString, desc: "Generates random string with ASCII printable characters.", args: []string{"count"}},
-	"randNumeric":  {group: sprigString, desc: "Generates random string with digits.", args: []string{"count"}},
-	"repeat":       {group: sprigString, desc: "Repeats a string multiple times.", args: []string{"count", "str"}, aliases: []string{"repeatSprig"}},
-	"replace":      {group: sprigString, desc: "Performs simple string replacement.", args: []string{"old", "new", "src"}},
-	"shuffle":      {group: sprigString, desc: "Shuffle a string.", args: []string{"str"}},
-	"snakecase":    {group: sprigString, desc: "Converts string from camelCase to snake_case.", args: []string{"str"}},
-	"squote":       {group: sprigString, desc: "Wraps each argument with single quotes."},
-	"substr":       {group: sprigString, desc: "Get a substring from a string.", args: []string{"start", "length", "str"}},
-	"swapcase":     {group: sprigString, desc: "Swaps the uppercase to lowercase and lowercase to uppercase.", args: []string{"str"}},
-	"title":        {group: sprigString, desc: "Converts to title case.", args: []string{"str"}},
-	"toString":     {group: sprigString, desc: "Converts any value to string.", args: []string{"value"}},
-	"trim":         {group: sprigString, desc: "Removes space from either side of a string.", args: []string{"str"}},
-	"trimAll":      {group: sprigString, desc: "Removes given characters from the front or back of a string.", aliases: []string{"trimall"}, args: []string{"chars", "str"}},
-	"trimPrefix":   {group: sprigString, desc: "Trims just the prefix from a string if present.", args: []string{"prefix", "str"}},
-	"trimSuffix":   {group: sprigString, desc: "Trims just the suffix from a string if present.", args: []string{"suffix", "str"}},
-	"trunc":        {group: sprigString, desc: "Truncates a string (and add no suffix).", args: []string{"length", "str"}, aliases: []string{"truncSprig"}},
-	"untitle":      {group: sprigString, desc: `Removes title casing.`, args: []string{"str"}},
-	"upper":        {group: sprigString, desc: "Converts the entire string to uppercase.", args: []string{"str"}},
-	"wrap":         {group: sprigString, desc: "Wraps text at a given column count.", args: []string{"length", "str"}, aliases: []string{"wrapSprig"}},
-	"wrapWith":     {group: sprigString, desc: "Works as wrap, but lets you specify the string to wrap with (wrap uses \\n).", args: []string{"length", "spe", "str"}},
+	"abbrev":       {group: sprigString, description: "Truncates a string with ellipses (...).", arguments: []string{"width", "str"}},
+	"abbrevboth":   {group: sprigString, description: "Abbreviates both sides with ellipses (...).", arguments: []string{"left", "right", "str"}},
+	"camelcase":    {group: sprigString, description: "Converts string from snake_case to CamelCase.", arguments: []string{"str"}},
+	"cat":          {group: sprigString, description: "Concatenates multiple strings together into one, separating them with spaces."},
+	"contains":     {group: sprigString, description: "Tests to see if one string is contained inside of another.", arguments: []string{"substr", "str"}},
+	"hasPrefix":    {group: sprigString, description: "Tests whether a string has a given prefix.", arguments: []string{"prefix", "str"}},
+	"hasSuffix":    {group: sprigString, description: "Tests whether a string has a given suffix.", arguments: []string{"suffix", "str"}},
+	"indent":       {group: sprigString, description: "Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.", arguments: []string{"spaces", "str"}},
+	"initials":     {group: sprigString, description: "Given multiple words, takes the first letter of each word and combine.", arguments: []string{"str"}},
+	"lower":        {group: sprigString, description: "Converts the entire string to lowercase.", arguments: []string{"str"}},
+	"nindent":      {group: sprigString, description: "Same as the indent function, but prepends a new line to the beginning of the string.", arguments: []string{"spaces", "str"}},
+	"nospace":      {group: sprigString, description: "Removes all whitespace from a string.", arguments: []string{"str"}},
+	"plural":       {group: sprigString, description: "Pluralizes a string.", arguments: []string{"one", "many", "count"}},
+	"quote":        {group: sprigString, description: "Wraps each argument with double quotes.", arguments: []string{"str"}},
+	"randAlpha":    {group: sprigString, description: "Generates random string with letters.", arguments: []string{"count"}},
+	"randAlphaNum": {group: sprigString, description: "Generates random string with letters and digits.", arguments: []string{"count"}},
+	"randAscii":    {group: sprigString, description: "Generates random string with ASCII printable characters.", arguments: []string{"count"}},
+	"randNumeric":  {group: sprigString, description: "Generates random string with digits.", arguments: []string{"count"}},
+	"repeat":       {group: sprigString, description: "Repeats a string multiple times.", arguments: []string{"count", "str"}, aliases: []string{"repeatSprig"}},
+	"replace":      {group: sprigString, description: "Performs simple string replacement.", arguments: []string{"old", "new", "src"}},
+	"shuffle":      {group: sprigString, description: "Shuffle a string.", arguments: []string{"str"}},
+	"snakecase":    {group: sprigString, description: "Converts string from camelCase to snake_case.", arguments: []string{"str"}},
+	"squote":       {group: sprigString, description: "Wraps each argument with single quotes."},
+	"substr":       {group: sprigString, description: "Get a substring from a string.", arguments: []string{"start", "length", "str"}},
+	"swapcase":     {group: sprigString, description: "Swaps the uppercase to lowercase and lowercase to uppercase.", arguments: []string{"str"}},
+	"title":        {group: sprigString, description: "Converts to title case.", arguments: []string{"str"}},
+	"toString":     {group: sprigString, description: "Converts any value to string.", arguments: []string{"value"}},
+	"trim":         {group: sprigString, description: "Removes space from either side of a string.", arguments: []string{"str"}},
+	"trimAll":      {group: sprigString, description: "Removes given characters from the front or back of a string.", aliases: []string{"trimall"}, arguments: []string{"chars", "str"}},
+	"trimPrefix":   {group: sprigString, description: "Trims just the prefix from a string if present.", arguments: []string{"prefix", "str"}},
+	"trimSuffix":   {group: sprigString, description: "Trims just the suffix from a string if present.", arguments: []string{"suffix", "str"}},
+	"trunc":        {group: sprigString, description: "Truncates a string (and add no suffix).", arguments: []string{"length", "str"}, aliases: []string{"truncSprig"}},
+	"untitle":      {group: sprigString, description: `Removes title casing.`, arguments: []string{"str"}},
+	"upper":        {group: sprigString, description: "Converts the entire string to uppercase.", arguments: []string{"str"}},
+	"wrap":         {group: sprigString, description: "Wraps text at a given column count.", arguments: []string{"length", "str"}, aliases: []string{"wrapSprig"}},
+	"wrapWith":     {group: sprigString, description: "Works as wrap, but lets you specify the string to wrap with (wrap uses \\n).", arguments: []string{"length", "spe", "str"}},
 
 	"atoi":    {group: sprigTypeConversion},
 	"int64":   {group: sprigTypeConversion},
@@ -155,12 +156,12 @@ var sprigFuncRef = map[string]struct {
 
 	// Data Structures:
 	"list":   {group: sprigDict, aliases: []string{"tuple"}},
-	"dict":   {group: sprigDict},
+	"dict":   {group: sprigDict, aliases: []string{"dictSprig"}},
 	"set":    {group: sprigDict, aliases: []string{"setSprig"}},
-	"unset":  {group: sprigDict},
-	"hasKey": {group: sprigDict},
-	"pluck":  {group: sprigDict},
-	"keys":   {group: sprigDict},
+	"unset":  {group: sprigDict, aliases: []string{"unsetSprig"}},
+	"hasKey": {group: sprigDict, aliases: []string{"hasKeySprig"}},
+	"pluck":  {group: sprigDict, aliases: []string{"pluckSprig"}},
+	"keys":   {group: sprigDict, aliases: []string{"keysSprig"}},
 	"pick":   {group: sprigDict, aliases: []string{"pickSprig"}},
 	"omit":   {group: sprigDict, aliases: []string{"omitSprig"}},
 	"merge":  {group: sprigDict, aliases: []string{"mergeSprig"}},
@@ -178,7 +179,7 @@ var sprigFuncRef = map[string]struct {
 	"has":     {group: sprigList},
 
 	// Cryptographics functions
-	"sha256sum":         {group: sprigCrypto, desc: "", args: []string{"input"}},
+	"sha256sum":         {group: sprigCrypto, description: "", arguments: []string{"input"}},
 	"genPrivateKey":     {group: sprigCrypto},
 	"derivePassword":    {group: sprigCrypto},
 	"genCA":             {group: sprigCrypto},
@@ -189,17 +190,17 @@ var sprigFuncRef = map[string]struct {
 	"uuidv4": {group: sprigGen, aliases: []string{"uuid", "guid", "GUID"}},
 
 	// SemVer:
-	"semver":        {group: sprigSemver, desc: "Parses a string into a Semantic Version.", args: []string{"version"}},
-	"semverCompare": {group: sprigSemver, desc: "A more robust comparison function is provided as semverCompare. This version supports version ranges.", args: []string{"constraints", "version"}},
+	"semver":        {group: sprigSemver, description: "Parses a string into a Semantic Version.", arguments: []string{"version"}},
+	"semverCompare": {group: sprigSemver, description: "A more robust comparison function is provided as semverCompare. This version supports version ranges.", arguments: []string{"constraints", "version"}},
 
 	// Flow Control:
-	"fail": {group: sprigFlow, desc: "Unconditionally returns an empty string and an error with the specified text. This is useful in scenarios where other conditionals have determined that template rendering should fail."},
+	"fail": {group: sprigFlow, description: "Unconditionally returns an empty string and an error with the specified text. This is useful in scenarios where other conditionals have determined that template rendering should fail."},
 
 	// Regex
-	"regexMatch":             {group: sprigRegex, desc: "Returns true if the input string matches the regular expression.", args: []string{"regex", "str"}},
-	"regexFindAll":           {group: sprigRegex, desc: "Returns a slice of all matches of the regular expression in the input string.", args: []string{"regex", "str", "n"}},
-	"regexFind":              {group: sprigRegex, desc: "Returns the first (left most) match of the regular expression in the input string.", args: []string{"regex", "str"}},
-	"regexReplaceAll":        {group: sprigRegex, desc: "Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement. Inside string replacement, $ signs are interpreted as in Expand, so for instance $1 represents the text of the first submatch.", args: []string{"regex", "str", "repl"}},
-	"regexReplaceAllLiteral": {group: sprigRegex, desc: "Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement The replacement string is substituted directly, without using Expand.", args: []string{"regex", "str", "repl"}},
-	"regexSplit":             {group: sprigRegex, desc: "Slices the input string into substrings separated by the expression and returns a slice of the substrings between those expression matches. The last parameter n determines the number of substrings to return, where -1 means return all matches.", args: []string{"regex", "str", "n"}},
+	"regexMatch":             {group: sprigRegex, description: "Returns true if the input string matches the regular expression.", arguments: []string{"regex", "str"}},
+	"regexFindAll":           {group: sprigRegex, description: "Returns a slice of all matches of the regular expression in the input string.", arguments: []string{"regex", "str", "n"}},
+	"regexFind":              {group: sprigRegex, description: "Returns the first (left most) match of the regular expression in the input string.", arguments: []string{"regex", "str"}},
+	"regexReplaceAll":        {group: sprigRegex, description: "Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement. Inside string replacement, $ signs are interpreted as in Expand, so for instance $1 represents the text of the first submatch.", arguments: []string{"regex", "str", "repl"}},
+	"regexReplaceAllLiteral": {group: sprigRegex, description: "Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement The replacement string is substituted directly, without using Expand.", arguments: []string{"regex", "str", "repl"}},
+	"regexSplit":             {group: sprigRegex, description: "Slices the input string into substrings separated by the expression and returns a slice of the substrings between those expression matches. The last parameter n determines the number of substrings to return, where -1 means return all matches.", arguments: []string{"regex", "str", "n"}},
 }

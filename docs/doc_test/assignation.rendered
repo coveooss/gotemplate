@@ -6,12 +6,12 @@
 
 | Razor expression                            | Go Template                                              | Note
 | ----------------                            | -----------                                              | ----
-| ``                | ``                 | Global assignation of string
-| ``                          | ``                           | Global assignation of integer
-| ``                        | ``                         | Global assignation of floating point
-| ``                        | ``                         | Global assignation of large scientific notation number
-| ``                        | ``                         | Global assignation of small scientific notation number
-| ``                          | ``                           | Global assignation of hexadecimal number
+| ``                | ``                   | Global assignation of string
+| ``                          | ``                             | Global assignation of integer
+| ``                        | ``                           | Global assignation of floating point
+| ``                        | ``                           | Global assignation of large scientific notation number
+| ``                        | ``                           | Global assignation of small scientific notation number
+| ``                          | ``                             | Global assignation of hexadecimal number
 | ``                      | ``               | Global assignation of mathematic expression
 | `` | `` | Global assignation of generic expression
 

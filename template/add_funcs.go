@@ -16,14 +16,14 @@ func (t *Template) addFuncs() {
 		baseGoTemplateFuncs = make(funcTableMap, len(baseGoTemplate))
 		for key, val := range baseGoTemplate {
 			baseGoTemplateFuncs[key] = FuncInfo{
-				group: goTemplateBase,
-				desc:  val.description,
-				in:    val.args,
-				out:   val.out,
+				group:       goTemplateBase,
+				description: val.description,
+				in:          val.args,
+				out:         val.out,
 			}
 		}
 	}
-	t.AddFunctions(baseGoTemplateFuncs)
+	t.addFunctions(baseGoTemplateFuncs)
 
 	if t.options[Sprig] {
 		t.addSprigFuncs()

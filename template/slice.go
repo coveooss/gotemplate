@@ -174,7 +174,7 @@ func getSingleMapElement(m interface{}) (key, value interface{}, err error) {
 			}
 		}
 
-		results := make(map[string]interface{})
+		results := make(dictionary)
 		for i := range keys {
 			results[fmt.Sprint(keys[i])] = values[i]
 		}

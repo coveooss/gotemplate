@@ -59,7 +59,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 				result := load(tt.razor)
 				got := template.applyRazor(content)
 				if !reflect.DeepEqual(got, result) {
-					diffs := dmp.DiffMain(string(got), string(result), true)
+					diffs := dmp.DiffMain(string(result), string(got), true)
 					t.Errorf("Differences on Razor result for %s\n%s", tt.razor, dmp.DiffPrettyText(diffs))
 				}
 			}
@@ -72,7 +72,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 			if tt.render != "" {
 				result := string(load(tt.render))
 				if !reflect.DeepEqual(got, result) {
-					diffs := dmp.DiffMain(string(got), string(result), true)
+					diffs := dmp.DiffMain(string(result), string(got), true)
 					t.Errorf("Differences on Rendered for %s\n%s", tt.render, dmp.DiffPrettyText(diffs))
 				}
 			}

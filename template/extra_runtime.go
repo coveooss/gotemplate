@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/hcl"
+	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 )
 
@@ -18,21 +19,86 @@ const (
 	runtimeFunc = "Runtime"
 )
 
+var runtimeFuncsArgs = arguments{
+	"alias":      {"name", "function", "source"},
+	"categories": {"functionsGroups"},
+	"ellipsis":   {"function"},
+	"exec":       {"command"},
+	"exit":       {"exitValue"},
+	"func":       {"name", "function", "source", "config"},
+	"function":   {"name"},
+	"include":    {"source", "context"},
+	"localAlias": {"name", "function", "source"},
+	"run":        {"command"},
+	"substitute": {"content"},
+}
+
+var runtimeFuncsAliases = aliases{
+	"exec": {"execute"},
+}
+
+var runtimeFuncsHelp = descriptions{
+	"alias":        "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
+	"aliases":      "Returns the list of all functions that are simply an alias of another function.",
+	"allFunctions": "Returns the list of all available functions.",
+	"categories": strings.TrimSpace(types.UnIndent(`
+		Returns all functions group by categories.
+
+		The returned value has the following properties:
+		    Name        string
+		    Functions    []string
+	`)),
+	"current":  "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
+	"ellipsis": "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
+	"exec":     "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
+	"exit":     "Exits the current program execution.",
+	"func":     "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
+	"function": strings.TrimSpace(types.UnIndent(`
+		Returns the information relative to a specific function.
+
+		The returned value has the following properties:
+		    Name        string
+		    Description string
+		    Signature   string
+		    Group       string
+		    Aliases     []string
+		    Arguments   string
+		    Result      string
+	`)),
+	"functions":     "Returns the list of all available functions (excluding aliases).",
+	"include":       "Returns the result of the named template rendering (like template but it is possible to capture the output).",
+	"localAlias":    "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.",
+	"run":           "Returns the result of the shell command as string.",
+	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
+	"templateNames": "Returns the list of available templates names.",
+	"templates":     "Returns the list of available templates.",
+}
+
 func (t *Template) addRuntimeFuncs() {
-	t.AddFunctions(funcTableMap{
-		"functions":     {f: t.getFunctions, group: runtimeFunc, args: []string{}, desc: ""},
-		"function":      {f: t.getFunction, group: runtimeFunc, args: []string{"name"}, desc: "Returns the information relative to a specific function"},
-		"substitute":    {f: t.substitute, group: runtimeFunc, args: []string{}, desc: ""},
-		"templateNames": {f: t.Templates, group: runtimeFunc, args: []string{}, desc: ""},
-		"ellipsis":      {f: t.ellipsis, group: runtimeFunc, args: []string{}, desc: ""},
-		"alias":         {f: t.alias, group: runtimeFunc, args: []string{}, desc: ""},
-		"localAlias":    {f: t.localAlias, group: runtimeFunc, args: []string{}, desc: ""},
-		"func":          {f: t.defineFunc, group: runtimeFunc, args: []string{}, desc: ""},
-		"exec":          {f: t.execCommand, group: runtimeFunc, args: []string{}, desc: ""},
-		"run":           {f: t.runCommand, group: runtimeFunc, args: []string{}, desc: ""},
-		"include":       {f: t.include, group: runtimeFunc, args: []string{}, desc: ""},
-		"current":       {f: t.current, group: runtimeFunc, args: []string{}, desc: ""},
-		"exit":          {f: exit, group: runtimeFunc, args: []string{}, desc: ""},
+	var funcs = dictionary{
+		"alias":         t.alias,
+		"aliases":       t.getAliases,
+		"allFunctions":  t.getAllFunctions,
+		"current":       t.current,
+		"ellipsis":      t.ellipsis,
+		"exec":          t.execCommand,
+		"exit":          exit,
+		"func":          t.defineFunc,
+		"function":      t.getFunction,
+		"functions":     t.getFunctions,
+		"categories":    t.getCategories,
+		"include":       t.include,
+		"localAlias":    t.localAlias,
+		"run":           t.runCommand,
+		"substitute":    t.substitute,
+		"templates":     t.Templates,
+		"templateNames": t.getTemplateNames,
+	}
+
+	t.AddFunctions(funcs, runtimeFunc, funcOptions{
+		funcHelp:    runtimeFuncsHelp,
+		funcArgs:    runtimeFuncsArgs,
+		funcAliases: runtimeFuncsAliases,
 	})
 }
 
@@ -47,20 +113,20 @@ func (t *Template) localAlias(name, function string, source interface{}, args ..
 	return t.addAlias(name, function, source, true, false, args...)
 }
 
-func (t *Template) defineFunc(name, function string, source, def, argNames interface{}) (string, error) {
-	return t.addAlias(name, function, source, true, true, def, argNames)
+func (t *Template) defineFunc(name, function string, source, config interface{}) (string, error) {
+	return t.addAlias(name, function, source, true, true, config)
 }
 
 func (t *Template) execCommand(command interface{}, args ...interface{}) (interface{}, error) {
-	return t.exec(utils.Interface2string(command), args...)
+	return t.exec(types.Interface2string(command), args...)
 }
 
 func (t *Template) runCommand(command interface{}, args ...interface{}) (interface{}, error) {
-	return t.run(utils.Interface2string(command), args...)
+	return t.run(types.Interface2string(command), args...)
 }
 
 func (t *Template) include(source interface{}, context ...interface{}) (interface{}, error) {
-	content, _, err := t.runTemplate(utils.Interface2string(source), context...)
+	content, _, err := t.runTemplate(types.Interface2string(source), context...)
 	if source == content {
 		return nil, fmt.Errorf("Unable to find a template or a file named %s", source)
 	}
@@ -90,69 +156,133 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 
 	if !context {
 		t.aliases[name] = FuncInfo{
-			f: func(args ...interface{}) (result interface{}, err error) {
-				return f(utils.Interface2string(source), append(defaultArgs, args...)...)
+			function: func(args ...interface{}) (result interface{}, err error) {
+				return f(types.Interface2string(source), append(defaultArgs, args...)...)
 			},
 			group: "User defined aliases",
 		}
 		return
 	}
 
-	init := make(map[string]interface{})
-	switch value := defaultArgs[0].(type) {
-	case map[string]interface{}:
-		init = value
-	default:
-		if err = utils.ConvertData(fmt.Sprint(value), &init); err != nil {
+	var config iDict
+
+	switch len(defaultArgs) {
+	case 0:
+		config = make(dictionary)
+	case 1:
+		if defaultArgs[0] == nil {
+			err = fmt.Errorf("Default configuration is nil")
 			return
 		}
-	}
-
-	var argNames []string
-	switch value := defaultArgs[1].(type) {
-	case []string:
-		argNames = value
-	case []interface{}:
-		argNames = toStrings(value)
-	default:
-		if err = utils.ConvertData(fmt.Sprint(value), &argNames); err != nil {
-			return
-		}
-	}
-
-	t.aliases[name] = FuncInfo{
-		f: func(args ...interface{}) (result interface{}, err error) {
-			context := make(map[string]interface{})
-			parentContext, isMap := t.context.(map[string]interface{})
-			if !isMap {
-				context["DEFAULT"] = t.context
+		if reflect.TypeOf(defaultArgs[0]).Kind() == reflect.String {
+			var configFromString interface{}
+			if err = utils.ConvertData(fmt.Sprint(defaultArgs[0]), &configFromString); err != nil {
+				err = fmt.Errorf("Function configuration must be valid type: %v\n%v", defaultArgs[0], err)
+				return
 			}
-			switch len(args) {
-			case 1:
-				if arg1, isMap := args[0].(map[string]interface{}); isMap {
-					utils.MergeMaps(context, arg1, init, parentContext)
-					break
-				}
-				if utils.ConvertData(fmt.Sprint(args[0]), &context) == nil {
-					utils.MergeMaps(context, init, parentContext)
-					break
-				}
-				fallthrough
+			defaultArgs[0] = configFromString
+		}
+		if config, err = types.AsDictionary(defaultArgs[0]); err != nil {
+			err = fmt.Errorf("Function configuration must be valid dictionary: %[1]T %[1]v", defaultArgs[0])
+			return
+		}
+	default:
+		return "", fmt.Errorf("Too many parameters supplied")
+	}
+
+	for key, val := range config.AsMap() {
+		switch strings.ToLower(key) {
+		case "d", "desc", "description":
+			config.Set("description", val)
+		case "g", "group":
+			config.Set("group", val)
+		case "a", "args", "arguments":
+			switch val := val.(type) {
+			case []string:
+				config.Set("args", val)
+			case []interface{}, iList:
+				config.Set("args", toStrings(val))
 			default:
-				utils.MergeMaps(context, init, t.context.(map[string]interface{}))
-				for i := range args {
-					if i >= len(argNames) {
-						context["ARGS"] = args[i:]
-						break
-					}
-					context[argNames[i]] = args[i]
+				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
+				return
+			}
+		case "aliases":
+			switch val := val.(type) {
+			case []string:
+				config.Set("aliases", val)
+			case []interface{}, iList:
+				config.Set("aliases", toStrings(val))
+			default:
+				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
+				return
+			}
+		case "def", "default", "defaults":
+			var def iDict
+			if def, err = types.AsDictionary(val); err != nil {
+				err = fmt.Errorf("%s must be a dictionary: %T", key, val)
+				return
+			}
+			config.Set("def", def)
+		default:
+			return "", fmt.Errorf("Unknown configuration %s", key)
+		}
+	}
+
+	fi := FuncInfo{
+		name:        name,
+		group:       defval(config.Get("group"), "User defined functions").(string),
+		description: defval(config.Get("description"), "").(string),
+		arguments:   defval(config.Get("args"), []string{}).([]string),
+		aliases:     defval(config.Get("aliases"), []string{}).([]string),
+	}
+
+	defaultValues := defval(config.Get("def"), make(dictionary)).(iDict)
+
+	fi.in = fmt.Sprintf("%s", strings.Join(fi.arguments, ", "))
+	for i := range fi.arguments {
+		// We only keep the arg name and get rid of any supplemental information (likely type)
+		fi.arguments[i] = strings.Fields(fi.arguments[i])[0]
+	}
+
+	fi.function = func(args ...interface{}) (result interface{}, err error) {
+		context := make(dictionary)
+		parentContext, err := types.AsDictionary(t.context)
+		if err != nil {
+			context["DEFAULT"] = t.context
+		}
+
+		switch len(args) {
+		case 1:
+			if len(fi.arguments) != 1 {
+				if arg, err := types.AsDictionary(args[0]); err == nil {
+					context.Merge(arg, defaultValues, parentContext)
+					break
+				}
+				if err := utils.ConvertData(fmt.Sprint(args[0]), &context); err == nil {
+					context.Merge(defaultValues, parentContext)
+					break
 				}
 			}
-			return f(utils.Interface2string(source), context)
-		},
-		group: "User defined functions",
-		args:  argNames,
+			fallthrough
+		default:
+			templateContext, err := types.AsDictionary(t.context)
+			if err != nil {
+				return nil, err
+			}
+
+			context.Merge(defaultValues, templateContext)
+			for i := range args {
+				if i >= len(fi.arguments) {
+					context["ARGS"] = args[i:]
+					break
+				}
+				context[fi.arguments[i]] = args[i]
+			}
+		}
+		return f(types.Interface2string(source), context)
 	}
+
+	t.aliases[name] = fi
 	return
 }
 
@@ -185,7 +315,7 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Dir = t.folder
-	Log.Notice("Launching", cmd.Args, "in", cmd.Dir)
+	log.Notice("Launching", cmd.Args, "in", cmd.Dir)
 
 	if err = cmd.Run(); err == nil {
 		result = stdout.String()
@@ -274,7 +404,7 @@ func (t Template) ellipsis(function string, args ...interface{}) (interface{}, e
 
 	lastArg := reflect.ValueOf(args[last])
 	argsStr := make([]string, 0, last+lastArg.Len())
-	context := make(map[string]interface{})
+	context := make(dictionary)
 
 	convertArg := func(arg interface{}) {
 		argName := fmt.Sprintf("ARG%d", len(argsStr)+1)

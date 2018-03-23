@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
+	"strconv"
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
@@ -62,8 +63,8 @@ func main() {
 		followSymLinks   = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
 		print            = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
 		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
-		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level (0-9)").Default(utils.GetEnv(template.DebugEnvVar, "2")).Int8()
-		logLevel         = run.Flag("log-level", "Set the logging level (0-9)").Short('L').Default("4").Int8()
+		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level (0-9)").Int8()
+		logLevel         = run.Flag("log-level", "Set the logging level (0-9)").Short('L').Int8()
 		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
 		templates        = run.Arg("templates", "Template files or commands to process").Strings()
 
@@ -121,6 +122,15 @@ func main() {
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
 	command := kingpin.Parse()
+
+	if *debugLogLevel == 0 {
+		l, _ := strconv.Atoi(utils.GetEnv(template.DebugEnvVar, "2"))
+		*debugLogLevel = int8(l)
+	}
+
+	if *logLevel == 0 {
+		*logLevel = 4
+	}
 
 	// We restore back the modified arguments
 	for i := range *templates {

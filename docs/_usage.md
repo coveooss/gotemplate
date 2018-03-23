@@ -63,8 +63,9 @@ Flags:
   -P, --print                  Output the result directly to stdout
   -d, --disable                Disable go template rendering (used to view razor
                                conversion)
-      --debug-log-level=2      Set the debug logging level (0-9)
-  -L, --log-level=4            Set the logging level (0-9)
+      --debug-log-level=DEBUG-LOG-LEVEL  
+                               Set the debug logging level (0-9)
+  -L, --log-level=LOG-LEVEL    Set the logging level (0-9)
       --log-simple             Disable the extended logging, i.e. no color, no
                                date (--ls)
 
@@ -112,8 +113,9 @@ Commands:
     -P, --print                  Output the result directly to stdout
     -d, --disable                Disable go template rendering (used to view
                                  razor conversion)
-        --debug-log-level=2      Set the debug logging level (0-9)
-    -L, --log-level=4            Set the logging level (0-9)
+        --debug-log-level=DEBUG-LOG-LEVEL  
+                                 Set the debug logging level (0-9)
+    -L, --log-level=LOG-LEVEL    Set the logging level (0-9)
         --log-simple             Disable the extended logging, i.e. no color, no
                                  date (--ls)
 
