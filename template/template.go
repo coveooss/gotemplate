@@ -59,9 +59,11 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	if delimiters != "" {
 		for i, delimiter := range strings.Split(delimiters, ",") {
 			if i == len(t.delimiters) {
-				errors.Raise("Invalid delimiters '%s', must be two comma separated parts", delimiters)
+				errors.Raise("Invalid delimiters '%s', must be a maximum of three comma separated parts", delimiters)
 			}
-			t.delimiters[i] = delimiter
+			if delimiter != "" {
+				t.delimiters[i] = delimiter
+			}
 		}
 	}
 	return &t
