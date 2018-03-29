@@ -4,3 +4,9 @@ vendor
 launch.json
 tasks.json
 coverage.sh
+
+# Jekyll files
+docs/.bundle
+docs/_site
+docs/vendor
+docs/Gemfile.lock
