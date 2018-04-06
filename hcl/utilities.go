@@ -2,7 +2,10 @@ package hcl
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
+	"runtime/debug"
+	"sort"
 	"strings"
 
 	"github.com/coveo/gotemplate/types"
@@ -12,7 +15,10 @@ import (
 // flatten converts array of map to single map if there is only one element in the array.
 // By default, hc.Unmarshal returns array of map even if there is only a single map in the definition.
 func flatten(source interface{}) interface{} {
+	fmt.Println(0, source, reflect.TypeOf(source))
+
 	if value, ok := source.([]map[string]interface{}); ok {
+		fmt.Println(1, value)
 		switch len(value) {
 		case 1:
 			source = flatten(value[0])
@@ -23,16 +29,19 @@ func flatten(source interface{}) interface{} {
 			}
 			source = result
 		}
-	} else if value, err := types.AsDictionary(source); err == nil {
-		for _, key := range value.Keys().AsList() {
+	} else if value, err := hclHelper.TryAsDictionary(source); err == nil {
+		fmt.Println(2, value)
+		for _, key := range value.KeysAsString() {
 			value.Set(key, flatten(value.Get(key)))
 		}
-		source = dict(value.AsMap())
-	} else if value, err := types.AsGenericList(source); err == nil {
-		for i, sub := range value.AsList() {
+		source = value
+	} else if value, err := hclListHelper.TryAsList(source); err == nil {
+		//if value.Len() == 1 && value.Get(0)
+		fmt.Println(3, value, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+		for i, sub := range *value.AsArray() {
 			value.Set(i, flatten(sub))
 		}
-		source = list(value.AsList())
+		source = value
 	}
 	return source
 }
@@ -98,21 +107,25 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 			result = fmt.Sprintf("[%s]", strings.Join(results, ifIndent(", ", ",").(string)))
 		}
 
-	case iDict:
+	case map[string]interface{}:
 		if key := singleMap(value); fullHcl && key != "" {
 			var element string
-			if element, err = marshalHCL(value.Get(key), fullHcl, false, "", indent); err != nil {
+			if element, err = marshalHCL(value[key], fullHcl, false, "", indent); err != nil {
 				return
 			}
 			result = fmt.Sprintf(`%s %s`, id(key), element)
 			break
 		}
 
-		keys := value.KeysAsString()
-		rendered := make(map[string]string, value.Len())
+		keys := make([]string, 0, len(value))
+		for key := range value {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+		rendered := make(map[string]string, len(keys))
 		keyLen := 0
 
-		for key, val := range value.AsMap() {
+		for key, val := range value {
 			if rendered[key], err = marshalHCL(val, fullHcl, false, "", indent); err != nil {
 				return
 			}
@@ -124,7 +137,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 			}
 		}
 
-		items := make([]string, 0, value.Len()+2)
+		items := make([]string, 0, len(value)+2)
 		for _, multiline := range []bool{false, true} {
 			for _, key := range keys {
 				rendered := rendered[key]
@@ -142,7 +155,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 				}
 
 				equal := ifIndent(" = ", "=").(string)
-				if _, err := types.AsDictionary(value.Get(key)); err == nil {
+				if _, err := hclHelper.TryAsDictionary(value[key]); err == nil {
 					if multiline {
 						equal = " "
 					} else if indent == "" {
@@ -175,7 +188,8 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 		result = fmt.Sprintf("{\n%s\n}", types.Indent(strings.Join(items, "\n"), prefix+indent))
 
 	default:
-		err = fmt.Errorf("Unknown type %[1]T %[1]v", value)
+		debug.PrintStack()
+		err = fmt.Errorf("marshalHCL Unknown type %[1]T %[1]v", value)
 	}
 	return
 }
@@ -185,19 +199,19 @@ func isArrayOfMap(array []interface{}) bool {
 		return false
 	}
 	for _, item := range array {
-		if item, err := types.AsDictionary(item); err != nil || item.Len() != 1 {
+		if item, err := hclHelper.TryAsDictionary(item); err != nil || item.Len() != 1 {
 			return false
 		}
 	}
 	return true
 }
 
-func singleMap(m iDict) string {
-	if m.Len() != 1 {
+func singleMap(m map[string]interface{}) string {
+	if len(m) != 1 {
 		return ""
 	}
-	for k := range m.AsMap() {
-		if _, err := types.AsDictionary(m.Get(k)); err == nil {
+	for k := range m {
+		if _, err := hclHelper.TryAsDictionary(m[k]); err == nil {
 			return k
 		}
 	}

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/types"
+	"github.com/coveo/gotemplate/types/implementation"
 	"github.com/coveo/gotemplate/utils"
 	"gopkg.in/yaml.v2"
 )
@@ -18,6 +18,9 @@ var (
 	NativeUnmarshal       = yaml.Unmarshal
 	NativeUnmarshalStrict = yaml.UnmarshalStrict
 )
+
+func (l yamlList) String() string { result, _ := Marshal(l.AsArray()); return string(result) }
+func (d yamlDict) String() string { result, _ := Marshal(d.AsMap()); return string(result) }
 
 var _ = func() int {
 	utils.TypeConverters["yaml"] = Unmarshal
@@ -52,7 +55,7 @@ func transform(out interface{}) {
 	result := transformElement(reflect.ValueOf(out).Elem().Interface())
 	if _, isMap := out.(*map[string]interface{}); isMap {
 		// If the result is expected to be map[string]interface{}, we convert it back from internal dict type.
-		result = result.(dict).AsMap()
+		result = result.(yamlIDict).AsMap()
 	}
 	reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
 }
@@ -67,16 +70,23 @@ func transformElement(source interface{}) interface{} {
 		source = result
 	}
 
-	if value, err := types.AsDictionary(source); err == nil {
-		for _, key := range value.Keys().AsList() {
+	if value, err := yamlHelper.TryAsDictionary(source); err == nil {
+		for _, key := range value.KeysAsString() {
 			value.Set(key, transformElement(value.Get(key)))
 		}
-		source = dict(value.AsMap())
-	} else if value, err := types.AsGenericList(source); err == nil {
-		for i, sub := range value.AsList() {
+		source = value
+	} else if value, err := yamlHelper.TryAsList(source); err == nil {
+		for i, sub := range *value.AsArray() {
 			value.Set(i, transformElement(sub))
 		}
-		source = list(value.AsList())
+		source = value
 	}
 	return source
 }
+
+type helperBase = implementation.BaseHelper
+type helperList = implementation.ListHelper
+type helperDict = implementation.DictHelper
+
+//go:generate genny -pkg=yaml -in=../types/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=yaml"
+//go:generate genny -pkg=yaml -in=../types/implementation/generic_test.go -out=generated_test.go gen "base=yaml"

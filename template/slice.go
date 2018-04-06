@@ -3,10 +3,10 @@ package template
 import (
 	"fmt"
 	"reflect"
-	"sort"
 
 	"github.com/Masterminds/sprig"
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/types"
 )
 
 func safeIndex(value interface{}, index int, def interface{}) (result interface{}, err error) {
@@ -64,41 +64,41 @@ func sliceInternal(value interface{}, extract bool, args ...interface{}) (result
 		}
 
 	case reflect.Map:
-		if !extract {
-			return sliceMap(valueOf, args...)
-		}
-		return nil, nil
+		return sliceMap(value, extract, args...)
 
 	default:
 		return nil, fmt.Errorf("Cannot apply slice on type %s", reflect.TypeOf(value))
 	}
 }
 
-func sliceMap(data reflect.Value, args ...interface{}) (interface{}, error) {
-	results := []interface{}{}
+func sliceMap(value interface{}, extract bool, args ...interface{}) (interface{}, error) {
+	dict := types.AsDictionary(value)
 	switch len(args) {
 	case 0:
-		return results, nil
-	case 1:
-		return data.MapIndex(reflect.ValueOf(args[0])), nil
-	case 2:
-		keys := data.MapKeys()
-		keyStrings := make([]string, len(keys))
-		mapStrings := make(map[string]reflect.Value)
-		for i := range keys {
-			keyStrings[i] = fmt.Sprint(keys[i].Interface())
-			mapStrings[keyStrings[i]] = data.MapIndex(keys[i])
-		}
-		sort.Strings(keyStrings)
-		argsStr := toStrings(args)
-		for i := range keyStrings {
-			if keyStrings[i] >= argsStr[0] && keyStrings[i] <= argsStr[1] {
-				results = append(results, mapStrings[keyStrings[i]].Interface())
-			}
-		}
-		return results, nil
-	default:
 		return nil, nil
+	case 1:
+		return dict.Get(args[0]), nil
+	case 2:
+		if !extract {
+			keys := dict.Keys()
+			k1, k2 := fmt.Sprint(args[0]), fmt.Sprint(args[1])
+			if k1 > k2 {
+				keys = keys.Reverse()
+				k1, k2 = k2, k1
+			}
+
+			results := dict.CreateList(0, dict.Len()*20)
+			for i := 0; i < keys.Len(); i++ {
+				k := fmt.Sprint(keys.Get(i))
+				if k >= k1 && k <= k2 {
+					results.Append(dict.Get(key))
+				}
+			}
+			return results, nil
+		}
+		fallthrough
+	default:
+		return nil, fmt.Errorf("Slice cannot have more that two parts")
 	}
 }
 

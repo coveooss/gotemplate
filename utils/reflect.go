@@ -11,8 +11,6 @@ import (
 	"github.com/coveo/gotemplate/types"
 )
 
-type dictionary = types.Dictionary
-
 // String is simply an alias of types.String
 type String = types.String
 
@@ -73,7 +71,7 @@ func Default(value, defaultValue interface{}) interface{} {
 }
 
 // ToNativeRepresentation converts any object to native (literals, maps, slices)
-func ToNativeRepresentation(value interface{}) interface{} {
+func ToNativeRepresentation(value interface{}) (x interface{}) {
 	if value == nil {
 		return nil
 	}
@@ -98,7 +96,7 @@ func ToNativeRepresentation(value interface{}) interface{} {
 	case reflect.Slice, reflect.Array:
 		result := make([]interface{}, val.Len())
 		for i := range result {
-			result[i] = ToNativeRepresentation(reflect.ValueOf(value).Index(i).Interface())
+			result[i] = ToNativeRepresentation(val.Index(i).Interface())
 		}
 		if len(result) == 1 && reflect.TypeOf(result[0]).Kind() == reflect.Map {
 			// If the result is an array of one map, we just return the inner element
@@ -107,14 +105,14 @@ func ToNativeRepresentation(value interface{}) interface{} {
 		return result
 
 	case reflect.Map:
-		result := make(dictionary, val.Len())
+		result := types.CreateDictionary(val.Len()).AsMap()
 		for _, key := range val.MapKeys() {
 			result[fmt.Sprintf("%v", key)] = ToNativeRepresentation(val.MapIndex(key).Interface())
 		}
 		return result
 
 	case reflect.Struct:
-		result := make(dictionary, typ.NumField())
+		result := types.CreateDictionary(typ.NumField()).AsMap()
 		for i := 0; i < typ.NumField(); i++ {
 			sf := typ.Field(i)
 			if sf.Anonymous {

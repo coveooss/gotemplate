@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/types/implementation"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/hashicorp/hcl"
 )
@@ -19,6 +20,22 @@ var (
 	ParseString  = hcl.ParseString
 )
 
+func (l hclList) String() string {
+	result, err := MarshalInternal(*l.AsArray())
+	if err != nil {
+		panic(err)
+	}
+	return string(result)
+}
+
+func (d hclDict) String() string {
+	result, err := Marshal(d.AsMap())
+	if err != nil {
+		panic(err)
+	}
+	return string(result)
+}
+
 var _ = func() int {
 	utils.TypeConverters["hcl"] = Unmarshal
 	return 0
@@ -31,7 +48,7 @@ func Unmarshal(bs []byte, out interface{}) (err error) {
 
 	if err = hcl.Unmarshal(bs, out); err != nil {
 		bs = append([]byte("_="), bs...)
-		var temp dict
+		var temp hclDict
 		if err2 := hcl.Unmarshal(bs, &temp); err2 != nil {
 			return err
 		}
@@ -42,7 +59,7 @@ func Unmarshal(bs []byte, out interface{}) (err error) {
 
 	if _, isMap := out.(*map[string]interface{}); isMap {
 		// If the result is expected to be map[string]interface{}, we convert it back from internal dict type.
-		result = result.(dict).AsMap()
+		result = result.(hclIDict).AsMap()
 	}
 	reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
 	return
@@ -88,3 +105,10 @@ func SingleContext(context ...interface{}) interface{} {
 	}
 	return context
 }
+
+type helperBase = implementation.BaseHelper
+type helperList = implementation.ListHelper
+type helperDict = implementation.DictHelper
+
+//go:generate genny -pkg=hcl -in=../types/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=hcl"
+//go:generate genny -pkg=hcl -in=../types/implementation/generic_test.go -out=generated_test.go gen "base=hcl"

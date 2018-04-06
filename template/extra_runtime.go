@@ -164,11 +164,11 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		return
 	}
 
-	var config iDict
+	var config Dictionary
 
 	switch len(defaultArgs) {
 	case 0:
-		config = make(dictionary)
+		config = types.CreateDictionary()
 	case 1:
 		if defaultArgs[0] == nil {
 			err = fmt.Errorf("Default configuration is nil")
@@ -182,13 +182,15 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			}
 			defaultArgs[0] = configFromString
 		}
-		if config, err = types.AsDictionary(defaultArgs[0]); err != nil {
+		if config, err = types.TryAsDictionary(defaultArgs[0]); err != nil {
 			err = fmt.Errorf("Function configuration must be valid dictionary: %[1]T %[1]v", defaultArgs[0])
 			return
 		}
 	default:
 		return "", fmt.Errorf("Too many parameters supplied")
 	}
+
+	fmt.Println(config)
 
 	for key, val := range config.AsMap() {
 		switch strings.ToLower(key) {
@@ -200,7 +202,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			switch val := val.(type) {
 			case []string:
 				config.Set("args", val)
-			case []interface{}, iList:
+			case []interface{}, List:
 				config.Set("args", toStrings(val))
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
@@ -210,15 +212,15 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			switch val := val.(type) {
 			case []string:
 				config.Set("aliases", val)
-			case []interface{}, iList:
+			case []interface{}, List:
 				config.Set("aliases", toStrings(val))
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
 				return
 			}
 		case "def", "default", "defaults":
-			var def iDict
-			if def, err = types.AsDictionary(val); err != nil {
+			var def Dictionary
+			if def, err = types.TryAsDictionary(val); err != nil {
 				err = fmt.Errorf("%s must be a dictionary: %T", key, val)
 				return
 			}
@@ -236,7 +238,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		aliases:     defval(config.Get("aliases"), []string{}).([]string),
 	}
 
-	defaultValues := defval(config.Get("def"), make(dictionary)).(iDict)
+	defaultValues := defval(config.Get("def"), types.CreateDictionary()).(Dictionary)
 
 	fi.in = fmt.Sprintf("%s", strings.Join(fi.arguments, ", "))
 	for i := range fi.arguments {
@@ -245,16 +247,16 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	fi.function = func(args ...interface{}) (result interface{}, err error) {
-		context := make(dictionary)
-		parentContext, err := types.AsDictionary(t.context)
+		context := types.CreateDictionary()
+		parentContext, err := types.TryAsDictionary(t.context)
 		if err != nil {
-			context["DEFAULT"] = t.context
+			context.Set("DEFAULT", t.context)
 		}
 
 		switch len(args) {
 		case 1:
 			if len(fi.arguments) != 1 {
-				if arg, err := types.AsDictionary(args[0]); err == nil {
+				if arg, err := types.TryAsDictionary(args[0]); err == nil {
 					context.Merge(arg, defaultValues, parentContext)
 					break
 				}
@@ -265,7 +267,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			}
 			fallthrough
 		default:
-			templateContext, err := types.AsDictionary(t.context)
+			templateContext, err := types.TryAsDictionary(t.context)
 			if err != nil {
 				return nil, err
 			}
@@ -273,10 +275,10 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			context.Merge(defaultValues, templateContext)
 			for i := range args {
 				if i >= len(fi.arguments) {
-					context["ARGS"] = args[i:]
+					context.Set("ARGS", args[i:])
 					break
 				}
-				context[fi.arguments[i]] = args[i]
+				context.Set(fi.arguments[i], args[i])
 			}
 		}
 		return f(types.Interface2string(source), context)

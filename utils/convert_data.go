@@ -43,13 +43,13 @@ func ConvertData(data string, out interface{}) (err error) {
 				}
 			}
 		} else {
-			if _, e := types.AsDictionary(out); e == nil && trySimplified() == nil {
+			if _, e := types.TryAsList(out); e == nil && trySimplified() == nil {
 				err = nil
 			}
 		}
 	}()
 
-	for _, key := range types.MustNewDictionary(TypeConverters).KeysAsString() {
+	for _, key := range types.AsDictionary(TypeConverters).KeysAsString() {
 		err = TypeConverters[key]([]byte(data), out)
 		if err == nil {
 			return
@@ -90,8 +90,8 @@ func toBash(value interface{}, level int) (result string) {
 		return
 	}
 
-	if value, err := types.AsGenericList(value); err == nil {
-		results := types.ToStrings(value.AsList())
+	if value, err := types.TryAsList(value); err == nil {
+		results := types.ToStrings(value.AsArray())
 		for i := range results {
 			results[i] = quote(results[i])
 		}
@@ -104,16 +104,16 @@ func toBash(value interface{}, level int) (result string) {
 		return
 	}
 
-	if value, err := types.AsDictionary(value); err == nil {
+	if value, err := types.TryAsDictionary(value); err == nil {
 		results := make([]string, value.Len())
 		vMap := value.AsMap()
 		switch level {
 		case 0:
 			for i, key := range value.KeysAsString() {
 				val := toBash(vMap[key], level+1)
-				if _, err := types.AsGenericList(vMap[key]); err == nil {
+				if _, err := types.TryAsList(vMap[key]); err == nil {
 					results[i] = fmt.Sprintf("declare -a %[1]s\n%[1]s=%[2]v", key, val)
-				} else if _, err := types.AsDictionary(vMap[key]); err == nil {
+				} else if _, err := types.TryAsDictionary(vMap[key]); err == nil {
 					results[i] = fmt.Sprintf("declare -A %[1]s\n%[1]s=%[2]v", key, val)
 				} else {
 					results[i] = fmt.Sprintf("%s=%v", key, val)

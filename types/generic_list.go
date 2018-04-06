@@ -1,100 +1,40 @@
 package types
 
-import (
-	"fmt"
-	"reflect"
-)
+import "github.com/coveo/gotemplate/errors"
 
 // IGenericList represents objects that act as []interface{}.
 type IGenericList interface {
-	Clone() IGenericList
-	Set(index int, value interface{}) (IGenericList, error)
-	Get(index int) interface{}
-	Len() int
-	AsList() []interface{}
-	String() string
+	// Cast(interface{}) IGenericList             // Returns the object casted as same list type.
+	// CreateList(...int) IGenericList            // Allocates a new list of the same type implementation as this list. Optional arguments are size and capacity.
+	// NewList(...interface{}) IGenericList       // Creates a new generic list from the supplied arguments.
+	// TryCast(interface{}) (IGenericList, error) // Returns the object casted as same list type if possible.
+
+	AsArray() *[]interface{}                                // Returns the current list as standard array of interface{}.
+	Append(...interface{}) IGenericList                     // Add elements to to current list. If list is not large enough, it is enlarged to fit the required size.
+	Cap() int                                               // Returns the capacity of the list.
+	Capacity() int                                          // Simply an alias for Cap.
+	Clone() IGenericList                                    // Returns a distinct copy of the object.
+	Count() int                                             // Simply an alias for Len.
+	Get(index int) interface{}                              // Returns the element at position index in the list. If index is out of bound, nil is returned.
+	Len() int                                               // Returns the number of elements in the list.
+	Reverse() IGenericList                                  // Returns a copy of the current list in reverse order.
+	Set(index int, value interface{}) (IGenericList, error) // Sets the value at position index into the list. If list is not large enough, it is enlarged to fit the index.
+	String() string                                         // Returns the string representation of the list.
 }
 
-// GenericList implements base IGenericList
-type GenericList []interface{}
-
-// String returns the string representation of the list.
-func (l GenericList) String() string { return fmt.Sprint(l.AsList()) }
-
-// Clone returns a distinct copy of the object.
-func (l GenericList) Clone() IGenericList { return NewGenericList(l...) }
-
-// Len returns the length of the list.
-func (l GenericList) Len() int { return len(l) }
-
-// AsList returns the current list as standard array of interface{}
-func (l GenericList) AsList() []interface{} { return l }
-
-// Set sets the value at position index int the list.
-// If list is not large enough, it is enlarged to fit the index.
-func (l GenericList) Set(index int, value interface{}) (IGenericList, error) {
-	if index < 0 {
-		return nil, fmt.Errorf("index must be positive number")
-	}
-	if index > len(l) {
-		newList := make(GenericList, index+1)
-		for i := range l {
-			newList[i] = l[i]
-		}
-		l = newList
-	}
-	l[index] = value
-	return l, nil
+// AsList returns the object casted as IGenericList.
+func AsList(object interface{}) IGenericList {
+	return errors.Must(TryAsList(object)).(IGenericList)
 }
 
-// Get returns the element at position index in the list.
-// If index is out of bound, nil is returned
-func (l GenericList) Get(index int) interface{} {
-	if index < 0 || index >= len(l) {
-		return nil
-	}
-	return l[index]
-}
+// CreateList instantiates a new generic list with optional size and capacity.
+var CreateList func(...int) IGenericList
 
-// NewGenericList instantiates a new GenericList from supplied arguments
-func NewGenericList(items ...interface{}) IGenericList {
-	newList := make(GenericList, len(items))
-	for i := range items {
-		newList[i] = items[i]
-	}
-	return newList
-}
+// NewList instantiates a new generic list from supplied arguments.
+var NewList func(...interface{}) IGenericList
 
-// NewGenericListFromStrings instantiates a new GenericList from supplied arguments
-func NewGenericListFromStrings(items ...string) IGenericList {
-	newList := make(GenericList, len(items))
-	for i := range items {
-		newList[i] = items[i]
-	}
-	return newList
-}
+// NewStringList creates a new IGenericList from supplied arguments.
+var NewStringList func(...string) IGenericList
 
-// AsGenericList returns the object casted as IGenericList if possible
-func AsGenericList(object interface{}) (result IGenericList, err error) {
-	if object == nil {
-		return nil, nil
-	}
-
-	target := reflect.TypeOf(GenericList{})
-	t := reflect.TypeOf(object)
-	if !t.ConvertibleTo(target) {
-		switch t.Kind() {
-		case reflect.Slice, reflect.Array:
-			v := reflect.ValueOf(object)
-			list := make(GenericList, v.Len())
-			for i := range list {
-				list[i] = v.Index(i).Interface()
-			}
-			return list, nil
-		default:
-			return nil, fmt.Errorf("Object cannot be converted to generic list: %T", object)
-		}
-	}
-
-	return reflect.ValueOf(object).Convert(target).Interface().(IGenericList), nil
-}
+// TryAsList returns the object casted as IGenericList if possible.
+var TryAsList func(interface{}) (IGenericList, error)

@@ -176,7 +176,7 @@ func (t *Template) init(folder string) {
 }
 
 func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...string) {
-	c, err := types.AsDictionary(t.context)
+	c, err := types.TryAsDictionary(t.context)
 	if err != nil {
 		return
 	}

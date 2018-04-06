@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/coveo/gotemplate/types"
 	"github.com/fatih/color"
 )
 
@@ -117,12 +118,12 @@ func (ftm funcTableMap) convert() template.FuncMap {
 		return result
 	}
 
-	result := make(dictionary, len(ftm))
+	result := types.CreateDictionary(len(ftm))
 	for key, val := range ftm {
 		if val.function == nil {
 			continue
 		}
-		result[key] = val.function
+		result.Set(key, val.function)
 	}
 	converted[index] = result.AsMap()
 	return result.AsMap()
@@ -143,6 +144,7 @@ type funcOptions map[funcOptionsSet]interface{}
 type aliases map[string][]string
 type arguments map[string][]string
 type descriptions map[string]string
+type dictionary map[string]interface{}
 type groups map[string]string
 
 // AddFunctions add functions to the template, but keep a detailled definition of the function added for helping purpose
