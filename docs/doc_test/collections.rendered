@@ -1,8 +1,8 @@
 {% include navigation.html %}
 {% raw %}
-## Data collections (lists/slices and dicts/maps)
+# Data collections (lists/slices and dicts/maps)
 
-### Maps
+## Maps
 
 | Razor                                             | Gotemplate                                            | Note
 | ---                                               | ---                                                   | ---
@@ -15,9 +15,9 @@
 | `5`                               | `5`                                | Should be `5`
 
 
-#### Looping
+### Looping
 
-##### Razor
+#### Razor
 ```go
     test, 1, 1
     test2, 3, 3
@@ -25,7 +25,7 @@
     test5, 5, 5
 ```
 
-##### Gotemplate
+#### Gotemplate
 ```go
     test, 1, 1
     test2, 3, 3
@@ -33,7 +33,7 @@
     test5, 5, 5
 ```
 
-##### Result
+#### Result
 ```go
     test, 1, 1
     test2, 3, 3
@@ -41,7 +41,7 @@
     test5, 5, 5
 ```
 
-### Slices
+## Slices
 
 | Razor                                            | Gotemplate                                             | Note
 | ---                                              | ---                                                    | ---
@@ -50,9 +50,9 @@
 | ``    | ``      | Prepend
 | `[test0 test1 test2 test3 test4]`                                    | `[test0 test1 test2 test3 test4]`                                       | Should be `[test0 test1 test2 test3 test4]`
 
-#### Looping
+### Looping
 
-##### Razor
+#### Razor
 ```go
     0, test0, test0
     1, test1, test1
@@ -61,7 +61,7 @@
     4, test4, test4
 ```
 
-##### Gotemplate
+#### Gotemplate
 ```go
     0, test0, test0
     1, test1, test1
@@ -70,7 +70,7 @@
     4, test4, test4
 ```
 
-##### Result
+#### Result
 ```go
     0, test0, test0
     1, test1, test1

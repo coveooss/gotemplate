@@ -1,8 +1,8 @@
 {% include navigation.html %}
 {% raw %}
-## Data collections (lists/slices and dicts/maps)
+# Data collections (lists/slices and dicts/maps)
 
-### Maps
+## Maps
 
 | Razor                                             | Gotemplate                                            | Note
 | ---                                               | ---                                                   | ---
@@ -15,23 +15,23 @@
 | `{{ $.razorDict.test5 }}`                               | `{{ $.goDict.test5 }}`                                | Should be `5`
 
 
-#### Looping
+### Looping
 
-##### Razor
+#### Razor
 ```go
 {{- range $key, $value := .razorDict }}
     {{ $key }}, {{ $value }}, {{ get $.razorDict $key }}
 {{- end }}
 ```
 
-##### Gotemplate
+#### Gotemplate
 ```go
 {{- range $key, $value := .goDict }}
     {{ $key }}, {{ $value }}, {{ get $.goDict $key }}
 {{- end }}
 ```
 
-##### Result
+#### Result
 ```go
     test, 1, 1
     test2, 3, 3
@@ -39,7 +39,7 @@
     test5, 5, 5
 ```
 
-### Slices
+## Slices
 
 | Razor                                            | Gotemplate                                             | Note
 | ---                                              | ---                                                    | ---
@@ -48,23 +48,23 @@
 | `{{- set $ "razorList" (prepend .razorList "test0") }}`    | `{{- set $ "goList" (prepend .goList "test0") }}`      | Prepend
 | `{{ $.razorList }}`                                    | `{{ $.goList }}`                                       | Should be `[test0 test1 test2 test3 test4]`
 
-#### Looping
+### Looping
 
-##### Razor
+#### Razor
 ```go
 {{- range $index, $value := .razorList }}
     {{ $index }}, {{ $value }}, {{ extract $.razorList $index }}
 {{- end }}
 ```
 
-##### Gotemplate
+#### Gotemplate
 ```go
 {{- range $index, $value := .goList }}
     {{ $index }}, {{ $value }}, {{ extract $.goList $index }}
 {{- end }}
 ```
 
-##### Result
+#### Result
 ```go
     0, test0, test0
     1, test1, test1
