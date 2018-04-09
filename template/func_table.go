@@ -109,14 +109,6 @@ func (fi FuncInfo) Result() string {
 type funcTableMap map[string]FuncInfo
 
 func (ftm funcTableMap) convert() template.FuncMap {
-	// The index is a combination of the map address & the length of the map,
-	// if either of those change, the item will be updated in the converted
-	// cache
-	index := uint(reflect.ValueOf(ftm).Pointer()) + uint(len(ftm))
-	if result := converted[index]; result != nil {
-		return result
-	}
-
 	result := make(dictionary, len(ftm))
 	for key, val := range ftm {
 		if val.function == nil {
@@ -124,11 +116,8 @@ func (ftm funcTableMap) convert() template.FuncMap {
 		}
 		result[key] = val.function
 	}
-	converted[index] = result.AsMap()
 	return result.AsMap()
 }
-
-var converted = make(map[uint]template.FuncMap)
 
 type funcOptionsSet int8
 
