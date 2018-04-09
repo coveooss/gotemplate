@@ -2,8 +2,8 @@
 
 for file in docs/doc_test/*.md
 do
-    gotemplate --no-ext -dP $file > ${file%.*}.razor
-    gotemplate --no-ext -P $file > ${file%.*}.rendered
+    gotemplate -dP $file > ${file%.*}.razor
+    gotemplate -P $file > ${file%.*}.rendered
 done
 
 
