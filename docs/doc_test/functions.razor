@@ -1,18 +1,20 @@
 {% include navigation.html %}
 {% raw %}
-# Defining functions
+# Functions
+
+## Defining functions
 
 The following file is evaluated: [!extensions.gte](!extensions.gte)
 
-# Calling functions
+## Calling functions
 
-## Without arguments
+### Without arguments
 
 | Razor | Gotemplate
 | ---   | ---
 | ```{{ ChristmasTree }}``` | ```{{ ChristmasTree }}```
 
-### Result
+#### Result
 ```
                        ✾                    
                       ✾✾✾                   
@@ -36,13 +38,13 @@ The following file is evaluated: [!extensions.gte](!extensions.gte)
     ✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾
 ```
 
-## With arguments (colors not shown)
+### With arguments (colors not shown)
 
 | Razor | Gotemplate
 | ---   | ---
 | ```{{ ChristmasTree 5 "Red" "Green" "a" }}``` | ```{{ ChristmasTree 5 "Red" "Green" "a" }}```
 
-### Result
+#### Result
 ```
         a     
        aaa    

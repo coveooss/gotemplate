@@ -1,3 +1,48 @@
 {% include navigation.html %}
 {% raw %}
+# Templates
+
+## Defining templates
+
+### Razor
+```
+{{- define "razorTemplate" }}
+  This is a template with a variable here: {{ get . "var1" }}  
+  For each item in var2:  
+  {{- range $item := .var2 }}
+    Print it: {{ $item }}  
+  {{- end }}
+{{- end }}
+```
+
+### Gotemplate
+```
+{{- define "goTemplate" }}
+  This is a template with a variable here: {{ get . "var1" }}
+  For each item in var2:
+  {{- range $item := .var2 }}
+    Print it: {{ $item }}
+  {{- end }}
+{{- end }}
+```
+
+## Using templates
+
+```
+  {{- set $ "values" (data (`{"var1": "Test", "var2": ["Test1", "Test2"]}`)) }}
+```
+
+| Razor | Gotemplate
+| ---   | ---
+| ```{{ template "razorTemplate" .values }}``` | ```{{ template "goTemplate" .values }}```
+
+### Result
+
+```
+  This is a template with a variable here: Test
+  For each item in var2:
+    Print it: Test1
+    Print it: Test2
+```
+
 {% endraw %}

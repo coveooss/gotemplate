@@ -1,12 +1,14 @@
 {% include navigation.html %}
 {% raw %}
-# Defining functions
+# Functions
+
+## Defining functions
 
 The following file is evaluated: [!extensions.gte](!extensions.gte)
 
-# Calling functions
+## Calling functions
 
-## Without arguments
+### Without arguments
 
 | Razor | Gotemplate
 | ---   | ---
@@ -52,7 +54,7 @@ The following file is evaluated: [!extensions.gte](!extensions.gte)
      ✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾  
     ✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾ ```
 
-### Result
+#### Result
 ```
                        ✾                    
                       ✾✾✾                   
@@ -76,7 +78,7 @@ The following file is evaluated: [!extensions.gte](!extensions.gte)
     ✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾✾
 ```
 
-## With arguments (colors not shown)
+### With arguments (colors not shown)
 
 | Razor | Gotemplate
 | ---   | ---
@@ -92,7 +94,7 @@ The following file is evaluated: [!extensions.gte](!extensions.gte)
      aaaaaaa  
     aaaaaaaaa ```
 
-### Result
+#### Result
 ```
         a     
        aaa    
