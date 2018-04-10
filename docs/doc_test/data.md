@@ -1,6 +1,6 @@
 {% include navigation.html %}
 {% raw %}
-## Data manipulation
+# Data manipulation
 
 Using a data file with the following content in a format that doesn't follow a standard.
 ```!Data
@@ -12,7 +12,7 @@ ListValue = ["value1", "value2"]
 DictValue = {"key1": "value1", "key2": "value2"}
 ```
 
-### toYaml
+## toYaml
 
 | Razor | Gotemplate
 | ---   | ---
@@ -31,7 +31,7 @@ ListValue:
 StringValue: Foo bar
 ```
 
-### toJson
+## toJson
 
 | Razor | Gotemplate
 | ---   | ---
@@ -54,7 +54,7 @@ StringValue: Foo bar
 }
 ```
 
-### toHcl
+## toHcl
 
 | Razor | Gotemplate
 | ---   | ---
@@ -73,7 +73,7 @@ DictValue {
 }
 ```
 
-### Nested conversions
+## Nested conversions
 
 This test shows how you can convert from and to other formats.
 
