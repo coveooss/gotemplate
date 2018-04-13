@@ -8,17 +8,15 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/coveo/gotemplate/types"
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/utils"
 )
 
 // flatten converts array of map to single map if there is only one element in the array.
 // By default, hc.Unmarshal returns array of map even if there is only a single map in the definition.
 func flatten(source interface{}) interface{} {
-	fmt.Println(0, source, reflect.TypeOf(source))
-
-	if value, ok := source.([]map[string]interface{}); ok {
-		fmt.Println(1, value)
+	switch value := source.(type) {
+	case []map[string]interface{}:
 		switch len(value) {
 		case 1:
 			source = flatten(value[0])
@@ -29,17 +27,38 @@ func flatten(source interface{}) interface{} {
 			}
 			source = result
 		}
-	} else if value, err := hclHelper.TryAsDictionary(source); err == nil {
-		fmt.Println(2, value)
-		for _, key := range value.KeysAsString() {
-			value.Set(key, flatten(value.Get(key)))
+	case map[string]interface{}:
+		for key := range value {
+			value[key] = flatten(value[key])
 		}
 		source = value
-	} else if value, err := hclListHelper.TryAsList(source); err == nil {
-		//if value.Len() == 1 && value.Get(0)
-		fmt.Println(3, value, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-		for i, sub := range *value.AsArray() {
-			value.Set(i, flatten(sub))
+	case []interface{}:
+		for i, sub := range value {
+			value[i] = flatten(sub)
+		}
+		source = value
+	}
+	return source
+}
+
+func transform(out interface{}) {
+	result := transformElement(flatten(reflect.ValueOf(out).Elem().Interface()))
+	if _, isMap := out.(*map[string]interface{}); isMap {
+		// If the result is expected to be map[string]interface{}, we convert it back from internal dict type.
+		result = result.(hclIDict).AsMap()
+	}
+	reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
+}
+
+func transformElement(source interface{}) interface{} {
+	if value, err := hclHelper.TryAsDictionary(source); err == nil {
+		for _, key := range value.KeysAsString() {
+			value.Set(key, transformElement(value.Get(key)))
+		}
+		source = value
+	} else if value, err := hclHelper.TryAsList(source); err == nil {
+		for i, sub := range value.AsArray() {
+			value.Set(i, transformElement(sub))
 		}
 		source = value
 	}
@@ -66,7 +85,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 			unIndented = strings.Replace(unIndented, `\"`, "\"", -1)
 			unIndented = strings.Replace(unIndented, `\r`, "\r", -1)
 			unIndented = strings.Replace(unIndented, `\t`, "\t", -1)
-			unIndented = types.UnIndent(unIndented)
+			unIndented = collections.UnIndent(unIndented)
 			if strings.HasSuffix(unIndented, "\n") {
 				value = fmt.Sprintf("<<-EOF\n%sEOF", unIndented)
 			}
@@ -102,7 +121,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 			newLine = newLine || strings.Contains(results[i], "\n")
 		}
 		if totalLength > 60 && indent != "" || newLine {
-			result = fmt.Sprintf("[\n%s,\n]", types.Indent(strings.Join(results, ",\n"), prefix+indent))
+			result = fmt.Sprintf("[\n%s,\n]", collections.Indent(strings.Join(results, ",\n"), prefix+indent))
 		} else {
 			result = fmt.Sprintf("[%s]", strings.Join(results, ifIndent(", ", ",").(string)))
 		}
@@ -185,7 +204,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 			break
 		}
 
-		result = fmt.Sprintf("{\n%s\n}", types.Indent(strings.Join(items, "\n"), prefix+indent))
+		result = fmt.Sprintf("{\n%s\n}", collections.Indent(strings.Join(items, "\n"), prefix+indent))
 
 	default:
 		debug.PrintStack()
@@ -199,7 +218,7 @@ func isArrayOfMap(array []interface{}) bool {
 		return false
 	}
 	for _, item := range array {
-		if item, err := hclHelper.TryAsDictionary(item); err != nil || item.Len() != 1 {
+		if item, isMap := item.([]map[string]interface{}); !isMap || len(item) != 1 {
 			return false
 		}
 	}
@@ -211,7 +230,7 @@ func singleMap(m map[string]interface{}) string {
 		return ""
 	}
 	for k := range m {
-		if _, err := hclHelper.TryAsDictionary(m[k]); err == nil {
+		if _, isMap := m[k].(map[string]interface{}); isMap {
 			return k
 		}
 	}

@@ -83,7 +83,7 @@ var expressions = [][]interface{}{
 	{"Newline expression", `@<`, `{{- $.NEWLINE }}@`},
 
 	// Comments
-	{"Pseudo line comments - # @", `(?m)(?:^[sp](?:#|//)[sp])@`, "@"},
+	{"Pseudo line comments - #! @", `(?m)(?:^[sp](?:#|//)![sp])@`, "@"},
 	{"Pseudo block comments - /*@  @*/", `(?s)/\*@\s*(?P<content>.*?)@\s*\*/`, "${content}"},
 	{"Real comments - ##|/// @ comment", `(?m)^[sp](?:##|///)[sp]@.*$`, ""},
 	{"Line comment - @// or @#", `(?m)@(#|//)[sp](?P<line_comment>.*)[sp]$`, "{{/* ${line_comment} */}}"},

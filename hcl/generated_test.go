@@ -10,9 +10,7 @@ import (
 	"testing"
 )
 
-func al(l hclList) *hclList { return &l }
-
-var strFixture = hclList(*hclListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
+var strFixture = hclList(hclListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
 
 func Test_list_Append(t *testing.T) {
 	tests := []struct {
@@ -21,47 +19,53 @@ func Test_list_Append(t *testing.T) {
 		values []interface{}
 		want   hclIList
 	}{
-		{"Empty", al(nil), []interface{}{1, 2, 3}, al(hclList{1, 2, 3})},
-		{"List of int", al(hclList{1, 2, 3}), []interface{}{4}, al(hclList{1, 2, 3, 4})},
-		{"List of string", &strFixture, []interface{}{"That's all folks!"}, al(hclList{"Hello", "World,", "I'm", "Foo", "Bar!", "That's all folks!"})},
+		{"Empty", hclList{}, []interface{}{1, 2, 3}, hclList{1, 2, 3}},
+		{"List of int", hclList{1, 2, 3}, []interface{}{4}, hclList{1, 2, 3, 4}},
+		{"List of string", strFixture, []interface{}{"That's all folks!"}, hclList{"Hello", "World,", "I'm", "Foo", "Bar!", "That's all folks!"}},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			if got := l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("hclList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if !reflect.DeepEqual(l, tt.want) {
-				t.Errorf("hclList.Append():\nsrc %[1]v (%[1]T)\nwant %[2]v (%[2]T)", l, tt.want)
 			}
 		})
 	}
 }
 
-func Test_list_AsList(t *testing.T) {
+func Test_list_AsArray(t *testing.T) {
 	tests := []struct {
 		name string
 		l    hclList
 		want []interface{}
 	}{
-		{"Nil", nil, []interface{}{}},
 		{"Empty List", hclList{}, []interface{}{}},
 		{"List of int", hclList{1, 2, 3}, []interface{}{1, 2, 3}},
 		{"List of string", strFixture, []interface{}{"Hello", "World,", "I'm", "Foo", "Bar!"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			got := l.AsArray()
-			if !reflect.DeepEqual(got, &tt.want) {
+			if got := tt.l.AsArray(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("hclList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
+		})
+	}
+}
 
-			// We add an element to the hclList and we check that bot hclList are modified
-			l.Append("Modified", 1, 2, 3)
-			pList := l.AsArray()
-			if !reflect.DeepEqual(pList, got) {
-				t.Errorf("After modification::\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, pList)
+func Test_HclList_Strings(t *testing.T) {
+	tests := []struct {
+		name string
+		l    hclList
+		want []string
+	}{
+		{"Empty List", hclList{}, []string{}},
+		{"List of int", hclList{1, 2, 3}, []string{"1", "2", "3"}},
+		{"List of string", strFixture, []string{"Hello", "World,", "I'm", "Foo", "Bar!"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Strings(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("hclList.Strings() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -93,9 +97,9 @@ func Test_list_Clone(t *testing.T) {
 		l    hclList
 		want hclIList
 	}{
-		{"Empty List", hclList{}, al(hclList{})},
-		{"List of int", hclList{1, 2, 3}, al(hclList{1, 2, 3})},
-		{"List of string", strFixture, al(hclList{"Hello", "World,", "I'm", "Foo", "Bar!"})},
+		{"Empty List", hclList{}, hclList{}},
+		{"List of int", hclList{1, 2, 3}, hclList{1, 2, 3}},
+		{"List of string", strFixture, hclList{"Hello", "World,", "I'm", "Foo", "Bar!"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -159,8 +163,8 @@ func Test_NewList(t *testing.T) {
 		args args
 		want hclIList
 	}{
-		{"Empty", args{0, 0}, &hclList{}},
-		{"With nil elements", args{10, 0}, al(make(hclList, 10))},
+		{"Empty", args{0, 0}, hclList{}},
+		{"With nil elements", args{10, 0}, make(hclList, 10)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -177,9 +181,9 @@ func Test_list_Reverse(t *testing.T) {
 		l    hclList
 		want hclIList
 	}{
-		{"Empty List", hclList{}, al(hclList{})},
-		{"List of int", hclList{1, 2, 3}, al(hclList{3, 2, 1})},
-		{"List of string", strFixture, al(hclList{"Bar!", "Foo", "I'm", "World,", "Hello"})},
+		{"Empty List", hclList{}, hclList{}},
+		{"List of int", hclList{1, 2, 3}, hclList{3, 2, 1}},
+		{"List of string", strFixture, hclList{"Bar!", "Foo", "I'm", "World,", "Hello"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -203,24 +207,20 @@ func Test_list_Set(t *testing.T) {
 		want    hclIList
 		wantErr bool
 	}{
-		{"Empty", al(nil), args{2, 1}, al(hclList{nil, nil, 1}), false},
-		{"List of int", al(hclList{1, 2, 3}), args{0, 10}, al(hclList{10, 2, 3}), false},
-		{"List of string", al(strFixture), args{2, "You're"}, al(hclList{"Hello", "World,", "You're", "Foo", "Bar!"}), false},
-		{"Negative", al(nil), args{-1, "negative value"}, nil, true},
+		{"Empty", hclList{}, args{2, 1}, hclList{nil, nil, 1}, false},
+		{"List of int", hclList{1, 2, 3}, args{0, 10}, hclList{10, 2, 3}, false},
+		{"List of string", strFixture, args{2, "You're"}, hclList{"Hello", "World,", "You're", "Foo", "Bar!"}, false},
+		{"Negative", hclList{}, args{-1, "negative value"}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			got, err := l.Set(tt.args.i, tt.args.v)
+			got, err := tt.l.Clone().Set(tt.args.i, tt.args.v)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("hclList.Set() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("hclList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if err == nil && !reflect.DeepEqual(l, tt.want) {
-				t.Errorf("hclList.Set():\nsrc %[1]v (%[1]T)\nwant %[2]v (%[2]T)", l, tt.want)
 			}
 		})
 	}
@@ -317,12 +317,12 @@ func Test_HclDict_CreateList(t *testing.T) {
 		wantLen      int
 		wantCapacity int
 	}{
-		{"Nil", nil, nil, al(hclList{}), 0, 0},
-		{"Empty", hclDict{}, nil, al(hclList{}), 0, 0},
-		{"Map", dictFixture, nil, al(hclList{}), 0, 0},
-		{"Map with size", dictFixture, []int{3}, al(hclList{nil, nil, nil}), 3, 3},
-		{"Map with capacity", dictFixture, []int{0, 10}, al(hclList{}), 0, 10},
-		{"Map with size&capacity", dictFixture, []int{3, 10}, al(hclList{nil, nil, nil}), 3, 10},
+		{"Nil", nil, nil, hclList{}, 0, 0},
+		{"Empty", hclDict{}, nil, hclList{}, 0, 0},
+		{"Map", dictFixture, nil, hclList{}, 0, 0},
+		{"Map with size", dictFixture, []int{3}, hclList{nil, nil, nil}, 3, 3},
+		{"Map with capacity", dictFixture, []int{0, 10}, hclList{}, 0, 10},
+		{"Map with size&capacity", dictFixture, []int{3, 10}, hclList{nil, nil, nil}, 3, 10},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -431,8 +431,8 @@ func Test_dict_Keys(t *testing.T) {
 		d    hclDict
 		want hclIList
 	}{
-		{"Empty", nil, al(hclList{})},
-		{"Map", dictFixture, al(hclList{"float", "int", "list", "listInt", "map", "mapInt", "string"})},
+		{"Empty", nil, hclList{}},
+		{"Map", dictFixture, hclList{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

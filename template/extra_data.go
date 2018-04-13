@@ -7,9 +7,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/json"
-	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/coveo/gotemplate/xml"
 	"github.com/coveo/gotemplate/yaml"
@@ -47,7 +47,7 @@ var dataFuncsBase = dictionary{
 }
 
 var dataFuncsConversion = dictionary{
-	"toBash":         utils.ToBash,
+	"toBash":         collections.ToBash,
 	"toHcl":          toHCL,
 	"toInternalHcl":  toInternalHCL,
 	"toJson":         toJSON,
@@ -278,9 +278,9 @@ func array(value interface{}) interface{} {
 func get(arg1, arg2 interface{}) (interface{}, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
 	// put the map as the first parameter.
-	if dict, err := types.TryAsDictionary(arg1); err == nil {
+	if dict, err := collections.TryAsDictionary(arg1); err == nil {
 		return dict.Get(arg2), nil
-	} else if dict, err = types.TryAsDictionary(arg2); err == nil {
+	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
 		return dict.Get(arg1), nil
 	} else {
 		return nil, fmt.Errorf("Must supply dictionary object")
@@ -290,9 +290,9 @@ func get(arg1, arg2 interface{}) (interface{}, error) {
 func hasKey(arg1, arg2 interface{}) (interface{}, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
 	// put the map as the first parameter.
-	if dict, err := types.TryAsDictionary(arg1); err == nil {
+	if dict, err := collections.TryAsDictionary(arg1); err == nil {
 		return dict.Has(arg2), nil
-	} else if dict, err = types.TryAsDictionary(arg2); err == nil {
+	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
 		return dict.Has(arg1), nil
 	} else {
 		return nil, fmt.Errorf("Must supply dictionary object")
@@ -302,9 +302,9 @@ func hasKey(arg1, arg2 interface{}) (interface{}, error) {
 func set(arg1, arg2, arg3 interface{}) (string, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
 	// put the map as the first parameter.
-	if dict, err := types.TryAsDictionary(arg1); err == nil {
+	if dict, err := collections.TryAsDictionary(arg1); err == nil {
 		dict.Set(arg2, arg3)
-	} else if dict, err = types.TryAsDictionary(arg3); err == nil {
+	} else if dict, err = collections.TryAsDictionary(arg3); err == nil {
 		dict.Set(arg1, arg2)
 	} else {
 		return "", fmt.Errorf("Must supply dictionary object")
@@ -315,9 +315,9 @@ func set(arg1, arg2, arg3 interface{}) (string, error) {
 func unset(arg1, arg2 interface{}) (string, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
 	// put the map as the first parameter.
-	if dict, err := types.TryAsDictionary(arg1); err == nil {
+	if dict, err := collections.TryAsDictionary(arg1); err == nil {
 		dict.Delete(arg2)
-	} else if dict, err = types.TryAsDictionary(arg2); err == nil {
+	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
 		dict.Delete(arg1)
 	} else {
 		return "", fmt.Errorf("Must supply dictionary object")
@@ -346,7 +346,7 @@ type unMarshaler func([]byte, interface{}) error
 func (t Template) converter(from unMarshaler, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
 	if err = from([]byte(content), &result); err != nil && sourceWithError {
 		source := "\n"
-		for i, line := range types.SplitLines(content) {
+		for i, line := range collections.SplitLines(content) {
 			source += fmt.Sprintf("%4d %s\n", i+1, line)
 		}
 		err = fmt.Errorf("%s\n%v", source, err)
@@ -392,15 +392,15 @@ func (t Template) hclConverter(source interface{}, context ...interface{}) (resu
 func (t Template) dataConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
 	return t.templateConverter(
 		func(in interface{}) ([]byte, error) { return []byte(fmt.Sprint(in)), nil },
-		func(bs []byte, out interface{}) error { return utils.ConvertData(string(bs), out) },
+		func(bs []byte, out interface{}) error { return collections.ConvertData(string(bs), out) },
 		source, context...)
 }
 
 // Dictionary represents an implementation of IDictionary
-type Dictionary = types.IDictionary
+type Dictionary = collections.IDictionary
 
 // List represents an implementation of IGenericList
-type List = types.IGenericList
+type List = collections.IGenericList
 
 func pick(dict Dictionary, keys ...interface{}) Dictionary {
 	return dict.Clone(keys...)
@@ -433,7 +433,7 @@ func createDict(v ...interface{}) (Dictionary, error) {
 		return nil, fmt.Errorf("Must supply even number of arguments (keypair)")
 	}
 
-	result := types.CreateDictionary(len(v) / 2)
+	result := collections.CreateDictionary(len(v) / 2)
 	for i := 0; i < len(v); i += 2 {
 		result.Set(v[i], v[i+1])
 	}
@@ -441,7 +441,7 @@ func createDict(v ...interface{}) (Dictionary, error) {
 }
 
 func pluck(key interface{}, dicts ...Dictionary) List {
-	result := types.CreateList(0, len(dicts))
+	result := collections.CreateList(0, len(dicts))
 	for i := range dicts {
 		if dicts[i].Has(key) {
 			result.Append(dicts[i].Get(key))

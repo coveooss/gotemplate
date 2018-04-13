@@ -10,9 +10,7 @@ import (
 	"testing"
 )
 
-func al(l jsonList) *jsonList { return &l }
-
-var strFixture = jsonList(*jsonListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
+var strFixture = jsonList(jsonListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
 
 func Test_list_Append(t *testing.T) {
 	tests := []struct {
@@ -21,47 +19,53 @@ func Test_list_Append(t *testing.T) {
 		values []interface{}
 		want   jsonIList
 	}{
-		{"Empty", al(nil), []interface{}{1, 2, 3}, al(jsonList{1, 2, 3})},
-		{"List of int", al(jsonList{1, 2, 3}), []interface{}{4}, al(jsonList{1, 2, 3, 4})},
-		{"List of string", &strFixture, []interface{}{"That's all folks!"}, al(jsonList{"Hello", "World,", "I'm", "Foo", "Bar!", "That's all folks!"})},
+		{"Empty", jsonList{}, []interface{}{1, 2, 3}, jsonList{1, 2, 3}},
+		{"List of int", jsonList{1, 2, 3}, []interface{}{4}, jsonList{1, 2, 3, 4}},
+		{"List of string", strFixture, []interface{}{"That's all folks!"}, jsonList{"Hello", "World,", "I'm", "Foo", "Bar!", "That's all folks!"}},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			if got := l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("jsonList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if !reflect.DeepEqual(l, tt.want) {
-				t.Errorf("jsonList.Append():\nsrc %[1]v (%[1]T)\nwant %[2]v (%[2]T)", l, tt.want)
 			}
 		})
 	}
 }
 
-func Test_list_AsList(t *testing.T) {
+func Test_list_AsArray(t *testing.T) {
 	tests := []struct {
 		name string
 		l    jsonList
 		want []interface{}
 	}{
-		{"Nil", nil, []interface{}{}},
 		{"Empty List", jsonList{}, []interface{}{}},
 		{"List of int", jsonList{1, 2, 3}, []interface{}{1, 2, 3}},
 		{"List of string", strFixture, []interface{}{"Hello", "World,", "I'm", "Foo", "Bar!"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			got := l.AsArray()
-			if !reflect.DeepEqual(got, &tt.want) {
+			if got := tt.l.AsArray(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("jsonList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
+		})
+	}
+}
 
-			// We add an element to the jsonList and we check that bot jsonList are modified
-			l.Append("Modified", 1, 2, 3)
-			pList := l.AsArray()
-			if !reflect.DeepEqual(pList, got) {
-				t.Errorf("After modification::\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, pList)
+func Test_JsonList_Strings(t *testing.T) {
+	tests := []struct {
+		name string
+		l    jsonList
+		want []string
+	}{
+		{"Empty List", jsonList{}, []string{}},
+		{"List of int", jsonList{1, 2, 3}, []string{"1", "2", "3"}},
+		{"List of string", strFixture, []string{"Hello", "World,", "I'm", "Foo", "Bar!"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Strings(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("jsonList.Strings() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -93,9 +97,9 @@ func Test_list_Clone(t *testing.T) {
 		l    jsonList
 		want jsonIList
 	}{
-		{"Empty List", jsonList{}, al(jsonList{})},
-		{"List of int", jsonList{1, 2, 3}, al(jsonList{1, 2, 3})},
-		{"List of string", strFixture, al(jsonList{"Hello", "World,", "I'm", "Foo", "Bar!"})},
+		{"Empty List", jsonList{}, jsonList{}},
+		{"List of int", jsonList{1, 2, 3}, jsonList{1, 2, 3}},
+		{"List of string", strFixture, jsonList{"Hello", "World,", "I'm", "Foo", "Bar!"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -159,8 +163,8 @@ func Test_NewList(t *testing.T) {
 		args args
 		want jsonIList
 	}{
-		{"Empty", args{0, 0}, &jsonList{}},
-		{"With nil elements", args{10, 0}, al(make(jsonList, 10))},
+		{"Empty", args{0, 0}, jsonList{}},
+		{"With nil elements", args{10, 0}, make(jsonList, 10)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -177,9 +181,9 @@ func Test_list_Reverse(t *testing.T) {
 		l    jsonList
 		want jsonIList
 	}{
-		{"Empty List", jsonList{}, al(jsonList{})},
-		{"List of int", jsonList{1, 2, 3}, al(jsonList{3, 2, 1})},
-		{"List of string", strFixture, al(jsonList{"Bar!", "Foo", "I'm", "World,", "Hello"})},
+		{"Empty List", jsonList{}, jsonList{}},
+		{"List of int", jsonList{1, 2, 3}, jsonList{3, 2, 1}},
+		{"List of string", strFixture, jsonList{"Bar!", "Foo", "I'm", "World,", "Hello"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -203,24 +207,20 @@ func Test_list_Set(t *testing.T) {
 		want    jsonIList
 		wantErr bool
 	}{
-		{"Empty", al(nil), args{2, 1}, al(jsonList{nil, nil, 1}), false},
-		{"List of int", al(jsonList{1, 2, 3}), args{0, 10}, al(jsonList{10, 2, 3}), false},
-		{"List of string", al(strFixture), args{2, "You're"}, al(jsonList{"Hello", "World,", "You're", "Foo", "Bar!"}), false},
-		{"Negative", al(nil), args{-1, "negative value"}, nil, true},
+		{"Empty", jsonList{}, args{2, 1}, jsonList{nil, nil, 1}, false},
+		{"List of int", jsonList{1, 2, 3}, args{0, 10}, jsonList{10, 2, 3}, false},
+		{"List of string", strFixture, args{2, "You're"}, jsonList{"Hello", "World,", "You're", "Foo", "Bar!"}, false},
+		{"Negative", jsonList{}, args{-1, "negative value"}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			got, err := l.Set(tt.args.i, tt.args.v)
+			got, err := tt.l.Clone().Set(tt.args.i, tt.args.v)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("jsonList.Set() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("jsonList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if err == nil && !reflect.DeepEqual(l, tt.want) {
-				t.Errorf("jsonList.Set():\nsrc %[1]v (%[1]T)\nwant %[2]v (%[2]T)", l, tt.want)
 			}
 		})
 	}
@@ -317,12 +317,12 @@ func Test_JsonDict_CreateList(t *testing.T) {
 		wantLen      int
 		wantCapacity int
 	}{
-		{"Nil", nil, nil, al(jsonList{}), 0, 0},
-		{"Empty", jsonDict{}, nil, al(jsonList{}), 0, 0},
-		{"Map", dictFixture, nil, al(jsonList{}), 0, 0},
-		{"Map with size", dictFixture, []int{3}, al(jsonList{nil, nil, nil}), 3, 3},
-		{"Map with capacity", dictFixture, []int{0, 10}, al(jsonList{}), 0, 10},
-		{"Map with size&capacity", dictFixture, []int{3, 10}, al(jsonList{nil, nil, nil}), 3, 10},
+		{"Nil", nil, nil, jsonList{}, 0, 0},
+		{"Empty", jsonDict{}, nil, jsonList{}, 0, 0},
+		{"Map", dictFixture, nil, jsonList{}, 0, 0},
+		{"Map with size", dictFixture, []int{3}, jsonList{nil, nil, nil}, 3, 3},
+		{"Map with capacity", dictFixture, []int{0, 10}, jsonList{}, 0, 10},
+		{"Map with size&capacity", dictFixture, []int{3, 10}, jsonList{nil, nil, nil}, 3, 10},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -431,8 +431,8 @@ func Test_dict_Keys(t *testing.T) {
 		d    jsonDict
 		want jsonIList
 	}{
-		{"Empty", nil, al(jsonList{})},
-		{"Map", dictFixture, al(jsonList{"float", "int", "list", "listInt", "map", "mapInt", "string"})},
+		{"Empty", nil, jsonList{}},
+		{"Map", dictFixture, jsonList{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

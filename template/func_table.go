@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/coveo/gotemplate/types"
+	"github.com/coveo/gotemplate/collections"
 	"github.com/fatih/color"
 )
 
@@ -65,7 +65,7 @@ func (fi FuncInfo) String() (result string) {
 
 // Arguments returns the list of arguments that must be supplied to the function.
 func (fi FuncInfo) Arguments() string {
-	if fi.in != "" {
+	if fi.in != "" || fi.function == nil {
 		return fi.in
 	}
 
@@ -73,7 +73,7 @@ func (fi FuncInfo) Arguments() string {
 	var parameters []string
 	for i := 0; i < signature.NumIn(); i++ {
 		arg := strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "interface{}", -1)
-		arg = strings.Replace(arg, "types.", "", -1)
+		arg = strings.Replace(arg, "collections.", "", -1)
 		var argName string
 		if i < len(fi.arguments) {
 			argName = fi.arguments[i]
@@ -94,14 +94,14 @@ func (fi FuncInfo) Arguments() string {
 
 // Result returns the list of output produced by the function.
 func (fi FuncInfo) Result() string {
-	if fi.out != "" {
+	if fi.out != "" || fi.function == nil {
 		return fi.out
 	}
 	signature := reflect.ValueOf(fi.function).Type()
 	var outputs []string
 	for i := 0; i < signature.NumOut(); i++ {
 		r := strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "interface{}", -1)
-		r = strings.Replace(r, "types.", "", -1)
+		r = strings.Replace(r, "collections.", "", -1)
 		outputs = append(outputs, r)
 	}
 	return strings.Join(outputs, ", ")
@@ -110,7 +110,7 @@ func (fi FuncInfo) Result() string {
 type funcTableMap map[string]FuncInfo
 
 func (ftm funcTableMap) convert() template.FuncMap {
-	result := types.CreateDictionary(len(ftm))
+	result := collections.CreateDictionary(len(ftm))
 	for key, val := range ftm {
 		if val.function == nil {
 			continue

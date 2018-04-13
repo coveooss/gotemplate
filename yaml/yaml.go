@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/types/implementation"
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/collections/implementation"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,12 +23,12 @@ func (l yamlList) String() string { result, _ := Marshal(l.AsArray()); return st
 func (d yamlDict) String() string { result, _ := Marshal(d.AsMap()); return string(result) }
 
 var _ = func() int {
-	utils.TypeConverters["yaml"] = Unmarshal
+	collections.TypeConverters["yaml"] = Unmarshal
 	return 0
 }()
 
 // Unmarshal calls the native Unmarshal but transform the results
-// to returns Dictionary and GenerecList instead of go native types.
+// to returns Dictionary and GenericList instead of go native collections.
 func Unmarshal(data []byte, out interface{}) (err error) {
 	// Yaml does not support tab, so we replace tabs by spaces if there are
 	data = bytes.Replace(data, []byte("\t"), []byte("    "), -1)
@@ -40,7 +40,7 @@ func Unmarshal(data []byte, out interface{}) (err error) {
 }
 
 // UnmarshalStrict calls the native UnmarshalStrict but transform the results
-// to returns Dictionary and GenerecList instead of go native types.
+// to returns Dictionary and GenericList instead of go native collections.
 func UnmarshalStrict(data []byte, out interface{}) (err error) {
 	// Yaml does not support tab, so we replace tabs by spaces if there are
 	data = bytes.Replace(data, []byte("\t"), []byte("    "), -1)
@@ -76,7 +76,7 @@ func transformElement(source interface{}) interface{} {
 		}
 		source = value
 	} else if value, err := yamlHelper.TryAsList(source); err == nil {
-		for i, sub := range *value.AsArray() {
+		for i, sub := range value.AsArray() {
 			value.Set(i, transformElement(sub))
 		}
 		source = value
@@ -88,5 +88,5 @@ type helperBase = implementation.BaseHelper
 type helperList = implementation.ListHelper
 type helperDict = implementation.DictHelper
 
-//go:generate genny -pkg=yaml -in=../types/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=yaml"
-//go:generate genny -pkg=yaml -in=../types/implementation/generic_test.go -out=generated_test.go gen "base=yaml"
+//go:generate genny -pkg=yaml -in=../collections/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=yaml"
+//go:generate genny -pkg=yaml -in=../collections/implementation/generic_test.go -out=generated_test.go gen "base=yaml"

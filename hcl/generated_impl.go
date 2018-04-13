@@ -4,30 +4,31 @@
 
 package hcl
 
-import "github.com/coveo/gotemplate/types"
+import "github.com/coveo/gotemplate/collections"
 
 // List implementation of IGenericList for hclList
 type List = hclList
-type hclIList = types.IGenericList
+type hclIList = collections.IGenericList
 type hclList []interface{}
 
-func (l *hclList) Append(values ...interface{}) hclIList { return hclListHelper.Append(l, values...) }
-func (l *hclList) AsArray() *[]interface{}               { return (*[]interface{})(l) }
-func (l hclList) Cap() int                               { return cap(l) }
-func (l hclList) Capacity() int                          { return cap(l) }
-func (l hclList) Clone() hclIList                        { return hclListHelper.Clone(&l) }
-func (l hclList) Count() int                             { return len(l) }
-func (l hclList) Get(index int) interface{}              { return hclListHelper.GetIndex(&l, index) }
-func (l hclList) Len() int                               { return len(l) }
-func (l hclList) Reverse() hclIList                      { return hclListHelper.Reverse(&l) }
+func (l hclList) Append(values ...interface{}) hclIList { return hclListHelper.Append(l, values...) }
+func (l hclList) AsArray() []interface{}                { return []interface{}(l) }
+func (l hclList) Cap() int                              { return cap(l) }
+func (l hclList) Capacity() int                         { return cap(l) }
+func (l hclList) Clone() hclIList                       { return hclListHelper.Clone(l) }
+func (l hclList) Count() int                            { return len(l) }
+func (l hclList) Get(index int) interface{}             { return hclListHelper.GetIndex(l, index) }
+func (l hclList) Len() int                              { return len(l) }
+func (l hclList) Reverse() hclIList                     { return hclListHelper.Reverse(l) }
+func (l hclList) Strings() []string                     { return hclListHelper.GetStrings(l) }
 
-func (l *hclList) Set(i int, v interface{}) (hclIList, error) {
+func (l hclList) Set(i int, v interface{}) (hclIList, error) {
 	return hclListHelper.SetIndex(l, i, v)
 }
 
 // Dictionary implementation of IDictionary for hclDict
 type Dictionary = hclDict
-type hclIDict = types.IDictionary
+type hclIDict = collections.IDictionary
 type hclDict map[string]interface{}
 
 func (d hclDict) AsMap() map[string]interface{}      { return (map[string]interface{})(d) }
@@ -62,12 +63,15 @@ func (d hclDict) Set(key interface{}, v interface{}) hclIDict {
 }
 
 // Generic helpers to simplify physical implementation
-func hclListConvert(list hclIList) hclIList {
-	array := hclList(*list.AsArray())
-	return &array
-}
+func hclListConvert(list hclIList) hclIList { return hclList(list.AsArray()) }
 func hclDictConvert(dict hclIDict) hclIDict { return hclDict(dict.AsMap()) }
 
 var hclHelper = helperBase{ConvertList: hclListConvert, ConvertDict: hclDictConvert}
 var hclListHelper = helperList{BaseHelper: hclHelper}
 var hclDictHelper = helperDict{BaseHelper: hclHelper}
+
+// DictionaryHelper gives public access to the basic dictionary functions
+var DictionaryHelper collections.IDictionaryHelper = hclDictHelper
+
+// GenericListHelper gives public access to the basic list functions
+var GenericListHelper collections.IListHelper = hclListHelper

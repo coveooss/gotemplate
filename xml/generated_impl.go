@@ -4,30 +4,31 @@
 
 package xml
 
-import "github.com/coveo/gotemplate/types"
+import "github.com/coveo/gotemplate/collections"
 
 // List implementation of IGenericList for xmlList
 type List = xmlList
-type xmlIList = types.IGenericList
+type xmlIList = collections.IGenericList
 type xmlList []interface{}
 
-func (l *xmlList) Append(values ...interface{}) xmlIList { return xmlListHelper.Append(l, values...) }
-func (l *xmlList) AsArray() *[]interface{}               { return (*[]interface{})(l) }
-func (l xmlList) Cap() int                               { return cap(l) }
-func (l xmlList) Capacity() int                          { return cap(l) }
-func (l xmlList) Clone() xmlIList                        { return xmlListHelper.Clone(&l) }
-func (l xmlList) Count() int                             { return len(l) }
-func (l xmlList) Get(index int) interface{}              { return xmlListHelper.GetIndex(&l, index) }
-func (l xmlList) Len() int                               { return len(l) }
-func (l xmlList) Reverse() xmlIList                      { return xmlListHelper.Reverse(&l) }
+func (l xmlList) Append(values ...interface{}) xmlIList { return xmlListHelper.Append(l, values...) }
+func (l xmlList) AsArray() []interface{}                { return []interface{}(l) }
+func (l xmlList) Cap() int                              { return cap(l) }
+func (l xmlList) Capacity() int                         { return cap(l) }
+func (l xmlList) Clone() xmlIList                       { return xmlListHelper.Clone(l) }
+func (l xmlList) Count() int                            { return len(l) }
+func (l xmlList) Get(index int) interface{}             { return xmlListHelper.GetIndex(l, index) }
+func (l xmlList) Len() int                              { return len(l) }
+func (l xmlList) Reverse() xmlIList                     { return xmlListHelper.Reverse(l) }
+func (l xmlList) Strings() []string                     { return xmlListHelper.GetStrings(l) }
 
-func (l *xmlList) Set(i int, v interface{}) (xmlIList, error) {
+func (l xmlList) Set(i int, v interface{}) (xmlIList, error) {
 	return xmlListHelper.SetIndex(l, i, v)
 }
 
 // Dictionary implementation of IDictionary for xmlDict
 type Dictionary = xmlDict
-type xmlIDict = types.IDictionary
+type xmlIDict = collections.IDictionary
 type xmlDict map[string]interface{}
 
 func (d xmlDict) AsMap() map[string]interface{}      { return (map[string]interface{})(d) }
@@ -62,12 +63,15 @@ func (d xmlDict) Set(key interface{}, v interface{}) xmlIDict {
 }
 
 // Generic helpers to simplify physical implementation
-func xmlListConvert(list xmlIList) xmlIList {
-	array := xmlList(*list.AsArray())
-	return &array
-}
+func xmlListConvert(list xmlIList) xmlIList { return xmlList(list.AsArray()) }
 func xmlDictConvert(dict xmlIDict) xmlIDict { return xmlDict(dict.AsMap()) }
 
 var xmlHelper = helperBase{ConvertList: xmlListConvert, ConvertDict: xmlDictConvert}
 var xmlListHelper = helperList{BaseHelper: xmlHelper}
 var xmlDictHelper = helperDict{BaseHelper: xmlHelper}
+
+// DictionaryHelper gives public access to the basic dictionary functions
+var DictionaryHelper collections.IDictionaryHelper = xmlDictHelper
+
+// GenericListHelper gives public access to the basic list functions
+var GenericListHelper collections.IListHelper = xmlListHelper

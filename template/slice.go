@@ -5,8 +5,8 @@ import (
 	"reflect"
 
 	"github.com/Masterminds/sprig"
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/types"
 )
 
 func safeIndex(value interface{}, index int, def interface{}) (result interface{}, err error) {
@@ -72,7 +72,7 @@ func sliceInternal(value interface{}, extract bool, args ...interface{}) (result
 }
 
 func sliceMap(value interface{}, extract bool, args ...interface{}) (interface{}, error) {
-	dict := types.AsDictionary(value)
+	dict := collections.AsDictionary(value)
 	switch len(args) {
 	case 0:
 		return nil, nil

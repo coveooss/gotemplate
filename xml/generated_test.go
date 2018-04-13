@@ -10,9 +10,7 @@ import (
 	"testing"
 )
 
-func al(l xmlList) *xmlList { return &l }
-
-var strFixture = xmlList(*xmlListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
+var strFixture = xmlList(xmlListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
 
 func Test_list_Append(t *testing.T) {
 	tests := []struct {
@@ -21,47 +19,53 @@ func Test_list_Append(t *testing.T) {
 		values []interface{}
 		want   xmlIList
 	}{
-		{"Empty", al(nil), []interface{}{1, 2, 3}, al(xmlList{1, 2, 3})},
-		{"List of int", al(xmlList{1, 2, 3}), []interface{}{4}, al(xmlList{1, 2, 3, 4})},
-		{"List of string", &strFixture, []interface{}{"That's all folks!"}, al(xmlList{"Hello", "World,", "I'm", "Foo", "Bar!", "That's all folks!"})},
+		{"Empty", xmlList{}, []interface{}{1, 2, 3}, xmlList{1, 2, 3}},
+		{"List of int", xmlList{1, 2, 3}, []interface{}{4}, xmlList{1, 2, 3, 4}},
+		{"List of string", strFixture, []interface{}{"That's all folks!"}, xmlList{"Hello", "World,", "I'm", "Foo", "Bar!", "That's all folks!"}},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			if got := l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("xmlList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if !reflect.DeepEqual(l, tt.want) {
-				t.Errorf("xmlList.Append():\nsrc %[1]v (%[1]T)\nwant %[2]v (%[2]T)", l, tt.want)
 			}
 		})
 	}
 }
 
-func Test_list_AsList(t *testing.T) {
+func Test_list_AsArray(t *testing.T) {
 	tests := []struct {
 		name string
 		l    xmlList
 		want []interface{}
 	}{
-		{"Nil", nil, []interface{}{}},
 		{"Empty List", xmlList{}, []interface{}{}},
 		{"List of int", xmlList{1, 2, 3}, []interface{}{1, 2, 3}},
 		{"List of string", strFixture, []interface{}{"Hello", "World,", "I'm", "Foo", "Bar!"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			got := l.AsArray()
-			if !reflect.DeepEqual(got, &tt.want) {
+			if got := tt.l.AsArray(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("xmlList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
+		})
+	}
+}
 
-			// We add an element to the xmlList and we check that bot xmlList are modified
-			l.Append("Modified", 1, 2, 3)
-			pList := l.AsArray()
-			if !reflect.DeepEqual(pList, got) {
-				t.Errorf("After modification::\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, pList)
+func Test_XmlList_Strings(t *testing.T) {
+	tests := []struct {
+		name string
+		l    xmlList
+		want []string
+	}{
+		{"Empty List", xmlList{}, []string{}},
+		{"List of int", xmlList{1, 2, 3}, []string{"1", "2", "3"}},
+		{"List of string", strFixture, []string{"Hello", "World,", "I'm", "Foo", "Bar!"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Strings(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("xmlList.Strings() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -93,9 +97,9 @@ func Test_list_Clone(t *testing.T) {
 		l    xmlList
 		want xmlIList
 	}{
-		{"Empty List", xmlList{}, al(xmlList{})},
-		{"List of int", xmlList{1, 2, 3}, al(xmlList{1, 2, 3})},
-		{"List of string", strFixture, al(xmlList{"Hello", "World,", "I'm", "Foo", "Bar!"})},
+		{"Empty List", xmlList{}, xmlList{}},
+		{"List of int", xmlList{1, 2, 3}, xmlList{1, 2, 3}},
+		{"List of string", strFixture, xmlList{"Hello", "World,", "I'm", "Foo", "Bar!"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -159,8 +163,8 @@ func Test_NewList(t *testing.T) {
 		args args
 		want xmlIList
 	}{
-		{"Empty", args{0, 0}, &xmlList{}},
-		{"With nil elements", args{10, 0}, al(make(xmlList, 10))},
+		{"Empty", args{0, 0}, xmlList{}},
+		{"With nil elements", args{10, 0}, make(xmlList, 10)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -177,9 +181,9 @@ func Test_list_Reverse(t *testing.T) {
 		l    xmlList
 		want xmlIList
 	}{
-		{"Empty List", xmlList{}, al(xmlList{})},
-		{"List of int", xmlList{1, 2, 3}, al(xmlList{3, 2, 1})},
-		{"List of string", strFixture, al(xmlList{"Bar!", "Foo", "I'm", "World,", "Hello"})},
+		{"Empty List", xmlList{}, xmlList{}},
+		{"List of int", xmlList{1, 2, 3}, xmlList{3, 2, 1}},
+		{"List of string", strFixture, xmlList{"Bar!", "Foo", "I'm", "World,", "Hello"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -203,24 +207,20 @@ func Test_list_Set(t *testing.T) {
 		want    xmlIList
 		wantErr bool
 	}{
-		{"Empty", al(nil), args{2, 1}, al(xmlList{nil, nil, 1}), false},
-		{"List of int", al(xmlList{1, 2, 3}), args{0, 10}, al(xmlList{10, 2, 3}), false},
-		{"List of string", al(strFixture), args{2, "You're"}, al(xmlList{"Hello", "World,", "You're", "Foo", "Bar!"}), false},
-		{"Negative", al(nil), args{-1, "negative value"}, nil, true},
+		{"Empty", xmlList{}, args{2, 1}, xmlList{nil, nil, 1}, false},
+		{"List of int", xmlList{1, 2, 3}, args{0, 10}, xmlList{10, 2, 3}, false},
+		{"List of string", strFixture, args{2, "You're"}, xmlList{"Hello", "World,", "You're", "Foo", "Bar!"}, false},
+		{"Negative", xmlList{}, args{-1, "negative value"}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			got, err := l.Set(tt.args.i, tt.args.v)
+			got, err := tt.l.Clone().Set(tt.args.i, tt.args.v)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("xmlList.Set() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("xmlList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if err == nil && !reflect.DeepEqual(l, tt.want) {
-				t.Errorf("xmlList.Set():\nsrc %[1]v (%[1]T)\nwant %[2]v (%[2]T)", l, tt.want)
 			}
 		})
 	}
@@ -317,12 +317,12 @@ func Test_XmlDict_CreateList(t *testing.T) {
 		wantLen      int
 		wantCapacity int
 	}{
-		{"Nil", nil, nil, al(xmlList{}), 0, 0},
-		{"Empty", xmlDict{}, nil, al(xmlList{}), 0, 0},
-		{"Map", dictFixture, nil, al(xmlList{}), 0, 0},
-		{"Map with size", dictFixture, []int{3}, al(xmlList{nil, nil, nil}), 3, 3},
-		{"Map with capacity", dictFixture, []int{0, 10}, al(xmlList{}), 0, 10},
-		{"Map with size&capacity", dictFixture, []int{3, 10}, al(xmlList{nil, nil, nil}), 3, 10},
+		{"Nil", nil, nil, xmlList{}, 0, 0},
+		{"Empty", xmlDict{}, nil, xmlList{}, 0, 0},
+		{"Map", dictFixture, nil, xmlList{}, 0, 0},
+		{"Map with size", dictFixture, []int{3}, xmlList{nil, nil, nil}, 3, 3},
+		{"Map with capacity", dictFixture, []int{0, 10}, xmlList{}, 0, 10},
+		{"Map with size&capacity", dictFixture, []int{3, 10}, xmlList{nil, nil, nil}, 3, 10},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -431,8 +431,8 @@ func Test_dict_Keys(t *testing.T) {
 		d    xmlDict
 		want xmlIList
 	}{
-		{"Empty", nil, al(xmlList{})},
-		{"Map", dictFixture, al(xmlList{"float", "int", "list", "listInt", "map", "mapInt", "string"})},
+		{"Empty", nil, xmlList{}},
+		{"Map", dictFixture, xmlList{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

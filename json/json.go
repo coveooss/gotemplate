@@ -5,8 +5,8 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/coveo/gotemplate/types/implementation"
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/collections/implementation"
 )
 
 // Expose json public objects
@@ -25,12 +25,12 @@ func (l jsonList) String() string { result, _ := Marshal(l.AsArray()); return st
 func (d jsonDict) String() string { result, _ := Marshal(d.AsMap()); return string(result) }
 
 var _ = func() int {
-	utils.TypeConverters["!json"] = Unmarshal
+	collections.TypeConverters["!json"] = Unmarshal
 	return 0
 }()
 
 // Unmarshal calls the native Unmarshal but transform the results
-// to returns Dictionary and GenerecList instead of go native types.
+// to returns Dictionary and GenerecList instead of go native collections.
 func Unmarshal(data []byte, out interface{}) (err error) {
 	if err = NativeUnmarshal(data, out); err != nil {
 		return
@@ -55,7 +55,7 @@ func transformElement(source interface{}) interface{} {
 		}
 		source = value
 	} else if value, err := jsonHelper.TryAsList(source); err == nil {
-		for i, sub := range *value.AsArray() {
+		for i, sub := range value.AsArray() {
 			value.Set(i, transformElement(sub))
 		}
 		source = value
@@ -72,5 +72,5 @@ type helperBase = implementation.BaseHelper
 type helperList = implementation.ListHelper
 type helperDict = implementation.DictHelper
 
-//go:generate genny -pkg=json -in=../types/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=json"
-//go:generate genny -pkg=json -in=../types/implementation/generic_test.go -out=generated_test.go gen "base=json"
+//go:generate genny -pkg=json -in=../collections/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=json"
+//go:generate genny -pkg=json -in=../collections/implementation/generic_test.go -out=generated_test.go gen "base=json"

@@ -53,8 +53,8 @@ func TestUnmarshal(t *testing.T) {
 		wantErr bool
 	}{
 		{"Empty", "", nil, true},
-		{"Empty list", "[]", al(jsonList{}), false},
-		{"List of int", "[1,2,3]", al(jsonList{1, 2, 3}), false},
+		{"Empty list", "[]", jsonList{}, false},
+		{"List of int", "[1,2,3]", jsonList{1, 2, 3}, false},
 		{"Map", fmt.Sprint(dictFixture), dictFixture, false},
 	}
 	for _, tt := range tests {

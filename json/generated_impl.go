@@ -4,30 +4,31 @@
 
 package json
 
-import "github.com/coveo/gotemplate/types"
+import "github.com/coveo/gotemplate/collections"
 
 // List implementation of IGenericList for jsonList
 type List = jsonList
-type jsonIList = types.IGenericList
+type jsonIList = collections.IGenericList
 type jsonList []interface{}
 
-func (l *jsonList) Append(values ...interface{}) jsonIList { return jsonListHelper.Append(l, values...) }
-func (l *jsonList) AsArray() *[]interface{}                { return (*[]interface{})(l) }
-func (l jsonList) Cap() int                                { return cap(l) }
-func (l jsonList) Capacity() int                           { return cap(l) }
-func (l jsonList) Clone() jsonIList                        { return jsonListHelper.Clone(&l) }
-func (l jsonList) Count() int                              { return len(l) }
-func (l jsonList) Get(index int) interface{}               { return jsonListHelper.GetIndex(&l, index) }
-func (l jsonList) Len() int                                { return len(l) }
-func (l jsonList) Reverse() jsonIList                      { return jsonListHelper.Reverse(&l) }
+func (l jsonList) Append(values ...interface{}) jsonIList { return jsonListHelper.Append(l, values...) }
+func (l jsonList) AsArray() []interface{}                 { return []interface{}(l) }
+func (l jsonList) Cap() int                               { return cap(l) }
+func (l jsonList) Capacity() int                          { return cap(l) }
+func (l jsonList) Clone() jsonIList                       { return jsonListHelper.Clone(l) }
+func (l jsonList) Count() int                             { return len(l) }
+func (l jsonList) Get(index int) interface{}              { return jsonListHelper.GetIndex(l, index) }
+func (l jsonList) Len() int                               { return len(l) }
+func (l jsonList) Reverse() jsonIList                     { return jsonListHelper.Reverse(l) }
+func (l jsonList) Strings() []string                      { return jsonListHelper.GetStrings(l) }
 
-func (l *jsonList) Set(i int, v interface{}) (jsonIList, error) {
+func (l jsonList) Set(i int, v interface{}) (jsonIList, error) {
 	return jsonListHelper.SetIndex(l, i, v)
 }
 
 // Dictionary implementation of IDictionary for jsonDict
 type Dictionary = jsonDict
-type jsonIDict = types.IDictionary
+type jsonIDict = collections.IDictionary
 type jsonDict map[string]interface{}
 
 func (d jsonDict) AsMap() map[string]interface{}       { return (map[string]interface{})(d) }
@@ -62,12 +63,15 @@ func (d jsonDict) Set(key interface{}, v interface{}) jsonIDict {
 }
 
 // Generic helpers to simplify physical implementation
-func jsonListConvert(list jsonIList) jsonIList {
-	array := jsonList(*list.AsArray())
-	return &array
-}
+func jsonListConvert(list jsonIList) jsonIList { return jsonList(list.AsArray()) }
 func jsonDictConvert(dict jsonIDict) jsonIDict { return jsonDict(dict.AsMap()) }
 
 var jsonHelper = helperBase{ConvertList: jsonListConvert, ConvertDict: jsonDictConvert}
 var jsonListHelper = helperList{BaseHelper: jsonHelper}
 var jsonDictHelper = helperDict{BaseHelper: jsonHelper}
+
+// DictionaryHelper gives public access to the basic dictionary functions
+var DictionaryHelper collections.IDictionaryHelper = jsonDictHelper
+
+// GenericListHelper gives public access to the basic list functions
+var GenericListHelper collections.IListHelper = jsonListHelper

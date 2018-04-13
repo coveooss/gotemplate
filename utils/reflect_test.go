@@ -3,6 +3,8 @@ package utils
 import (
 	"reflect"
 	"testing"
+
+	"github.com/coveo/gotemplate/collections"
 )
 
 type empty struct{}
@@ -36,7 +38,7 @@ func TestIsEmptyValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsEmptyValue(reflect.ValueOf(tt.arg)); got != tt.want {
+			if got := isEmpty(reflect.ValueOf(tt.arg)); got != tt.want {
 				t.Errorf("IsEmptyValue() = %v, want %v", got, tt.want)
 			}
 		})
@@ -59,7 +61,7 @@ func TestIsExported(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsExported(tt.id); got != tt.want {
+			if got := collections.IsExported(tt.id); got != tt.want {
 				t.Errorf("IsExported() = %v, want %v", got, tt.want)
 			}
 		})

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 	logging "github.com/op/go-logging"
 )
@@ -33,7 +33,7 @@ type Template struct {
 // ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2).
 var ExtensionDepth = 2
 
-var toStrings = types.ToStrings
+var toStrings = collections.ToStrings
 
 // NewTemplate creates an Template object with default initialization.
 func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
@@ -176,7 +176,7 @@ func (t *Template) init(folder string) {
 }
 
 func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...string) {
-	c, err := types.TryAsDictionary(t.context)
+	c, err := collections.TryAsDictionary(t.context)
 	if err != nil {
 		return
 	}

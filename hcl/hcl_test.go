@@ -1,10 +1,11 @@
 package hcl
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/collections"
 )
 
 func Test_list_String(t *testing.T) {
@@ -83,7 +84,7 @@ func TestMarshalHCLVars(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			value := utils.ToNativeRepresentation(tt.args.value)
+			value := collections.ToNativeRepresentation(tt.args.value)
 			if got, _ := marshalHCL(value, true, true, "", tt.args.indent); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MarshalHCLVars() = %v, want %v", got, tt.want)
 			}
@@ -98,11 +99,11 @@ func TestUnmarshal(t *testing.T) {
 		want    interface{}
 		wantErr bool
 	}{
-		// {"Empty", "", hclDict{}, false},
-		// {"Empty list", "[]", al(hclList{}), false},
-		// {"List of int", "[1,2,3]", al(hclList{1, 2, 3}), false},
-		{"Array of map", "a { b { c { d = 1 e = 2 }}}", al(hclList{1, 2, 3}), false},
-		// {"Map", fmt.Sprint(dictFixture), dictFixture, false},
+		{"Empty", "", hclDict{}, false},
+		{"Empty list", "[]", hclList{}, false},
+		{"List of int", "[1,2,3]", hclList{1, 2, 3}, false},
+		{"Array of map", "a { b { c { d = 1 e = 2 }}}", hclDict{"a": hclDict{"b": hclDict{"c": hclDict{"d": 1, "e": 2}}}}, false},
+		{"Map", fmt.Sprint(dictFixture), dictFixture, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

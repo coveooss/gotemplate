@@ -1,10 +1,12 @@
 package template
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime/debug"
 	"strings"
 	"testing"
 
@@ -64,12 +66,20 @@ func TestTemplate_applyRazor(t *testing.T) {
 				}
 			}
 
-			got, err := template.ProcessContent(string(content), tt.path)
+			var got string
+			var err error
+			func() {
+				defer func() {
+					if rec := recover(); rec != nil {
+						err = fmt.Errorf("Template.ProcessContent() panic=%v\n%s", rec, string(debug.Stack()))
+					}
+				}()
+				got, err = template.ProcessContent(string(content), tt.path)
+			}()
+
 			if err != nil {
 				t.Errorf("Template.ProcessContent(), err=%v", err)
-			}
-
-			if tt.render != "" {
+			} else if tt.render != "" {
 				result := string(load(tt.render))
 				if !reflect.DeepEqual(got, result) {
 					diffs := dmp.DiffMain(string(result), string(got), true)

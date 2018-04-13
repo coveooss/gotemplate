@@ -4,30 +4,31 @@
 
 package yaml
 
-import "github.com/coveo/gotemplate/types"
+import "github.com/coveo/gotemplate/collections"
 
 // List implementation of IGenericList for yamlList
 type List = yamlList
-type yamlIList = types.IGenericList
+type yamlIList = collections.IGenericList
 type yamlList []interface{}
 
-func (l *yamlList) Append(values ...interface{}) yamlIList { return yamlListHelper.Append(l, values...) }
-func (l *yamlList) AsArray() *[]interface{}                { return (*[]interface{})(l) }
-func (l yamlList) Cap() int                                { return cap(l) }
-func (l yamlList) Capacity() int                           { return cap(l) }
-func (l yamlList) Clone() yamlIList                        { return yamlListHelper.Clone(&l) }
-func (l yamlList) Count() int                              { return len(l) }
-func (l yamlList) Get(index int) interface{}               { return yamlListHelper.GetIndex(&l, index) }
-func (l yamlList) Len() int                                { return len(l) }
-func (l yamlList) Reverse() yamlIList                      { return yamlListHelper.Reverse(&l) }
+func (l yamlList) Append(values ...interface{}) yamlIList { return yamlListHelper.Append(l, values...) }
+func (l yamlList) AsArray() []interface{}                 { return []interface{}(l) }
+func (l yamlList) Cap() int                               { return cap(l) }
+func (l yamlList) Capacity() int                          { return cap(l) }
+func (l yamlList) Clone() yamlIList                       { return yamlListHelper.Clone(l) }
+func (l yamlList) Count() int                             { return len(l) }
+func (l yamlList) Get(index int) interface{}              { return yamlListHelper.GetIndex(l, index) }
+func (l yamlList) Len() int                               { return len(l) }
+func (l yamlList) Reverse() yamlIList                     { return yamlListHelper.Reverse(l) }
+func (l yamlList) Strings() []string                      { return yamlListHelper.GetStrings(l) }
 
-func (l *yamlList) Set(i int, v interface{}) (yamlIList, error) {
+func (l yamlList) Set(i int, v interface{}) (yamlIList, error) {
 	return yamlListHelper.SetIndex(l, i, v)
 }
 
 // Dictionary implementation of IDictionary for yamlDict
 type Dictionary = yamlDict
-type yamlIDict = types.IDictionary
+type yamlIDict = collections.IDictionary
 type yamlDict map[string]interface{}
 
 func (d yamlDict) AsMap() map[string]interface{}       { return (map[string]interface{})(d) }
@@ -62,12 +63,15 @@ func (d yamlDict) Set(key interface{}, v interface{}) yamlIDict {
 }
 
 // Generic helpers to simplify physical implementation
-func yamlListConvert(list yamlIList) yamlIList {
-	array := yamlList(*list.AsArray())
-	return &array
-}
+func yamlListConvert(list yamlIList) yamlIList { return yamlList(list.AsArray()) }
 func yamlDictConvert(dict yamlIDict) yamlIDict { return yamlDict(dict.AsMap()) }
 
 var yamlHelper = helperBase{ConvertList: yamlListConvert, ConvertDict: yamlDictConvert}
 var yamlListHelper = helperList{BaseHelper: yamlHelper}
 var yamlDictHelper = helperDict{BaseHelper: yamlHelper}
+
+// DictionaryHelper gives public access to the basic dictionary functions
+var DictionaryHelper collections.IDictionaryHelper = yamlDictHelper
+
+// GenericListHelper gives public access to the basic list functions
+var GenericListHelper collections.IListHelper = yamlListHelper
