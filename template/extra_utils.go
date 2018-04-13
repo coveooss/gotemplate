@@ -2,6 +2,7 @@ package template
 
 import (
 	"fmt"
+	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ var utilsFuncs = dictionary{
 	"mergeList":  utils.MergeLists,
 	"pwd":        utils.Pwd,
 	"repeat":     repeat,
+	"save":       saveToFile,
 	"sIndent":    indent,
 	"splitLines": collections.SplitLines,
 	"wrap":       wrap,
@@ -45,6 +47,7 @@ var utilsFuncsArgs = arguments{
 	"lorem":      {"loremType", "params"},
 	"mergeList":  {"lists"},
 	"repeat":     {"n", "element"},
+	"save":       {"filename", "object"},
 	"sIndent":    {"spacer"},
 	"splitLines": {"content"},
 	"wrap":       {"width"},
@@ -58,6 +61,7 @@ var utilsFuncsAliases = aliases{
 	"id":      {"identifier"},
 	"lorem":   {"loremIpsum"},
 	"pwd":     {"currentDir"},
+	"save":    {"write", "writeTo"},
 	"sIndent": {"sindent", "spaceIndent"},
 	"wrap":    {"wrapped"},
 }
@@ -92,6 +96,7 @@ var utilsFuncsHelp = descriptions{
 	"mergeList":  "Return a single list containing all elements from the lists supplied.",
 	"pwd":        "Returns the current working directory.",
 	"repeat":     "Returns an array with the item repeated n times.",
+	"save":       "Save object to file.",
 	"sIndent": strings.TrimSpace(collections.UnIndent(`
 		Intents the the elements using the provided spacer.
 		
@@ -173,4 +178,8 @@ func repeat(n int, a interface{}) (result []interface{}, err error) {
 		result[i] = a
 	}
 	return
+}
+
+func saveToFile(filename string, object interface{}) (string, error) {
+	return "", ioutil.WriteFile(filename, []byte(fmt.Sprint(object)), 0644)
 }

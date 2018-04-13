@@ -17,7 +17,9 @@ func (l xmlList) Cap() int                              { return cap(l) }
 func (l xmlList) Capacity() int                         { return cap(l) }
 func (l xmlList) Clone() xmlIList                       { return xmlListHelper.Clone(l) }
 func (l xmlList) Count() int                            { return len(l) }
+func (l xmlList) Create(args ...int) xmlIList           { return xmlListHelper.CreateList(args...) }
 func (l xmlList) Get(index int) interface{}             { return xmlListHelper.GetIndex(l, index) }
+func (l xmlList) New(args ...interface{}) xmlIList      { return xmlListHelper.NewList(args...) }
 func (l xmlList) Len() int                              { return len(l) }
 func (l xmlList) Reverse() xmlIList                     { return xmlListHelper.Reverse(l) }
 func (l xmlList) Strings() []string                     { return xmlListHelper.GetStrings(l) }

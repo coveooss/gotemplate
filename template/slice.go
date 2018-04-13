@@ -53,12 +53,12 @@ func sliceInternal(value interface{}, extract bool, args ...interface{}) (result
 			if !extract {
 				return nil, fmt.Errorf("To many parameters")
 			}
-			result := make([]interface{}, len(args))
+			result := collections.AsList(value).Create(len(args))
 			for i := range args {
-				result[i] = selectElement(valueOf, toInt(args[i]))
+				result.Set(i, selectElement(valueOf, toInt(args[i])))
 			}
 			if valueOf.Kind() == reflect.String {
-				return fmt.Sprint(result...), nil
+				return fmt.Sprint(result.AsArray()...), nil
 			}
 			return result, nil
 		}
@@ -130,14 +130,14 @@ func sliceList(value reflect.Value, args ...interface{}) (result interface{}, er
 
 	if begin > length {
 		// Begin is after the end
-		return []interface{}{}, nil
+		return collections.AsList(value.Interface()).Create(), nil
 	}
-	results := make([]interface{}, end-begin)
-	for i := range results {
-		results[i] = value.Index(i + begin).Interface()
+	results := collections.AsList(value.Interface()).Create(end - begin)
+	for i := range results.AsArray() {
+		results.Set(i, value.Index(i+begin).Interface())
 	}
 	if reverse {
-		return reverseArray(results), nil
+		return results.Reverse(), nil
 	}
 	return results, nil
 }

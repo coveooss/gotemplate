@@ -8,19 +8,16 @@ import (
 
 // IGenericList represents objects that act as []interface{}.
 type IGenericList interface {
-	// Cast(interface{}) IGenericList             // Returns the object casted as same list type.
-	// CreateList(...int) IGenericList            // Allocates a new list of the same type implementation as this list. Optional arguments are size and capacity.
-	// NewList(...interface{}) IGenericList       // Creates a new generic list from the supplied arguments.
-	// TryCast(interface{}) (IGenericList, error) // Returns the object casted as same list type if possible.
-
 	AsArray() []interface{}                                 // Returns the current list as standard array of interface{}.
 	Append(...interface{}) IGenericList                     // Add elements to to current list. If list is not large enough, it is enlarged to fit the required size.
 	Cap() int                                               // Returns the capacity of the list.
 	Capacity() int                                          // Simply an alias for Cap.
 	Clone() IGenericList                                    // Returns a distinct copy of the object.
 	Count() int                                             // Simply an alias for Len.
+	Create(...int) IGenericList                             // Allocates a new list of the same type implementation as this list. Optional arguments are size and capacity.
 	Get(index int) interface{}                              // Returns the element at position index in the list. If index is out of bound, nil is returned.
 	Len() int                                               // Returns the number of elements in the list.
+	New(...interface{}) IGenericList                        // Creates a new generic list from the supplied arguments.
 	Reverse() IGenericList                                  // Returns a copy of the current list in reverse order.
 	Set(index int, value interface{}) (IGenericList, error) // Sets the value at position index into the list. If list is not large enough, it is enlarged to fit the index.
 	String() string                                         // Returns the string representation of the list.
@@ -31,7 +28,7 @@ type IGenericList interface {
 type IListHelper interface {
 	AsList(interface{}) IGenericList                    // Converts object to IGenericList object. It panics if conversion is impossible.
 	Convert(object interface{}) interface{}             // Tries to convert the supplied object into IDictionary or IGenericList.
-	CreateList(args ...int) IGenericList                // Creates a new IGenericList with optional size/capacity arguments.
+	CreateList(...int) IGenericList                     // Creates a new IGenericList with optional size/capacity arguments.
 	NewList(...interface{}) IGenericList                // Creates a new IGenericList from supplied arguments.
 	NewStringList(...string) IGenericList               // Creates a new IGenericList from supplied arguments.
 	TryAsList(object interface{}) (IGenericList, error) // Tries to convert any object to IGenericList object.

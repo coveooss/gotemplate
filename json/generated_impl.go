@@ -17,7 +17,9 @@ func (l jsonList) Cap() int                               { return cap(l) }
 func (l jsonList) Capacity() int                          { return cap(l) }
 func (l jsonList) Clone() jsonIList                       { return jsonListHelper.Clone(l) }
 func (l jsonList) Count() int                             { return len(l) }
+func (l jsonList) Create(args ...int) jsonIList           { return jsonListHelper.CreateList(args...) }
 func (l jsonList) Get(index int) interface{}              { return jsonListHelper.GetIndex(l, index) }
+func (l jsonList) New(args ...interface{}) jsonIList      { return jsonListHelper.NewList(args...) }
 func (l jsonList) Len() int                               { return len(l) }
 func (l jsonList) Reverse() jsonIList                     { return jsonListHelper.Reverse(l) }
 func (l jsonList) Strings() []string                      { return jsonListHelper.GetStrings(l) }

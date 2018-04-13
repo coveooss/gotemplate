@@ -17,7 +17,9 @@ func (l yamlList) Cap() int                               { return cap(l) }
 func (l yamlList) Capacity() int                          { return cap(l) }
 func (l yamlList) Clone() yamlIList                       { return yamlListHelper.Clone(l) }
 func (l yamlList) Count() int                             { return len(l) }
+func (l yamlList) Create(args ...int) yamlIList           { return yamlListHelper.CreateList(args...) }
 func (l yamlList) Get(index int) interface{}              { return yamlListHelper.GetIndex(l, index) }
+func (l yamlList) New(args ...interface{}) yamlIList      { return yamlListHelper.NewList(args...) }
 func (l yamlList) Len() int                               { return len(l) }
 func (l yamlList) Reverse() yamlIList                     { return yamlListHelper.Reverse(l) }
 func (l yamlList) Strings() []string                      { return yamlListHelper.GetStrings(l) }

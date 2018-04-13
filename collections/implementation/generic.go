@@ -15,7 +15,9 @@ func (l baseList) Cap() int                               { return cap(l) }
 func (l baseList) Capacity() int                          { return cap(l) }
 func (l baseList) Clone() baseIList                       { return baseListHelper.Clone(l) }
 func (l baseList) Count() int                             { return len(l) }
+func (l baseList) Create(args ...int) baseIList           { return baseListHelper.CreateList(args...) }
 func (l baseList) Get(index int) interface{}              { return baseListHelper.GetIndex(l, index) }
+func (l baseList) New(args ...interface{}) baseIList      { return baseListHelper.NewList(args...) }
 func (l baseList) Len() int                               { return len(l) }
 func (l baseList) Reverse() baseIList                     { return baseListHelper.Reverse(l) }
 func (l baseList) Strings() []string                      { return baseListHelper.GetStrings(l) }

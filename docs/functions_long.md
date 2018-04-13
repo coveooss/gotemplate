@@ -519,7 +519,7 @@ le(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
 Returns the integer length of its argument.
 len(item interface{}) (int, error)
 
-Returns the number of actual character in a string
+Returns the number of actual character in a string.
 lenc(str string) int
 
 Returns the natural logarithm and sign (-1 or +1) of Gamma(x).
@@ -531,7 +531,8 @@ Special cases are:
     lgamma(NaN) = NaN
 lgamma(x interface{}) interface{}, error
 
-list(args ...interface{}) []interface{}
+Returns a generic list from the supplied arguments.
+list(args ...interface{}) IGenericList
 
 Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.
 localAlias(name string, function string, source interface{}, args ...interface{}) string, error
@@ -586,10 +587,13 @@ Special cases are:
 max(x ...interface{}) interface{}
 
 Merges two or more dictionaries into one, giving precedence to the dest dictionary.
-merge(destination IDictionary, sources ...IDictionary) IDictionary, error
+merge(destination IDictionary, sources IDictionary, args ...IDictionary) IDictionary
 
 Return a single list containing all elements from the lists supplied.
 mergeList(lists ...[]interface{}) []interface{}
+
+List all methods signatures accessible from the supplied object.
+methods(arg1 interface{}) string
 
 Returns the smaller of x or y.
 Special cases are:
@@ -644,7 +648,7 @@ The current date/time. Use this in conjunction with other date functions.
 now() time.Time
 
 Returns a new dict with all the keys that do not match the given keys.
-omit(dict IDictionary, keys ...interface{}) IDictionary
+omit(dict IDictionary, keys interface{}, args ...interface{}) IDictionary
 
 Returns the boolean OR of its arguments by returning the first non-empty argument or the last argument, that is, "or x y" behaves as "if x then x else y". All the arguments are evaluated.
 or(or(arg0 reflect.Value, args ...reflect.Value) reflect.Value
@@ -659,7 +663,7 @@ Selects just the given keys out of a dictionary, creating a new dict.
 pick(dict IDictionary, keys ...interface{}) IDictionary
 
 Same as pick, but returns an error message if there are intruders in supplied dictionary.
-pickv(dict IDictionary, message string, keys ...interface{}) interface{}, error
+pickv(dict IDictionary, message string, keys interface{}, args ...interface{}) interface{}, error
 
 Extracts a list of values matching the supplied key from a list of dictionary.
 pluck(key interface{}, dictionaries ...IDictionary) IGenericList
@@ -781,6 +785,9 @@ sIndent(spacer string, args ...interface{}) string
 
 Returns the element at index position or default if index is outside bounds.
 safeIndex(value interface{}, index int, default interface{}) interface{}, error
+
+Save object to file.
+save(filename string, object interface{}) string, error
 
 Parses a string into a Semantic Version.
 semver(version string) *semver.Version, error

@@ -68,6 +68,7 @@ var runtimeFuncsHelp = descriptions{
 	"functions":     "Returns the list of all available functions (excluding aliases).",
 	"include":       "Returns the result of the named template rendering (like template but it is possible to capture the output).",
 	"localAlias":    "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.",
+	"methods":       "List all methods signatures accessible from the supplied object.",
 	"run":           "Returns the result of the shell command as string.",
 	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
 	"templateNames": "Returns the list of available templates names.",
@@ -79,6 +80,7 @@ func (t *Template) addRuntimeFuncs() {
 		"alias":         t.alias,
 		"aliases":       t.getAliases,
 		"allFunctions":  t.getAllFunctions,
+		"categories":    t.getCategories,
 		"current":       t.current,
 		"ellipsis":      t.ellipsis,
 		"exec":          t.execCommand,
@@ -86,13 +88,13 @@ func (t *Template) addRuntimeFuncs() {
 		"func":          t.defineFunc,
 		"function":      t.getFunction,
 		"functions":     t.getFunctions,
-		"categories":    t.getCategories,
 		"include":       t.include,
 		"localAlias":    t.localAlias,
+		"methods":       describeMethods,
 		"run":           t.runCommand,
 		"substitute":    t.substitute,
-		"templates":     t.Templates,
 		"templateNames": t.getTemplateNames,
+		"templates":     t.Templates,
 	}
 
 	t.AddFunctions(funcs, runtimeFunc, funcOptions{
@@ -425,4 +427,20 @@ func (t Template) ellipsis(function string, args ...interface{}) (interface{}, e
 	template := fmt.Sprintf("%s %s %s %s", t.delimiters[0], function, strings.Join(argsStr, " "), t.delimiters[1])
 	result, _, err := t.runTemplate(template, context)
 	return result, err
+}
+
+func describeMethods(object interface{}) string {
+	if object == nil {
+		return ""
+	}
+
+	t := reflect.TypeOf(object)
+	result := make([]string, t.NumMethod())
+	for i := range result {
+		result[i] = FuncInfo{
+			name:     t.Method(i).Name,
+			function: t.Method(i).Func.Interface(),
+		}.getSignature(true)
+	}
+	return strings.Join(result, "\n")
 }
