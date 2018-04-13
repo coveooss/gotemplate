@@ -317,11 +317,11 @@ func (t *Template) addMathFuncs() {
 		"MaxUint16":              math.MaxUint16,
 		"MaxUint32":              math.MaxUint32,
 		"MaxUint64":              uint(math.MaxUint64),
-		"Nan":                    math.NaN(),
-		"Infinity":               math.Inf(1),
-		"Inf":                    math.Inf(1),
-		"NegativeInfinity":       math.Inf(-1),
-		"NegInf":                 math.Inf(-1),
+		// "Nan":                    math.NaN(),
+		// "Infinity":               math.Inf(1),
+		// "Inf":                    math.Inf(1),
+		// "NegativeInfinity":       math.Inf(-1),
+		// "NegInf":                 math.Inf(-1),
 	}
 
 	// We do not want to inject the math constant twice

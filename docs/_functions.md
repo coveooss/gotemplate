@@ -15,11 +15,11 @@ toBash                  toPrettyHcl             toQuotedJson            yaml
 
 Data Manipulation
 
-String                  dict                    keys                    pickv                   string                  
-array                   extract                 lenc                    pluck                   undef                   
-bool                    get                     merge                   safeIndex               unset                   
-char                    hasKey                  omit                    set                     
-content                 key                     pick                    slice                   
+String                  dict                    keys                    pick                    slice                   
+array                   extract                 lenc                    pickv                   string                  
+bool                    get                     list                    pluck                   undef                   
+char                    hasKey                  merge                   safeIndex               unset                   
+content                 key                     omit                    set                     
 
 Logging
 
@@ -61,17 +61,17 @@ frexp                   hypot                   ldexp                   signBit 
 
 Other utilities
 
-center                  formatList              joinLines               repeat                  
+center                  formatList              joinLines               repeat                  wrap                    
 color                   glob                    lorem                   sIndent                 
-concat                  id                      mergeList               splitLines              
-diff                    iif                     pwd                     wrap                    
+concat                  id                      mergeList               save                    
+diff                    iif                     pwd                     splitLines              
 
 Runtime
 
-alias                   current                 func                    localAlias              templates               
-aliases                 ellipsis                function                run                     
-allFunctions            exec                    functions               substitute              
-categories              exit                    include                 templateNames           
+alias                   current                 func                    localAlias              templateNames           
+aliases                 ellipsis                function                methods                 templates               
+allFunctions            exec                    functions               run                     
+categories              exit                    include                 substitute              
 
 Sprig Cryptographic & Security http://masterminds.github.io/sprig/crypto.html
 
@@ -86,10 +86,6 @@ date                    dateModify              htmlDateInZone          toDate
 Sprig Default http://masterminds.github.io/sprig/defaults.html
 
 coalesce                compact                 default                 empty                   
-
-Sprig Dictionnary http://masterminds.github.io/sprig/dicst.html
-
-list                    
 
 Sprig Encoding http://masterminds.github.io/sprig/encoding.html
 

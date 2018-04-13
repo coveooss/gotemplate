@@ -23,29 +23,23 @@ type FuncInfo struct {
 	alias       *FuncInfo
 }
 
-// Name returns the name related to the entry.
-func (fi FuncInfo) Name() string { return fi.name }
-
-// Group returns the group name associated to the entry.
-func (fi FuncInfo) Group() string { return ifUndef(&fi, fi.alias).(*FuncInfo).group }
-
 // Aliases returns the aliases related to the entry.
 func (fi FuncInfo) Aliases() []string { return ifUndef(&fi, fi.alias).(*FuncInfo).aliases }
+
+// Arguments returns the list of arguments that must be supplied to the function.
+func (fi FuncInfo) Arguments() string { return fi.getArguments(false) }
 
 // Description returns the description related to the entry.
 func (fi FuncInfo) Description() string { return ifUndef(&fi, fi.alias).(*FuncInfo).description }
 
-// Signature returns the function signature
-func (fi FuncInfo) Signature() string {
-	col := color.HiBlueString
-	name := fi.name
-	if fi.alias != nil {
-		fi = *fi.alias
-		col = color.HiBlackString
-	}
+// Group returns the group name associated to the entry.
+func (fi FuncInfo) Group() string { return ifUndef(&fi, fi.alias).(*FuncInfo).group }
 
-	return fmt.Sprintf("%s(%s) %s", col(name), fi.Arguments(), color.HiBlackString(fi.Result()))
-}
+// Name returns the name related to the entry.
+func (fi FuncInfo) Name() string { return fi.name }
+
+// Signature returns the function signature
+func (fi FuncInfo) Signature() string { return fi.getSignature(false) }
 
 // String returns the presentation of the FuncInfo entry.
 func (fi FuncInfo) String() (result string) {
@@ -63,15 +57,26 @@ func (fi FuncInfo) String() (result string) {
 	return result + signature
 }
 
-// Arguments returns the list of arguments that must be supplied to the function.
-func (fi FuncInfo) Arguments() string {
+// Signature returns the function signature
+func (fi FuncInfo) getSignature(isMethod bool) string {
+	col := color.HiBlueString
+	name := fi.name
+	if fi.alias != nil {
+		fi = *fi.alias
+		col = color.HiBlackString
+	}
+
+	return fmt.Sprintf("%s(%s) %s", col(name), fi.getArguments(isMethod), color.HiBlackString(fi.Result()))
+}
+
+func (fi FuncInfo) getArguments(isMethod bool) string {
 	if fi.in != "" || fi.function == nil {
 		return fi.in
 	}
 
 	signature := reflect.ValueOf(fi.function).Type()
 	var parameters []string
-	for i := 0; i < signature.NumIn(); i++ {
+	for i := iif(isMethod, 1, 0).(int); i < signature.NumIn(); i++ {
 		arg := strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "interface{}", -1)
 		arg = strings.Replace(arg, "collections.", "", -1)
 		var argName string
