@@ -143,7 +143,7 @@ func TestIIf(t *testing.T) {
 	}
 }
 
-func TestMergeDictionary(t *testing.T) {
+func TestMergeDictionaries(t *testing.T) {
 	collections.DictionaryHelper = implementation.DictionaryHelper
 	collections.ListHelper = implementation.GenericListHelper
 	map1 := map[string]interface{}{
@@ -195,13 +195,13 @@ func TestMergeDictionary(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := MergeDictionary(tt.args...)
+			got, err := MergeDictionaries(tt.args...)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("MergeDictionary() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MergeDictionaries() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MergeDictionary():\n got %v\nwant %v", got, tt.want)
+				t.Errorf("MergeDictionaries():\n got %v\nwant %v", got, tt.want)
 			}
 		})
 	}

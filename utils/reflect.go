@@ -40,8 +40,8 @@ func Default(value, defaultValue interface{}) interface{} {
 	return IIf(value, value, defaultValue)
 }
 
-// MergeDictionary merges multiple dictionaries into a single one prioritizing the first ones.
-func MergeDictionary(args ...map[string]interface{}) (map[string]interface{}, error) {
+// MergeDictionaries merges multiple dictionaries into a single one prioritizing the first ones.
+func MergeDictionaries(args ...map[string]interface{}) (map[string]interface{}, error) {
 	if len(args) == 0 {
 		return make(map[string]interface{}), nil
 	}
