@@ -100,6 +100,7 @@ func (t *Template) addRuntimeFuncs() {
 		"getSignature":  getSignature,
 		"include":       t.include,
 		"localAlias":    t.localAlias,
+		"methods":       describeMethods,
 		"run":           t.runCommand,
 		"substitute":    t.substitute,
 		"templateNames": t.getTemplateNames,
