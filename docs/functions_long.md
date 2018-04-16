@@ -607,9 +607,6 @@ merge(destination IDictionary, sources IDictionary, args ...IDictionary) IDictio
 Return a single list containing all elements from the lists supplied.
 mergeList(lists ...[]interface{}) []interface{}
 
-List all methods signatures accessible from the supplied object.
-methods(arg1 interface{}) string
-
 Returns the smaller of x or y.
 Special cases are:
     min(x, -Inf) = min(-Inf, x) = -Inf
