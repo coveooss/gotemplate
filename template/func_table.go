@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/fatih/color"
 )
 
@@ -22,29 +23,23 @@ type FuncInfo struct {
 	alias       *FuncInfo
 }
 
-// Name returns the name related to the entry.
-func (fi FuncInfo) Name() string { return fi.name }
-
-// Group returns the group name associated to the entry.
-func (fi FuncInfo) Group() string { return ifUndef(&fi, fi.alias).(*FuncInfo).group }
-
 // Aliases returns the aliases related to the entry.
 func (fi FuncInfo) Aliases() []string { return ifUndef(&fi, fi.alias).(*FuncInfo).aliases }
+
+// Arguments returns the list of arguments that must be supplied to the function.
+func (fi FuncInfo) Arguments() string { return fi.getArguments(false) }
 
 // Description returns the description related to the entry.
 func (fi FuncInfo) Description() string { return ifUndef(&fi, fi.alias).(*FuncInfo).description }
 
-// Signature returns the function signature
-func (fi FuncInfo) Signature() string {
-	col := color.HiBlueString
-	name := fi.name
-	if fi.alias != nil {
-		fi = *fi.alias
-		col = color.HiBlackString
-	}
+// Group returns the group name associated to the entry.
+func (fi FuncInfo) Group() string { return ifUndef(&fi, fi.alias).(*FuncInfo).group }
 
-	return fmt.Sprintf("%s(%s) %s", col(name), fi.Arguments(), color.HiBlackString(fi.Result()))
-}
+// Name returns the name related to the entry.
+func (fi FuncInfo) Name() string { return fi.name }
+
+// Signature returns the function signature
+func (fi FuncInfo) Signature() string { return fi.getSignature(false) }
 
 // String returns the presentation of the FuncInfo entry.
 func (fi FuncInfo) String() (result string) {
@@ -62,17 +57,28 @@ func (fi FuncInfo) String() (result string) {
 	return result + signature
 }
 
-// Arguments returns the list of arguments that must be supplied to the function.
-func (fi FuncInfo) Arguments() string {
-	if fi.in != "" {
+// Signature returns the function signature
+func (fi FuncInfo) getSignature(isMethod bool) string {
+	col := color.HiBlueString
+	name := fi.name
+	if fi.alias != nil {
+		fi = *fi.alias
+		col = color.HiBlackString
+	}
+
+	return fmt.Sprintf("%s(%s) %s", col(name), fi.getArguments(isMethod), color.HiBlackString(fi.Result()))
+}
+
+func (fi FuncInfo) getArguments(isMethod bool) string {
+	if fi.in != "" || fi.function == nil {
 		return fi.in
 	}
 
 	signature := reflect.ValueOf(fi.function).Type()
 	var parameters []string
-	for i := 0; i < signature.NumIn(); i++ {
+	for i := iif(isMethod, 1, 0).(int); i < signature.NumIn(); i++ {
 		arg := strings.Replace(fmt.Sprint(signature.In(i)), "interface {}", "interface{}", -1)
-		arg = strings.Replace(arg, "types.", "", -1)
+		arg = strings.Replace(arg, "collections.", "", -1)
 		var argName string
 		if i < len(fi.arguments) {
 			argName = fi.arguments[i]
@@ -93,14 +99,14 @@ func (fi FuncInfo) Arguments() string {
 
 // Result returns the list of output produced by the function.
 func (fi FuncInfo) Result() string {
-	if fi.out != "" {
+	if fi.out != "" || fi.function == nil {
 		return fi.out
 	}
 	signature := reflect.ValueOf(fi.function).Type()
 	var outputs []string
 	for i := 0; i < signature.NumOut(); i++ {
 		r := strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "interface{}", -1)
-		r = strings.Replace(r, "types.", "", -1)
+		r = strings.Replace(r, "collections.", "", -1)
 		outputs = append(outputs, r)
 	}
 	return strings.Join(outputs, ", ")
@@ -109,12 +115,12 @@ func (fi FuncInfo) Result() string {
 type funcTableMap map[string]FuncInfo
 
 func (ftm funcTableMap) convert() template.FuncMap {
-	result := make(dictionary, len(ftm))
+	result := collections.CreateDictionary(len(ftm))
 	for key, val := range ftm {
 		if val.function == nil {
 			continue
 		}
-		result[key] = val.function
+		result.Set(key, val.function)
 	}
 	return result.AsMap()
 }
@@ -132,6 +138,7 @@ type funcOptions map[funcOptionsSet]interface{}
 type aliases map[string][]string
 type arguments map[string][]string
 type descriptions map[string]string
+type dictionary map[string]interface{}
 type groups map[string]string
 
 // AddFunctions add functions to the template, but keep a detailled definition of the function added for helping purpose

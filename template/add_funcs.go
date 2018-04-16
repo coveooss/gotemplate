@@ -48,6 +48,10 @@ func (t *Template) addFuncs() {
 	if t.options[Utils] {
 		t.addUtilsFuncs()
 	}
+
+	if t.options[Net] {
+		t.addNetFuncs()
+	}
 }
 
 // Apply all regular expressions replacements to the supplied string

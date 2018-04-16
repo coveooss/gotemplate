@@ -3,9 +3,9 @@ package template
 import (
 	"fmt"
 	"reflect"
-	"sort"
 
 	"github.com/Masterminds/sprig"
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
 )
 
@@ -53,52 +53,52 @@ func sliceInternal(value interface{}, extract bool, args ...interface{}) (result
 			if !extract {
 				return nil, fmt.Errorf("To many parameters")
 			}
-			result := make([]interface{}, len(args))
+			result := collections.AsList(value).Create(len(args))
 			for i := range args {
-				result[i] = selectElement(valueOf, toInt(args[i]))
+				result.Set(i, selectElement(valueOf, toInt(args[i])))
 			}
 			if valueOf.Kind() == reflect.String {
-				return fmt.Sprint(result...), nil
+				return fmt.Sprint(result.AsArray()...), nil
 			}
 			return result, nil
 		}
 
 	case reflect.Map:
-		if !extract {
-			return sliceMap(valueOf, args...)
-		}
-		return nil, nil
+		return sliceMap(value, extract, args...)
 
 	default:
 		return nil, fmt.Errorf("Cannot apply slice on type %s", reflect.TypeOf(value))
 	}
 }
 
-func sliceMap(data reflect.Value, args ...interface{}) (interface{}, error) {
-	results := []interface{}{}
+func sliceMap(value interface{}, extract bool, args ...interface{}) (interface{}, error) {
+	dict := collections.AsDictionary(value)
 	switch len(args) {
 	case 0:
-		return results, nil
-	case 1:
-		return data.MapIndex(reflect.ValueOf(args[0])), nil
-	case 2:
-		keys := data.MapKeys()
-		keyStrings := make([]string, len(keys))
-		mapStrings := make(map[string]reflect.Value)
-		for i := range keys {
-			keyStrings[i] = fmt.Sprint(keys[i].Interface())
-			mapStrings[keyStrings[i]] = data.MapIndex(keys[i])
-		}
-		sort.Strings(keyStrings)
-		argsStr := toStrings(args)
-		for i := range keyStrings {
-			if keyStrings[i] >= argsStr[0] && keyStrings[i] <= argsStr[1] {
-				results = append(results, mapStrings[keyStrings[i]].Interface())
-			}
-		}
-		return results, nil
-	default:
 		return nil, nil
+	case 1:
+		return dict.Get(args[0]), nil
+	case 2:
+		if !extract {
+			keys := dict.Keys()
+			k1, k2 := fmt.Sprint(args[0]), fmt.Sprint(args[1])
+			if k1 > k2 {
+				keys = keys.Reverse()
+				k1, k2 = k2, k1
+			}
+
+			results := dict.CreateList(0, dict.Len()*20)
+			for i := 0; i < keys.Len(); i++ {
+				k := fmt.Sprint(keys.Get(i))
+				if k >= k1 && k <= k2 {
+					results.Append(dict.Get(key))
+				}
+			}
+			return results, nil
+		}
+		fallthrough
+	default:
+		return nil, fmt.Errorf("Slice cannot have more that two parts")
 	}
 }
 
@@ -130,14 +130,14 @@ func sliceList(value reflect.Value, args ...interface{}) (result interface{}, er
 
 	if begin > length {
 		// Begin is after the end
-		return []interface{}{}, nil
+		return collections.AsList(value.Interface()).Create(), nil
 	}
-	results := make([]interface{}, end-begin)
-	for i := range results {
-		results[i] = value.Index(i + begin).Interface()
+	results := collections.AsList(value.Interface()).Create(end - begin)
+	for i := range results.AsArray() {
+		results.Set(i, value.Index(i+begin).Interface())
 	}
 	if reverse {
-		return reverseArray(results), nil
+		return results.Reverse(), nil
 	}
 	return results, nil
 }

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/json"
-	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/coveo/gotemplate/xml"
 	"github.com/coveo/gotemplate/yaml"
@@ -33,6 +33,7 @@ var dataFuncsBase = dictionary{
 	"key":       key,
 	"keys":      keys,
 	"lenc":      utf8.RuneCountInString,
+	"list":      collections.NewList,
 	"merge":     merge,
 	"omit":      omit,
 	"pick":      pick,
@@ -47,7 +48,7 @@ var dataFuncsBase = dictionary{
 }
 
 var dataFuncsConversion = dictionary{
-	"toBash":         utils.ToBash,
+	"toBash":         collections.ToBash,
 	"toHcl":          toHCL,
 	"toInternalHcl":  toInternalHCL,
 	"toJson":         toJSON,
@@ -142,7 +143,8 @@ var dataFuncsHelp = descriptions{
 	"json":           "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.",
 	"key":            "Returns the key name of a single element map (used to retrieve name in a declaration like `value \"name\" { a = 1 b = 3}`)",
 	"keys":           "Returns a list of all of the keys in a dict (in alphabetical order).",
-	"lenc":           "Returns the number of actual character in a string",
+	"lenc":           "Returns the number of actual character in a string.",
+	"list":           "Returns a generic list from the supplied arguments.",
 	"merge":          "Merges two or more dictionaries into one, giving precedence to the dest dictionary.",
 	"omit":           "Returns a new dict with all the keys that do not match the given keys.",
 	"pick":           "Selects just the given keys out of a dictionary, creating a new dict.",
@@ -278,9 +280,9 @@ func array(value interface{}) interface{} {
 func get(arg1, arg2 interface{}) (interface{}, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
 	// put the map as the first parameter.
-	if dict, err := types.AsDictionary(arg1); err == nil {
+	if dict, err := collections.TryAsDictionary(arg1); err == nil {
 		return dict.Get(arg2), nil
-	} else if dict, err = types.AsDictionary(arg2); err == nil {
+	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
 		return dict.Get(arg1), nil
 	} else {
 		return nil, fmt.Errorf("Must supply dictionary object")
@@ -290,9 +292,9 @@ func get(arg1, arg2 interface{}) (interface{}, error) {
 func hasKey(arg1, arg2 interface{}) (interface{}, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
 	// put the map as the first parameter.
-	if dict, err := types.AsDictionary(arg1); err == nil {
+	if dict, err := collections.TryAsDictionary(arg1); err == nil {
 		return dict.Has(arg2), nil
-	} else if dict, err = types.AsDictionary(arg2); err == nil {
+	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
 		return dict.Has(arg1), nil
 	} else {
 		return nil, fmt.Errorf("Must supply dictionary object")
@@ -302,9 +304,9 @@ func hasKey(arg1, arg2 interface{}) (interface{}, error) {
 func set(arg1, arg2, arg3 interface{}) (string, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
 	// put the map as the first parameter.
-	if dict, err := types.AsDictionary(arg1); err == nil {
+	if dict, err := collections.TryAsDictionary(arg1); err == nil {
 		dict.Set(arg2, arg3)
-	} else if dict, err = types.AsDictionary(arg3); err == nil {
+	} else if dict, err = collections.TryAsDictionary(arg3); err == nil {
 		dict.Set(arg1, arg2)
 	} else {
 		return "", fmt.Errorf("Must supply dictionary object")
@@ -315,9 +317,9 @@ func set(arg1, arg2, arg3 interface{}) (string, error) {
 func unset(arg1, arg2 interface{}) (string, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
 	// put the map as the first parameter.
-	if dict, err := types.AsDictionary(arg1); err == nil {
+	if dict, err := collections.TryAsDictionary(arg1); err == nil {
 		dict.Delete(arg2)
-	} else if dict, err = types.AsDictionary(arg2); err == nil {
+	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
 		dict.Delete(arg1)
 	} else {
 		return "", fmt.Errorf("Must supply dictionary object")
@@ -325,8 +327,8 @@ func unset(arg1, arg2 interface{}) (string, error) {
 	return "", nil
 }
 
-func merge(target iDict, dicts ...iDict) (iDict, error) {
-	return target.Merge(dicts...)
+func merge(target Dictionary, dict Dictionary, otherDicts ...Dictionary) Dictionary {
+	return target.Merge(dict, otherDicts...)
 }
 
 func key(v interface{}) (interface{}, error) {
@@ -346,7 +348,7 @@ type unMarshaler func([]byte, interface{}) error
 func (t Template) converter(from unMarshaler, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
 	if err = from([]byte(content), &result); err != nil && sourceWithError {
 		source := "\n"
-		for i, line := range types.SplitLines(content) {
+		for i, line := range collections.SplitLines(content) {
 			source += fmt.Sprintf("%4d %s\n", i+1, line)
 		}
 		err = fmt.Errorf("%s\n%v", source, err)
@@ -392,25 +394,26 @@ func (t Template) hclConverter(source interface{}, context ...interface{}) (resu
 func (t Template) dataConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
 	return t.templateConverter(
 		func(in interface{}) ([]byte, error) { return []byte(fmt.Sprint(in)), nil },
-		func(bs []byte, out interface{}) error { return utils.ConvertData(string(bs), out) },
+		func(bs []byte, out interface{}) error { return collections.ConvertData(string(bs), out) },
 		source, context...)
 }
 
-type iDict = types.IDictionary
-type iList = types.IGenericList
-type dictionary = types.Dictionary
-type genList = types.GenericList
+// Dictionary represents an implementation of IDictionary
+type Dictionary = collections.IDictionary
 
-func pick(dict iDict, keys ...interface{}) iDict {
+// List represents an implementation of IGenericList
+type List = collections.IGenericList
+
+func pick(dict Dictionary, keys ...interface{}) Dictionary {
 	return dict.Clone(keys...)
 }
 
-func omit(dict iDict, keys ...interface{}) iDict {
-	return dict.Omit(keys...)
+func omit(dict Dictionary, key interface{}, otherKeys ...interface{}) Dictionary {
+	return dict.Omit(key, otherKeys...)
 }
 
-func pickv(dict iDict, message string, keys ...interface{}) (interface{}, error) {
-	o := dict.Omit(keys...)
+func pickv(dict Dictionary, message string, key interface{}, otherKeys ...interface{}) (interface{}, error) {
+	o := dict.Omit(key, otherKeys...)
 
 	if o.Len() > 0 {
 		over := strings.Join(toStrings(o.Keys()), ", ")
@@ -422,28 +425,28 @@ func pickv(dict iDict, message string, keys ...interface{}) (interface{}, error)
 		}
 		return nil, fmt.Errorf(message)
 	}
-	return pick(dict, keys...), nil
+	return pick(dict, append(otherKeys, key)), nil
 }
 
-func keys(dict iDict) iList { return dict.Keys() }
+func keys(dict Dictionary) List { return dict.Keys() }
 
-func createDict(v ...interface{}) (iDict, error) {
+func createDict(v ...interface{}) (Dictionary, error) {
 	if len(v)%2 != 0 {
 		return nil, fmt.Errorf("Must supply even number of arguments (keypair)")
 	}
 
-	result := make(dictionary, len(v)/2)
+	result := collections.CreateDictionary(len(v) / 2)
 	for i := 0; i < len(v); i += 2 {
 		result.Set(v[i], v[i+1])
 	}
 	return result, nil
 }
 
-func pluck(key interface{}, dicts ...iDict) iList {
-	result := make(genList, 0, len(dicts))
+func pluck(key interface{}, dicts ...Dictionary) List {
+	result := collections.CreateList(0, len(dicts))
 	for i := range dicts {
 		if dicts[i].Has(key) {
-			result = append(result, dicts[i].Get(key))
+			result.Append(dicts[i].Get(key))
 		}
 	}
 	return result

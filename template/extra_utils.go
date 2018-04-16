@@ -2,12 +2,13 @@ package template
 
 import (
 	"fmt"
+	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -19,19 +20,20 @@ const (
 var utilsFuncs = dictionary{
 	"center":     center,
 	"color":      utils.SprintColor,
-	"concat":     types.Concat,
+	"concat":     collections.Concat,
 	"diff":       diff,
 	"formatList": utils.FormatList,
 	"glob":       glob,
 	"id":         id,
 	"iif":        utils.IIf,
-	"joinLines":  types.JoinLines,
+	"joinLines":  collections.JoinLines,
 	"lorem":      lorem,
 	"mergeList":  utils.MergeLists,
 	"pwd":        utils.Pwd,
 	"repeat":     repeat,
+	"save":       saveToFile,
 	"sIndent":    indent,
-	"splitLines": types.SplitLines,
+	"splitLines": collections.SplitLines,
 	"wrap":       wrap,
 }
 
@@ -45,6 +47,7 @@ var utilsFuncsArgs = arguments{
 	"lorem":      {"loremType", "params"},
 	"mergeList":  {"lists"},
 	"repeat":     {"n", "element"},
+	"save":       {"filename", "object"},
 	"sIndent":    {"spacer"},
 	"splitLines": {"content"},
 	"wrap":       {"width"},
@@ -58,13 +61,14 @@ var utilsFuncsAliases = aliases{
 	"id":      {"identifier"},
 	"lorem":   {"loremIpsum"},
 	"pwd":     {"currentDir"},
+	"save":    {"write", "writeTo"},
 	"sIndent": {"sindent", "spaceIndent"},
 	"wrap":    {"wrapped"},
 }
 
 var utilsFuncsHelp = descriptions{
 	"center": "Returns the concatenation of supplied arguments centered within width.",
-	"color": strings.TrimSpace(types.UnIndent(`
+	"color": strings.TrimSpace(collections.UnIndent(`
 		Colors the rendered string.
 
 		The first arguments are interpretated as color attributes until the first non color attribute. Attributes are case insensitive.
@@ -92,7 +96,8 @@ var utilsFuncsHelp = descriptions{
 	"mergeList":  "Return a single list containing all elements from the lists supplied.",
 	"pwd":        "Returns the current working directory.",
 	"repeat":     "Returns an array with the item repeated n times.",
-	"sIndent": strings.TrimSpace(types.UnIndent(`
+	"save":       "Save object to file.",
+	"sIndent": strings.TrimSpace(collections.UnIndent(`
 		Intents the the elements using the provided spacer.
 		
 		You can also use autoIndent as Razor expression if you don't want to specify the spacer.
@@ -123,16 +128,16 @@ func lorem(funcName interface{}, params ...int) (result string, err error) {
 
 func center(width interface{}, args ...interface{}) string {
 	w := errors.Must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
-	return types.CenterString(fmt.Sprint(args...), w)
+	return collections.CenterString(fmt.Sprint(args...), w)
 }
 
 func wrap(width interface{}, args ...interface{}) string {
 	w := errors.Must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
-	return types.WrapString(fmt.Sprint(args...), w)
+	return collections.WrapString(fmt.Sprint(args...), w)
 }
 
 func indent(spacer string, args ...interface{}) string {
-	return types.Indent(fmt.Sprint(args...), spacer)
+	return collections.Indent(fmt.Sprint(args...), spacer)
 }
 
 func id(id string, replace ...interface{}) string {
@@ -173,4 +178,8 @@ func repeat(n int, a interface{}) (result []interface{}, err error) {
 		result[i] = a
 	}
 	return
+}
+
+func saveToFile(filename string, object interface{}) (string, error) {
+	return "", ioutil.WriteFile(filename, []byte(fmt.Sprint(object)), 0644)
 }

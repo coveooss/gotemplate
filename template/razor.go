@@ -25,7 +25,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 	}
 	t.ensureInit()
 
-	for _, r := range replacements {
+	for _, r := range replacementsInit[fmt.Sprint(t.delimiters)] {
 		printDebugInfo(r, string(content))
 		if r.parser == nil {
 			content = r.re.ReplaceAll(content, []byte(r.replace))
@@ -83,7 +83,7 @@ var expressions = [][]interface{}{
 	{"Newline expression", `@<`, `{{- $.NEWLINE }}@`},
 
 	// Comments
-	{"Pseudo line comments - # @", `(?m)(?:^[sp](?:#|//)[sp])@`, "@"},
+	{"Pseudo line comments - #! @", `(?m)(?:^[sp](?:#|//)![sp])@`, "@"},
 	{"Pseudo block comments - /*@  @*/", `(?s)/\*@\s*(?P<content>.*?)@\s*\*/`, "${content}"},
 	{"Real comments - ##|/// @ comment", `(?m)^[sp](?:##|///)[sp]@.*$`, ""},
 	{"Line comment - @// or @#", `(?m)@(#|//)[sp](?P<line_comment>.*)[sp]$`, "{{/* ${line_comment} */}}"},
@@ -509,7 +509,7 @@ func nodeValueInternal(node ast.Node) (result string, err error) {
 	return
 }
 
-var replacements []replacement
+var replacementsInit = make(map[string][]replacement)
 
 type replacementFunc func(replacement, string) string
 type replacement struct {
@@ -521,8 +521,10 @@ type replacement struct {
 }
 
 func (t *Template) ensureInit() {
-	if replacements == nil {
-		replacements = make([]replacement, 0, len(expressions))
+	delimiters := fmt.Sprint(t.delimiters)
+	if _, ok := replacementsInit[delimiters]; !ok {
+		// We must ensure that search and replacement expression are compatible with the set of delimiters
+		replacements := make([]replacement, 0, len(expressions))
 		for _, expr := range expressions {
 			comment := expr[0].(string)
 			re := strings.Replace(expr[1].(string), "@", t.delimiters[2], -1)
@@ -559,6 +561,7 @@ func (t *Template) ensureInit() {
 				replacements = append(replacements, replacement{comment, subExpressions[0], replace, re, expr[4].(replacementFunc)})
 			}
 		}
+		replacementsInit[delimiters] = replacements
 	}
 }
 

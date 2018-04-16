@@ -53,22 +53,22 @@ var loggingFuncsAliases = aliases{
 }
 
 var loggingFuncsHelp = descriptions{
-	"critical":  "logs a message using CRITICAL as log level (0).",
-	"criticalf": "logs a message with format string using CRITICAL as log level (0).",
-	"debug":     "logs a message using DEBUG as log level (5).",
-	"debugf":    "logs a message with format using DEBUG as log level (5).",
-	"error":     "logs a message using ERROR as log level (1).",
-	"errorf":    "logs a message with format using ERROR as log level (1).",
+	"critical":  "Logs a message using CRITICAL as log level (0).",
+	"criticalf": "Logs a message with format string using CRITICAL as log level (0).",
+	"debug":     "Logs a message using DEBUG as log level (5).",
+	"debugf":    "Logs a message with format using DEBUG as log level (5).",
+	"error":     "Logs a message using ERROR as log level (1).",
+	"errorf":    "Logs a message with format using ERROR as log level (1).",
 	"fatal":     "Equivalents to critical followed by a call to os.Exit(1).",
 	"fatalf":    "Equivalents to criticalf followed by a call to os.Exit(1).",
-	"info":      "logs a message using INFO as log level (4).",
-	"infof":     "logs a message with format using INFO as log level (4).",
-	"notice":    "logs a message using NOTICE as log level (3).",
-	"noticef":   "logs a message with format using NOTICE as log level (3).",
+	"info":      "Logs a message using INFO as log level (4).",
+	"infof":     "Logs a message with format using INFO as log level (4).",
+	"notice":    "Logs a message using NOTICE as log level (3).",
+	"noticef":   "Logs a message with format using NOTICE as log level (3).",
 	"panic":     "Equivalents to critical followed by a call to panic.",
 	"panicf":    "Equivalents to criticalf followed by a call to panic.",
-	"warning":   "logs a message using WARNING as log level (2).",
-	"warningf":  "logs a message with format using WARNING as log level (2).",
+	"warning":   "Logs a message using WARNING as log level (2).",
+	"warningf":  "Logs a message with format using WARNING as log level (2).",
 }
 
 func (t *Template) addLoggingFuncs() {

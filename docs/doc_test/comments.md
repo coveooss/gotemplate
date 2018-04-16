@@ -53,7 +53,7 @@ will give :
 ### Example with HCL code
 
 ```go
-# @value := 2 + 8 * 15
+#! @value := 2 + 8 * 15
 
 Str              = "string"
 Int              = 123

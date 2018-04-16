@@ -5,8 +5,9 @@ import (
 	"io/ioutil"
 	"reflect"
 
+	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/collections/implementation"
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/utils"
 	"github.com/hashicorp/hcl"
 )
 
@@ -19,8 +20,24 @@ var (
 	ParseString  = hcl.ParseString
 )
 
+func (l hclList) String() string {
+	result, err := MarshalInternal(l.AsArray())
+	if err != nil {
+		panic(err)
+	}
+	return string(result)
+}
+
+func (d hclDict) String() string {
+	result, err := Marshal(d.AsMap())
+	if err != nil {
+		panic(err)
+	}
+	return string(result)
+}
+
 var _ = func() int {
-	utils.TypeConverters["hcl"] = Unmarshal
+	collections.TypeConverters["hcl"] = Unmarshal
 	return 0
 }()
 
@@ -31,20 +48,15 @@ func Unmarshal(bs []byte, out interface{}) (err error) {
 
 	if err = hcl.Unmarshal(bs, out); err != nil {
 		bs = append([]byte("_="), bs...)
-		var temp dict
-		if err2 := hcl.Unmarshal(bs, &temp); err2 != nil {
+		var temp hclDict
+		if errInternalHcl := hcl.Unmarshal(bs, &temp); errInternalHcl != nil {
 			return err
 		}
 		err = nil
 		reflect.ValueOf(out).Elem().Set(reflect.ValueOf(temp["_"]))
 	}
-	result := flatten(reflect.ValueOf(out).Elem().Interface())
 
-	if _, isMap := out.(*map[string]interface{}); isMap {
-		// If the result is expected to be map[string]interface{}, we convert it back from internal dict type.
-		result = result.(dict).AsMap()
-	}
-	reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
+	transform(out)
 	return
 }
 
@@ -62,13 +74,13 @@ func Marshal(value interface{}) ([]byte, error) { return MarshalIndent(value, ""
 
 // MarshalIndent serialize values to hcl format with indentation
 func MarshalIndent(value interface{}, prefix, indent string) ([]byte, error) {
-	result, err := marshalHCL(utils.ToNativeRepresentation(value), true, true, prefix, indent)
+	result, err := marshalHCL(collections.ToNativeRepresentation(value), true, true, prefix, indent)
 	return []byte(result), err
 }
 
 // MarshalInternal serialize values to hcl format for result used in outer hcl struct
 func MarshalInternal(value interface{}) ([]byte, error) {
-	result, err := marshalHCL(utils.ToNativeRepresentation(value), false, false, "", "")
+	result, err := marshalHCL(collections.ToNativeRepresentation(value), false, false, "", "")
 	return []byte(result), err
 }
 
@@ -77,7 +89,7 @@ func MarshalTFVars(value interface{}) ([]byte, error) { return MarshalTFVarsInde
 
 // MarshalTFVarsIndent serialize values to hcl format with indentation (without hcl map format)
 func MarshalTFVarsIndent(value interface{}, prefix, indent string) ([]byte, error) {
-	result, err := marshalHCL(utils.ToNativeRepresentation(value), false, true, prefix, indent)
+	result, err := marshalHCL(collections.ToNativeRepresentation(value), false, true, prefix, indent)
 	return []byte(result), err
 }
 
@@ -88,3 +100,10 @@ func SingleContext(context ...interface{}) interface{} {
 	}
 	return context
 }
+
+type helperBase = implementation.BaseHelper
+type helperList = implementation.ListHelper
+type helperDict = implementation.DictHelper
+
+//go:generate genny -pkg=hcl -in=../collections/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=hcl"
+//go:generate genny -pkg=hcl -in=../collections/implementation/generic_test.go -out=generated_test.go gen "base=hcl"

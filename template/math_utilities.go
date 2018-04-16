@@ -5,8 +5,8 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
 )
 
@@ -96,7 +96,7 @@ func convertArgs(a interface{}, args ...interface{}) []interface{} {
 	}
 	if len(args) == 0 {
 		// There is a single argument, we try to convert it into a list
-		return types.ToInterfaces(types.ToStrings(a)...)
+		return collections.ToInterfaces(collections.ToStrings(a)...)
 	}
 	return append([]interface{}{a}, args...)
 }
@@ -131,7 +131,7 @@ func compareInternal(min bool, values []interface{}) interface{} {
 		return simplify(result)
 	}
 
-	sa := types.ToStrings(values)
+	sa := collections.ToStrings(values)
 	result := sa[0]
 	for _, value := range sa[1:] {
 		if (min && value < result) || (!min && value > result) {
@@ -158,7 +158,7 @@ func compareNumerics(values []interface{}, min bool) interface{} {
 }
 
 func compareStrings(values []interface{}, min bool) (result string) {
-	sa := types.ToStrings(values)
+	sa := collections.ToStrings(values)
 	result = sa[0]
 	for _, value := range sa[1:] {
 		if (min && value < result) || (!min && value > result) {
@@ -180,7 +180,7 @@ func generateNumericArray(limit bool, params ...interface{}) (result []interface
 		stop = toFloat(params[0])
 	case 3:
 		step = math.Abs(toFloat(params[2]))
-		_, frac := types.Split2(fmt.Sprintf("%g", step), ".")
+		_, frac := collections.Split2(fmt.Sprintf("%g", step), ".")
 		precision = len(frac)
 		fallthrough
 	case 2:

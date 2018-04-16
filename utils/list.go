@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/coveo/gotemplate/types"
+	"github.com/coveo/gotemplate/collections"
 )
 
 // MergeLists return a single list from all supplied lists
@@ -23,7 +23,7 @@ func MergeLists(lists ...[]interface{}) []interface{} {
 
 // FormatList returns an array of string where format as been applied on every element of the supplied array
 func FormatList(format string, v interface{}) []string {
-	source := types.ToStrings(v)
+	source := collections.ToStrings(v)
 	list := make([]string, 0, len(source))
 	for _, val := range source {
 		list = append(list, fmt.Sprintf(format, val))
