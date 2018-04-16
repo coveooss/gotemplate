@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/types"
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/collections/implementation"
 	"gopkg.in/yaml.v2"
 )
 
@@ -19,13 +19,16 @@ var (
 	NativeUnmarshalStrict = yaml.UnmarshalStrict
 )
 
+func (l yamlList) String() string { result, _ := Marshal(l.AsArray()); return string(result) }
+func (d yamlDict) String() string { result, _ := Marshal(d.AsMap()); return string(result) }
+
 var _ = func() int {
-	utils.TypeConverters["yaml"] = Unmarshal
+	collections.TypeConverters["yaml"] = Unmarshal
 	return 0
 }()
 
 // Unmarshal calls the native Unmarshal but transform the results
-// to returns Dictionary and GenerecList instead of go native types.
+// to returns Dictionary and GenericList instead of go native collections.
 func Unmarshal(data []byte, out interface{}) (err error) {
 	// Yaml does not support tab, so we replace tabs by spaces if there are
 	data = bytes.Replace(data, []byte("\t"), []byte("    "), -1)
@@ -37,7 +40,7 @@ func Unmarshal(data []byte, out interface{}) (err error) {
 }
 
 // UnmarshalStrict calls the native UnmarshalStrict but transform the results
-// to returns Dictionary and GenerecList instead of go native types.
+// to returns Dictionary and GenericList instead of go native collections.
 func UnmarshalStrict(data []byte, out interface{}) (err error) {
 	// Yaml does not support tab, so we replace tabs by spaces if there are
 	data = bytes.Replace(data, []byte("\t"), []byte("    "), -1)
@@ -52,7 +55,7 @@ func transform(out interface{}) {
 	result := transformElement(reflect.ValueOf(out).Elem().Interface())
 	if _, isMap := out.(*map[string]interface{}); isMap {
 		// If the result is expected to be map[string]interface{}, we convert it back from internal dict type.
-		result = result.(dict).AsMap()
+		result = result.(yamlIDict).Native()
 	}
 	reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
 }
@@ -67,16 +70,23 @@ func transformElement(source interface{}) interface{} {
 		source = result
 	}
 
-	if value, err := types.AsDictionary(source); err == nil {
-		for _, key := range value.Keys().AsList() {
+	if value, err := yamlHelper.TryAsDictionary(source); err == nil {
+		for _, key := range value.KeysAsString() {
 			value.Set(key, transformElement(value.Get(key)))
 		}
-		source = dict(value.AsMap())
-	} else if value, err := types.AsGenericList(source); err == nil {
-		for i, sub := range value.AsList() {
+		source = value
+	} else if value, err := yamlHelper.TryAsList(source); err == nil {
+		for i, sub := range value.AsArray() {
 			value.Set(i, transformElement(sub))
 		}
-		source = list(value.AsList())
+		source = value
 	}
 	return source
 }
+
+type helperBase = implementation.BaseHelper
+type helperList = implementation.ListHelper
+type helperDict = implementation.DictHelper
+
+//go:generate genny -pkg=yaml -in=../collections/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=yaml"
+//go:generate genny -pkg=yaml -in=../collections/implementation/generic_test.go -out=generated_test.go gen "base=yaml"

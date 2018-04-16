@@ -10,9 +10,10 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/hcl"
-	"github.com/coveo/gotemplate/types"
 	"github.com/coveo/gotemplate/utils"
+	"github.com/fatih/color"
 )
 
 const (
@@ -34,14 +35,17 @@ var runtimeFuncsArgs = arguments{
 }
 
 var runtimeFuncsAliases = aliases{
-	"exec": {"execute"},
+	"exec":          {"execute"},
+	"getAttributes": {"attr", "attributes"},
+	"getMethods":    {"methods"},
+	"getSignature":  {"sign", "signature"},
 }
 
 var runtimeFuncsHelp = descriptions{
 	"alias":        "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
 	"aliases":      "Returns the list of all functions that are simply an alias of another function.",
 	"allFunctions": "Returns the list of all available functions.",
-	"categories": strings.TrimSpace(types.UnIndent(`
+	"categories": strings.TrimSpace(collections.UnIndent(`
 		Returns all functions group by categories.
 
 		The returned value has the following properties:
@@ -53,7 +57,7 @@ var runtimeFuncsHelp = descriptions{
 	"exec":     "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
 	"exit":     "Exits the current program execution.",
 	"func":     "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
-	"function": strings.TrimSpace(types.UnIndent(`
+	"function": strings.TrimSpace(collections.UnIndent(`
 		Returns the information relative to a specific function.
 
 		The returned value has the following properties:
@@ -66,8 +70,12 @@ var runtimeFuncsHelp = descriptions{
 		    Result      string
 	`)),
 	"functions":     "Returns the list of all available functions (excluding aliases).",
+	"getAttributes": "List all attributes accessible from the supplied object.",
+	"getMethods":    "List all methods signatures accessible from the supplied object.",
+	"getSignature":  "List all attributes and methods signatures accessible from the supplied object.",
 	"include":       "Returns the result of the named template rendering (like template but it is possible to capture the output).",
 	"localAlias":    "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.",
+	"methods":       "List all methods signatures accessible from the supplied object.",
 	"run":           "Returns the result of the shell command as string.",
 	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
 	"templateNames": "Returns the list of available templates names.",
@@ -79,6 +87,7 @@ func (t *Template) addRuntimeFuncs() {
 		"alias":         t.alias,
 		"aliases":       t.getAliases,
 		"allFunctions":  t.getAllFunctions,
+		"categories":    t.getCategories,
 		"current":       t.current,
 		"ellipsis":      t.ellipsis,
 		"exec":          t.execCommand,
@@ -86,13 +95,16 @@ func (t *Template) addRuntimeFuncs() {
 		"func":          t.defineFunc,
 		"function":      t.getFunction,
 		"functions":     t.getFunctions,
-		"categories":    t.getCategories,
+		"getAttributes": getAttributes,
+		"getMethods":    getMethods,
+		"getSignature":  getSignature,
 		"include":       t.include,
 		"localAlias":    t.localAlias,
+		"methods":       describeMethods,
 		"run":           t.runCommand,
 		"substitute":    t.substitute,
-		"templates":     t.Templates,
 		"templateNames": t.getTemplateNames,
+		"templates":     t.Templates,
 	}
 
 	t.AddFunctions(funcs, runtimeFunc, funcOptions{
@@ -118,15 +130,15 @@ func (t *Template) defineFunc(name, function string, source, config interface{})
 }
 
 func (t *Template) execCommand(command interface{}, args ...interface{}) (interface{}, error) {
-	return t.exec(types.Interface2string(command), args...)
+	return t.exec(collections.Interface2string(command), args...)
 }
 
 func (t *Template) runCommand(command interface{}, args ...interface{}) (interface{}, error) {
-	return t.run(types.Interface2string(command), args...)
+	return t.run(collections.Interface2string(command), args...)
 }
 
 func (t *Template) include(source interface{}, context ...interface{}) (interface{}, error) {
-	content, _, err := t.runTemplate(types.Interface2string(source), context...)
+	content, _, err := t.runTemplate(collections.Interface2string(source), context...)
 	if source == content {
 		return nil, fmt.Errorf("Unable to find a template or a file named %s", source)
 	}
@@ -157,18 +169,18 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	if !context {
 		t.aliases[name] = FuncInfo{
 			function: func(args ...interface{}) (result interface{}, err error) {
-				return f(types.Interface2string(source), append(defaultArgs, args...)...)
+				return f(collections.Interface2string(source), append(defaultArgs, args...)...)
 			},
 			group: "User defined aliases",
 		}
 		return
 	}
 
-	var config iDict
+	var config Dictionary
 
 	switch len(defaultArgs) {
 	case 0:
-		config = make(dictionary)
+		config = collections.CreateDictionary()
 	case 1:
 		if defaultArgs[0] == nil {
 			err = fmt.Errorf("Default configuration is nil")
@@ -176,13 +188,13 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		}
 		if reflect.TypeOf(defaultArgs[0]).Kind() == reflect.String {
 			var configFromString interface{}
-			if err = utils.ConvertData(fmt.Sprint(defaultArgs[0]), &configFromString); err != nil {
+			if err = collections.ConvertData(fmt.Sprint(defaultArgs[0]), &configFromString); err != nil {
 				err = fmt.Errorf("Function configuration must be valid type: %v\n%v", defaultArgs[0], err)
 				return
 			}
 			defaultArgs[0] = configFromString
 		}
-		if config, err = types.AsDictionary(defaultArgs[0]); err != nil {
+		if config, err = collections.TryAsDictionary(defaultArgs[0]); err != nil {
 			err = fmt.Errorf("Function configuration must be valid dictionary: %[1]T %[1]v", defaultArgs[0])
 			return
 		}
@@ -198,45 +210,43 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			config.Set("group", val)
 		case "a", "args", "arguments":
 			switch val := val.(type) {
-			case []string:
+			case List:
 				config.Set("args", val)
-			case []interface{}, iList:
-				config.Set("args", toStrings(val))
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
 				return
 			}
 		case "aliases":
 			switch val := val.(type) {
-			case []string:
+			case List:
 				config.Set("aliases", val)
-			case []interface{}, iList:
-				config.Set("aliases", toStrings(val))
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
 				return
 			}
 		case "def", "default", "defaults":
-			var def iDict
-			if def, err = types.AsDictionary(val); err != nil {
+			switch val := val.(type) {
+			case Dictionary:
+				config.Set("def", val)
+			default:
 				err = fmt.Errorf("%s must be a dictionary: %T", key, val)
 				return
 			}
-			config.Set("def", def)
 		default:
 			return "", fmt.Errorf("Unknown configuration %s", key)
 		}
 	}
 
+	emptyList := collections.CreateList()
 	fi := FuncInfo{
 		name:        name,
 		group:       defval(config.Get("group"), "User defined functions").(string),
 		description: defval(config.Get("description"), "").(string),
-		arguments:   defval(config.Get("args"), []string{}).([]string),
-		aliases:     defval(config.Get("aliases"), []string{}).([]string),
+		arguments:   defval(config.Get("args"), emptyList).(List).Strings(),
+		aliases:     defval(config.Get("aliases"), emptyList).(List).Strings(),
 	}
 
-	defaultValues := defval(config.Get("def"), make(dictionary)).(iDict)
+	defaultValues := defval(config.Get("def"), collections.CreateDictionary()).(Dictionary)
 
 	fi.in = fmt.Sprintf("%s", strings.Join(fi.arguments, ", "))
 	for i := range fi.arguments {
@@ -245,27 +255,31 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	fi.function = func(args ...interface{}) (result interface{}, err error) {
-		context := make(dictionary)
-		parentContext, err := types.AsDictionary(t.context)
+		context := collections.CreateDictionary()
+		parentContext, err := collections.TryAsDictionary(t.context)
 		if err != nil {
-			context["DEFAULT"] = t.context
+			context.Set("DEFAULT", t.context)
 		}
 
 		switch len(args) {
 		case 1:
 			if len(fi.arguments) != 1 {
-				if arg, err := types.AsDictionary(args[0]); err == nil {
-					context.Merge(arg, defaultValues, parentContext)
-					break
+				switch arg := args[0].(type) {
+				case string:
+					var out interface{}
+					if collections.ConvertData(arg, &out) == nil {
+						args[0] = out
+					}
 				}
-				if err := utils.ConvertData(fmt.Sprint(args[0]), &context); err == nil {
-					context.Merge(defaultValues, parentContext)
+
+				if arg, err := collections.TryAsDictionary(args[0]); err == nil {
+					context.Merge(arg, defaultValues, parentContext)
 					break
 				}
 			}
 			fallthrough
 		default:
-			templateContext, err := types.AsDictionary(t.context)
+			templateContext, err := collections.TryAsDictionary(t.context)
 			if err != nil {
 				return nil, err
 			}
@@ -273,13 +287,13 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			context.Merge(defaultValues, templateContext)
 			for i := range args {
 				if i >= len(fi.arguments) {
-					context["ARGS"] = args[i:]
+					context.Set("ARGS", args[i:])
 					break
 				}
-				context[fi.arguments[i]] = args[i]
+				context.Set(fi.arguments[i], args[i])
 			}
 		}
-		return f(types.Interface2string(source), context)
+		return f(collections.Interface2string(source), context)
 	}
 
 	t.aliases[name] = fi
@@ -423,4 +437,55 @@ func (t Template) ellipsis(function string, args ...interface{}) (interface{}, e
 	template := fmt.Sprintf("%s %s %s %s", t.delimiters[0], function, strings.Join(argsStr, " "), t.delimiters[1])
 	result, _, err := t.runTemplate(template, context)
 	return result, err
+}
+
+func getAttributes(object interface{}) string {
+	if object == nil {
+		return ""
+	}
+
+	t := reflect.TypeOf(object)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	numField := 0
+	if t.Kind() == reflect.Struct {
+		numField = t.NumField()
+	}
+	result := make([]string, 0, numField)
+	for i := 0; i < numField; i++ {
+		name := t.Field(i).Name
+		if !collections.IsExported(name) {
+			continue
+		}
+		typeName := color.HiBlackString(fmt.Sprint(t.Field(i).Type))
+		attrName := color.HiGreenString(name)
+		result = append(result, fmt.Sprintf("%s %s", attrName, typeName))
+	}
+	return strings.Join(result, "\n")
+}
+
+func getMethods(object interface{}) string {
+	if object == nil {
+		return ""
+	}
+
+	t := reflect.TypeOf(object)
+	result := make([]string, 0, t.NumMethod())
+	for i := 0; i < t.NumMethod(); i++ {
+		result = append(result, FuncInfo{
+			name:     t.Method(i).Name,
+			function: t.Method(i).Func.Interface(),
+		}.getSignature(true))
+	}
+	return strings.Join(result, "\n")
+}
+
+func getSignature(object interface{}) string {
+	attributes := getAttributes(object)
+	methods := getMethods(object)
+	if attributes != "" && methods != "" {
+		return attributes + "\n\n" + methods
+	}
+	return attributes + methods
 }

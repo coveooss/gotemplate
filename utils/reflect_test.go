@@ -3,6 +3,9 @@ package utils
 import (
 	"reflect"
 	"testing"
+
+	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/collections/implementation"
 )
 
 type empty struct{}
@@ -36,7 +39,7 @@ func TestIsEmptyValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsEmptyValue(reflect.ValueOf(tt.arg)); got != tt.want {
+			if got := isEmpty(reflect.ValueOf(tt.arg)); got != tt.want {
 				t.Errorf("IsEmptyValue() = %v, want %v", got, tt.want)
 			}
 		})
@@ -59,7 +62,7 @@ func TestIsExported(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsExported(tt.id); got != tt.want {
+			if got := collections.IsExported(tt.id); got != tt.want {
 				t.Errorf("IsExported() = %v, want %v", got, tt.want)
 			}
 		})
@@ -135,6 +138,70 @@ func TestIIf(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := IIf(tt.testValue, 1, 2); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("IIf() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMergeDictionary(t *testing.T) {
+	collections.DictionaryHelper = implementation.DictionaryHelper
+	collections.ListHelper = implementation.GenericListHelper
+	map1 := map[string]interface{}{
+		"int":        1000,
+		"Add1Int":    1,
+		"Add1String": "string",
+	}
+	map2 := map[string]interface{}{
+		"int":        2000,
+		"Add2Int":    2,
+		"Add2String": "string",
+		"map": map[string]interface{}{
+			"sub1":   2,
+			"newVal": "NewValue",
+		},
+	}
+	tests := []struct {
+		name    string
+		args    []map[string]interface{}
+		want    map[string]interface{}
+		wantErr bool
+	}{
+		{"Empty", nil, map[string]interface{}{}, false},
+		{"Add 1", []map[string]interface{}{map1}, map1, false},
+		{"Add empty to 1", []map[string]interface{}{map1, map[string]interface{}{}}, map1, false},
+		{"Add nil to 1", []map[string]interface{}{map1, nil}, map1, false},
+		{"Add 2 to 1", []map[string]interface{}{map1, map2}, map[string]interface{}{
+			"int":        1000,
+			"Add1Int":    1,
+			"Add2Int":    2,
+			"Add1String": "string",
+			"Add2String": "string",
+			"map": map[string]interface{}{
+				"sub1":   2,
+				"newVal": "NewValue",
+			},
+		}, false},
+		{"Add 1 to 2", []map[string]interface{}{map2, map1}, map[string]interface{}{
+			"int":        2000,
+			"Add1Int":    1,
+			"Add2Int":    2,
+			"Add1String": "string",
+			"Add2String": "string",
+			"map": map[string]interface{}{
+				"sub1":   2,
+				"newVal": "NewValue",
+			},
+		}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := MergeDictionary(tt.args...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("MergeDictionary() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("MergeDictionary():\n got %v\nwant %v", got, tt.want)
 			}
 		})
 	}

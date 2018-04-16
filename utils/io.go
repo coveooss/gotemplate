@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/types"
 )
 
 // FindFiles returns the list of the files matching the array of patterns
@@ -97,7 +97,7 @@ func MustFindFilesMaxDepth(folder string, maxDepth int, followLinks bool, patter
 }
 
 func globFunc(trimUnmatch bool, args ...interface{}) (result []string) {
-	for _, arg := range types.ToStrings(args) {
+	for _, arg := range collections.ToStrings(args) {
 		if strings.ContainsAny(arg, "*?[]") {
 			if expanded, _ := filepath.Glob(arg); expanded != nil {
 				result = append(result, expanded...)
