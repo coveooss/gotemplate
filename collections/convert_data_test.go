@@ -38,17 +38,17 @@ func TestToNativeRepresentation(t *testing.T) {
 			},
 			SS: SubStruct{64, "Foo"},
 		}, dictionary{
-			"I": "123",
-			"F": "1.23",
-			"S": `"123"`,
-			"A": []interface{}{"1", `"2"`},
+			"I": 123,
+			"F": float64(1.23),
+			"S": "123",
+			"A": []interface{}{1, "2"},
 			"M": dictionary{
-				"a": `"a"`,
-				"b": "2",
+				"a": "a",
+				"b": 2,
 			},
 			"SS": dictionary{
-				"U": "64",
-				"I": `"Foo"`,
+				"U": int64(64),
+				"I": "Foo",
 			},
 		}},
 	}
@@ -56,6 +56,13 @@ func TestToNativeRepresentation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ToNativeRepresentation(tt.args); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ToNativeRepresentation()\ngot : %v\nwant: %v", got, tt.want)
+				for k, v := range tt.want.(dictionary) {
+					if reflect.DeepEqual(v, got.(dictionary)[k]) {
+						continue
+					}
+					t.Errorf("key %v: %T vs %T", k, v, got.(dictionary)[k])
+				}
+
 			}
 		})
 	}

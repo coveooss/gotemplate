@@ -34,6 +34,7 @@ type xmlIDict = collections.IDictionary
 type xmlDict map[string]interface{}
 
 func (d xmlDict) AsMap() map[string]interface{}      { return (map[string]interface{})(d) }
+func (d xmlDict) Native() interface{}                { return collections.ToNativeRepresentation(d) }
 func (d xmlDict) Count() int                         { return len(d) }
 func (d xmlDict) Len() int                           { return len(d) }
 func (d xmlDict) Clone(keys ...interface{}) xmlIDict { return xmlDictHelper.Clone(d, keys) }

@@ -80,7 +80,7 @@ func TestToBash(t *testing.T) {
 			SS: SubStruct{64, "Foo"},
 		}, strings.TrimSpace(collections.UnIndent(`
 		declare -a A
-		A=(1 "2")
+		A=(1 2)
 		F=1.23
 		I=123
 		declare -A M

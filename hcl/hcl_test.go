@@ -118,3 +118,30 @@ func TestUnmarshal(t *testing.T) {
 		})
 	}
 }
+
+func TestUnmarshalStrict(t *testing.T) {
+	tests := []struct {
+		name    string
+		hcl     string
+		want    interface{}
+		wantErr bool
+	}{
+		{"Empty", "", map[string]interface{}{}, false},
+		{"Empty list", "[]", nil, true},
+		{"List of int", "[1,2,3]", nil, true},
+		{"Array of map", "a { b { c { d = 1 e = 2 }}}", map[string]interface{}{"a": map[string]interface{}{"b": map[string]interface{}{"c": map[string]interface{}{"d": 1, "e": 2}}}}, false},
+		{"Map", fmt.Sprint(dictFixture), dictFixture.Native(), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var out map[string]interface{}
+			err := Unmarshal([]byte(tt.hcl), &out)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Unmarshal() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if err == nil && !reflect.DeepEqual(out, tt.want) {
+				t.Errorf("Unmarshal:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", out, tt.want)
+			}
+		})
+	}
+}

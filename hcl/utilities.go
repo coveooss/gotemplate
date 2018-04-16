@@ -45,7 +45,7 @@ func transform(out interface{}) {
 	result := transformElement(flatten(reflect.ValueOf(out).Elem().Interface()))
 	if _, isMap := out.(*map[string]interface{}); isMap {
 		// If the result is expected to be map[string]interface{}, we convert it back from internal dict type.
-		result = result.(hclIDict).AsMap()
+		result = result.(hclIDict).Native()
 	}
 	reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
 }
@@ -75,7 +75,10 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 	const specialFormat = "#HCL_ARRAY_MAP#!"
 
 	switch value := value.(type) {
+	case int, float64, bool:
+		result = fmt.Sprint(value)
 	case string:
+		value = fmt.Sprintf("%q", value)
 		if indent != "" && strings.Contains(value, "\\n") {
 			// We unquote the value
 			unIndented := value[1 : len(value)-1]

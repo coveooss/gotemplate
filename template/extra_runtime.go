@@ -13,6 +13,7 @@ import (
 	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/utils"
+	"github.com/fatih/color"
 )
 
 const (
@@ -34,7 +35,10 @@ var runtimeFuncsArgs = arguments{
 }
 
 var runtimeFuncsAliases = aliases{
-	"exec": {"execute"},
+	"exec":          {"execute"},
+	"getAttributes": {"attr", "attributes"},
+	"getMethods":    {"methods"},
+	"getSignature":  {"sign", "signature"},
 }
 
 var runtimeFuncsHelp = descriptions{
@@ -66,9 +70,11 @@ var runtimeFuncsHelp = descriptions{
 		    Result      string
 	`)),
 	"functions":     "Returns the list of all available functions (excluding aliases).",
+	"getAttributes": "List all attributes accessible from the supplied object.",
+	"getMethods":    "List all methods signatures accessible from the supplied object.",
+	"getSignature":  "List all attributes and methods signatures accessible from the supplied object.",
 	"include":       "Returns the result of the named template rendering (like template but it is possible to capture the output).",
 	"localAlias":    "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.",
-	"methods":       "List all methods signatures accessible from the supplied object.",
 	"run":           "Returns the result of the shell command as string.",
 	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
 	"templateNames": "Returns the list of available templates names.",
@@ -88,9 +94,11 @@ func (t *Template) addRuntimeFuncs() {
 		"func":          t.defineFunc,
 		"function":      t.getFunction,
 		"functions":     t.getFunctions,
+		"getAttributes": getAttributes,
+		"getMethods":    getMethods,
+		"getSignature":  getSignature,
 		"include":       t.include,
 		"localAlias":    t.localAlias,
-		"methods":       describeMethods,
 		"run":           t.runCommand,
 		"substitute":    t.substitute,
 		"templateNames": t.getTemplateNames,
@@ -429,18 +437,53 @@ func (t Template) ellipsis(function string, args ...interface{}) (interface{}, e
 	return result, err
 }
 
-func describeMethods(object interface{}) string {
+func getAttributes(object interface{}) string {
 	if object == nil {
 		return ""
 	}
 
 	t := reflect.TypeOf(object)
-	result := make([]string, t.NumMethod())
-	for i := range result {
-		result[i] = FuncInfo{
-			name:     t.Method(i).Name,
-			function: t.Method(i).Func.Interface(),
-		}.getSignature(true)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	numField := 0
+	if t.Kind() == reflect.Struct {
+		numField = t.NumField()
+	}
+	result := make([]string, 0, numField)
+	for i := 0; i < numField; i++ {
+		name := t.Field(i).Name
+		if !collections.IsExported(name) {
+			continue
+		}
+		typeName := color.HiBlackString(fmt.Sprint(t.Field(i).Type))
+		attrName := color.HiGreenString(name)
+		result = append(result, fmt.Sprintf("%s %s", attrName, typeName))
 	}
 	return strings.Join(result, "\n")
+}
+
+func getMethods(object interface{}) string {
+	if object == nil {
+		return ""
+	}
+
+	t := reflect.TypeOf(object)
+	result := make([]string, 0, t.NumMethod())
+	for i := 0; i < t.NumMethod(); i++ {
+		result = append(result, FuncInfo{
+			name:     t.Method(i).Name,
+			function: t.Method(i).Func.Interface(),
+		}.getSignature(true))
+	}
+	return strings.Join(result, "\n")
+}
+
+func getSignature(object interface{}) string {
+	attributes := getAttributes(object)
+	methods := getMethods(object)
+	if attributes != "" && methods != "" {
+		return attributes + "\n\n" + methods
+	}
+	return attributes + methods
 }

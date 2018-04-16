@@ -81,7 +81,7 @@ func TestUnmarshalToMap(t *testing.T) {
 		{"Empty", "", nil, true},
 		{"Empty list", "[]", nil, true},
 		{"List of int", "[1,2,3]", nil, true},
-		{"Map", fmt.Sprint(dictFixture), dictFixture.AsMap(), false},
+		{"Map", fmt.Sprint(dictFixture), dictFixture.Native(), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -207,10 +207,10 @@ Special cases are:
     cosh(NaN) = NaN
 cosh(x interface{}) interface{}, error
 
-logs a message using CRITICAL as log level (0).
+Logs a message using CRITICAL as log level (0).
 critical(args ...interface{}) string
 
-logs a message with format string using CRITICAL as log level (0).
+Logs a message with format string using CRITICAL as log level (0).
 criticalf(format string, args ...interface{}) string
 
 Returns the current folder (like pwd, but returns the folder of the currently running folder).
@@ -228,10 +228,10 @@ dateInZone(fmt string, date interface{}, zone string) string
 The dateModify takes a modification and a date and returns the timestamp.
 dateModify(fmt string, date time.Time) time.Time
 
-logs a message using DEBUG as log level (5).
+Logs a message using DEBUG as log level (5).
 debug(args ...interface{}) string
 
-logs a message with format using DEBUG as log level (5).
+Logs a message with format using DEBUG as log level (5).
 debugf(format string, args ...interface{}) string
 
 dec(arg1 interface{}) interface{}, error
@@ -269,10 +269,10 @@ env(arg1 string) string
 Returns the boolean truth of arg1 == arg2
 eq(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
 
-logs a message using ERROR as log level (1).
+Logs a message using ERROR as log level (1).
 error(args ...interface{}) string
 
-logs a message with format using ERROR as log level (1).
+Logs a message with format using ERROR as log level (1).
 errorf(format string, args ...interface{}) string
 
 Returns the result of the shell command as structured data (as string if no other conversion is possible).
@@ -380,6 +380,15 @@ genSignedCert(arg1 string, arg2 []interface{}, arg3 []interface{}, arg4 int, arg
 Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)
 get(map interface{}, key interface{}) interface{}, error
 
+List all attributes accessible from the supplied object.
+getAttributes(arg1 interface{}) string
+
+List all methods signatures accessible from the supplied object.
+getMethods(arg1 interface{}) string
+
+List all attributes and methods signatures accessible from the supplied object.
+getSignature(arg1 interface{}) string
+
 Returns the expanded list of supplied arguments (expand *[]? on filename).
 glob(args ...interface{}) []string
 
@@ -412,6 +421,12 @@ htmlDate(date interface{}) string
 Same as htmlDate, but with a timezone.
 htmlDateInZone(date interface{}, zone string) string
 
+Returns http document returned by supplied URL.
+httpDoc(url interface{}) interface{}, error
+
+Returns http get response from supplied URL.
+httpGet(url interface{}) *http.Response, error
+
 Returns Sqrt(p*p + q*q), taking care to avoid unnecessary overflow and underflow.
 Special cases are:
     hypot(±Inf, q) = +Inf
@@ -443,10 +458,10 @@ indent(spaces int, str string) string
 Returns the result of indexing its first argument by the following arguments. Thus "index x 1 2 3" is, in Go syntax, x[1][2][3]. Each indexed item must be a map, slice, or array.
 index(item reflect.Value, indices ...reflect.Value) (reflect.Value, error)
 
-logs a message using INFO as log level (4).
+Logs a message using INFO as log level (4).
 info(args ...interface{}) string
 
-logs a message with format using INFO as log level (4).
+Logs a message with format using INFO as log level (4).
 infof(format string, args ...interface{}) string
 
 initial(arg1 interface{}) []interface{}
@@ -592,9 +607,6 @@ merge(destination IDictionary, sources IDictionary, args ...IDictionary) IDictio
 Return a single list containing all elements from the lists supplied.
 mergeList(lists ...[]interface{}) []interface{}
 
-List all methods signatures accessible from the supplied object.
-methods(arg1 interface{}) string
-
 Returns the smaller of x or y.
 Special cases are:
     min(x, -Inf) = min(-Inf, x) = -Inf
@@ -638,10 +650,10 @@ nospace(str string) string
 Returns the boolean negation of its single argument.
 not(not(arg reflect.Value) bool
 
-logs a message using NOTICE as log level (3).
+Logs a message using NOTICE as log level (3).
 notice(args ...interface{}) string
 
-logs a message with format using NOTICE as log level (3).
+Logs a message with format using NOTICE as log level (3).
 noticef(format string, args ...interface{}) string
 
 The current date/time. Use this in conjunction with other date functions.
@@ -983,10 +995,10 @@ urlquery(args ...interface{}) string
 
 uuidv4() string
 
-logs a message using WARNING as log level (2).
+Logs a message using WARNING as log level (2).
 warning(args ...interface{}) string
 
-logs a message with format using WARNING as log level (2).
+Logs a message with format using WARNING as log level (2).
 warningf(format string, args ...interface{}) string
 
 without(arg1 interface{}, args ...interface{}) []interface{}

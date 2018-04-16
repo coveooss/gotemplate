@@ -43,7 +43,7 @@ func transform(out interface{}) {
 	result := transformElement(reflect.ValueOf(out).Elem().Interface())
 	if _, isMap := out.(*map[string]interface{}); isMap {
 		// If the result is expected to be map[string]interface{}, we convert it back from internal dict type.
-		result = result.(xmlIDict).AsMap()
+		result = result.(xmlIDict).Native()
 	}
 	reflect.ValueOf(out).Elem().Set(reflect.ValueOf(result))
 }

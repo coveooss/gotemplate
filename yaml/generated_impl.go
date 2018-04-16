@@ -34,6 +34,7 @@ type yamlIDict = collections.IDictionary
 type yamlDict map[string]interface{}
 
 func (d yamlDict) AsMap() map[string]interface{}       { return (map[string]interface{})(d) }
+func (d yamlDict) Native() interface{}                 { return collections.ToNativeRepresentation(d) }
 func (d yamlDict) Count() int                          { return len(d) }
 func (d yamlDict) Len() int                            { return len(d) }
 func (d yamlDict) Clone(keys ...interface{}) yamlIDict { return yamlDictHelper.Clone(d, keys) }

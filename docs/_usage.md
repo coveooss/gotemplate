@@ -30,6 +30,7 @@ Flags:
                                disable
       --utils                  Option Utils, on by default, --no-utils to
                                disable
+      --net                    Option Net, on by default, --no-net to disable
       --delimiters={{,}},@     Define the default delimiters for go template
                                (separate the left, right and razor delimiters by
                                a comma) (--del)

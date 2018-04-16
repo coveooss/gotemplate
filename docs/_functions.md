@@ -59,6 +59,10 @@ abs                     gamma                   isInf                   lgamma  
 dec                     hex                     isNaN                   nextAfter               to                      
 frexp                   hypot                   ldexp                   signBit                 until                   
 
+Net
+
+httpDoc                 httpGet                 
+
 Other utilities
 
 center                  formatList              joinLines               repeat                  wrap                    
@@ -68,10 +72,10 @@ diff                    iif                     pwd                     splitLin
 
 Runtime
 
-alias                   current                 func                    localAlias              templateNames           
-aliases                 ellipsis                function                methods                 templates               
-allFunctions            exec                    functions               run                     
-categories              exit                    include                 substitute              
+alias                   current                 func                    getMethods              run                     
+aliases                 ellipsis                function                getSignature            substitute              
+allFunctions            exec                    functions               include                 templateNames           
+categories              exit                    getAttributes           localAlias              templates               
 
 Sprig Cryptographic & Security http://masterminds.github.io/sprig/crypto.html
 

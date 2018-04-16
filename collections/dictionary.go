@@ -9,6 +9,7 @@ import (
 // IDictionary represents objects that act as map[string]interface.
 type IDictionary interface {
 	AsMap() map[string]interface{}                                    // Returns the object casted as map[string]interface{}.
+	Native() interface{}                                              // Returns the object casted as native go type (applied recursively).
 	Clone(keys ...interface{}) IDictionary                            // Returns a distinct copy of the object with only supplied keys. If no keys are supplied, all keys from d are copied.
 	Count() int                                                       // Simply an alias for Len.
 	CreateList(...int) IGenericList                                   // Instantiates a list of the same type as current dictionary with optional size and capacity.

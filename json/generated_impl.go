@@ -34,6 +34,7 @@ type jsonIDict = collections.IDictionary
 type jsonDict map[string]interface{}
 
 func (d jsonDict) AsMap() map[string]interface{}       { return (map[string]interface{})(d) }
+func (d jsonDict) Native() interface{}                 { return collections.ToNativeRepresentation(d) }
 func (d jsonDict) Count() int                          { return len(d) }
 func (d jsonDict) Len() int                            { return len(d) }
 func (d jsonDict) Clone(keys ...interface{}) jsonIDict { return jsonDictHelper.Clone(d, keys) }

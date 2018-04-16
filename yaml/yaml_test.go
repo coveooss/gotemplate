@@ -119,7 +119,7 @@ func TestUnmarshalStrict(t *testing.T) {
 		wantErr bool
 	}{
 		{"nil", "{}\n", map[string]interface{}{}, false},
-		{"Map", fmt.Sprint(dictFixture), dictFixture.AsMap(), false},
+		{"Map", fmt.Sprint(dictFixture), dictFixture.Native(), false},
 		{"Error", "Invalid", nil, true},
 	}
 	for _, tt := range tests {

@@ -32,6 +32,7 @@ type baseIDict = collections.IDictionary
 type baseDict map[string]interface{}
 
 func (d baseDict) AsMap() map[string]interface{}       { return (map[string]interface{})(d) }
+func (d baseDict) Native() interface{}                 { return collections.ToNativeRepresentation(d) }
 func (d baseDict) Count() int                          { return len(d) }
 func (d baseDict) Len() int                            { return len(d) }
 func (d baseDict) Clone(keys ...interface{}) baseIDict { return baseDictHelper.Clone(d, keys) }

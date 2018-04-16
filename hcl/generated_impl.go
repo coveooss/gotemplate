@@ -34,6 +34,7 @@ type hclIDict = collections.IDictionary
 type hclDict map[string]interface{}
 
 func (d hclDict) AsMap() map[string]interface{}      { return (map[string]interface{})(d) }
+func (d hclDict) Native() interface{}                { return collections.ToNativeRepresentation(d) }
 func (d hclDict) Count() int                         { return len(d) }
 func (d hclDict) Len() int                           { return len(d) }
 func (d hclDict) Clone(keys ...interface{}) hclIDict { return hclDictHelper.Clone(d, keys) }

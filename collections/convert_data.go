@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -87,8 +88,8 @@ func ToBash(value interface{}) string {
 func toBash(value interface{}, level int) (result string) {
 	if value, isString := value.(string); isString {
 		result = value
-		if strings.HasPrefix(value, `"`) && strings.HasSuffix(value, `"`) && !strings.ContainsAny(value, " \t\n[]()") {
-			result = value[1 : len(value)-1]
+		if strings.ContainsAny(value, " \t\n[]()") {
+			result = fmt.Sprintf("%q", value)
 		}
 		return
 	}
@@ -158,12 +159,20 @@ func ToNativeRepresentation(value interface{}) (x interface{}) {
 	}
 	switch typ.Kind() {
 	case reflect.String:
-		return fmt.Sprintf("%q", value)
+		return value
 
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-		reflect.Float32, reflect.Float64, reflect.Bool:
-		return fmt.Sprintf("%v", value)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		return errors.Must(strconv.Atoi(fmt.Sprint(value))).(int)
+
+	case reflect.Int64, reflect.Uint64:
+		return errors.Must(strconv.ParseInt(fmt.Sprint(value), 10, 64)).(int64)
+
+	case reflect.Float32, reflect.Float64:
+		return errors.Must(strconv.ParseFloat(fmt.Sprint(value), 64)).(float64)
+
+	case reflect.Bool:
+		return errors.Must(strconv.ParseBool(fmt.Sprint(value))).(bool)
 
 	case reflect.Slice, reflect.Array:
 		result := make([]interface{}, val.Len())
