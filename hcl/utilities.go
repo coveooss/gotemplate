@@ -21,9 +21,9 @@ func flatten(source interface{}) interface{} {
 		case 1:
 			source = flatten(value[0])
 		default:
-			result := make([]Dictionary, len(value))
+			result := make([]map[string]interface{}, len(value))
 			for i := range value {
-				result[i] = flatten(value[i]).(Dictionary)
+				result[i] = flatten(value[i]).(map[string]interface{})
 			}
 			source = result
 		}
