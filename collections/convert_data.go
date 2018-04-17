@@ -58,7 +58,7 @@ func ConvertData(data string, out interface{}) (err error) {
 		if err == nil {
 			return
 		}
-		errs = append(errs, err)
+		errs = append(errs, fmt.Errorf("Trying %s: %v", key, err))
 	}
 
 	switch len(errs) {
