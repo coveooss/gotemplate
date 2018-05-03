@@ -3,7 +3,7 @@
 - title: Home
   url: /index
 
-- title: Functions
+- title: Complete functions list
   url: /functions_long
 
 - title: Usage
@@ -29,3 +29,4 @@
       url: /doc_test/templates
 - title: Sprig (External)
   url: http://masterminds.github.io/sprig/
+  full: true

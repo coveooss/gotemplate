@@ -1,49 +1,6 @@
 {% include navigation.html %}
 
 {% raw %}
-## Data structures
-```go
-// JSON data definition
-{{ $json_data := `"number": 10, "text": "Hello World!, "data": { "a": 1 }, "list": ["value 1, "value 2"]` | json }}
-
-// YAML data definition
-{{ $yaml_data := yaml `
-number: 10
-text: Hello world!
-data:
-    a: 1
-    b: 2
-list:
-    - value 1
-    - value 2
-` }}
-
-// HCL data definition from template
-{{ define "source" }}
-number = 10
-text = "Hello world!"
-
-data {
-    a = 1
-    b = 2
-}
-
-list = [
-    "value 1",
-    "value 2",
-]
-{{ end }}
-
-{{ $hcl_data := hcl "source" }}
-
-// YAML data definition for file
-{{ $yaml_file := yaml "source.yml" }}
-
-// Assign arbitrary data definition to a variable
-// data can handle any HCL, JSON, YAML or string coming from the string directly or a template name or a file name
-{{ $foo := `a = 1 b = 2 c = "Hello world!"` | data }}
-```
-
 ## Examples
 ```go
 // Random text
@@ -97,5 +54,48 @@ for i in range({{ . | default 10 }}):
 // Can be later used as a function in another template script
 {{ $numbers := generate_numbers 200 }}
 {{ $numbers := 1000 | generate_numbers }}
+```
+
+## Data structures
+```go
+// JSON data definition
+{{ $json_data := `"number": 10, "text": "Hello World!, "data": { "a": 1 }, "list": ["value 1, "value 2"]` | json }}
+
+// YAML data definition
+{{ $yaml_data := yaml `
+number: 10
+text: Hello world!
+data:
+    a: 1
+    b: 2
+list:
+    - value 1
+    - value 2
+` }}
+
+// HCL data definition from template
+{{ define "source" }}
+number = 10
+text = "Hello world!"
+
+data {
+    a = 1
+    b = 2
+}
+
+list = [
+    "value 1",
+    "value 2",
+]
+{{ end }}
+
+{{ $hcl_data := hcl "source" }}
+
+// YAML data definition for file
+{{ $yaml_file := yaml "source.yml" }}
+
+// Assign arbitrary data definition to a variable
+// data can handle any HCL, JSON, YAML or string coming from the string directly or a template name or a file name
+{{ $foo := `a = 1 b = 2 c = "Hello world!"` | data }}
 ```
 {% endraw %}

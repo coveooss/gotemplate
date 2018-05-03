@@ -1,32 +1,20 @@
 <!-- Belongs at: /_includes/navigation.html -->
 
-<!-- This finds the current page so it can be highlighted. -->
-
-{% for entry in site.data.navigation %} {% capture fullurl %}{{ site.baseurl }}{{ entry.url }}{% endcapture %} {% if fullurl
-== page.url %} {% assign current_page = fullurl %} {% break %} {% elsif page.url contains fullurl %} {% assign current_page
-= fullurl %} {% endif %} {% endfor %}
-
-<!-- Then we build the nav bar. -->
 <nav>
     <ul>
-        {% for entry in site.data.navigation %} {% if entry.url == current_page %} {% assign current = ' class="current"' %} {% else
-        %}
-        <!-- We have to declare it 'null' to ensure it doesn't propagate. -->
-        {% assign current = null %} {% endif %} {% assign sublinks = entry.sublinks %} {% if sublinks %}
+        {% for entry in site.data.navigation %}
         <li{{ current }}>
-            <a href="{{ site.baseurl }}{{ entry.url }}">{{ entry.title }}</a>
+            <a href="{% if entry.full %}{{ entry.url }}{% else %}{{ site.baseurl }}{{ entry.url }}{% endif %}">{{ entry.title }}</a>
+            {% if entry.sublinks %}
             <ul>
-                {% for sublink in sublinks %}
+                {% for sublink in entry.sublinks %}
                 <li>
-                    <a href="{{ site.baseurl }}{{ sublink.url }}">{{ sublink.title }}</a>
+                    <a href="{% if sublink.full %}{{ sublink.url }}{% else %}{{ site.baseurl }}{{ sublink.url }}{% endif %}">{{ sublink.title }}</a>
                 </li>
                 {% endfor %}
             </ul>
+            {% endif %}
             </li>
-            {% else %}
-            <li{{ current }}>
-                <a href="{{ site.baseurl }}{{ entry.url }}">{{ entry.title }}</a>
-                </li>
-                {% endif %} {% endfor %}
+            {% endfor %}
     </ul>
 </nav>
