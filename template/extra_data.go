@@ -108,7 +108,6 @@ var dataFuncsArgs = arguments{
 var dataFuncsAliases = aliases{
 	"data":          {"DATA", "fromData", "fromDATA"},
 	"dict":          {"dictionary"},
-	"hasKey":        {"has"},
 	"hcl":           {"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"},
 	"json":          {"JSON", "fromJson", "fromJSON"},
 	"lenc":          {"nbChars"},

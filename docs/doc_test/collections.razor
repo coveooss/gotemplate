@@ -1,5 +1,6 @@
 {% include navigation.html %}
 {% raw %}
+
 # Data collections (lists/slices and dicts/maps)
 
 ## Maps
@@ -14,10 +15,10 @@
 | `{{ $.razorDict.test3 }}`                               | `{{ $.goDict.test3 }}`                                | Should be `4`
 | `{{ $.razorDict.test5 }}`                               | `{{ $.goDict.test5 }}`                                | Should be `5`
 
-
 ### Looping
 
 #### Razor
+
 ```go
 {{- range $key, $value := .razorDict }}
     {{ $key }}, {{ $value }}, {{ get $.razorDict $key }}
@@ -25,6 +26,7 @@
 ```
 
 #### Gotemplate
+
 ```go
 {{- range $key, $value := .goDict }}
     {{ $key }}, {{ $value }}, {{ get $.goDict $key }}
@@ -32,6 +34,7 @@
 ```
 
 #### Result
+
 ```go
     test, 1, 1
     test2, 3, 3
@@ -47,10 +50,12 @@
 | `{{- set $ "razorList" (append .razorList "test4") }}`     | `{{- set $ "goList" (append .goList "test4") }}`       | Append
 | `{{- set $ "razorList" (prepend .razorList "test0") }}`    | `{{- set $ "goList" (prepend .goList "test0") }}`      | Prepend
 | `{{ $.razorList }}`                                    | `{{ $.goList }}`                                       | Should be `[test0 test1 test2 test3 test4]`
+| `{{ has "test1" .razorList }}`                     | `{{- has "test1" .goList }}`                           | Check if element is in list
 
 ### Looping
 
 #### Razor
+
 ```go
 {{- range $index, $value := .razorList }}
     {{ $index }}, {{ $value }}, {{ extract $.razorList $index }}
@@ -58,6 +63,7 @@
 ```
 
 #### Gotemplate
+
 ```go
 {{- range $index, $value := .goList }}
     {{ $index }}, {{ $value }}, {{ extract $.goList $index }}
@@ -65,6 +71,7 @@
 ```
 
 #### Result
+
 ```go
     0, test0, test0
     1, test1, test1
@@ -72,6 +79,5 @@
     3, test3, test3
     4, test4, test4
 ```
-
 
 {% endraw %}

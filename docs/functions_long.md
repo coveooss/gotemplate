@@ -395,6 +395,8 @@ glob(args ...interface{}) []string
 Returns the boolean truth of arg1 > arg2
 gt(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
 
+has(arg1 interface{}, arg2 interface{}) bool
+
 Returns true if the dictionary contains the specified key.
 hasKey(dictionary interface{}, key interface{}) interface{}, error
 

@@ -109,8 +109,8 @@ hello                   uuidv4
 
 Sprig List http://masterminds.github.io/sprig/lists.html
 
-append                  initial                 prepend                 reverse                 without                 
-first                   last                    rest                    uniq                    
+append                  has                     last                    rest                    uniq                    
+first                   initial                 prepend                 reverse                 without                 
 
 Sprig OS http://masterminds.github.io/sprig/defaults.html
 

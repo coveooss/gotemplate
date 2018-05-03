@@ -1,5 +1,6 @@
 {% include navigation.html %}
 {% raw %}
+
 # Data collections (lists/slices and dicts/maps)
 
 ## Maps
@@ -14,10 +15,10 @@
 | `4`                               | `4`                                | Should be `4`
 | `5`                               | `5`                                | Should be `5`
 
-
 ### Looping
 
 #### Razor
+
 ```go
     test, 1, 1
     test2, 3, 3
@@ -26,6 +27,7 @@
 ```
 
 #### Gotemplate
+
 ```go
     test, 1, 1
     test2, 3, 3
@@ -34,6 +36,7 @@
 ```
 
 #### Result
+
 ```go
     test, 1, 1
     test2, 3, 3
@@ -49,10 +52,12 @@
 | ``     | ``       | Append
 | ``    | ``      | Prepend
 | `[test0 test1 test2 test3 test4]`                                    | `[test0 test1 test2 test3 test4]`                                       | Should be `[test0 test1 test2 test3 test4]`
+| `true`                     | `true`                           | Check if element is in list
 
 ### Looping
 
 #### Razor
+
 ```go
     0, test0, test0
     1, test1, test1
@@ -62,6 +67,7 @@
 ```
 
 #### Gotemplate
+
 ```go
     0, test0, test0
     1, test1, test1
@@ -71,6 +77,7 @@
 ```
 
 #### Result
+
 ```go
     0, test0, test0
     1, test1, test1
@@ -78,6 +85,5 @@
     3, test3, test3
     4, test4, test4
 ```
-
 
 {% endraw %}
