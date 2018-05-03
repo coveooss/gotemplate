@@ -153,7 +153,7 @@ var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*
 var idRegex = regexp.MustCompile(`^[\p{L}\d_]+$`)
 
 func assignExpression(repl replacement, match string) string {
-	if strings.HasPrefix(match, "{{") {
+	if strings.HasPrefix(match, repl.delimiters[0]) {
 		// This is an already go template assignation
 		return match
 	}
@@ -175,7 +175,7 @@ func assignExpression(repl replacement, match string) string {
 	}
 
 	if local {
-		return fmt.Sprintf("{{- $%s := %s }}", id, ex)
+		return fmt.Sprintf("%s- $%s := %s %s", repl.delimiters[0], id, ex, repl.delimiters[1])
 	}
 
 	parts := strings.Split(id, ".")
@@ -197,7 +197,7 @@ func assignExpression(repl replacement, match string) string {
 		object = iif(object == "", "$", "$."+object).(string)
 	}
 
-	return fmt.Sprintf(`{{- set %s "%s" %s }}`, object, id, ex)
+	return fmt.Sprintf(`%s- set %s "%s" %s %s`, repl.delimiters[0], object, id, ex, repl.delimiters[1])
 }
 
 var alreadyIssued = make(map[string]int)
@@ -513,11 +513,12 @@ var replacementsInit = make(map[string][]replacement)
 
 type replacementFunc func(replacement, string) string
 type replacement struct {
-	name    string
-	expr    string
-	replace string
-	re      *regexp.Regexp
-	parser  replacementFunc
+	name       string
+	expr       string
+	replace    string
+	re         *regexp.Regexp
+	parser     replacementFunc
+	delimiters []string
 }
 
 func (t *Template) ensureInit() {
@@ -527,7 +528,9 @@ func (t *Template) ensureInit() {
 		replacements := make([]replacement, 0, len(expressions))
 		for _, expr := range expressions {
 			comment := expr[0].(string)
-			re := strings.Replace(expr[1].(string), "@", t.delimiters[2], -1)
+			re := strings.Replace(expr[1].(string), "@", regexp.QuoteMeta(t.delimiters[2]), -1)
+			re = strings.Replace(re, "{{", regexp.QuoteMeta(t.delimiters[0]), -1)
+			re = strings.Replace(re, "}}", regexp.QuoteMeta(t.delimiters[1]), -1)
 			replace := strings.Replace(strings.Replace(strings.Replace(expr[2].(string), "{{", t.delimiters[0], -1), "}}", t.delimiters[1], -1), "@", t.delimiters[2], -1)
 			var exprParser replacementFunc
 			if len(expr) >= 4 {
@@ -552,13 +555,13 @@ func (t *Template) ensureInit() {
 
 			for i := range subExpressions {
 				re := regexp.MustCompile(subExpressions[i])
-				replacements = append(replacements, replacement{comment, subExpressions[i], replace, re, exprParser})
+				replacements = append(replacements, replacement{comment, subExpressions[i], replace, re, exprParser, t.delimiters})
 			}
 
 			if len(subExpressions) > 1 && len(expr) == 5 {
 				// If there is a fallback expression evaluator, we apply it on the first replacement alternative
 				re := regexp.MustCompile(subExpressions[0])
-				replacements = append(replacements, replacement{comment, subExpressions[0], replace, re, expr[4].(replacementFunc)})
+				replacements = append(replacements, replacement{comment, subExpressions[0], replace, re, expr[4].(replacementFunc), t.delimiters})
 			}
 		}
 		replacementsInit[delimiters] = replacements
