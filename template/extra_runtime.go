@@ -330,7 +330,7 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	log.Notice("Launching", cmd.Args, "in", cmd.Dir)
 
 	if err = cmd.Run(); err == nil {
-		result = strings.TrimSpace(stdout.String())
+		result = stdout.String()
 	} else {
 		err = fmt.Errorf("Error %v: %s", err, stderr.String())
 	}

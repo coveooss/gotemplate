@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/collections/implementation"
@@ -20,14 +19,8 @@ var (
 	NativeUnmarshalStrict = yaml.UnmarshalStrict
 )
 
-func (l yamlList) String() string {
-	result, _ := Marshal(l.AsArray())
-	return strings.TrimSpace(string(result))
-}
-func (d yamlDict) String() string {
-	result, _ := Marshal(d.AsMap())
-	return strings.TrimSpace(string(result))
-}
+func (l yamlList) String() string { result, _ := Marshal(l.AsArray()); return string(result) }
+func (d yamlDict) String() string { result, _ := Marshal(d.AsMap()); return string(result) }
 
 var _ = func() int {
 	collections.TypeConverters["yaml"] = Unmarshal

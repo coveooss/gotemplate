@@ -16,6 +16,7 @@ First result: test2
 Second result: test3
 SomeData: test2
 SomeData2: test3
+
 Should be `string`: string
 Test
 ```
@@ -26,6 +27,7 @@ First result: test2
 Second result: test3
 SomeData: test2
 SomeData2: test3
+
 Should be `string`: string
 Test
 ```
@@ -36,6 +38,7 @@ First result: test2
 Second result: test3
 SomeData: test2
 SomeData2: test3
+
 Should be `string`: string
 Test
 ```

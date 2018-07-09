@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"math"
 	"reflect"
-	"strings"
 
 	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/collections/implementation"
@@ -22,14 +21,8 @@ var (
 	NativeUnmarshal = json.Unmarshal
 )
 
-func (l jsonList) String() string {
-	result, _ := Marshal(l.AsArray())
-	return strings.TrimSpace(string(result))
-}
-func (d jsonDict) String() string {
-	result, _ := Marshal(d.AsMap())
-	return strings.TrimSpace(string(result))
-}
+func (l jsonList) String() string { result, _ := Marshal(l.AsArray()); return string(result) }
+func (d jsonDict) String() string { result, _ := Marshal(d.AsMap()); return string(result) }
 
 var _ = func() int {
 	collections.TypeConverters["!json"] = Unmarshal

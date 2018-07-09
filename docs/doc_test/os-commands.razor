@@ -16,6 +16,7 @@ It is possible to run OS commands using the following go template functions:
 First result: {{ $example.SomeData }}
 Second result: {{ $example.SomeData2 }}
 {{ $example }}
+
 {{- $example2 := exec "printf 'Test'" }}
 Should be `string`: {{ typeOf $example2 }}
 {{ $example2 }}
@@ -27,6 +28,7 @@ Should be `string`: {{ typeOf $example2 }}
 First result: {{ $example.SomeData }}
 Second result: {{ $example.SomeData2 }}
 {{ $example }}
+
 {{- $example2 := exec "printf 'Test'" }}
 Should be `string`: {{ typeOf $example2 }}
 {{ $example2 }}
@@ -38,6 +40,7 @@ First result: test2
 Second result: test3
 SomeData: test2
 SomeData2: test3
+
 Should be `string`: string
 Test
 ```

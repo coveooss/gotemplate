@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"reflect"
-	"strings"
 
 	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/collections/implementation"
@@ -26,7 +25,7 @@ func (l hclList) String() string {
 	if err != nil {
 		panic(err)
 	}
-	return strings.TrimSpace(string(result))
+	return string(result)
 }
 
 func (d hclDict) String() string {
@@ -34,7 +33,7 @@ func (d hclDict) String() string {
 	if err != nil {
 		panic(err)
 	}
-	return strings.TrimSpace(string(result))
+	return string(result)
 }
 
 var _ = func() int {
