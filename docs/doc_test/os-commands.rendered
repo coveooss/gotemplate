@@ -16,6 +16,8 @@ First result: test2
 Second result: test3
 SomeData: test2
 SomeData2: test3
+Should be `string`: string
+Test
 ```
 
 ### Gotemplate
@@ -24,6 +26,8 @@ First result: test2
 Second result: test3
 SomeData: test2
 SomeData2: test3
+Should be `string`: string
+Test
 ```
 
 ### Result
@@ -32,6 +36,8 @@ First result: test2
 Second result: test3
 SomeData: test2
 SomeData2: test3
+Should be `string`: string
+Test
 ```
 
 ## run

@@ -12,18 +12,24 @@ It is possible to run OS commands using the following go template functions:
 
 ### Razor
 ```
-@$hello := exec("printf 'SomeData: test2\nSomeData2: test3'")
-First result: @$hello.SomeData
-Second result: @$hello.SomeData2
-@$hello
+@$example := exec("printf 'SomeData: test2\nSomeData2: test3'")
+First result: @$example.SomeData
+Second result: @$example.SomeData2
+@$example
+@$example2 := exec("printf 'Test'")
+Should be `string`: @typeOf($example2)
+@$example2
 ```
 
 ### Gotemplate
 ```
-{{- $hello := exec "printf 'SomeData: test2\nSomeData2: test3'" }}
-First result: {{ $hello.SomeData }}
-Second result: {{ $hello.SomeData2 }}
-{{ $hello }}
+{{- $example := exec "printf 'SomeData: test2\nSomeData2: test3'" }}
+First result: {{ $example.SomeData }}
+Second result: {{ $example.SomeData2 }}
+{{ $example }}
+{{- $example2 := exec "printf 'Test'" }}
+Should be `string`: {{ typeOf $example2 }}
+{{ $example2 }}
 ```
 
 ### Result
@@ -32,22 +38,24 @@ First result: test2
 Second result: test3
 SomeData: test2
 SomeData2: test3
+Should be `string`: string
+Test
 ```
 
 ## run
 
 ### Razor
 ```
-@$hello := run("printf 'SomeData: test2\nSomeData2: test3'")
-Should be `string`: @typeOf($hello)
-@$hello
+@$example := run("printf 'SomeData: test2\nSomeData2: test3'")
+Should be `string`: @typeOf($example)
+@$example
 ```
 
 ### Gotemplate
 ```
-{{- $hello := run "printf 'SomeData: test2\nSomeData2: test3'" }}
-Should be `string`: {{ typeOf $hello }}
-{{ $hello }}
+{{- $example := run "printf 'SomeData: test2\nSomeData2: test3'" }}
+Should be `string`: {{ typeOf $example }}
+{{ $example }}
 ```
 
 ### Result
