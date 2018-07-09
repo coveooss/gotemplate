@@ -14,20 +14,18 @@ func Test_list_String(t *testing.T) {
 		l    yamlList
 		want string
 	}{
-		{"Nil", nil, "[]\n"},
-		{"Empty List", yamlList{}, "[]\n"},
+		{"Nil", nil, "[]"},
+		{"Empty List", yamlList{}, "[]"},
 		{"List of int", yamlList{1, 2, 3}, collections.UnIndent(`
 			- 1
 			- 2
-			- 3
-			`)[1:]},
+			- 3`)[1:]},
 		{"List of string", strFixture, collections.UnIndent(`
 			- Hello
 			- World,
 			- I'm
 			- Foo
-			- Bar!
-			`)[1:]},
+			- Bar!`)[1:]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -44,7 +42,7 @@ func Test_dict_String(t *testing.T) {
 		d    yamlDict
 		want string
 	}{
-		{"nil", nil, "{}\n"},
+		{"nil", nil, "{}"},
 		{"Map", dictFixture, collections.UnIndent(`
 			float: 1.23
 			int: 123
@@ -61,8 +59,7 @@ func Test_dict_String(t *testing.T) {
 			mapInt:
 			  "1": 1
 			  "2": two
-			string: Foo bar
-			`)[1:]},
+			string: Foo bar`)[1:]},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

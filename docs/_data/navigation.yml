@@ -23,6 +23,8 @@
       url: /doc_test/functions
     - title: Literals
       url: /doc_test/literals
+    - title: OS commands
+      url: /doc_test/single-lines
     - title: Single lines
       url: /doc_test/single-lines
     - title: Templates
