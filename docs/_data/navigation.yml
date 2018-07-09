@@ -24,7 +24,7 @@
     - title: Literals
       url: /doc_test/literals
     - title: OS commands
-      url: /doc_test/single-lines
+      url: /doc_test/os-commands
     - title: Single lines
       url: /doc_test/single-lines
     - title: Templates
