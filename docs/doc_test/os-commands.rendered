@@ -1,0 +1,70 @@
+{% include navigation.html %}
+{% raw %}
+
+# OS commands
+
+It is possible to run OS commands using the following go template functions:
+
+* `exec` returns the result of a shell command as structured data.
+* `run` returns the result of a shell command as a string.
+
+## exec
+
+### Razor
+```
+First result: test2
+Second result: test3
+SomeData: test2
+SomeData2: test3
+
+Should be `string`: string
+Test
+```
+
+### Gotemplate
+```
+First result: test2
+Second result: test3
+SomeData: test2
+SomeData2: test3
+
+Should be `string`: string
+Test
+```
+
+### Result
+```
+First result: test2
+Second result: test3
+SomeData: test2
+SomeData2: test3
+
+Should be `string`: string
+Test
+```
+
+## run
+
+### Razor
+```
+Should be `string`: string
+SomeData: test2
+SomeData2: test3
+```
+
+### Gotemplate
+```
+Should be `string`: string
+SomeData: test2
+SomeData2: test3
+```
+
+### Result
+```
+Should be `string`: string
+SomeData: test2
+SomeData2: test3
+```
+
+
+{% endraw %}
