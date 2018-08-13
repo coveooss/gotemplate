@@ -2,7 +2,7 @@
 
 package utils
 
-import "fmt"
+import "strconv"
 
 const (
 	_Attribute_name_0 = "ResetBoldFaintItalicUnderlineBlinkSlowBlinkRapidReverseVideoConcealedCrossedOut"
@@ -37,6 +37,6 @@ func (i Attribute) String() string {
 		i -= 100
 		return _Attribute_name_4[_Attribute_index_4[i]:_Attribute_index_4[i+1]]
 	default:
-		return fmt.Sprintf("Attribute(%d)", i)
+		return "Attribute(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 }

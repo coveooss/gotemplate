@@ -139,6 +139,15 @@ func (dh DictHelper) Set(dict baseIDict, key interface{}, value interface{}) bas
 	return dict
 }
 
+// Values returns the values in the dictionary in key alphabetical order.
+func (dh DictHelper) Values(dict baseIDict) baseIList {
+	result := dh.CreateList(dict.Len())
+	for i, key := range dict.KeysAsString() {
+		result.Set(i, dict.Get(key))
+	}
+	return result
+}
+
 func (dh DictHelper) delete(dict baseIDict, keys []interface{}, mustExist bool) (baseIDict, error) {
 	for i := range keys {
 		if mustExist && !dict.Has(keys[i]) {

@@ -5,15 +5,20 @@
 
 ## Maps
 
-| Razor                                             | Gotemplate                                            | Note
-| ---                                               | ---                                                   | ---
-| `{{- set $ "razorDict" (dict "test" 1 "test2" 2) }}`      | `{{- set $ "goDict" (dict "test" 1 "test2" 2) }}`     | Creation
-| `{{- set $ "razorDict2" (dict "test3" 3 "test5" 5) }}`    | `{{- set $ "goDict2" (dict "test3" 3 "test5" 5) }}`   | Creation
-| `{{ set .razorDict "test2" 3 }}`                   | `{{- set .goDict "test2" 3 }}`                        | Update
-| `{{ set .razorDict "test3" 4 }}`                   | `{{- set .goDict "test3" 4 }}`                        | Update 
-| `{{- set $ "razorDict" (merge .razorDict .razorDict2) }}`   | `{{- set $ "goDict" (merge .goDict .goDict2) }}`      | Merge (First dict has priority)
-| `{{ $.razorDict.test3 }}`                               | `{{ $.goDict.test3 }}`                                | Should be `4`
-| `{{ $.razorDict.test5 }}`                               | `{{ $.goDict.test5 }}`                                | Should be `5`
+| Razor                                           | Gotemplate                                          | Note
+| ---                                             | ---                                                 | ---
+| `{{- set $ "razorDict" (dict "test" 1 "test2" 2) }}`    | `{{- set $ "goDict" (dict "test" 1 "test2" 2) }}`   | Creation
+| `{{- set $ "razorDict2" (dict "test3" 3 "test5" 5) }}`  | `{{- set $ "goDict2" (dict "test3" 3 "test5" 5) }}` | Creation
+| `{{ set .razorDict "test2" 3 }}`                 | `{{- set .goDict "test2" 3 }}`                      | Update
+| `{{ set .razorDict "test3" 4 }}`                 | `{{- set .goDict "test3" 4 }}`                      | Update 
+| `{{- set $ "razorDict" (merge .razorDict .razorDict2) }}` | `{{- set $ "goDict" (merge .goDict .goDict2) }}`    | Merge (First dict has priority)
+| `{{ $.razorDict.test3 }}`                             | `{{ $.goDict.test3 }}`                              | Should be `4`
+| `{{ $.razorDict.test5 }}`                             | `{{ $.goDict.test5 }}`                              | Should be `5`
+| `{{ extract $.razorDict "test" "test3" "undef" }}`          | `{{ extract $.goDict "test" "test3" "undef" }}`     | Extract values, should be `[1 4 <nil>]`
+| `{{ slice $.razorDict "test" "test9" }}`                    | `{{ slice $.goDict "test" "test9" }}`               | Slice values, should be `[1 3 4 5]`
+| `{{ slice $.razorDict "test9" "test" }}`                    | `{{ slice $.goDict "test9" "test" }}`               | Slice values, should be `[5 4 3 1]`
+| `{{ keys .razorDict }}`                             | `{{ keys $.goDict }}`                               | Get keys, should be `[test test2 test3 test5]`
+| `{{ values .razorDict }}`                           | `{{ values $.goDict }}`                             | Get values, should be `[1 3 4 5]`
 
 ### Looping
 

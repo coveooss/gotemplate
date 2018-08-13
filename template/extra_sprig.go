@@ -30,10 +30,19 @@ var sprigFuncMap = sprig.GenericFuncMap()
 
 func (t *Template) addSprigFuncs() {
 	if sprigFuncs == nil {
+		// We get the list of aliases to avoid issuing warning a sprig unmapped functions.
+		aliases := make(map[string]string)
+		for key, value := range sprigFuncRef {
+			for _, alias := range value.aliases {
+				aliases[alias] = key
+			}
+		}
+
 		sprigFuncs = make(funcTableMap)
 		for key, value := range sprigFuncMap {
 			info := sprigFuncRef[key]
-			if info.group == "" {
+			if info.group == "" && aliases[key] == "" {
+				log.Warning(key, "not found")
 				continue
 			}
 			sprigFuncs[key] = FuncInfo{function: value, group: info.group, aliases: info.aliases, arguments: info.arguments, description: info.description}
@@ -101,6 +110,7 @@ var sprigFuncRef = map[string]struct {
 	"float64": {group: sprigTypeConversion},
 
 	"split":     {group: sprigStringList},
+	"splitn":    {group: sprigStringList},
 	"splitList": {group: sprigStringList},
 	"toStrings": {group: sprigStringList},
 	"join":      {group: sprigStringList},
@@ -129,6 +139,7 @@ var sprigFuncRef = map[string]struct {
 	"compact":      {group: sprigDefault},
 	"toJson":       {group: sprigDefault, aliases: []string{"toJsonSprig"}},
 	"toPrettyJson": {group: sprigDefault, aliases: []string{"toJsonSprig"}},
+	"ternary":      {group: sprigDefault, aliases: []string{"ternarySprig"}},
 
 	// Reflection
 	"typeOf":     {group: sprigReflect},
@@ -165,6 +176,7 @@ var sprigFuncRef = map[string]struct {
 	"pick":   {group: sprigDict, aliases: []string{"pickSprig"}},
 	"omit":   {group: sprigDict, aliases: []string{"omitSprig"}},
 	"merge":  {group: sprigDict, aliases: []string{"mergeSprig"}},
+	"values": {group: sprigDict, aliases: []string{"valuesSprig"}},
 
 	// Lists functions
 	"append":  {group: sprigList, aliases: []string{"push"}},
@@ -177,11 +189,14 @@ var sprigFuncRef = map[string]struct {
 	"uniq":    {group: sprigList},
 	"without": {group: sprigList},
 	"has":     {group: sprigList},
+	"slice":   {group: sprigList, aliases: []string{"sliceSprig"}},
 
 	// Cryptographics functions
-	"sha256sum":         {group: sprigCrypto, description: "", arguments: []string{"input"}},
-	"genPrivateKey":     {group: sprigCrypto},
+	"sha1sum":           {group: sprigCrypto, description: "Computes SHA1 digest.", arguments: []string{"input"}},
+	"sha256sum":         {group: sprigCrypto, description: "Computes SHA256 digest.", arguments: []string{"input"}},
+	"genPrivateKey":     {group: sprigCrypto, description: "Generates a new private key encoded into a PEM block. Type should be: ecdsa, dsa or rsa", arguments: []string{"type"}},
 	"derivePassword":    {group: sprigCrypto},
+	"buildCustomCert":   {group: sprigCrypto},
 	"genCA":             {group: sprigCrypto},
 	"genSelfSignedCert": {group: sprigCrypto},
 	"genSignedCert":     {group: sprigCrypto},

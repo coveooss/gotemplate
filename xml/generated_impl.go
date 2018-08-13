@@ -44,6 +44,7 @@ func (d xmlDict) Get(key interface{}) interface{}    { return xmlDictHelper.Get(
 func (d xmlDict) Has(key interface{}) bool           { return xmlDictHelper.Has(d, key) }
 func (d xmlDict) Keys() xmlIList                     { return xmlDictHelper.Keys(d) }
 func (d xmlDict) KeysAsString() []string             { return xmlDictHelper.KeysAsString(d) }
+func (d xmlDict) Values() xmlIList                   { return xmlDictHelper.Values(d) }
 
 func (d xmlDict) Default(key, defVal interface{}) interface{} {
 	return xmlDictHelper.Default(d, key, defVal)

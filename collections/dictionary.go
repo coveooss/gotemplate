@@ -25,6 +25,7 @@ type IDictionary interface {
 	Omit(key interface{}, keys ...interface{}) IDictionary            // Returns a distinct copy of the object including all keys except specified ones.
 	Set(key, value interface{}) IDictionary                           // Sets key to value in the dictionary.
 	String() string                                                   // Returns the string representation of the dictionary.
+	Values() IGenericList                                             // Returns the values in the dictionary in alphabetical order of keys.
 }
 
 // IDictionaryHelper represents objects that implement IDictionary compatible objects

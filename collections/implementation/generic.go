@@ -42,6 +42,7 @@ func (d baseDict) Get(key interface{}) interface{}     { return baseDictHelper.G
 func (d baseDict) Has(key interface{}) bool            { return baseDictHelper.Has(d, key) }
 func (d baseDict) Keys() baseIList                     { return baseDictHelper.Keys(d) }
 func (d baseDict) KeysAsString() []string              { return baseDictHelper.KeysAsString(d) }
+func (d baseDict) Values() baseIList                   { return baseDictHelper.Values(d) }
 
 func (d baseDict) Default(key, defVal interface{}) interface{} {
 	return baseDictHelper.Default(d, key, defVal)
