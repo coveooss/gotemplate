@@ -505,3 +505,21 @@ func Test_dict_Merge(t *testing.T) {
 		})
 	}
 }
+
+func Test_dict_Values(t *testing.T) {
+	tests := []struct {
+		name string
+		d    jsonDict
+		want jsonIList
+	}{
+		{"Empty", nil, jsonList{}},
+		{"Map", dictFixture, jsonList{1.23, 123, jsonList{1, "two"}, jsonList{1, 2, 3}, jsonDict{"sub1": 1, "sub2": "two"}, jsonDict{"1": 1, "2": "two"}, "Foo bar"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.d.Values(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("jsonDict.Keys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}

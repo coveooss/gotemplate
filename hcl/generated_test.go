@@ -505,3 +505,21 @@ func Test_dict_Merge(t *testing.T) {
 		})
 	}
 }
+
+func Test_dict_Values(t *testing.T) {
+	tests := []struct {
+		name string
+		d    hclDict
+		want hclIList
+	}{
+		{"Empty", nil, hclList{}},
+		{"Map", dictFixture, hclList{1.23, 123, hclList{1, "two"}, hclList{1, 2, 3}, hclDict{"sub1": 1, "sub2": "two"}, hclDict{"1": 1, "2": "two"}, "Foo bar"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.d.Values(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("hclDict.Keys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}

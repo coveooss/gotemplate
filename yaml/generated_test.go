@@ -505,3 +505,21 @@ func Test_dict_Merge(t *testing.T) {
 		})
 	}
 }
+
+func Test_dict_Values(t *testing.T) {
+	tests := []struct {
+		name string
+		d    yamlDict
+		want yamlIList
+	}{
+		{"Empty", nil, yamlList{}},
+		{"Map", dictFixture, yamlList{1.23, 123, yamlList{1, "two"}, yamlList{1, 2, 3}, yamlDict{"sub1": 1, "sub2": "two"}, yamlDict{"1": 1, "2": "two"}, "Foo bar"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.d.Values(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("yamlDict.Keys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
