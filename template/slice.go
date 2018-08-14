@@ -91,14 +91,17 @@ func sliceMap(value interface{}, extract bool, args ...interface{}) (interface{}
 			for i := 0; i < keys.Len(); i++ {
 				k := fmt.Sprint(keys.Get(i))
 				if k >= k1 && k <= k2 {
-					results.Append(dict.Get(key))
+					results = results.Append(dict.Get(k))
 				}
 			}
 			return results, nil
 		}
 		fallthrough
 	default:
-		return nil, fmt.Errorf("Slice cannot have more that two parts")
+		if !extract {
+			return nil, fmt.Errorf("Slice cannot have more that two parts")
+		}
+		return dict.Clone(args...).Values(), nil
 	}
 }
 

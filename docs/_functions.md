@@ -19,7 +19,7 @@ String                  dict                    keys                    pick    
 array                   extract                 lenc                    pickv                   string                  
 bool                    get                     list                    pluck                   undef                   
 char                    hasKey                  merge                   safeIndex               unset                   
-content                 key                     omit                    set                     
+content                 key                     omit                    set                     values                  
 
 Logging
 
@@ -79,8 +79,8 @@ categories              exit                    getAttributes           localAli
 
 Sprig Cryptographic & Security http://masterminds.github.io/sprig/crypto.html
 
-derivePassword          genPrivateKey           genSignedCert           
-genCA                   genSelfSignedCert       sha256sum               
+buildCustomCert         genCA                   genSelfSignedCert       sha1sum                 
+derivePassword          genPrivateKey           genSignedCert           sha256sum               
 
 Sprig Date http://masterminds.github.io/sprig/date.html
 
@@ -131,7 +131,8 @@ add1                    round                   untilStep
 
 Sprig String Slice http://masterminds.github.io/sprig/string_slice.html
 
-join                    sortAlpha               split                   splitList               toStrings               
+join                    split                   splitn                  
+sortAlpha               splitList               toStrings               
 
 Sprig Strings http://masterminds.github.io/sprig/strings.html
 

@@ -44,6 +44,7 @@ func (d jsonDict) Get(key interface{}) interface{}     { return jsonDictHelper.G
 func (d jsonDict) Has(key interface{}) bool            { return jsonDictHelper.Has(d, key) }
 func (d jsonDict) Keys() jsonIList                     { return jsonDictHelper.Keys(d) }
 func (d jsonDict) KeysAsString() []string              { return jsonDictHelper.KeysAsString(d) }
+func (d jsonDict) Values() jsonIList                   { return jsonDictHelper.Values(d) }
 
 func (d jsonDict) Default(key, defVal interface{}) interface{} {
 	return jsonDictHelper.Default(d, key, defVal)

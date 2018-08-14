@@ -59,6 +59,7 @@ var utilsFuncsAliases = aliases{
 	"diff":    {"difference"},
 	"glob":    {"expand"},
 	"id":      {"identifier"},
+	"iif":     {"ternary"},
 	"lorem":   {"loremIpsum"},
 	"pwd":     {"currentDir"},
 	"save":    {"write", "writeTo"},

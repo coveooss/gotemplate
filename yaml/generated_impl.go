@@ -44,6 +44,7 @@ func (d yamlDict) Get(key interface{}) interface{}     { return yamlDictHelper.G
 func (d yamlDict) Has(key interface{}) bool            { return yamlDictHelper.Has(d, key) }
 func (d yamlDict) Keys() yamlIList                     { return yamlDictHelper.Keys(d) }
 func (d yamlDict) KeysAsString() []string              { return yamlDictHelper.KeysAsString(d) }
+func (d yamlDict) Values() yamlIList                   { return yamlDictHelper.Values(d) }
 
 func (d yamlDict) Default(key, defVal interface{}) interface{} {
 	return yamlDictHelper.Default(d, key, defVal)

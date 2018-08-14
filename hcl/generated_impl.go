@@ -44,6 +44,7 @@ func (d hclDict) Get(key interface{}) interface{}    { return hclDictHelper.Get(
 func (d hclDict) Has(key interface{}) bool           { return hclDictHelper.Has(d, key) }
 func (d hclDict) Keys() hclIList                     { return hclDictHelper.Keys(d) }
 func (d hclDict) KeysAsString() []string             { return hclDictHelper.KeysAsString(d) }
+func (d hclDict) Values() hclIList                   { return hclDictHelper.Values(d) }
 
 func (d hclDict) Default(key, defVal interface{}) interface{} {
 	return hclDictHelper.Default(d, key, defVal)

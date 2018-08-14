@@ -43,6 +43,7 @@ var dataFuncsBase = dictionary{
 	"set":       set,
 	"slice":     slice,
 	"string":    toString,
+	"values":    values,
 	"undef":     utils.IfUndef,
 	"unset":     unset,
 }
@@ -427,7 +428,8 @@ func pickv(dict Dictionary, message string, key interface{}, otherKeys ...interf
 	return pick(dict, append(otherKeys, key)), nil
 }
 
-func keys(dict Dictionary) List { return dict.Keys() }
+func keys(dict Dictionary) List   { return dict.Keys() }
+func values(dict Dictionary) List { return dict.Values() }
 
 func createDict(v ...interface{}) (Dictionary, error) {
 	if len(v)%2 != 0 {

@@ -124,6 +124,8 @@ bool(str string) bool, error
 
 bor(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
 
+buildCustomCert(arg1 string, arg2 string) sprig.certificate, error
+
 bxor(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
 
 Returns the result of calling the first argument, which must be a function, with the remaining arguments as parameters. Thus "call .X.Y 1 2" is, in Go notation, dot.X.Y(1, 2) where Y is a func-valued field, map entry, or the like. The first argument must be the result of an evaluation that yields a value of function type (as distinct from a predefined function such as print). The function must return either one or two result values, the second of which is of type error. If the arguments don't match the function or the returned error value is non-nil, execution stops.
@@ -371,7 +373,8 @@ ge(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
 
 genCA(arg1 string, arg2 int) sprig.certificate, error
 
-genPrivateKey(arg1 string) string
+Generates a new private key encoded into a PEM block. Type should be: ecdsa, dsa or rsa
+genPrivateKey(type string) string
 
 genSelfSignedCert(arg1 string, arg2 []interface{}, arg3 []interface{}, arg4 int) sprig.certificate, error
 
@@ -812,6 +815,10 @@ semverCompare(constraints string, version string) bool, error
 Adds the value to the supplied map using key as identifier.
 set(dict interface{}, key interface{}, value interface{}) string, error
 
+Computes SHA1 digest.
+sha1sum(input string) string
+
+Computes SHA256 digest.
 sha256sum(input string) string
 
 Shuffle a string.
@@ -854,6 +861,8 @@ Returns a list of strings from the supplied object with newline as the separator
 splitLines(content interface{}) []interface{}
 
 splitList(arg1 string, arg2 string) []string
+
+splitn(arg1 string, arg2 int, arg3 string) map[string]string
 
 Returns the square root of x.
 Special cases are:
@@ -996,6 +1005,8 @@ Returns the escaped value of the textual representation of its arguments in a fo
 urlquery(args ...interface{}) string
 
 uuidv4() string
+
+values(arg1 IDictionary) IGenericList
 
 Logs a message using WARNING as log level (2).
 warning(args ...interface{}) string
