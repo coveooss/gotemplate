@@ -88,3 +88,82 @@ func TestWrapString(t *testing.T) {
 		})
 	}
 }
+
+func TestString_FindWord(t *testing.T) {
+	type args struct {
+		pos    int
+		accept []string
+	}
+	tests := []struct {
+		s       String
+		args    args
+		want    String
+		wantPos int
+	}{
+		{"", args{0, nil}, "", -1},
+		{"A single character", args{0, nil}, "A", 0},
+		{"This a test", args{0, nil}, "This", 0},
+		{"This is a secode test", args{3, nil}, "This", 0},
+		{"Over", args{20, nil}, "", -1},
+		{"Find the second word", args{5, nil}, "the", 5},
+		{"Find the $third word", args{10, nil}, "$third", 9},
+		{"Find the ($a.value) word", args{10, []string{"."}}, "$a.value", 10},
+		{"Find the ($a.value[0]) word", args{10, []string{"."}}, "$a.value", 10},
+		{"Find the ($a.value[10]) word", args{10, []string{".", "[]"}}, "$a.value[10]", 10},
+		{"Match a space", args{5, nil}, "", 5},
+	}
+	for _, tt := range tests {
+		t.Run(tt.s.Str(), func(t *testing.T) {
+			got, pos := tt.s.FindWord(tt.args.pos, tt.args.accept...)
+			if got != tt.want {
+				t.Errorf("String.FindWord() got = %v, want %v", got, tt.want)
+			}
+			if pos != tt.wantPos {
+				t.Errorf("String.FindWord() pos = %d, want %d", pos, tt.wantPos)
+			}
+			if got2 := tt.s.SelectWord(tt.args.pos, tt.args.accept...); got != got2 {
+				t.Errorf("String.SelectWord() returns %v while String.FindWord() returns %v", got, got2)
+			}
+		})
+	}
+}
+
+func TestString_FindContext(t *testing.T) {
+	type args struct {
+		pos   int
+		left  string
+		right string
+	}
+	tests := []struct {
+		s       String
+		args    args
+		want    String
+		wantPos int
+	}{
+		{"", args{0, "", ""}, "", -1},
+		{"", args{5, "", ""}, "", -1},
+		{"A context (within parenthesis) should be returned", args{15, "(", ")"}, "(within parenthesis)", 10},
+		{"A context [[within double bracket]] should be returned", args{15, "[[", "]]"}, "[[within double bracket]]", 10},
+		{"A context [[from double bracket]] should be returned", args{24, "[[", ""}, "[[from double b", 10},
+		{"A context [[to double bracket]] should be returned", args{22, "", "]]"}, "bracket]]", 22},
+		{"A context (with (double level parenthesis))", args{22, "(", ")"}, "(double level parenthesis)", 16},
+		{"A context (with no bracket)", args{19, "[", "]"}, "", -1},
+		{"A context (with no enclosing context)", args{15, "", ""}, " ", 15},
+		// 123456789012345678901234567890123456789012345678901234567890
+		//          1         2         3         4         5         6
+	}
+	for _, tt := range tests {
+		t.Run(tt.s.Str(), func(t *testing.T) {
+			got, pos := tt.s.FindContext(tt.args.pos, tt.args.left, tt.args.right)
+			if got != tt.want {
+				t.Errorf("String.FindContext() got = %v, want %v", got, tt.want)
+			}
+			if pos != tt.wantPos {
+				t.Errorf("String.FindContext() pos = %v, want %v", pos, tt.wantPos)
+			}
+			if got2 := tt.s.SelectContext(tt.args.pos, tt.args.left, tt.args.right); got != got2 {
+				t.Errorf("String.SelectWord() returns %v while String.SelectWord() returns %v", got, got2)
+			}
+		})
+	}
+}

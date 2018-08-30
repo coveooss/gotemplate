@@ -11,21 +11,34 @@ type List = hclList
 type hclIList = collections.IGenericList
 type hclList []interface{}
 
-func (l hclList) Append(values ...interface{}) hclIList { return hclListHelper.Append(l, values...) }
-func (l hclList) AsArray() []interface{}                { return []interface{}(l) }
-func (l hclList) Cap() int                              { return cap(l) }
-func (l hclList) Capacity() int                         { return cap(l) }
-func (l hclList) Clone() hclIList                       { return hclListHelper.Clone(l) }
-func (l hclList) Count() int                            { return len(l) }
-func (l hclList) Create(args ...int) hclIList           { return hclListHelper.CreateList(args...) }
-func (l hclList) Get(index int) interface{}             { return hclListHelper.GetIndex(l, index) }
-func (l hclList) New(args ...interface{}) hclIList      { return hclListHelper.NewList(args...) }
-func (l hclList) Len() int                              { return len(l) }
-func (l hclList) Reverse() hclIList                     { return hclListHelper.Reverse(l) }
-func (l hclList) Strings() []string                     { return hclListHelper.GetStrings(l) }
+func (l hclList) AsArray() []interface{}              { return []interface{}(l) }
+func (l hclList) Cap() int                            { return cap(l) }
+func (l hclList) Capacity() int                       { return cap(l) }
+func (l hclList) Clone() hclIList                     { return hclListHelper.Clone(l) }
+func (l hclList) Contains(values ...interface{}) bool { return hclListHelper.Contains(l, values...) }
+func (l hclList) Count() int                          { return len(l) }
+func (l hclList) Create(args ...int) hclIList         { return hclListHelper.CreateList(args...) }
+func (l hclList) Get(index int) interface{}           { return hclListHelper.GetIndex(l, index) }
+func (l hclList) Len() int                            { return len(l) }
+func (l hclList) New(args ...interface{}) hclIList    { return hclListHelper.NewList(args...) }
+func (l hclList) Reverse() hclIList                   { return hclListHelper.Reverse(l) }
+func (l hclList) Strings() []string                   { return hclListHelper.GetStrings(l) }
+func (l hclList) Unique() hclIList                    { return hclListHelper.Unique(l) }
+
+func (l hclList) Append(values ...interface{}) hclIList {
+	return hclListHelper.Add(l, false, values...)
+}
+
+func (l hclList) Prepend(values ...interface{}) hclIList {
+	return hclListHelper.Add(l, true, values...)
+}
 
 func (l hclList) Set(i int, v interface{}) (hclIList, error) {
 	return hclListHelper.SetIndex(l, i, v)
+}
+
+func (l hclList) Without(values ...interface{}) hclIList {
+	return hclListHelper.Without(l, values...)
 }
 
 // Dictionary implementation of IDictionary for hclDict
@@ -42,9 +55,9 @@ func (d hclDict) CreateList(args ...int) hclIList    { return hclHelper.CreateLi
 func (d hclDict) Flush(keys ...interface{}) hclIDict { return hclDictHelper.Flush(d, keys) }
 func (d hclDict) Get(key interface{}) interface{}    { return hclDictHelper.Get(d, key) }
 func (d hclDict) Has(key interface{}) bool           { return hclDictHelper.Has(d, key) }
-func (d hclDict) Keys() hclIList                     { return hclDictHelper.Keys(d) }
+func (d hclDict) GetKeys() hclIList                  { return hclDictHelper.GetKeys(d) }
 func (d hclDict) KeysAsString() []string             { return hclDictHelper.KeysAsString(d) }
-func (d hclDict) Values() hclIList                   { return hclDictHelper.Values(d) }
+func (d hclDict) GetValues() hclIList                { return hclDictHelper.GetValues(d) }
 
 func (d hclDict) Default(key, defVal interface{}) interface{} {
 	return hclDictHelper.Default(d, key, defVal)

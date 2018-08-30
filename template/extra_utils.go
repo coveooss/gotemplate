@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -18,6 +17,7 @@ const (
 )
 
 var utilsFuncs = dictionary{
+	"assert":     assert,
 	"center":     center,
 	"color":      utils.SprintColor,
 	"concat":     collections.Concat,
@@ -30,14 +30,16 @@ var utilsFuncs = dictionary{
 	"lorem":      lorem,
 	"mergeList":  utils.MergeLists,
 	"pwd":        utils.Pwd,
+	"raise":      raise,
 	"repeat":     repeat,
-	"save":       saveToFile,
 	"sIndent":    indent,
+	"save":       saveToFile,
 	"splitLines": collections.SplitLines,
 	"wrap":       wrap,
 }
 
 var utilsFuncsArgs = arguments{
+	"assert":     {"test", "message", "arguments"},
 	"center":     {"width"},
 	"diff":       {"text1", "text2"},
 	"formatList": {"format", "list"},
@@ -46,9 +48,10 @@ var utilsFuncsArgs = arguments{
 	"joinLines":  {"format"},
 	"lorem":      {"loremType", "params"},
 	"mergeList":  {"lists"},
+	"raise":      {"message", "arguments"},
 	"repeat":     {"n", "element"},
-	"save":       {"filename", "object"},
 	"sIndent":    {"spacer"},
+	"save":       {"filename", "object"},
 	"splitLines": {"content"},
 	"wrap":       {"width"},
 }
@@ -62,12 +65,14 @@ var utilsFuncsAliases = aliases{
 	"iif":     {"ternary"},
 	"lorem":   {"loremIpsum"},
 	"pwd":     {"currentDir"},
-	"save":    {"write", "writeTo"},
+	"raise":   {"raiseError"},
 	"sIndent": {"sindent", "spaceIndent"},
+	"save":    {"write", "writeTo"},
 	"wrap":    {"wrapped"},
 }
 
 var utilsFuncsHelp = descriptions{
+	"assert": "Raise a formated error if the test condition is false.",
 	"center": "Returns the concatenation of supplied arguments centered within width.",
 	"color": strings.TrimSpace(collections.UnIndent(`
 		Colors the rendered string.
@@ -96,6 +101,7 @@ var utilsFuncsHelp = descriptions{
 	"lorem":      "Returns a random string. Valid types are be word, words, sentence, para, paragraph, host, email, url.",
 	"mergeList":  "Return a single list containing all elements from the lists supplied.",
 	"pwd":        "Returns the current working directory.",
+	"raise":      "Raise a formated error.",
 	"repeat":     "Returns an array with the item repeated n times.",
 	"save":       "Save object to file.",
 	"sIndent": strings.TrimSpace(collections.UnIndent(`
@@ -117,7 +123,9 @@ func (t *Template) addUtilsFuncs() {
 	})
 }
 
-func glob(args ...interface{}) []string { return utils.GlobFuncTrim(args...) }
+func glob(args ...interface{}) collections.IGenericList {
+	return collections.AsList(utils.GlobFuncTrim(args...))
+}
 
 func lorem(funcName interface{}, params ...int) (result string, err error) {
 	kind, err := utils.GetLoremKind(fmt.Sprint(funcName))
@@ -128,12 +136,12 @@ func lorem(funcName interface{}, params ...int) (result string, err error) {
 }
 
 func center(width interface{}, args ...interface{}) string {
-	w := errors.Must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
+	w := must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
 	return collections.CenterString(fmt.Sprint(args...), w)
 }
 
 func wrap(width interface{}, args ...interface{}) string {
-	w := errors.Must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
+	w := must(strconv.Atoi(fmt.Sprintf("%v", width))).(int)
 	return collections.WrapString(fmt.Sprint(args...), w)
 }
 
@@ -169,18 +177,35 @@ func diff(text1, text2 interface{}) interface{} {
 	return dmp.DiffPrettyText(diffs)
 }
 
-func repeat(n int, a interface{}) (result []interface{}, err error) {
+func repeat(n int, a interface{}) (result collections.IGenericList, err error) {
 	if n < 0 {
 		err = fmt.Errorf("n must be greater or equal than 0")
 		return
 	}
-	result = make([]interface{}, n)
-	for i := range result {
-		result[i] = a
+	result = collections.CreateList(n)
+	for i := 0; i < n; i++ {
+		result.Set(i, a)
 	}
 	return
 }
 
 func saveToFile(filename string, object interface{}) (string, error) {
 	return "", ioutil.WriteFile(filename, []byte(fmt.Sprint(object)), 0644)
+}
+
+func raise(format interface{}, args ...interface{}) (string, error) {
+	if f := fmt.Sprint(format); strings.Contains(f, "%") {
+		return "", fmt.Errorf(f, args...)
+	}
+	return "", fmt.Errorf(strings.TrimSpace(fmt.Sprintln(append([]interface{}{format}, args...)...)))
+}
+
+func assert(test interface{}, args ...interface{}) (string, error) {
+	if isZero(test) {
+		if len(args) == 0 {
+			args = []interface{}{"Assertion failed"}
+		}
+		return raise(args[0], args[1:]...)
+	}
+	return "", nil
 }

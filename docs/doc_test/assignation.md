@@ -39,19 +39,19 @@
 
 ```go
 @range ($value := to(10))
-    @$value
+    @{value}
 @end range
 ```
 
 ```go
 @range ($index, $value := to(10))
-    @$index = @($value * 2)
+    @{index} = @($value * 2)
 @end range
 ```
 
 ```go
 @if ($result := 2+2 == 4)
-    result = @$result
+    result = @{result}
 @end if
 ```
 

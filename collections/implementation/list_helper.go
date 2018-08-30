@@ -14,11 +14,14 @@ type ListHelper struct {
 	BaseHelper
 }
 
-// Append adds elements at the end of the supplied list.
-func (lh ListHelper) Append(list baseIList, objects ...interface{}) baseIList {
+// Add adds elements at the end of the supplied list.
+func (lh ListHelper) Add(list baseIList, prepend bool, objects ...interface{}) baseIList {
 	array := list.AsArray()
 	for i := range objects {
 		objects[i] = lh.Convert(objects[i])
+	}
+	if prepend {
+		array, objects = objects, array
 	}
 	return lh.AsList(append(array, objects...))
 }
@@ -90,7 +93,7 @@ func (lh ListHelper) SetIndex(list baseIList, index int, value interface{}) (bas
 		return nil, fmt.Errorf("index must be positive number")
 	}
 	for list.Len() <= index {
-		list = lh.Append(list, nil)
+		list = lh.Add(list, false, nil)
 	}
 	list.AsArray()[index] = lh.Convert(value)
 	return list, nil
@@ -101,3 +104,47 @@ var _ = func() int {
 	collections.ListHelper = baseListHelper
 	return 0
 }()
+
+// Unique returns a copy of the list removing all duplicate elements.
+func (lh ListHelper) Unique(list baseIList) baseIList {
+	source := list.AsArray()
+	target := lh.CreateList(0, list.Len())
+	for i := range source {
+		if !target.Contains(source[i]) {
+			target = target.Append(source[i])
+		}
+	}
+	return target
+}
+
+// Without returns a copy of the list removing specified elements.
+func (lh ListHelper) Without(list baseIList, values ...interface{}) baseIList {
+	source := list.AsArray()
+	exclude := collections.AsList(values)
+	target := lh.CreateList(0, list.Len())
+	for i := range source {
+		if !exclude.Contains(source[i]) {
+			target = target.Append(source[i])
+		}
+	}
+	return target
+}
+
+// Contains indicates if the list contains all specified elements
+func (lh ListHelper) Contains(list baseIList, values ...interface{}) bool {
+	source := list.AsArray()
+	for _, value := range values {
+		match := false
+		for _, item := range source {
+			if fmt.Sprint(value) == fmt.Sprint(item) {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return false
+		}
+	}
+
+	return len(source) > 0
+}

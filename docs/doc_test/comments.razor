@@ -15,12 +15,12 @@ To solve that problem, it is possible to inject pseudo comment into you code to 
 | ----------------        | -----------     | ----
 | `# {{ add 2 2 }}`              | `{{ add 2 2 }}`   | Pseudo comment starting with #
 | `// {{ add 2 2 }}`             | `{{ add 2 2 }}`   | Pseudo comment starting with //
-| `{{ add 2 2 }} `        | `{{ add 2 2 }}`   | Pseudo comment within /* */
+| ` {{ add 2 2 }} `        | `{{ add 2 2 }}`   | Pseudo comment within /* */
 
 ### Example with JSON code
 
 ```go
-{{- $value := add 2 (mul 8 15) }}
+ {{- $value := add 2 (mul 8 15) }}
 {
     "Str": "string",
     "Int": 123,
@@ -53,7 +53,7 @@ will give :
 ### Example with HCL code
 
 ```go
-{{- set $ "value" (add 2 (mul 8 15)) }}
+{{- assert (isNil $.value) "$.value has already been declared, use = to overwrite existing value" }}{{- set $ "value" (add 2 (mul 8 15)) }}
 
 Str              = "string"
 Int              = 123

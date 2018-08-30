@@ -436,8 +436,8 @@ func Test_dict_Keys(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Keys(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Keys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			if got := tt.d.GetKeys(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("yamlDict.GetKeys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -517,8 +517,8 @@ func Test_dict_Values(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Values(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Keys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			if got := tt.d.GetValues(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("yamlDict.GetValues():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}

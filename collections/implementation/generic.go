@@ -9,21 +9,34 @@ type ListTypeName = baseList
 type baseIList = collections.IGenericList
 type baseList []interface{}
 
-func (l baseList) Append(values ...interface{}) baseIList { return baseListHelper.Append(l, values...) }
-func (l baseList) AsArray() []interface{}                 { return []interface{}(l) }
-func (l baseList) Cap() int                               { return cap(l) }
-func (l baseList) Capacity() int                          { return cap(l) }
-func (l baseList) Clone() baseIList                       { return baseListHelper.Clone(l) }
-func (l baseList) Count() int                             { return len(l) }
-func (l baseList) Create(args ...int) baseIList           { return baseListHelper.CreateList(args...) }
-func (l baseList) Get(index int) interface{}              { return baseListHelper.GetIndex(l, index) }
-func (l baseList) New(args ...interface{}) baseIList      { return baseListHelper.NewList(args...) }
-func (l baseList) Len() int                               { return len(l) }
-func (l baseList) Reverse() baseIList                     { return baseListHelper.Reverse(l) }
-func (l baseList) Strings() []string                      { return baseListHelper.GetStrings(l) }
+func (l baseList) AsArray() []interface{}              { return []interface{}(l) }
+func (l baseList) Cap() int                            { return cap(l) }
+func (l baseList) Capacity() int                       { return cap(l) }
+func (l baseList) Clone() baseIList                    { return baseListHelper.Clone(l) }
+func (l baseList) Contains(values ...interface{}) bool { return baseListHelper.Contains(l, values...) }
+func (l baseList) Count() int                          { return len(l) }
+func (l baseList) Create(args ...int) baseIList        { return baseListHelper.CreateList(args...) }
+func (l baseList) Get(index int) interface{}           { return baseListHelper.GetIndex(l, index) }
+func (l baseList) Len() int                            { return len(l) }
+func (l baseList) New(args ...interface{}) baseIList   { return baseListHelper.NewList(args...) }
+func (l baseList) Reverse() baseIList                  { return baseListHelper.Reverse(l) }
+func (l baseList) Strings() []string                   { return baseListHelper.GetStrings(l) }
+func (l baseList) Unique() baseIList                   { return baseListHelper.Unique(l) }
+
+func (l baseList) Append(values ...interface{}) baseIList {
+	return baseListHelper.Add(l, false, values...)
+}
+
+func (l baseList) Prepend(values ...interface{}) baseIList {
+	return baseListHelper.Add(l, true, values...)
+}
 
 func (l baseList) Set(i int, v interface{}) (baseIList, error) {
 	return baseListHelper.SetIndex(l, i, v)
+}
+
+func (l baseList) Without(values ...interface{}) baseIList {
+	return baseListHelper.Without(l, values...)
 }
 
 // DictTypeName implementation of IDictionary for baseDict
@@ -40,9 +53,9 @@ func (d baseDict) CreateList(args ...int) baseIList    { return baseHelper.Creat
 func (d baseDict) Flush(keys ...interface{}) baseIDict { return baseDictHelper.Flush(d, keys) }
 func (d baseDict) Get(key interface{}) interface{}     { return baseDictHelper.Get(d, key) }
 func (d baseDict) Has(key interface{}) bool            { return baseDictHelper.Has(d, key) }
-func (d baseDict) Keys() baseIList                     { return baseDictHelper.Keys(d) }
+func (d baseDict) GetKeys() baseIList                  { return baseDictHelper.GetKeys(d) }
 func (d baseDict) KeysAsString() []string              { return baseDictHelper.KeysAsString(d) }
-func (d baseDict) Values() baseIList                   { return baseDictHelper.Values(d) }
+func (d baseDict) GetValues() baseIList                { return baseDictHelper.GetValues(d) }
 
 func (d baseDict) Default(key, defVal interface{}) interface{} {
 	return baseDictHelper.Default(d, key, defVal)

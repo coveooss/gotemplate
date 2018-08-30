@@ -218,6 +218,9 @@ func (s String) String() string { return string(s) }
 // Str is an abbreviation of String.
 func (s String) Str() string { return string(s) }
 
+// Len returns the length of the string.
+func (s String) Len() int { return len(s) }
+
 // FieldsID splits the string s at character that is not a valid identifier character (letter, digit or underscore).
 func (s String) FieldsID() StringArray {
 	f := func(c rune) bool {
@@ -259,4 +262,60 @@ func (s String) IndentN(indent int) String {
 // UnIndent returns the string unindented.
 func (s String) UnIndent() String {
 	return String(UnIndent(string(s)))
+}
+
+// FindWord returns the selected word and the start position from the specified position.
+func (s String) FindWord(pos int, accept ...string) (String, int) {
+	if pos < 0 || pos >= len(s) {
+		return "", -1
+	}
+
+	acceptChars := strings.Join(accept, "")
+	isBreak := func(c rune) bool {
+		return unicode.IsSpace(c) || unicode.IsPunct(c) && !strings.ContainsRune(acceptChars, c)
+	}
+	begin, end := pos, pos
+	for begin >= 0 && !isBreak(rune(s[begin])) {
+		begin--
+	}
+	for end < len(s) && !isBreak(rune(s[end])) {
+		end++
+	}
+	if begin != end {
+		begin++
+	}
+	return s[begin:end], begin
+}
+
+// SelectWord returns the selected word from the specified position.
+func (s String) SelectWord(pos int, accept ...string) String {
+	result, _ := s.FindWord(pos, accept...)
+	return result
+}
+
+// FindContext tries to extend the context from the specified position within specified boundaries.
+func (s String) FindContext(pos int, left, right string) (String, int) {
+	if pos >= len(s) {
+		pos = len(s) - 1
+	}
+	if pos < 0 {
+		return "", -1
+	}
+	begin, end := pos, pos+1
+	if left != "" {
+		begin = strings.LastIndex(s[:pos].Str(), left)
+	}
+	if right != "" {
+		end = strings.Index(s[pos:].Str(), right) + pos + len(right)
+	}
+	if begin < 0 || end < 0 {
+		return "", -1
+	}
+	return s[begin:end], begin
+}
+
+// SelectContext returns the selected word from the specified position.
+func (s String) SelectContext(pos int, left, right string) String {
+	result, _ := s.FindContext(pos, left, right)
+	return result
 }

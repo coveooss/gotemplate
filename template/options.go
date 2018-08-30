@@ -21,6 +21,7 @@ const (
 	Overwrite
 	OutputStdout
 	RenderingDisabled
+	AcceptNoValue
 )
 
 // DefaultOptions returns a OptionsSet with the first options turned on by default

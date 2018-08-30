@@ -7,7 +7,7 @@
 ### Razor
 ```
 {{- define "razorTemplate" }}
-  This is a template with a variable here: {{ get . "var1" }}  
+  This is a template with a variable here: {{ .var1 }}  
   For each item in var2:  
   {{- range $item := .var2 }}
     Print it: {{ $item }}  
@@ -29,12 +29,12 @@
 ## Using templates
 
 ```
-  {{- set $ "values" (data (`{"var1": "Test", "var2": ["Test1", "Test2"]}`)) }}
+  {{- assert (isNil $.values) "$.values has already been declared, use = to overwrite existing value" }}{{- set $ "values" (data (`{"var1": "Test", "var2": ["Test1", "Test2"]}`)) }}
 ```
 
 | Razor | Gotemplate
 | ---   | ---
-| ```{{ template "razorTemplate" .values }}``` | ```{{ template "goTemplate" .values }}```
+| ```{{ template "razorTemplate" $.values }}``` | ```{{ template "goTemplate" .values }}```
 
 ### Result
 

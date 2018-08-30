@@ -15,7 +15,8 @@ var shebang = regexp.MustCompile(`(?sm)^(?:\s*#!\s*(?P<program>[^\s]*)[ \t]*(?P<
 
 // IsShebangScript determines if the supplied code has a Shebang definition #! program subprogram
 func IsShebangScript(content string) bool {
-	return shebang.MatchString(strings.TrimSpace(content))
+	matches := shebang.FindStringSubmatch(strings.TrimSpace(content))
+	return len(matches) > 0 && matches[1] != ""
 }
 
 // ScriptParts splits up the supplied content into program, subprogram and source if the content matches Shebang defintion

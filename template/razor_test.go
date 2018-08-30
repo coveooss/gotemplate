@@ -10,7 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/json"
 	logging "github.com/op/go-logging"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -39,7 +40,11 @@ func TestTemplate_applyRazor(t *testing.T) {
 		return path
 	}
 
-	load := func(path string) []byte { return errors.Must(ioutil.ReadFile(path)).([]byte) }
+	collections.ListHelper = json.GenericListHelper
+	collections.DictionaryHelper = json.DictionaryHelper
+	template.options[AcceptNoValue] = true
+
+	load := func(path string) []byte { return must(ioutil.ReadFile(path)).([]byte) }
 
 	tests := make([]test, 0, len(files))
 	for _, file := range files {

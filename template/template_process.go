@@ -7,54 +7,219 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
-	"text/template"
 
 	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
+	"github.com/fatih/color"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-var templateExt = []string{".gt", ".template"}
+var (
+	templateExt    = []string{".gt", ".template"}
+	linePrefix     = `^template: ` + p(tagFile, `.*?:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
+	execPrefix     = linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
+	templateErrors = []string{
+		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"$`,
+		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
+		execPrefix + p(tagErr, `.*`) + `$`,
+		linePrefix + p(tagErr, `.*`) + `$`,
+	}
+)
+
+func p(name, expr string) string { return fmt.Sprintf("(?P<%s>%s)", name, expr) }
+
+const (
+	undefError = `"<no value>"`
+	runError   = `"<RUN_ERROR>"`
+	tagLine    = "line"
+	tagCol     = "column"
+	tagCode    = "code"
+	tagMsg     = "message"
+	tagFile    = "file"
+	tagKey     = "key"
+	tagErr     = "error"
+)
 
 // ProcessContent loads and runs the file template.
 func (t Template) ProcessContent(content, source string) (string, error) {
-	content = t.substitute(content)
+	return t.processContentInternal(content, source, nil)
+}
 
-	if strings.HasPrefix(content, "#!") {
-		// If the content starts with a Shebang operator including gotemplate, we remove the first line
-		lines := strings.Split(content, "\n")
-		if strings.Contains(lines[0], "gotemplate") {
-			content = strings.Join(lines[1:], "\n")
-			t.options[OutputStdout] = true
+func (t Template) processContentInternal(originalContent, source string, originalSourceLines []string) (string, error) {
+	topCall := originalSourceLines == nil
+	content := originalContent
+	if topCall {
+		content = t.substitute(content)
+
+		if strings.HasPrefix(content, "#!") {
+			// If the content starts with a Shebang operator including gotemplate, we remove the first line
+			lines := strings.Split(content, "\n")
+			if strings.Contains(lines[0], "gotemplate") {
+				content = strings.Join(lines[1:], "\n")
+				t.options[OutputStdout] = true
+			}
 		}
+
+		content = string(t.applyRazor([]byte(content)))
+
+		if t.options[RenderingDisabled] || !t.IsCode(content) {
+			// There is no template element to evaluate or the template rendering is off
+			return content, nil
+		}
+		log.Notice("GoTemplate processing of", source)
 	}
 
-	content = string(t.applyRazor([]byte(content)))
+	// This local functions handle all errors from Parse or Execute and tries to fix the template to allow discovering
+	// of all errors in a template instead of stopping after the first one encountered
+	handleError := func(err error) (string, error) {
+		if originalSourceLines == nil {
+			originalSourceLines = strings.Split(originalContent, "\n")
+		}
 
-	if t.options[RenderingDisabled] || !t.IsCode(content) {
-		// There is no template element to evaluate or the template rendering is off
-		return content, nil
-	}
+		regexGroup := must(getRegexGroup("Parse", templateErrors)).([]*regexp.Regexp)
 
-	log.Notice("GoTemplate processing of", source)
-	context := t.GetNewContext(filepath.Dir(source), true)
-	newTemplate, err := context.New(source).Parse(content)
-	if err != nil {
+		if matches, _ := multiMatch(err.Error(), regexGroup...); len(matches) > 0 {
+			// We remove the faulty line and continue the processing to get all errors at once
+			lines := strings.Split(content, "\n")
+			faultyLine := toInt(matches[tagLine]) - 1
+			faultyColumn := 0
+			key, message, errText, code := matches[tagKey], matches[tagMsg], matches[tagErr], matches[tagCode]
+
+			if strings.Contains(errText, "unclosed action") {
+				// Unclosed action reports error on the line following the non closed action
+				faultyLine--
+			}
+			if matches[tagCol] != "" {
+				faultyColumn = toInt(matches[tagCol]) - 1
+			}
+
+			errorText, parserBug := color.RedString(errText), ""
+
+			if faultyLine >= len(lines) {
+				faultyLine = len(lines) - 1
+				// TODO: This code can be removed once issue has been fixed
+				parserBug = color.HiRedString("\nBad error line reported: check: https://github.com/golang/go/issues/27319")
+			}
+			currentLine := String(lines[faultyLine])
+			if faultyColumn != 0 && strings.Contains(" (", currentLine[faultyColumn:faultyColumn+1].Str()) {
+				// Sometime, the error is not reporting the exact column, we move 1 char forward to get the real problem
+				faultyColumn++
+			}
+
+			errorLine := fmt.Sprintf(" in: %s", color.HiBlackString(originalSourceLines[faultyLine]))
+			var logMessage string
+			if key != "" {
+				// Missing key and we disabled the <no value> mode
+				context := String(currentLine).SelectContext(faultyColumn, t.LeftDelim(), t.RightDelim())
+				if subContext := String(currentLine).SelectContext(faultyColumn, "(", ")"); subContext != "" {
+					// There is an sub-context, so we replace it first
+					context = subContext
+				}
+				current := String(currentLine).SelectWord(faultyColumn, ".")
+				newContext := context.Replace(current.Str(), undefError).Str()
+				newLine := currentLine.Replace(context.Str(), newContext)
+
+				left, right := regexp.QuoteMeta(t.LeftDelim()), regexp.QuoteMeta(t.RightDelim())
+				const (
+					ifUndef = "ifUndef"
+					isZero  = "isZero"
+					assert  = "assert"
+				)
+				undefRegexDefintions := []string{
+					fmt.Sprintf(`(%[1]s|\()[[:blank:]]*(undef|ifUndef|isDefined|default)[[:blank:]]+(?P<%[3]s>.*?)[[:blank:]]+%[4]s[[:blank:]]*(%[2]s|\))`, left, right, ifUndef, undefError),
+					fmt.Sprintf(`(%[1]s|\()[[:blank:]]*(?P<%[3]s>%[3]s|isNil|isNull|isEmpty)[[:blank:]]+%[4]s[[:blank:]]*(%[2]s|\))`, left, right, isZero, undefError),
+					fmt.Sprintf(`(%[1]s|\()[[:blank:]]*%[3]s[[:blank:]]+(?P<%[3]s>%[4]s).*(%[2]s|\))`, left, right, assert, undefError),
+				}
+				expressions, errRegex := getRegexGroup(fmt.Sprintf("Undef%s", t.delimiters), undefRegexDefintions)
+				if errRegex != nil {
+					log.Error(errRegex)
+				}
+				undefMatches, n := multiMatch(newContext, expressions...)
+
+				if undefMatches[ifUndef] != "" {
+					logMessage = fmt.Sprintf("Managed undefined value %s: %s", key, context)
+					err = nil
+					lines[faultyLine] = newLine.Replace(newContext, expressions[n].ReplaceAllString(newContext, fmt.Sprintf("${%s}", ifUndef))).Str()
+				} else if undefMatches[isZero] != "" {
+					logMessage = fmt.Sprintf("Managed undefined value %s: %s", key, context)
+					err = nil
+					lines[faultyLine] = newLine.Replace(newContext, "true").Str()
+				} else if undefMatches[assert] != "" {
+					logMessage = fmt.Sprintf("Managed assertion on %s: %s", key, context)
+					err = nil
+					lines[faultyLine] = newLine.Replace(newContext, strings.Replace(newContext, undefError, "0", 1)).Str()
+				} else {
+					logMessage = fmt.Sprintf("Unmanaged undefined value %s: %s", key, context)
+					errorText = color.RedString("Undefined value ") + color.YellowString(key)
+					lines[faultyLine] = newLine.Str()
+				}
+			} else if message != "" {
+				logMessage = fmt.Sprintf("User defined error: %s", message)
+				errorText = color.RedString(message)
+				lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
+			} else if code != "" {
+				logMessage = fmt.Sprintf("Execution error: %s", err)
+				context := String(currentLine).SelectContext(faultyColumn, t.LeftDelim(), t.RightDelim())
+				errorText = fmt.Sprintf(color.RedString("%s (%s)", errText, code))
+				lines[faultyLine] = currentLine.Replace(context.Str(), runError).Str()
+			} else {
+				logMessage = fmt.Sprintf("Parsing error: %s", err)
+				lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
+			}
+			if strings.Contains(currentLine.Str(), runError) || strings.Contains(code, undefError) {
+				// The erroneous line has already been replaced, we do not report the error again
+				err, errorText = nil, ""
+				log.Debugf("Ignored error %s", logMessage)
+			} else {
+				log.Debug(logMessage)
+			}
+
+			if err != nil {
+				err = fmt.Errorf("%s %s%s%s", color.WhiteString(matches[tagFile]), errorText, errorLine, parserBug)
+			}
+			if lines[faultyLine] != currentLine.Str() {
+				// If we changed something in the current text, we try to continue the evaluation to get further errors
+				result, err2 := t.processContentInternal(strings.Join(lines, "\n"), source, originalSourceLines)
+				if err2 != nil {
+					if err != nil {
+						if err.Error() == err2.Error() {
+							// TODO See: https://github.com/golang/go/issues/27319
+							err = fmt.Errorf("%v\n%s", err, color.HiRedString("Unable to continue processing to check for further errors"))
+						} else {
+							err = fmt.Errorf("%v\n%v", err, err2)
+						}
+					} else {
+						err = err2
+					}
+				}
+				return result, err
+			}
+		}
 		return "", err
 	}
 
-	var out bytes.Buffer
-	err = newTemplate.Execute(&out, t.context)
+	context := t.GetNewContext(filepath.Dir(source), true)
+	newTemplate, err := context.New(source).Parse(content)
 	if err != nil {
-		switch err.(type) {
-		case template.ExecError:
-			return "", err
-		default:
-			errors.Must(err)
-		}
+		return handleError(err)
 	}
-	return t.substitute(out.String()), nil
+
+	var out bytes.Buffer
+	if !t.options[AcceptNoValue] {
+		newTemplate.Option("missingkey=error")
+	}
+
+	if err = newTemplate.Execute(&out, t.context); err != nil {
+		return handleError(err)
+	}
+
+	result := t.substitute(out.String())
+	if topCall && !t.options[AcceptNoValue] && strings.Contains(result, "<no value>") {
+		return "", fmt.Errorf(color.RedString("Result for %s contains undefined value(s)\n%s\n%s\n"), source, color.GreenString(content), color.RedString(result))
+	}
+	return result, nil
 }
 
 // ProcessTemplate loads and runs the template if it is a file, otherwise, it simply process the content.
@@ -109,15 +274,15 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 		return "", nil
 	}
 
-	mode := errors.Must(os.Stat(template)).(os.FileInfo).Mode()
+	mode := must(os.Stat(template)).(os.FileInfo).Mode()
 	if !isTemplate && !t.options[Overwrite] {
-		newName := template + ".original"
+		newName := template + ".originalSourceLines"
 		log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
-		errors.Must(os.Rename(template, template+".original"))
+		must(os.Rename(template, template+".originalSourceLines"))
 	}
 
 	if sourceFolder != targetFolder {
-		errors.Must(os.MkdirAll(filepath.Dir(resultFile), 0777))
+		must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
 	log.Notice("Writing file", utils.Relative(t.folder, resultFile))
 
@@ -145,7 +310,7 @@ func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates 
 
 	var errors errors.Array
 	for i := range templates {
-		t.options[OutputStdout] = print // Some file may change this option at runtime, so we restore it back to its original value between each file
+		t.options[OutputStdout] = print // Some file may change this option at runtime, so we restore it back to its originalSourceLines value between each file
 		resultFile, err := t.ProcessTemplate(templates[i], sourceFolder, targetFolder)
 		if err == nil {
 			if resultFile != "" {
@@ -164,19 +329,19 @@ func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates 
 func (t Template) printResult(source, target, result string) (err error) {
 	if utils.IsTerraformFile(target) {
 		base := filepath.Base(target)
-		tempFolder := errors.Must(ioutil.TempDir(t.TempFolder, base)).(string)
+		tempFolder := must(ioutil.TempDir(t.TempFolder, base)).(string)
 		tempFile := filepath.Join(tempFolder, base)
 		err = ioutil.WriteFile(tempFile, []byte(result), 0644)
 		if err != nil {
 			return
 		}
 		err = utils.TerraformFormat(tempFile)
-		bytes := errors.Must(ioutil.ReadFile(tempFile)).([]byte)
+		bytes := must(ioutil.ReadFile(tempFile)).([]byte)
 		result = string(bytes)
 	}
 
 	if !t.isTemplate(source) && !t.options[Overwrite] {
-		source += ".original"
+		source += ".originalSourceLines"
 	}
 
 	source = utils.Relative(t.folder, source)
@@ -194,11 +359,4 @@ func (t Template) printResult(source, target, result string) (err error) {
 	}
 
 	return
-}
-
-func getTargetFile(targetFile, sourcePath, targetPath string) string {
-	if targetPath != "" {
-		targetFile = filepath.Join(targetPath, utils.Relative(sourcePath, targetFile))
-	}
-	return targetFile
 }

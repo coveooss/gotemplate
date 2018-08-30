@@ -11,8 +11,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 
-	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
 	"github.com/op/go-logging"
@@ -35,6 +35,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 			})
 		}
 	}
+	content = []byte(strings.Replace(string(content), funcCall, "", -1))
 
 	lines := strings.Split(string(content), "\n")
 	n := int(math.Log10(float64(len(lines)))) + 1
@@ -80,11 +81,12 @@ var expressions = [][]interface{}{
 	{"", "(?s)`+.*?`+", "", replacementFunc(protectMultiLineStrings)},
 	{"", `@<;`, `{{- $.NEWLINE }}`},
 	{"Auto indent", `(?m)^(?P<spaces>.*)@(?:autoIndent|aindent|aIndent)\(`, "@<-sIndent(\"${spaces}\", "},
+	{`Inline content "@<...>"`, `"@reduce;<(?P<content>.*?)>"`, `"<<@${reduce}(${content})"`},
 	{"Newline expression", `@<`, `{{- $.NEWLINE }}@`},
 
 	// Comments
 	{"Pseudo line comments - #! @", `(?m)(?:^[sp](?:#|//)![sp])@`, "@"},
-	{"Pseudo block comments - /*@  @*/", `(?s)/\*@\s*(?P<content>.*?)@\s*\*/`, "${content}"},
+	{"Pseudo block comments - /*@  @*/", `(?s)/\*@(?P<content>.*?)@\*/`, "${content}"},
 	{"Real comments - ##|/// @ comment", `(?m)^[sp](?:##|///)[sp]@.*$`, ""},
 	{"Line comment - @// or @#", `(?m)@(#|//)[sp](?P<line_comment>.*)[sp]$`, "{{/* ${line_comment} */}}"},
 	{"Block comment - @/* */", `(?s)@/\*(?P<block_comment>.*?)\*/`, "{{/*${block_comment}*/}}"},
@@ -99,8 +101,8 @@ var expressions = [][]interface{}{
 
 	// Assignations
 	{"Assign local flexible - @$var := value", `(?mU)@\$(?P<id>[id])[sp]:=[sp]?(?P<expr>[expr]+)(?:;|$)`, `{{- $$${id} := ${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
-	{"Assign - @var := value", `(?P<type>@[\$\.]?)(?P<id>[flexible_id])[sp]:=[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
-	{"Assign - $var := value", `(?:{{-?[sp](?:if|range|with)?[sp](\$[id],)?[sp])?(?P<type>\$)(?P<id>[flexible_id])[sp]:=[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - @var := value", `(?P<type>@[\$\.]?)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - $var := value", `(?:{{-?[sp](?:if|range|with)?[sp](\$[id],)?[sp])?(?P<type>\$)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 
 	// Function calls
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@${reduce}((${expr})${selection});`, replacementFunc(expressionParserSkipError)},
@@ -110,7 +112,8 @@ var expressions = [][]interface{}{
 
 	// Variables
 	{"Local variables - @{var}", `@reduce;{[sp](?P<name>[\p{L}\d_\.]*)[sp]}(?P<end>endexpr;)`, `@${reduce}$$${name}${end}`},
-	{"Global variables followed by expression", `@reduce;(?P<expr>[idSel]selector;)endexpr;`, `@${reduce}($$.${expr});`, replacementFunc(expressionParserSkipError)},
+	{"Global variables followed by expression", `@reduce;(?P<expr>[idSel]selector;index;?)(?P<end>endexpr;)`, `@${reduce}(${expr});`, replacementFunc(expressionParserSkipError)},
+	{"Context variables - @.var", `@reduce;\.(?P<name>[idSel])endexpr;`, `@${reduce}(.${name})`},
 	{"Global variables with slice - @var[...]", `@reduce;(?P<name>[idSel])index;endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Context variables special with slice", `@reduce;\.(?P<expr>(?P<name>[flexible_id])index;)endexpr;`, `{{${reduce} ${slicer} (get . "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Global variables special with slice", `@reduce;(?P<expr>(?P<name>[flexible_id])index;)endexpr;`, `{{${reduce} ${slicer} (get $$ "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
@@ -121,15 +124,17 @@ var expressions = [][]interface{}{
 	{"Local variables - @$var or @.var", `@reduce;(?P<name>[\$\.][\p{L}\d_\.]*)endexpr;`, `{{${reduce} ${name} }}`},
 
 	// Expressions
-	{"Expression @(var).selector", `@\([sp](?P<name>[idSel])[sp]\)selector;endexpr;`, `@($$.${name}${selection});`, replacementFunc(expressionParserSkipError)},
+	// {"Expression @(var).selector", `@\([sp](?P<name>[idSel])[sp]\)selector;endexpr;`, `@($$.${name}${selection});`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(var)[...]", `@reduce;(?P<expr>\([sp](?P<name>[idSel])[sp]\)index;)endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Expression @(var)", `@reduce;\([sp](?P<expr>[idSel])[sp]\)endexpr;`, `{{${reduce} $$.${expr} }}`, replacementFunc(expressionParserSkipError)},
-	{"Expression @(expr).selector", `@\([sp](?P<expr>[expr]+)[sp]\)selector;endexpr;`, `@(${expr}${selection});`, replacementFunc(expressionParserSkipError)},
+	{"Expression @(var)", `@reduce;\([sp](?P<expr>[idSel])[sp]\)endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError)},
+	// {"Expression @(expr).selector", `@\([sp](?P<expr>[expr]+)[sp]\)selector;endexpr;`, `@(${expr}${selection});`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)[...]", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 
+	{"Space eater", `@-`, `{{- "" -}}`},
+
 	// Inline contents: Render the content without its enclosing quotes
-	{"Inline content", `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},
+	{`Inline content "<<..."`, `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},
 
 	// Restoring literals
 	{"", `}}\\\.`, "}}."},
@@ -145,8 +150,10 @@ const (
 	rangeExpr     = "_range_"
 	defaultExpr   = "_default_"
 	funcExpr      = "_func_"
+	funcCall      = "__FUNCCALL__"
 	dotRep        = "_DOT_PREFIX_"
 	ellipsisRep   = "_ELLIPSIS_"
+	globalRep     = "_GLOBAL_"
 )
 
 var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*)?`)
@@ -162,20 +169,21 @@ func assignExpression(repl replacement, match string) string {
 	subMatches := repl.re.FindStringSubmatch(match)
 	tp := valueOf("type", subExp, subMatches)
 	id := valueOf("id", subExp, subMatches)
-	ex := valueOf("expr", subExp, subMatches)
-	if tp == "" || id == "" || ex == "" {
-		log.Errorf("Invalid asssign regex %s: %s, must contains type, id and expr", repl.name, repl.expr)
+	expr := valueOf("expr", subExp, subMatches)
+	assign := valueOf("assign", subExp, subMatches)
+	if tp == "" || id == "" || expr == "" || assign == "" {
+		log.Errorf("Invalid assign regex %s: %s, must contains type, id and expr", repl.name, repl.expr)
 		return match
 	}
 
 	local := tp == "$" && idRegex.MatchString(id)
 	var err error
-	if ex, err = expressionParserInternal(exprRepl, ex, true, !local); err != nil {
+	if expr, err = expressionParserInternal(exprRepl, expr, true, !local); err != nil {
 		return match
 	}
 
 	if local {
-		return fmt.Sprintf("%s- $%s := %s %s", repl.delimiters[0], id, ex, repl.delimiters[1])
+		return fmt.Sprintf("%s- $%s %s %s %s", repl.delimiters[0], id, assign, expr, repl.delimiters[1])
 	}
 
 	parts := strings.Split(id, ".")
@@ -197,7 +205,12 @@ func assignExpression(repl replacement, match string) string {
 		object = iif(object == "", "$", "$."+object).(string)
 	}
 
-	return fmt.Sprintf(`%s- set %s "%s" %s %s`, repl.delimiters[0], object, id, ex, repl.delimiters[1])
+	validateCode := fmt.Sprintf(map[bool]string{
+		true:  `assert (not (isNil %[1]s)) "%[1]s does not exist, use := to declare new variable"`,
+		false: `assert (isNil %[1]s) "%[1]s has already been declared, use = to overwrite existing value"`,
+	}[assign == "="], fmt.Sprintf("%s%s", iif(strings.HasSuffix(object, "."), object, object+"."), id))
+
+	return fmt.Sprintf(`%[1]s- %[3]s %[2]s%[1]s- set %[4]s "%[5]s" %s %[2]s`, repl.delimiters[0], repl.delimiters[1], validateCode, object, id, expr, repl.delimiters[1])
 }
 
 var alreadyIssued = make(map[string]int)
@@ -241,20 +254,28 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 				}
 			}()
 		}
-		expr = strings.Replace(expression, "$", stringRep, -1)
-		expr = strings.Replace(expr, "range", rangeExpr, -1)
-		expr = strings.Replace(expr, "default", defaultExpr, -1)
-		expr = strings.Replace(expr, "func", funcExpr, -1)
-		expr = strings.Replace(expr, "...", ellipsisRep, -1)
-		expr = dotPrefix.ReplaceAllString(expr, fmt.Sprintf("${prefix}%s${value}", dotRep))
-		expr = strings.Replace(expr, ellipsisRep, "...", -1)
-		expr = strings.Replace(expr, "<>", "!=", -1)
-		expr = strings.Replace(expr, "÷", "/", -1)
+
+		// We first protect strings declared in the expression
+		protected, includedStrings := ProtectString(expression)
+
+		// We transform the expression into a valid go statement
+		protected = strings.Replace(protected, "$", stringRep, -1)
+		protected = strings.Replace(protected, "range", rangeExpr, -1)
+		protected = strings.Replace(protected, "default", defaultExpr, -1)
+		protected = strings.Replace(protected, "func", funcExpr, -1)
+		protected = strings.Replace(protected, "...", ellipsisRep, -1)
+		protected = dotPrefix.ReplaceAllString(protected, fmt.Sprintf("${prefix}%s${value}", dotRep))
+		protected = strings.Replace(protected, ellipsisRep, "...", -1)
+		protected = strings.Replace(protected, "<>", "!=", -1)
+		protected = strings.Replace(protected, "÷", "/", -1)
 		for key, val := range ops {
-			expr = strings.Replace(expr, " "+val+" ", key, -1)
+			protected = strings.Replace(protected, " "+val+" ", key, -1)
 		}
 		// We add support to partial slice
-		expr = indexExpression(expr)
+		protected = indexExpression(protected)
+
+		// We restore the strings into the expression
+		expr = RestoreProtectedString(protected, includedStrings)
 	}
 
 	if indexExpr := valueOf("index", subNames, subMatches); indexExpr != "" {
@@ -300,8 +321,11 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 				result = strings.Replace(result, defaultExpr, "default", -1)
 				result = strings.Replace(result, funcExpr, "func", -1)
 				result = strings.Replace(result, dotRep, ".", -1)
+				result = strings.Replace(result, globalRep, "$$.", -1)
 				repl.replace = strings.Replace(repl.replace, "${expr}", result, -1)
-				return repl.re.ReplaceAllString(match, repl.replace), nil
+				result = repl.re.ReplaceAllString(match, repl.replace)
+				result = strings.Replace(result, "$.slice ", "slice $.", -1)
+				return result, nil
 			}
 		}
 		if !debugMode && err != nil && getLogLevelInternal() >= 6 {
@@ -335,7 +359,7 @@ var negativeSlice = regexp.MustCompile(`\[(?P<index>-\d+):]`)
 func protectMultiLineStrings(repl replacement, match string) string {
 	if strings.HasPrefix(match[1:], protectString) {
 		// We restore back the long string
-		index := errors.Must(strconv.Atoi(repl.re.FindStringSubmatch(match)[1])).(int)
+		index := must(strconv.Atoi(repl.re.FindStringSubmatch(match)[1])).(int)
 		restore := longStrings[index]
 		longStrings[index] = ""
 		return restore
@@ -370,8 +394,8 @@ func nodeValue(node ast.Node) (result string, err error) {
 			return
 		}
 		if op == "sub" {
-			result = iif(x[0] != '(', "-"+x, fmt.Sprintf("sub 0 %s", x)).(string)
-			return
+			result = iif(unicode.IsDigit(rune(x[0])), "-"+x, fmt.Sprintf("sub 0 %s", x)).(string)
+			break
 		}
 		result = fmt.Sprintf("%s %s", op, x)
 	case *ast.BinaryExpr:
@@ -393,6 +417,9 @@ func nodeValue(node ast.Node) (result string, err error) {
 		result = fmt.Sprintf("%s %s %s", op, x, y)
 	case *ast.Ident:
 		result = n.Name
+		if !strings.HasPrefix(result, dotRep) && !strings.HasPrefix(result, stringRep) && !strings.Contains(result, funcCall) {
+			result = globalRep + result
+		}
 	case *ast.BasicLit:
 		result = fmt.Sprint(n.Value)
 	case *ast.SelectorExpr:
@@ -403,7 +430,7 @@ func nodeValue(node ast.Node) (result string, err error) {
 		if sel, err = nodeValueInternal(n.Sel); err != nil {
 			return
 		}
-		result = fmt.Sprintf("%s.%s", x, sel)
+		result = fmt.Sprintf("%s.%s", x, strings.TrimPrefix(sel, globalRep))
 	case *ast.ParenExpr:
 		var content string
 		if content, err = nodeValue(n.X); err == nil {
@@ -414,6 +441,10 @@ func nodeValue(node ast.Node) (result string, err error) {
 		if fun, err = nodeValue(n.Fun); err != nil {
 			return
 		}
+		if !strings.ContainsRune(fun, '.') {
+			fun = strings.TrimPrefix(fun, globalRep)
+		}
+		fun = fun + funcCall
 		if len(n.Args) == 0 {
 			result = fmt.Sprint(fun)
 		} else {

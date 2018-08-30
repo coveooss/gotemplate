@@ -18,14 +18,14 @@ type IDictionary interface {
 	Flush(keys ...interface{}) IDictionary                            // Removes all specified keys from the dictionary. If no key is specified, all keys are removed.
 	Get(key interface{}) interface{}                                  // Returns the value associated with key.
 	Has(key interface{}) bool                                         // Returns true if the dictionary object contains the key.
-	Keys() IGenericList                                               // Returns the keys in the dictionary in alphabetical order.
+	GetKeys() IGenericList                                            // Returns the keys in the dictionary in alphabetical order.
 	KeysAsString() []string                                           // Returns the keys in the dictionary in alphabetical order.
 	Len() int                                                         // Returns the number of keys in the dictionary.
 	Merge(IDictionary, ...IDictionary) IDictionary                    // Merges the other dictionaries into the current dictionary.
 	Omit(key interface{}, keys ...interface{}) IDictionary            // Returns a distinct copy of the object including all keys except specified ones.
 	Set(key, value interface{}) IDictionary                           // Sets key to value in the dictionary.
 	String() string                                                   // Returns the string representation of the dictionary.
-	Values() IGenericList                                             // Returns the values in the dictionary in alphabetical order of keys.
+	GetValues() IGenericList                                          // Returns the values in the dictionary in alphabetical order of keys.
 }
 
 // IDictionaryHelper represents objects that implement IDictionary compatible objects

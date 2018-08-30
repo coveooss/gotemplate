@@ -41,6 +41,9 @@ func (fi FuncInfo) Name() string { return fi.name }
 // Signature returns the function signature
 func (fi FuncInfo) Signature() string { return fi.getSignature(false) }
 
+// IsAlias indicates if the current function is an alias.
+func (fi FuncInfo) IsAlias() bool { return fi.alias != nil }
+
 // String returns the presentation of the FuncInfo entry.
 func (fi FuncInfo) String() (result string) {
 	signature := fi.Signature()
@@ -92,7 +95,11 @@ func (fi FuncInfo) getArguments(isMethod bool) string {
 		if signature.IsVariadic() && i == signature.NumIn()-1 {
 			arg = "..." + arg[2:]
 		}
-		parameters = append(parameters, fmt.Sprintf("%s %s", argName, color.CyanString(arg)))
+		if isMethod {
+			parameters = append(parameters, color.CyanString(arg))
+		} else {
+			parameters = append(parameters, fmt.Sprintf("%s %s", argName, color.CyanString(arg)))
+		}
 	}
 	return strings.Join(parameters, ", ")
 }

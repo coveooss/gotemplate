@@ -9,19 +9,23 @@ import (
 // IGenericList represents objects that act as []interface{}.
 type IGenericList interface {
 	AsArray() []interface{}                                 // Returns the current list as standard array of interface{}.
-	Append(...interface{}) IGenericList                     // Add elements to to current list. If list is not large enough, it is enlarged to fit the required size.
+	Append(...interface{}) IGenericList                     // Add elements to the current list. If list is not large enough, it is enlarged to fit the required size.
 	Cap() int                                               // Returns the capacity of the list.
 	Capacity() int                                          // Simply an alias for Cap.
 	Clone() IGenericList                                    // Returns a distinct copy of the object.
 	Count() int                                             // Simply an alias for Len.
+	Contains(...interface{}) bool                           // Indicates if the list contains all specified elements
 	Create(...int) IGenericList                             // Allocates a new list of the same type implementation as this list. Optional arguments are size and capacity.
 	Get(index int) interface{}                              // Returns the element at position index in the list. If index is out of bound, nil is returned.
 	Len() int                                               // Returns the number of elements in the list.
 	New(...interface{}) IGenericList                        // Creates a new generic list from the supplied arguments.
+	Prepend(...interface{}) IGenericList                    // Add elements to the beginning of the current list. If list is not large enough, it is enlarged to fit the required size.
 	Reverse() IGenericList                                  // Returns a copy of the current list in reverse order.
 	Set(index int, value interface{}) (IGenericList, error) // Sets the value at position index into the list. If list is not large enough, it is enlarged to fit the index.
 	String() string                                         // Returns the string representation of the list.
 	Strings() []string                                      // Returns the current list as list of strings.
+	Unique() IGenericList                                   // Returns a copy of the list removing all duplicate elements.
+	Without(...interface{}) IGenericList                    // Returns a copy of the list removing specified elements.
 }
 
 // IListHelper represents objects that implement IGenericList compatible objects

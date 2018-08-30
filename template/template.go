@@ -14,6 +14,9 @@ import (
 	logging "github.com/op/go-logging"
 )
 
+// String is an alias to collections.String
+type String = collections.String
+
 // Template let us extend the functionalities of base go template library.
 type Template struct {
 	*template.Template
@@ -38,7 +41,7 @@ var toStrings = collections.ToStrings
 // NewTemplate creates an Template object with default initialization.
 func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
 	t := Template{Template: template.New("Main")}
-	errors.Must(t.Parse(""))
+	must(t.Parse(""))
 	t.options = iif(options != nil, options, DefaultOptions()).(OptionsSet)
 	t.optionsEnabled = make(OptionsSet)
 	t.folder, _ = filepath.Abs(iif(folder != "", folder, utils.Pwd()).(string))
@@ -146,7 +149,7 @@ func (t *Template) initExtension() {
 		// We just load all the template files available to ensure that all template definition are loaded
 		// We do not use ParseFiles because it names the template with the base name of the file
 		// which result in overriding templates with the same base name in different folders.
-		content := string(errors.Must(ioutil.ReadFile(file)).([]byte))
+		content := string(must(ioutil.ReadFile(file)).([]byte))
 
 		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
 		if _, err := ext.ProcessContent(content, file); err != nil {

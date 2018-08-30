@@ -112,7 +112,12 @@ func subtract(a, b interface{}) (r interface{}, err error) {
 
 func divide(a, b interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
-	return processFloat2(a, b, func(a, b float64) float64 { return a / b })
+	return processFloat2(a, b, func(a, b float64) float64 {
+		if b == 0 {
+			panic(fmt.Errorf("Division by 0"))
+		}
+		return a / b
+	})
 }
 
 func modulo(a, b interface{}) (r interface{}, err error) {

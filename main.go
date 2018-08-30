@@ -9,7 +9,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/json"
 	"github.com/coveo/gotemplate/template"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
@@ -63,6 +65,7 @@ func main() {
 		followSymLinks   = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
 		print            = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
 		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
+		acceptNoValue    = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error (--nv)").Bool()
 		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl)").PlaceHolder("level").Int8()
 		logLevel         = run.Flag("log-level", "Set the logging level 0-9 (--ll)").Short('L').PlaceHolder("level").Int8()
 		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
@@ -82,6 +85,7 @@ func main() {
 	app.Flag("dl", "short version of --debug-log-level").Hidden().Int8Var(debugLogLevel)
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "short version of --delimiters").Hidden().StringVar(delimiters)
+	app.Flag("nv", "short version of --accept-no-value").Hidden().BoolVar(acceptNoValue)
 
 	// Set the options for the available options (most of them are on by default)
 	optionsOff := app.Flag("base", "Turn off all extensions (they could then be enabled explicitly)").Bool()
@@ -119,6 +123,7 @@ func main() {
 	}
 
 	// Actually parse the parameters (do not evaluate args before that point since parameter values are not yet set)
+	app.UsageWriter(os.Stdout)
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
 	command := kingpin.Parse()
@@ -147,9 +152,14 @@ func main() {
 		optionsSet = template.DefaultOptions()
 	}
 
+	// By default, we generate JSON list and dictionary
+	collections.ListHelper = json.GenericListHelper
+	collections.DictionaryHelper = json.DictionaryHelper
+
 	optionsSet[template.RenderingDisabled] = *disableRender
 	optionsSet[template.Overwrite] = *overwrite
 	optionsSet[template.OutputStdout] = *print
+	optionsSet[template.AcceptNoValue] = *acceptNoValue
 	for i := range options {
 		optionsSet[template.Options(i)] = options[i]
 	}

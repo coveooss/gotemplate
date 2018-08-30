@@ -92,6 +92,7 @@ func logBasef(f func(string, ...interface{}), format string, args ...interface{}
 // Log is the logger used to log message during template processing
 var Log = logging.MustGetLogger(logger)
 
+// log is application logger used to follow the behaviour of the application
 var log = logging.MustGetLogger(loggerInternal)
 
 func getLogLevelInternal() logging.Level {

@@ -337,18 +337,23 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	return
 }
 
+func (t *Template) tryConvert(value string) interface{} {
+	if data, err := t.dataConverter(value); err == nil {
+		// The result of the command is a valid data structure
+		if reflect.TypeOf(data).Kind() != reflect.String {
+			return data
+		}
+	}
+	return value
+}
+
 // Execute the command (command could be a file, a template or a script) and convert its result as data if possible
 func (t *Template) exec(command string, args ...interface{}) (result interface{}, err error) {
 	if result, err = t.run(command, args...); err == nil {
 		if result == nil {
 			return
 		}
-		if data, errData := t.dataConverter(result.(string)); errData == nil {
-			// The result of the command is a valid data structure
-			if reflect.TypeOf(data).Kind() != reflect.String {
-				result = data
-			}
-		}
+		result = t.tryConvert(result.(string))
 	}
 	return
 }
@@ -386,6 +391,9 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 		}
 		internalTemplate = inline
 	}
+
+	// For internal templates, we disable the missing key configuration
+	internalTemplate.Option("missingkey=default")
 
 	// We execute the resulting template
 	if err = internalTemplate.Execute(&out, hcl.SingleContext(context...)); err != nil {
@@ -434,7 +442,7 @@ func (t Template) ellipsis(function string, args ...interface{}) (interface{}, e
 
 	template := fmt.Sprintf("%s %s %s %s", t.delimiters[0], function, strings.Join(argsStr, " "), t.delimiters[1])
 	result, _, err := t.runTemplate(template, context)
-	return result, err
+	return t.tryConvert(result), err
 }
 
 func getAttributes(object interface{}) string {

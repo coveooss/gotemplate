@@ -34,7 +34,7 @@
 
 | Razor | Gotemplate
 | ---   | ---
-| ```@template("razorTemplate", .values)``` | ```{{ template "goTemplate" .values }}```
+| ```@template("razorTemplate", values)``` | ```{{ template "goTemplate" .values }}```
 
 ### Result
 
