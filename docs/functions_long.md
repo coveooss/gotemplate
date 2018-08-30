@@ -323,6 +323,11 @@ func isNil(arg1 interface{}) bool
 ```
 
 ```go
+// Returns true if the supplied value is not nil.
+func isSet(arg1 interface{}) bool
+```
+
+```go
 // Returns true if the supplied value is false, 0, nil or empty.
 // Aliases: isEmpty
 func isZero(arg1 interface{}) bool
