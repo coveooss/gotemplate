@@ -89,13 +89,13 @@ curl                    httpDoc                 httpDocument            httpGet
 
 Other utilities
 
-assert                  diff                    identifier              raise                   splitLines              
+assert                  currentDir              id                      pwd                     spaceIndent             
+assertion               diff                    identifier              raise                   splitLines              
 center                  difference              iif                     raiseError              ternary                 
 centered                enhanced                joinLines               repeat                  wrap                    
 color                   expand                  lorem                   sIndent                 wrapped                 
 colored                 formatList              loremIpsum              save                    write                   
 concat                  glob                    mergeList               sindent                 writeTo                 
-currentDir              id                      pwd                     spaceIndent             
 
 Runtime
 

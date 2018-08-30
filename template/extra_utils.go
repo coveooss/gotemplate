@@ -57,6 +57,7 @@ var utilsFuncsArgs = arguments{
 }
 
 var utilsFuncsAliases = aliases{
+	"assert":  {"assertion"},
 	"center":  {"centered"},
 	"color":   {"colored", "enhanced"},
 	"diff":    {"difference"},

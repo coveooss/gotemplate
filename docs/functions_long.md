@@ -1163,6 +1163,7 @@ func httpGet(url interface{}) *http.Response, error
 
 ```go
 // Raise a formated error if the test condition is false.
+// Aliases: assertion
 func assert(test interface{}, message ...interface{}) string, error
 ```
 
