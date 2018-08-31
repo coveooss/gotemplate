@@ -176,6 +176,9 @@ func (t *Template) init(folder string) {
 	t.children = make(map[string]*Template)
 	t.Delims(t.delimiters[0], t.delimiters[1])
 	t.setConstant(false, "\n", "NL", "CR", "NEWLINE")
+	t.setConstant(false, true, "true")
+	t.setConstant(false, false, "false")
+	t.setConstant(false, nil, "null")
 }
 
 func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...string) {

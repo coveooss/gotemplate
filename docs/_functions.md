@@ -20,16 +20,16 @@ fromHCL                 json                    toJSON                  toQuoted
 
 Data Manipulation
 
-String                  extract                 isSet                   pickv                   string                  
-append                  false                   isZero                  pluck                   true                    
-array                   get                     key                     prepend                 undef                   
-bool                    has                     keys                    push                    uniq                    
-char                    hasKey                  lenc                    remove                  unique                  
-contains                ifUndef                 list                    rest                    unset                   
-content                 initial                 merge                   reverse                 values                  
-delete                  isEmpty                 nbChars                 safeIndex               without                 
-dict                    isNil                   omit                    set                     
-dictionary              isNull                  pick                    slice                   
+String                  extract                 isZero                  pluck                   undef                   
+append                  get                     key                     prepend                 uniq                    
+array                   has                     keys                    push                    unique                  
+bool                    hasKey                  lenc                    remove                  unset                   
+char                    ifUndef                 list                    rest                    values                  
+contains                initial                 merge                   reverse                 without                 
+content                 isEmpty                 nbChars                 safeIndex               
+delete                  isNil                   omit                    set                     
+dict                    isNull                  pick                    slice                   
+dictionary              isSet                   pickv                   string                  
 
 Logging
 

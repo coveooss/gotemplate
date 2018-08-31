@@ -121,16 +121,17 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				newContext := context.Replace(current.Str(), undefError).Str()
 				newLine := currentLine.Replace(context.Str(), newContext)
 
-				left, right := regexp.QuoteMeta(t.LeftDelim()), regexp.QuoteMeta(t.RightDelim())
+				left := fmt.Sprintf(`(?P<begin>(%s-?\s*(if|range|with)\s.*|\()\s*)`, regexp.QuoteMeta(t.LeftDelim()))
+				right := fmt.Sprintf(`(?P<end>\s*(-?%s|\)))`, regexp.QuoteMeta(t.RightDelim()))
 				const (
 					ifUndef = "ifUndef"
 					isZero  = "isZero"
 					assert  = "assert"
 				)
 				undefRegexDefintions := []string{
-					fmt.Sprintf(`(%[1]s|\()[[:blank:]]*(undef|ifUndef|isDefined|default)[[:blank:]]+(?P<%[3]s>.*?)[[:blank:]]+%[4]s[[:blank:]]*(%[2]s|\))`, left, right, ifUndef, undefError),
-					fmt.Sprintf(`(%[1]s|\()[[:blank:]]*(?P<%[3]s>%[3]s|isNil|isNull|isEmpty|isSet)[[:blank:]]+%[4]s[[:blank:]]*(%[2]s|\))`, left, right, isZero, undefError),
-					fmt.Sprintf(`(%[1]s|\()[[:blank:]]*%[3]s[[:blank:]]+(?P<%[3]s>%[4]s).*(%[2]s|\))`, left, right, assert, undefError),
+					fmt.Sprintf(`%[1]s(undef|ifUndef|default)\s+(?P<%[3]s>.*?)\s+%[4]s%[2]s`, left, right, ifUndef, undefError),
+					fmt.Sprintf(`%[1]s(?P<%[3]s>%[3]s|isNil|isNull|isEmpty|isSet)\s+%[4]s%[2]s`, left, right, isZero, undefError),
+					fmt.Sprintf(`%[1]s%[3]s\s+(?P<%[3]s>%[4]s).*?%[2]s`, left, right, assert, undefError),
 				}
 				expressions, errRegex := getRegexGroup(fmt.Sprintf("Undef%s", t.delimiters), undefRegexDefintions)
 				if errRegex != nil {
@@ -141,11 +142,11 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				if undefMatches[ifUndef] != "" {
 					logMessage = fmt.Sprintf("Managed undefined value %s: %s", key, context)
 					err = nil
-					lines[faultyLine] = newLine.Replace(newContext, expressions[n].ReplaceAllString(newContext, fmt.Sprintf("${%s}", ifUndef))).Str()
+					lines[faultyLine] = newLine.Replace(newContext, expressions[n].ReplaceAllString(newContext, fmt.Sprintf("${begin}${%s}${end}", ifUndef))).Str()
 				} else if undefMatches[isZero] != "" {
 					logMessage = fmt.Sprintf("Managed undefined value %s: %s", key, context)
 					err = nil
-					value := fmt.Sprint(undefMatches[isZero] != "isSet")
+					value := fmt.Sprintf("%s%v%s", undefMatches["begin"], undefMatches[isZero] != "isSet", undefMatches["end"])
 					lines[faultyLine] = newLine.Replace(newContext, value).Str()
 				} else if undefMatches[assert] != "" {
 					logMessage = fmt.Sprintf("Managed assertion on %s: %s", key, context)

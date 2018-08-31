@@ -297,11 +297,6 @@ func extract(source interface{}, indexes ...interface{}) interface{}, error
 ```
 
 ```go
-// Returns false.
-func false() bool
-```
-
-```go
 // Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)
 func get(map interface{}, key interface{}, default ...interface{}) interface{}, error
 ```
@@ -412,11 +407,6 @@ func slice(value interface{}, args ...interface{}) interface{}, error
 ```go
 // Converts the supplied value into its string representation.
 func string(value interface{}) string
-```
-
-```go
-// Returns true.
-func true() bool
 ```
 
 ```go

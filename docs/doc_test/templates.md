@@ -6,12 +6,12 @@
 
 ### Razor
 ```
-@define("razorTemplate")
+@-define("razorTemplate")
   This is a template with a variable here: @.var1  
   For each item in var2:  
-  @for ($item := .var2)
+  @-for ($item := .var2)
     Print it: @$item  
-  @end range
+  @end for
 @end define
 ```
 

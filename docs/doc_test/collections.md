@@ -25,9 +25,9 @@
 #### Razor
 
 ```go
-@range($key, $value := razorDict)
+@-foreach($key, $value := razorDict)
     @$key, @$value, @get($.razorDict, $key)
-@endrange
+@end foreach
 ```
 
 #### Gotemplate
@@ -67,9 +67,9 @@
 #### Razor
 
 ```go
-@range($index, $value := razorList)
+@-foreach($index, $value := razorList)
     @$index, @$value, @extract($.razorList, $index)
-@endrange
+@end foreach
 ```
 
 #### Gotemplate

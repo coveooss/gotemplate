@@ -38,25 +38,25 @@
 ### Assignation within expression
 
 ```go
-@range ($value := to(10))
+@-foreach ($value := to(10))
     @{value}
-@end range
+@end foreach
 ```
 
 ```go
-@range ($index, $value := to(10))
+@-foreach ($index, $value := to(10))
     @{index} = @($value * 2)
-@end range
+@end foreach
 ```
 
 ```go
-@if ($result := 2+2 == 4)
+@-if ($result := 2+2 == 4)
     result = @{result}
 @end if
 ```
 
 ```go
-@with ($value := 2+2)
+@-with ($value := 2+2)
     value = @$value
 @end with
 ```

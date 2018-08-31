@@ -30,7 +30,6 @@ var dataFuncsBase = dictionary{
 	"content":   content,
 	"dict":      createDict,
 	"extract":   extract,
-	"false":     func() bool { return false },
 	"get":       get,
 	"hasKey":    hasKey,
 	"initial":   initial,
@@ -53,7 +52,6 @@ var dataFuncsBase = dictionary{
 	"set":       set,
 	"slice":     slice,
 	"string":    toString,
-	"true":      func() bool { return true },
 	"undef":     utils.IfUndef,
 	"unique":    unique,
 	"unset":     unset,
@@ -165,7 +163,6 @@ var dataFuncsHelp = descriptions{
 	"data":           "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.",
 	"dict":           "Returns a new dictionary from a list of pairs (key, value).",
 	"extract":        "Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps",
-	"false":          "Returns false.",
 	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)",
 	"hasKey":         "Returns true if the dictionary contains the specified key.",
 	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
@@ -204,7 +201,6 @@ var dataFuncsHelp = descriptions{
 	"toTFVars":       "Converts the supplied value to compact HCL representation (without multiple map declarations).",
 	"toXml":          "Converts the supplied value to XML representation.",
 	"toYaml":         "Converts the supplied value to YAML representation.",
-	"true":           "Returns true.",
 	"undef":          "Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, \"\" are not considered as unset).",
 	"unique":         "Generates a list with all of the duplicates removed.",
 	"unset":          "Removes an element from a dictionary.",
@@ -229,8 +225,6 @@ func (t *Template) addDataFuncs() {
 		"yaml": t.yamlConverter,
 	}, dataConversion, options)
 	t.optionsEnabled[Data] = true
-	t.setConstant(false, true, "true")
-	t.setConstant(false, false, "false")
 }
 
 func toChar(value interface{}) (r interface{}, err error) {

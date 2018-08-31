@@ -34,21 +34,21 @@ gotemplate '{% include navigation.html %}
 
 ## Functions@<;
 
-@foreach ($category := categories())
+@-foreach ($category := categories())
     @<;[@(String($category.Name).Split(",")[0])](#@(String($category.Name).Replace(" ", "-"));)
     @<;
 @end foreach
 
-@foreach ($category := categories())
+@-foreach ($category := categories())
 ### @($category.Name)
-    @foreach ($func := $category.Functions())
+    @-foreach ($func := $category.Functions())
         $func := function($func)
-        @if (!$func.IsAlias)
+        @-if (!$func.IsAlias)
             @<;@<;```go
-            @if ($func.Description)
+            @-if ($func.Description)
                 @<;// @(String($func.Description).Lines.Join("\n// "))
             @end if
-            @if ($func.Aliases)
+            @-if ($func.Aliases)
                 @<;// Aliases: @join(", ", $func.Aliases)
             @end if
             @<;func @($func.Signature)
