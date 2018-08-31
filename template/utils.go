@@ -2,6 +2,7 @@ package template
 
 import (
 	"fmt"
+	"math"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -104,3 +105,16 @@ func RestoreProtectedString(s string, array []string) string {
 const replacementFormat = `"♠%d"`
 
 var replacementRegex = regexp.MustCompile(`"♠(\d+)"`)
+
+// Add line number to a string
+func AddLineNumber(content string, space int) string {
+	lines := strings.Split(string(content), "\n")
+	if space <= 0 {
+		space = int(math.Log10(float64(len(lines)))) + 1
+	}
+
+	for i := range lines {
+		lines[i] = fmt.Sprintf("%*d %s", space, i+1, lines[i])
+	}
+	return strings.Join(lines, "\n")
+}

@@ -53,6 +53,9 @@ func add(a interface{}, args ...interface{}) (r interface{}, err error) {
 }
 
 func multiply(a interface{}, args ...interface{}) (r interface{}, err error) {
+	if a == nil && len(args) < 2 {
+		return
+	}
 	defer func() { err = trapError(err, recover()) }()
 	args = convertArgs(a, args...)
 
@@ -91,7 +94,7 @@ func multiply(a interface{}, args ...interface{}) (r interface{}, err error) {
 
 	switch len(values) {
 	case 0:
-		return 0, nil
+		return 0, err
 	case 2:
 		return processFloat2(values[0], values[1], func(a, b float64) float64 {
 			return a * b

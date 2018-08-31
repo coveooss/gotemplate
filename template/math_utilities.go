@@ -31,10 +31,14 @@ func toFloat(value interface{}) float64 {
 
 func toArrayOfFloats(values ...interface{}) (result []float64, err error) {
 	values = convertArgs(nil, values...)
-	result = make([]float64, len(values))
-	defer func() { err = trapError(err, recover()) }()
+	result = make([]float64, 0, len(values))
+	defer func() {
+		if err = trapError(err, recover()); err != nil {
+			result = nil
+		}
+	}()
 	for i := range values {
-		result[i] = toFloat(values[i])
+		result = append(result, toFloat(values[i]))
 	}
 	return
 }
@@ -42,7 +46,7 @@ func toArrayOfFloats(values ...interface{}) (result []float64, err error) {
 func process(arg, handler interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	args := convertArgs(arg)
-	if err != nil {
+	if args == nil {
 		return
 	}
 	switch len(args) {

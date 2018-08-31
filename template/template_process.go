@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
@@ -31,23 +32,28 @@ var (
 func p(name, expr string) string { return fmt.Sprintf("(?P<%s>%s)", name, expr) }
 
 const (
-	undefError = `"<no value>"`
-	runError   = `"<RUN_ERROR>"`
-	tagLine    = "line"
-	tagCol     = "column"
-	tagCode    = "code"
-	tagMsg     = "message"
-	tagFile    = "file"
-	tagKey     = "key"
-	tagErr     = "error"
+	noValue      = "<no value>"
+	noValueRepl  = "!NO_VALUE!"
+	nilValue     = "<nil>"
+	nilValueRepl = "!NIL_VALUE!"
+	undefError   = `"` + noValue + `"`
+	noValueError = "contains undefined value(s)"
+	runError     = `"<RUN_ERROR>"`
+	tagLine      = "line"
+	tagCol       = "column"
+	tagCode      = "code"
+	tagMsg       = "message"
+	tagFile      = "file"
+	tagKey       = "key"
+	tagErr       = "error"
 )
 
 // ProcessContent loads and runs the file template.
 func (t Template) ProcessContent(content, source string) (string, error) {
-	return t.processContentInternal(content, source, nil)
+	return t.processContentInternal(content, source, nil, 0)
 }
 
-func (t Template) processContentInternal(originalContent, source string, originalSourceLines []string) (string, error) {
+func (t Template) processContentInternal(originalContent, source string, originalSourceLines []string, retryCount int) (result string, err error) {
 	topCall := originalSourceLines == nil
 	content := originalContent
 	if topCall {
@@ -69,6 +75,12 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			return content, nil
 		}
 		log.Notice("GoTemplate processing of", source)
+
+		if !t.options[AcceptNoValue] {
+			// We replace any pre-existing no value to avoid false error detection
+			content = strings.Replace(content, noValue, noValueRepl, -1)
+			content = strings.Replace(content, nilValue, nilValueRepl, -1)
+		}
 	}
 
 	// This local functions handle all errors from Parse or Execute and tries to fix the template to allow discovering
@@ -166,7 +178,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				context := String(currentLine).SelectContext(faultyColumn, t.LeftDelim(), t.RightDelim())
 				errorText = fmt.Sprintf(color.RedString("%s (%s)", errText, code))
 				lines[faultyLine] = currentLine.Replace(context.Str(), runError).Str()
-			} else {
+			} else if errText != noValueError {
 				logMessage = fmt.Sprintf("Parsing error: %s", err)
 				lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
 			}
@@ -179,13 +191,13 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			}
 
 			if err != nil {
-				err = fmt.Errorf("%s %s%s%s", color.WhiteString(matches[tagFile]), errorText, errorLine, parserBug)
+				err = fmt.Errorf("%s%s%s%s", color.WhiteString(matches[tagFile]), errorText, errorLine, parserBug)
 			}
-			if lines[faultyLine] != currentLine.Str() {
+			if lines[faultyLine] != currentLine.Str() || strings.Contains(err.Error(), noValueError) {
 				// If we changed something in the current text, we try to continue the evaluation to get further errors
-				result, err2 := t.processContentInternal(strings.Join(lines, "\n"), source, originalSourceLines)
+				result, err2 := t.processContentInternal(strings.Join(lines, "\n"), source, originalSourceLines, retryCount+1)
 				if err2 != nil {
-					if err != nil {
+					if err != nil && errText != noValueError {
 						if err.Error() == err2.Error() {
 							// TODO See: https://github.com/golang/go/issues/27319
 							err = fmt.Errorf("%v\n%s", err, color.HiRedString("Unable to continue processing to check for further errors"))
@@ -203,25 +215,38 @@ func (t Template) processContentInternal(originalContent, source string, origina
 	}
 
 	context := t.GetNewContext(filepath.Dir(source), true)
-	newTemplate, err := context.New(source).Parse(content)
-	if err != nil {
-		return handleError(err)
-	}
-
-	var out bytes.Buffer
-	if !t.options[AcceptNoValue] {
+	newTemplate := context.New(source)
+	if !topCall && !t.options[AcceptNoValue] {
+		// To help detect errors on second run, we enable the option to raise error on nil values
+		// log.Infof("%s(%d): Activating the missing key error option", source, retryCount)
 		newTemplate.Option("missingkey=error")
 	}
 
-	if err = newTemplate.Execute(&out, t.context); err != nil {
+	if newTemplate, err = newTemplate.Parse(content); err != nil {
+		log.Infof("%s(%d): Parsing error %v", source, retryCount, err)
 		return handleError(err)
 	}
-
-	result := t.substitute(out.String())
-	if topCall && !t.options[AcceptNoValue] && strings.Contains(result, "<no value>") {
-		return "", fmt.Errorf(color.RedString("Result for %s contains undefined value(s)\n%s\n%s\n"), source, color.GreenString(content), color.RedString(result))
+	var out bytes.Buffer
+	if err = newTemplate.Execute(&out, collections.AsDictionary(t.context).Clone()); err != nil {
+		log.Infof("%s(%d): Execution error %v", source, retryCount, err)
+		return handleError(err)
 	}
-	return result, nil
+	result = t.substitute(out.String())
+
+	if topCall && !t.options[AcceptNoValue] {
+		// Detect possible <no value> or <nil> that could be generated
+		if pos := strings.Index(strings.Replace(result, nilValue, noValue, -1), noValue); pos >= 0 {
+			line := len(strings.Split(result[:pos], "\n"))
+			return handleError(fmt.Errorf("template: %s:%d: %s", source, line, noValueError))
+		}
+	}
+
+	if !t.options[AcceptNoValue] {
+		// We restore the existing no value if any
+		result = strings.Replace(result, noValueRepl, noValue, -1)
+		result = strings.Replace(result, nilValueRepl, nilValue, -1)
+	}
+	return
 }
 
 // ProcessTemplate loads and runs the template if it is a file, otherwise, it simply process the content.

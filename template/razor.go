@@ -5,7 +5,6 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"math"
 	"os"
 	"reflect"
 	"regexp"
@@ -36,13 +35,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 		}
 	}
 	content = []byte(strings.Replace(string(content), funcCall, "", -1))
-
-	lines := strings.Split(string(content), "\n")
-	n := int(math.Log10(float64(len(lines)))) + 1
-	for i := range lines {
-		lines[i] = fmt.Sprintf("%*d %s", n, i+1, lines[i])
-	}
-	log.Noticef("Generated content\n\n%s\n", color.HiCyanString(strings.Join(lines, "\n")))
+	log.Noticef("Generated content\n\n%s\n", color.HiCyanString(AddLineNumber(string(content), 0)))
 	return content
 }
 

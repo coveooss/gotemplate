@@ -35,8 +35,8 @@ Flags:
   -f, --follow-symlinks        Follow the symbolic links while using the recursive option
   -P, --print                  Output the result directly to stdout
   -d, --disable                Disable go template rendering (used to view razor conversion)
-      --accept-no-value        Do not consider rendering <no value> as an error (--nv)
-      --debug-log-level=level  Set the debug logging level 0-9 (--dl)
+      --accept-no-value        Do not consider rendering <no value> as an error (--nv) or env: GOTEMPLATE_NO_VALUE
+      --debug-log-level=level  Set the debug logging level 0-9 (--dl) or env: GOTEMPLATE_DEBUG
   -L, --log-level=level        Set the logging level 0-9 (--ll)
       --log-simple             Disable the extended logging, i.e. no color, no date (--ls)
 
@@ -65,8 +65,8 @@ Commands:
     -f, --follow-symlinks        Follow the symbolic links while using the recursive option
     -P, --print                  Output the result directly to stdout
     -d, --disable                Disable go template rendering (used to view razor conversion)
-        --accept-no-value        Do not consider rendering <no value> as an error (--nv)
-        --debug-log-level=level  Set the debug logging level 0-9 (--dl)
+        --accept-no-value        Do not consider rendering <no value> as an error (--nv) or env: GOTEMPLATE_NO_VALUE
+        --debug-log-level=level  Set the debug logging level 0-9 (--dl) or env: GOTEMPLATE_DEBUG
     -L, --log-level=level        Set the logging level 0-9 (--ll)
         --log-simple             Disable the extended logging, i.e. no color, no date (--ls)
 

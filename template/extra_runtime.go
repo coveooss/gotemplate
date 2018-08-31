@@ -392,9 +392,6 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 		internalTemplate = inline
 	}
 
-	// For internal templates, we disable the missing key configuration
-	internalTemplate.Option("missingkey=default")
-
 	// We execute the resulting template
 	if err = internalTemplate.Execute(&out, hcl.SingleContext(context...)); err != nil {
 		return
@@ -408,6 +405,7 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 	}
 	return
 }
+
 func (t Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
 	content, _, err := t.runTemplate(source, context...)
 	return content, err

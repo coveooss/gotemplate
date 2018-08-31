@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
-	"strconv"
 	"strings"
 
 	"github.com/coveo/gotemplate/collections"
@@ -23,7 +22,10 @@ import (
 var version = "master"
 var tempFolder = errors.Must(ioutil.TempDir("", "gotemplate-")).(string)
 
-const disableStdinCheck = "GOTEMPLATE_NO_STDIN"
+const (
+	envDisableStdinCheck = "GOTEMPLATE_NO_STDIN"
+	envAcceptNoValue     = "GOTEMPLATE_NO_VALUE"
+)
 const description = `
 An extended template processor for go.
 
@@ -65,8 +67,8 @@ func main() {
 		followSymLinks   = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
 		print            = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
 		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
-		acceptNoValue    = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error (--nv)").Bool()
-		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl)").PlaceHolder("level").Int8()
+		acceptNoValue    = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error (--nv) or env: "+envAcceptNoValue).Envar(envAcceptNoValue).Bool()
+		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl) or env: "+template.DebugEnvVar).Default("2").Envar(template.DebugEnvVar).PlaceHolder("level").Int8()
 		logLevel         = run.Flag("log-level", "Set the logging level 0-9 (--ll)").Short('L').PlaceHolder("level").Int8()
 		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
 		templates        = run.Arg("templates", "Template files or commands to process").Strings()
@@ -127,11 +129,6 @@ func main() {
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
 	command := kingpin.Parse()
-
-	if *debugLogLevel == 0 {
-		l, _ := strconv.Atoi(utils.GetEnv(template.DebugEnvVar, "2"))
-		*debugLogLevel = int8(l)
-	}
 
 	if *logLevel == 0 {
 		*logLevel = 4
@@ -201,7 +198,7 @@ func main() {
 	*overwrite = *overwrite || *sourceFolder != *targetFolder
 
 	stat, _ := os.Stdin.Stat()
-	if (stat.Mode()&os.ModeCharDevice) == 0 && os.Getenv(disableStdinCheck) == "" {
+	if (stat.Mode()&os.ModeCharDevice) == 0 && os.Getenv(envDisableStdinCheck) == "" {
 		*forceStdin = true
 	}
 

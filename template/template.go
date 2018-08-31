@@ -87,10 +87,10 @@ func (t Template) GetNewContext(folder string, useCache bool) *Template {
 	newTemplate.importTemplates(t)
 	newTemplate.options = make(OptionsSet)
 
-	// We register the new template as a child of the main template
 	if !useCache {
 		return &newTemplate
 	}
+	// We register the new template as a child of the main template
 	t.children[folder] = &newTemplate
 	return t.children[folder]
 }
