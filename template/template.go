@@ -97,6 +97,11 @@ func (t Template) GetNewContext(folder string, useCache bool) *Template {
 	newTemplate.addFunctions(t.aliases)
 	newTemplate.importTemplates(t)
 	newTemplate.options = make(OptionsSet)
+	// We duplicate the options because the new context may alter them afterwhile and
+	// it should not modify the original values.
+	for k, v := range t.options {
+		newTemplate.options[k] = v
+	}
 
 	if !useCache {
 		return &newTemplate

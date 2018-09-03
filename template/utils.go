@@ -106,7 +106,7 @@ const replacementFormat = `"♠%d"`
 
 var replacementRegex = regexp.MustCompile(`"♠(\d+)"`)
 
-// Add line number to a string
+// AddLineNumber adds line number to a string
 func AddLineNumber(content string, space int) string {
 	lines := strings.Split(string(content), "\n")
 	if space <= 0 {
