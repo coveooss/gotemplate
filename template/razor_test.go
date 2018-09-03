@@ -19,7 +19,7 @@ import (
 func TestTemplate_applyRazor(t *testing.T) {
 	dmp := diffmatchpatch.New()
 	SetLogLevel(logging.WARNING)
-	template := NewTemplate("../docs/doc_test", nil, "", nil)
+	template := MustNewTemplate("../docs/doc_test", nil, "", nil)
 	files, err := filepath.Glob(filepath.Join(template.folder, "*.md"))
 	if err != nil {
 		t.Fatalf("Unable to read test files (documentation in %s)", template.folder)

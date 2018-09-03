@@ -10,7 +10,7 @@ import (
 )
 
 func Test_Data(t *testing.T) {
-	template := NewTemplate("", nil, "", nil)
+	template := MustNewTemplate("", nil, "", nil)
 
 	tests := []struct {
 		name    string
@@ -39,7 +39,7 @@ func Test_Data(t *testing.T) {
 }
 
 func Test_YAML(t *testing.T) {
-	template := NewTemplate("", nil, "", nil)
+	template := MustNewTemplate("", nil, "", nil)
 
 	tests := []struct {
 		name    string
@@ -66,7 +66,7 @@ func Test_YAML(t *testing.T) {
 }
 
 func Test_HCL(t *testing.T) {
-	template := NewTemplate("", nil, "", nil)
+	template := MustNewTemplate("", nil, "", nil)
 
 	tests := []struct {
 		name    string

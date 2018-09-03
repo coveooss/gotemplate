@@ -1,6 +1,7 @@
 package template
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -9,7 +10,6 @@ import (
 	"text/template"
 
 	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 	logging "github.com/op/go-logging"
 )
@@ -39,7 +39,12 @@ var ExtensionDepth = 2
 var toStrings = collections.ToStrings
 
 // NewTemplate creates an Template object with default initialization.
-func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
+func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) (result *Template, err error) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			result, err = nil, fmt.Errorf("%v", rec)
+		}
+	}()
 	t := Template{Template: template.New("Main")}
 	must(t.Parse(""))
 	t.options = iif(options != nil, options, DefaultOptions()).(OptionsSet)
@@ -62,14 +67,20 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	if delimiters != "" {
 		for i, delimiter := range strings.Split(delimiters, ",") {
 			if i == len(t.delimiters) {
-				errors.Raise("Invalid delimiters '%s', must be a maximum of three comma separated parts", delimiters)
+				return nil, fmt.Errorf("Invalid delimiters '%s', must be a maximum of three comma separated parts", delimiters)
 			}
 			if delimiter != "" {
 				t.delimiters[i] = delimiter
 			}
 		}
 	}
-	return &t
+	return &t, nil
+}
+
+// MustNewTemplate creates an Template object with default initialization.
+// It panics if an error occurs.
+func MustNewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
+	return must(NewTemplate(folder, context, delimiters, options, substitutes...)).(*Template)
 }
 
 // GetNewContext returns a distint context for each folder.
