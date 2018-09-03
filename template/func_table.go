@@ -132,29 +132,36 @@ func (ftm funcTableMap) convert() template.FuncMap {
 	return result.AsMap()
 }
 
-type funcOptionsSet int8
+// FuncOptionsSet defines categories that could be used to define elaborated help context when adding functions to go template.
+type FuncOptionsSet int8
 
 const (
-	funcHelp funcOptionsSet = iota
-	funcArgs
-	funcAliases
-	funcGroup
+	// FuncHelp is used to associate help to functions added to go templates.
+	FuncHelp FuncOptionsSet = iota
+	// FuncArgs is used to associate arguments name to functions added to go templates.
+	FuncArgs
+	// FuncAliases is used to associate aliases to functions added to go templates.
+	FuncAliases
+	// FuncGroup is used to associate a group to functions added to go templates.
+	FuncGroup
 )
 
-type funcOptions map[funcOptionsSet]interface{}
-type aliases map[string][]string
-type arguments map[string][]string
-type descriptions map[string]string
-type dictionary map[string]interface{}
-type groups map[string]string
+// FuncOptions is a map of FuncOptionsSet that is used to associates help, aliases, arguments and groups to functions added to go template.
+type FuncOptions map[FuncOptionsSet]interface{}
+
+type aliases = map[string][]string
+type arguments = map[string][]string
+type descriptions = map[string]string
+type dictionary = map[string]interface{}
+type groups = map[string]string
 
 // AddFunctions add functions to the template, but keep a detailled definition of the function added for helping purpose
-func (t *Template) AddFunctions(funcs dictionary, group string, options funcOptions) *Template {
+func (t *Template) AddFunctions(funcs dictionary, group string, options FuncOptions) *Template {
 	ft := make(funcTableMap, len(funcs))
-	help := defval(options[funcHelp], descriptions{}).(descriptions)
-	aliases := defval(options[funcAliases], aliases{}).(aliases)
-	arguments := defval(options[funcArgs], arguments{}).(arguments)
-	groups := defval(options[funcGroup], groups{}).(groups)
+	help := defval(options[FuncHelp], descriptions{}).(descriptions)
+	aliases := defval(options[FuncAliases], aliases{}).(aliases)
+	arguments := defval(options[FuncArgs], arguments{}).(arguments)
+	groups := defval(options[FuncGroup], groups{}).(groups)
 	for key, val := range funcs {
 		ft[key] = FuncInfo{
 			function:    val,

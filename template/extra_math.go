@@ -280,10 +280,10 @@ var mathFuncsHelp = descriptions{
 
 func (t *Template) addMathFuncs() {
 	// Enhance mathematic functions
-	options := funcOptions{
-		funcHelp:    mathFuncsHelp,
-		funcArgs:    mathFuncsArgs,
-		funcAliases: mathFuncsAliases,
+	options := FuncOptions{
+		FuncHelp:    mathFuncsHelp,
+		FuncArgs:    mathFuncsArgs,
+		FuncAliases: mathFuncsAliases,
 	}
 
 	t.AddFunctions(mathBaseFuncs, mathBase, options)

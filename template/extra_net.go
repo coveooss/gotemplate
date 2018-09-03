@@ -31,10 +31,10 @@ var netFuncsHelp = descriptions{
 }
 
 func (t *Template) addNetFuncs() {
-	t.AddFunctions(netFuncs, netBase, funcOptions{
-		funcHelp:    netFuncsHelp,
-		funcArgs:    netFuncsArgs,
-		funcAliases: netFuncsAliases,
+	t.AddFunctions(netFuncs, netBase, FuncOptions{
+		FuncHelp:    netFuncsHelp,
+		FuncArgs:    netFuncsArgs,
+		FuncAliases: netFuncsAliases,
 	})
 }
 

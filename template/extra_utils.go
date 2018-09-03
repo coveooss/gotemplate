@@ -117,10 +117,10 @@ var utilsFuncsHelp = descriptions{
 }
 
 func (t *Template) addUtilsFuncs() {
-	t.AddFunctions(utilsFuncs, utilsBase, funcOptions{
-		funcHelp:    utilsFuncsHelp,
-		funcArgs:    utilsFuncsArgs,
-		funcAliases: utilsFuncsAliases,
+	t.AddFunctions(utilsFuncs, utilsBase, FuncOptions{
+		FuncHelp:    utilsFuncsHelp,
+		FuncArgs:    utilsFuncsArgs,
+		FuncAliases: utilsFuncsAliases,
 	})
 }
 

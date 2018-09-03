@@ -72,10 +72,10 @@ var loggingFuncsHelp = descriptions{
 }
 
 func (t *Template) addLoggingFuncs() {
-	t.AddFunctions(loggingFuncs, loggingBase, funcOptions{
-		funcHelp:    loggingFuncsHelp,
-		funcArgs:    loggingFuncsArgs,
-		funcAliases: loggingFuncsAliases,
+	t.AddFunctions(loggingFuncs, loggingBase, FuncOptions{
+		FuncHelp:    loggingFuncsHelp,
+		FuncArgs:    loggingFuncsArgs,
+		FuncAliases: loggingFuncsAliases,
 	})
 }
 

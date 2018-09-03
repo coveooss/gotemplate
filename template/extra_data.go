@@ -210,10 +210,10 @@ var dataFuncsHelp = descriptions{
 }
 
 func (t *Template) addDataFuncs() {
-	options := funcOptions{
-		funcHelp:    dataFuncsHelp,
-		funcArgs:    dataFuncsArgs,
-		funcAliases: dataFuncsAliases,
+	options := FuncOptions{
+		FuncHelp:    dataFuncsHelp,
+		FuncArgs:    dataFuncsArgs,
+		FuncAliases: dataFuncsAliases,
 	}
 	t.AddFunctions(dataFuncsBase, dataBase, options)
 	t.AddFunctions(dataFuncsConversion, dataConversion, options)

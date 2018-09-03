@@ -105,10 +105,10 @@ func (t *Template) addRuntimeFuncs() {
 		"templates":     t.Templates,
 	}
 
-	t.AddFunctions(funcs, runtimeFunc, funcOptions{
-		funcHelp:    runtimeFuncsHelp,
-		funcArgs:    runtimeFuncsArgs,
-		funcAliases: runtimeFuncsAliases,
+	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
+		FuncHelp:    runtimeFuncsHelp,
+		FuncArgs:    runtimeFuncsArgs,
+		FuncAliases: runtimeFuncsAliases,
 	})
 }
 
