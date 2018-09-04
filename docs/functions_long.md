@@ -1185,7 +1185,7 @@ func group() *user.Group, error
 ```go
 // Returns the home directory of the current user.
 // Aliases: homeDir, homeFolder
-func home() string, error
+func home() string
 ```
 
 ```go
@@ -1264,7 +1264,7 @@ func user() *user.User, error
 
 ```go
 // Returns the current user name.
-func username() string, error
+func username() string
 ```
 ### Other utilities
 

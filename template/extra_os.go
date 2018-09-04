@@ -188,12 +188,12 @@ func saveToFile(filename string, object interface{}) (string, error) {
 	return "", ioutil.WriteFile(filename, []byte(fmt.Sprint(object)), 0644)
 }
 
-func username() (string, error) {
+func username() string {
 	u, err := user.Current()
 	if err != nil {
-		return "", err
+		return ""
 	}
-	return u.Username, nil
+	return u.Username
 }
 
 func userGroup() (*user.Group, error) {
@@ -204,12 +204,12 @@ func userGroup() (*user.Group, error) {
 	return user.LookupGroupId(u.Gid)
 }
 
-func userHome() (string, error) {
+func userHome() string {
 	u, err := user.Current()
 	if err != nil {
-		return "", err
+		return os.Getenv("HOME")
 	}
-	return u.HomeDir, nil
+	return u.HomeDir
 }
 
 func lookPath(file interface{}) string {
