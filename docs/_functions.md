@@ -87,24 +87,34 @@ Net
 
 curl                    httpDoc                 httpDocument            httpGet                 
 
+Operating systems functions
+
+currentDir              fileStat                isExist                 lookPath                username                
+currentUser             glob                    isFile                  mode                    whereIs                 
+diff                    group                   isFolder                pwd                     which                   
+difference              home                    isReadable              save                    write                   
+exists                  homeDir                 isWriteable             size                    writeTo                 
+expand                  homeFolder              lastMod                 stat                    
+fileExists              isDir                   lastModification        type                    
+fileMode                isDirectory             lastModificationTime    user                    
+fileSize                isExecutable            look                    userGroup               
+
 Other utilities
 
-assert                  currentDir              id                      pwd                     spaceIndent             
-assertion               diff                    identifier              raise                   splitLines              
-center                  difference              iif                     raiseError              ternary                 
-centered                enhanced                joinLines               repeat                  wrap                    
-color                   expand                  lorem                   sIndent                 wrapped                 
-colored                 formatList              loremIpsum              save                    write                   
-concat                  glob                    mergeList               sindent                 writeTo                 
+center                  enhanced                joinLines               sIndent                 wrap                    
+centered                formatList              lorem                   sindent                 wrapped                 
+color                   id                      loremIpsum              spaceIndent             
+colored                 identifier              mergeList               splitLines              
+concat                  iif                     repeat                  ternary                 
 
 Runtime
 
-alias                   current                 function                localAlias              templateNames           
-aliases                 ellipsis                functions               methods                 templates               
-allFunctions            exec                    getAttributes           run                     
-attr                    execute                 getMethods              sign                    
-attributes              exit                    getSignature            signature               
-categories              func                    include                 substitute              
+alias                   attributes              exit                    getSignature            run                     
+aliases                 categories              func                    include                 sign                    
+allFunctions            current                 function                localAlias              signature               
+assert                  ellipsis                functions               methods                 substitute              
+assertion               exec                    getAttributes           raise                   templateNames           
+attr                    execute                 getMethods              raiseError              templates               
 
 Sprig Cryptographic & Security http://masterminds.github.io/sprig/crypto.html
 

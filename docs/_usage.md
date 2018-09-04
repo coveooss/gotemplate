@@ -20,6 +20,7 @@ Flags:
       --runtime                Option Runtime, on by default, --no-runtime to disable
       --utils                  Option Utils, on by default, --no-utils to disable
       --net                    Option Net, on by default, --no-net to disable
+      --os                     Option OS, on by default, --no-os to disable
       --delimiters={{,}},@     Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)
   -i, --import=file ...        Import variables files (could be any of YAML, JSON or HCL format)
   -V, --var=values ...         Import named variables (if value is a file, the content is loaded)

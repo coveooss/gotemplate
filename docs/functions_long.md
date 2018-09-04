@@ -24,6 +24,8 @@
 
 [Net](#Net)
 
+[Operating systems functions](#Operating-systems-functions)
+
 [Other utilities](#Other-utilities)
 
 [Runtime](#Runtime)
@@ -1154,13 +1156,117 @@ func httpDoc(url interface{}) interface{}, error
 // Returns http get response from supplied URL.
 func httpGet(url interface{}) *http.Response, error
 ```
-### Other utilities
+### Operating systems functions
 
 ```go
-// Raise a formated error if the test condition is false.
-// Aliases: assertion
-func assert(test interface{}, message ...interface{}) string, error
+// Returns a colored string that highlight differences between supplied texts.
+// Aliases: difference
+func diff(text1 interface{}, text2 interface{}) interface{}
 ```
+
+```go
+// Determines if a file exists or not.
+// Aliases: fileExists, isExist
+func exists(filename interface{}) bool, error
+```
+
+```go
+// Returns the expanded list of supplied arguments (expand *[]? on filename).
+// Aliases: expand
+func glob(args ...interface{}) IGenericList
+```
+
+```go
+// Returns the current user group information (user.Group object).
+// Aliases: userGroup
+func group() *user.Group, error
+```
+
+```go
+// Returns the home directory of the current user.
+// Aliases: homeDir, homeFolder
+func home() string, error
+```
+
+```go
+// Determines if the file is a directory.
+// Aliases: isDirectory, isFolder
+func isDir(filename interface{}) bool, error
+```
+
+```go
+// Determines if the file is executable by the current user.
+func isExecutable(filename interface{}) bool, error
+```
+
+```go
+// Determines if the file is a file (i.e. not a directory).
+func isFile(filename interface{}) bool, error
+```
+
+```go
+// Determines if the file is readable by the current user.
+func isReadable(filename interface{}) bool, error
+```
+
+```go
+// Determines if the file is writeable by the current user.
+func isWriteable(filename interface{}) bool, error
+```
+
+```go
+// Returns the last modification time of the file.
+// Aliases: lastModification, lastModificationTime
+func lastMod(filename interface{}) time.Time, error
+```
+
+```go
+// Returns the location of the specified executable (returns empty string if not found).
+// Aliases: whereIs, look, which, type
+func lookPath(arg1 interface{}) string
+```
+
+```go
+// Returns the file mode.
+// Aliases: fileMode
+func mode(filename interface{}) os.FileMode, error
+```
+
+```go
+// Returns the current working directory.
+// Aliases: currentDir
+func pwd() string
+```
+
+```go
+// Save object to file.
+// Aliases: write, writeTo
+func save(filename string, object interface{}) string, error
+```
+
+```go
+// Returns the file size.
+// Aliases: fileSize
+func size(filename interface{}) int64, error
+```
+
+```go
+// Returns the file Stat information (os.Stat object).
+// Aliases: fileStat
+func stat(arg1 string) os.FileInfo, error
+```
+
+```go
+// Returns the current user information (user.User object).
+// Aliases: currentUser
+func user() *user.User, error
+```
+
+```go
+// Returns the current user name.
+func username() string, error
+```
+### Other utilities
 
 ```go
 // Returns the concatenation of supplied arguments centered within width.
@@ -1194,20 +1300,8 @@ func concat(args ...interface{}) string
 ```
 
 ```go
-// Returns a colored string that highlight differences between supplied texts.
-// Aliases: difference
-func diff(text1 interface{}, text2 interface{}) interface{}
-```
-
-```go
 // Return a list of strings by applying the format to each element of the supplied list.
 func formatList(format string, list interface{}) []string
-```
-
-```go
-// Returns the expanded list of supplied arguments (expand *[]? on filename).
-// Aliases: expand
-func glob(args ...interface{}) IGenericList
 ```
 
 ```go
@@ -1240,18 +1334,6 @@ func mergeList(lists ...[]interface{}) []interface{}
 ```
 
 ```go
-// Returns the current working directory.
-// Aliases: currentDir
-func pwd() string
-```
-
-```go
-// Raise a formated error.
-// Aliases: raiseError
-func raise(message interface{}, arguments ...interface{}) string, error
-```
-
-```go
 // Returns an array with the item repeated n times.
 func repeat(n int, element interface{}) IGenericList, error
 ```
@@ -1264,12 +1346,6 @@ func repeat(n int, element interface{}) IGenericList, error
 // Valid aliases for autoIndent are: aIndent, aindent.
 // Aliases: sindent, spaceIndent
 func sIndent(spacer string, args ...interface{}) string
-```
-
-```go
-// Save object to file.
-// Aliases: write, writeTo
-func save(filename string, object interface{}) string, error
 ```
 
 ```go
@@ -1297,6 +1373,12 @@ func aliases() []string
 ```go
 // Returns the list of all available functions.
 func allFunctions() []string
+```
+
+```go
+// Raises a formated error if the test condition is false.
+// Aliases: assertion
+func assert(test interface{}, message ...interface{}) string, error
 ```
 
 ```go
@@ -1379,6 +1461,12 @@ func include(source interface{}, context ...interface{}) interface{}, error
 ```go
 // Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.
 func localAlias(name string, function string, source interface{}, args ...interface{}) string, error
+```
+
+```go
+// Raise a formated error.
+// Aliases: raiseError
+func raise(message interface{}, arguments ...interface{}) string, error
 ```
 
 ```go
