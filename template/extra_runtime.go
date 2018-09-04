@@ -22,6 +22,7 @@ const (
 
 var runtimeFuncsArgs = arguments{
 	"alias":      {"name", "function", "source"},
+	"assert":     {"test", "message", "arguments"},
 	"categories": {"functionsGroups"},
 	"ellipsis":   {"function"},
 	"exec":       {"command"},
@@ -30,21 +31,25 @@ var runtimeFuncsArgs = arguments{
 	"function":   {"name"},
 	"include":    {"source", "context"},
 	"localAlias": {"name", "function", "source"},
+	"raise":      {"message", "arguments"},
 	"run":        {"command"},
 	"substitute": {"content"},
 }
 
 var runtimeFuncsAliases = aliases{
+	"assert":        {"assertion"},
 	"exec":          {"execute"},
 	"getAttributes": {"attr", "attributes"},
 	"getMethods":    {"methods"},
 	"getSignature":  {"sign", "signature"},
+	"raise":         {"raiseError"},
 }
 
 var runtimeFuncsHelp = descriptions{
 	"alias":        "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
 	"aliases":      "Returns the list of all functions that are simply an alias of another function.",
 	"allFunctions": "Returns the list of all available functions.",
+	"assert":       "Raises a formated error if the test condition is false.",
 	"categories": strings.TrimSpace(collections.UnIndent(`
 		Returns all functions group by categories.
 
@@ -75,6 +80,7 @@ var runtimeFuncsHelp = descriptions{
 	"getSignature":  "List all attributes and methods signatures accessible from the supplied object.",
 	"include":       "Returns the result of the named template rendering (like template but it is possible to capture the output).",
 	"localAlias":    "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.",
+	"raise":         "Raise a formated error.",
 	"run":           "Returns the result of the shell command as string.",
 	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
 	"templateNames": "Returns the list of available templates names.",
@@ -86,6 +92,7 @@ func (t *Template) addRuntimeFuncs() {
 		"alias":         t.alias,
 		"aliases":       t.getAliases,
 		"allFunctions":  t.getAllFunctions,
+		"assert":        assert,
 		"categories":    t.getCategories,
 		"current":       t.current,
 		"ellipsis":      t.ellipsis,
@@ -99,6 +106,7 @@ func (t *Template) addRuntimeFuncs() {
 		"getSignature":  getSignature,
 		"include":       t.include,
 		"localAlias":    t.localAlias,
+		"raise":         raise,
 		"run":           t.runCommand,
 		"substitute":    t.substitute,
 		"templateNames": t.getTemplateNames,
@@ -492,4 +500,21 @@ func getSignature(object interface{}) string {
 		return attributes + "\n\n" + methods
 	}
 	return attributes + methods
+}
+
+func raise(format interface{}, args ...interface{}) (string, error) {
+	if f := fmt.Sprint(format); strings.Contains(f, "%") {
+		return "", fmt.Errorf(f, args...)
+	}
+	return "", fmt.Errorf(strings.TrimSpace(fmt.Sprintln(append([]interface{}{format}, args...)...)))
+}
+
+func assert(test interface{}, args ...interface{}) (string, error) {
+	if isZero(test) {
+		if len(args) == 0 {
+			args = []interface{}{"Assertion failed"}
+		}
+		return raise(args[0], args[1:]...)
+	}
+	return "", nil
 }

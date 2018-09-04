@@ -25,33 +25,20 @@ func (t *Template) addFuncs() {
 	}
 	t.addFunctions(baseGoTemplateFuncs)
 
-	if t.options[Sprig] {
-		t.addSprigFuncs()
+	add := func(o Options, f func()) {
+		if t.options[o] {
+			f()
+		}
 	}
 
-	if t.options[Math] {
-		t.addMathFuncs()
-	}
-
-	if t.options[Data] {
-		t.addDataFuncs()
-	}
-
-	if t.options[Logging] {
-		t.addLoggingFuncs()
-	}
-
-	if t.options[Runtime] {
-		t.addRuntimeFuncs()
-	}
-
-	if t.options[Utils] {
-		t.addUtilsFuncs()
-	}
-
-	if t.options[Net] {
-		t.addNetFuncs()
-	}
+	add(Sprig, t.addSprigFuncs)
+	add(Math, t.addMathFuncs)
+	add(Data, t.addDataFuncs)
+	add(Logging, t.addLoggingFuncs)
+	add(Runtime, t.addRuntimeFuncs)
+	add(Utils, t.addUtilsFuncs)
+	add(Net, t.addNetFuncs)
+	add(OS, t.addOSFuncs)
 }
 
 // Apply all regular expressions replacements to the supplied string

@@ -17,6 +17,7 @@ const (
 	Runtime
 	Utils
 	Net
+	OS
 	OptionOnByDefaultCount // Trigger of options that are on by default
 	Overwrite
 	OutputStdout
