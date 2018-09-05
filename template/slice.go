@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/Masterminds/sprig"
 	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
 )
@@ -80,7 +79,7 @@ func sliceMap(value interface{}, extract bool, args ...interface{}) (interface{}
 		return dict.Get(args[0]), nil
 	case 2:
 		if !extract {
-			keys := dict.Keys()
+			keys := dict.GetKeys()
 			k1, k2 := fmt.Sprint(args[0]), fmt.Sprint(args[1])
 			if k1 > k2 {
 				keys = keys.Reverse()
@@ -101,7 +100,11 @@ func sliceMap(value interface{}, extract bool, args ...interface{}) (interface{}
 		if !extract {
 			return nil, fmt.Errorf("Slice cannot have more that two parts")
 		}
-		return dict.Clone(args...).Values(), nil
+		results := dict.CreateList(len(args))
+		for i, key := range args {
+			results.Set(i, dict.Get(key))
+		}
+		return results, nil
 	}
 }
 
@@ -187,8 +190,6 @@ func getSingleMapElement(m interface{}) (key, value interface{}, err error) {
 		return
 	}
 }
-
-var reverseArray = sprig.GenericFuncMap()["reverse"].(func(v interface{}) []interface{})
 
 // Reverse returns its argument string reversed rune-wise left to right.
 func reverseString(s string) string {

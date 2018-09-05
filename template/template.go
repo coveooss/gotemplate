@@ -1,6 +1,7 @@
 package template
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -9,10 +10,12 @@ import (
 	"text/template"
 
 	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 	logging "github.com/op/go-logging"
 )
+
+// String is an alias to collections.String
+type String = collections.String
 
 // Template let us extend the functionalities of base go template library.
 type Template struct {
@@ -30,16 +33,34 @@ type Template struct {
 	optionsEnabled OptionsSet
 }
 
-// ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2).
-var ExtensionDepth = 2
+// Environment variables that could be defined to override default behaviors.
+const (
+	EnvAcceptNoValue = "GOTEMPLATE_NO_VALUE"
+	EnvSubstitutes   = "GOTEMPLATE_SUBSTITUTES"
+	EnvDebug         = "GOTEMPLATE_DEBUG"
+	EnvExtensionPath = "GOTEMPLATE_PATH"
+)
 
-var toStrings = collections.ToStrings
+var (
+	// ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2).
+	ExtensionDepth = 2
+	toStrings      = collections.ToStrings
+	acceptNoValue  = ParseBoolFromEnv(EnvAcceptNoValue)
+)
 
 // NewTemplate creates an Template object with default initialization.
-func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
+func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) (result *Template, err error) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			result, err = nil, fmt.Errorf("%v", rec)
+		}
+	}()
 	t := Template{Template: template.New("Main")}
-	errors.Must(t.Parse(""))
+	must(t.Parse(""))
 	t.options = iif(options != nil, options, DefaultOptions()).(OptionsSet)
+	if acceptNoValue {
+		t.options[AcceptNoValue] = true
+	}
 	t.optionsEnabled = make(OptionsSet)
 	t.folder, _ = filepath.Abs(iif(folder != "", folder, utils.Pwd()).(string))
 	t.context = iif(context != nil, context, make(dictionary))
@@ -47,8 +68,11 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	t.delimiters = []string{"{{", "}}", "@"}
 
 	// Set the regular expression replacements
-	baseRegex := []string{`/(?m)^\s*#!\s*$/`}
-	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
+	baseSubstitutesRegex := []string{`/(?m)^\s*#!\s*$/`}
+	if substitutesFromEnv := os.Getenv(EnvSubstitutes); substitutesFromEnv != "" {
+		baseSubstitutesRegex = append(baseSubstitutesRegex, strings.Split(substitutesFromEnv, "\n")...)
+	}
+	t.substitutes = utils.InitReplacers(append(baseSubstitutesRegex, substitutes...)...)
 
 	if t.options[Extension] {
 		t.initExtension()
@@ -59,14 +83,20 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	if delimiters != "" {
 		for i, delimiter := range strings.Split(delimiters, ",") {
 			if i == len(t.delimiters) {
-				errors.Raise("Invalid delimiters '%s', must be a maximum of three comma separated parts", delimiters)
+				return nil, fmt.Errorf("Invalid delimiters '%s', must be a maximum of three comma separated parts", delimiters)
 			}
 			if delimiter != "" {
 				t.delimiters[i] = delimiter
 			}
 		}
 	}
-	return &t
+	return &t, nil
+}
+
+// MustNewTemplate creates an Template object with default initialization.
+// It panics if an error occurs.
+func MustNewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) *Template {
+	return must(NewTemplate(folder, context, delimiters, options, substitutes...)).(*Template)
 }
 
 // GetNewContext returns a distint context for each folder.
@@ -83,11 +113,16 @@ func (t Template) GetNewContext(folder string, useCache bool) *Template {
 	newTemplate.addFunctions(t.aliases)
 	newTemplate.importTemplates(t)
 	newTemplate.options = make(OptionsSet)
+	// We duplicate the options because the new context may alter them afterwhile and
+	// it should not modify the original values.
+	for k, v := range t.options {
+		newTemplate.options[k] = v
+	}
 
-	// We register the new template as a child of the main template
 	if !useCache {
 		return &newTemplate
 	}
+	// We register the new template as a child of the main template
 	t.children[folder] = &newTemplate
 	return t.children[folder]
 }
@@ -133,10 +168,12 @@ func (t *Template) initExtension() {
 	defer func() { logging.SetLevel(logLevel, logger) }()
 
 	var extensionfiles []string
-	if extensionFolders := strings.TrimSpace(os.Getenv("GOTEMPLATE_PATH")); extensionFolders != "" {
+	if extensionFolders := strings.TrimSpace(os.Getenv(EnvExtensionPath)); extensionFolders != "" {
 		for _, path := range strings.Split(extensionFolders, string(os.PathListSeparator)) {
-			files, _ := utils.FindFilesMaxDepth(path, ExtensionDepth, false, "*.gte")
-			extensionfiles = append(extensionfiles, files...)
+			if path != "" {
+				files, _ := utils.FindFilesMaxDepth(path, ExtensionDepth, false, "*.gte")
+				extensionfiles = append(extensionfiles, files...)
+			}
 		}
 	}
 	extensionfiles = append(extensionfiles, utils.MustFindFilesMaxDepth(ext.folder, ExtensionDepth, false, "*.gte")...)
@@ -146,7 +183,7 @@ func (t *Template) initExtension() {
 		// We just load all the template files available to ensure that all template definition are loaded
 		// We do not use ParseFiles because it names the template with the base name of the file
 		// which result in overriding templates with the same base name in different folders.
-		content := string(errors.Must(ioutil.ReadFile(file)).([]byte))
+		content := string(must(ioutil.ReadFile(file)).([]byte))
 
 		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
 		if _, err := ext.ProcessContent(content, file); err != nil {
@@ -173,6 +210,9 @@ func (t *Template) init(folder string) {
 	t.children = make(map[string]*Template)
 	t.Delims(t.delimiters[0], t.delimiters[1])
 	t.setConstant(false, "\n", "NL", "CR", "NEWLINE")
+	t.setConstant(false, true, "true")
+	t.setConstant(false, false, "false")
+	t.setConstant(false, nil, "null")
 }
 
 func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...string) {

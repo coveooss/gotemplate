@@ -6,36 +6,39 @@ import (
 	"strconv"
 
 	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/utils"
 )
 
 func toInt(value interface{}) int {
 	// We convert to the string representation to ensure that any type is converted to int
-	return errors.Must(strconv.Atoi(fmt.Sprintf("%v", value))).(int)
+	return must(strconv.Atoi(fmt.Sprintf("%v", value))).(int)
 }
 
 func toInt64(value interface{}) int64 {
 	// We convert to the string representation to ensure that any type is converted to int64
-	return errors.Must(strconv.ParseInt(fmt.Sprintf("%v", value), 10, 64)).(int64)
+	return must(strconv.ParseInt(fmt.Sprintf("%v", value), 10, 64)).(int64)
 }
 
 func toUnsignedInteger(value interface{}) uint64 {
 	// We convert to the string representation to ensure that any type is converted to uint64
-	return errors.Must(strconv.ParseUint(fmt.Sprintf("%v", value), 10, 64)).(uint64)
+	return must(strconv.ParseUint(fmt.Sprintf("%v", value), 10, 64)).(uint64)
 }
 
 func toFloat(value interface{}) float64 {
 	// We convert to the string representation to ensure that any type is converted to float64
-	return errors.Must(strconv.ParseFloat(fmt.Sprintf("%v", value), 64)).(float64)
+	return must(strconv.ParseFloat(fmt.Sprintf("%v", value), 64)).(float64)
 }
 
 func toArrayOfFloats(values ...interface{}) (result []float64, err error) {
 	values = convertArgs(nil, values...)
-	result = make([]float64, len(values))
-	defer func() { err = trapError(err, recover()) }()
+	result = make([]float64, 0, len(values))
+	defer func() {
+		if err = trapError(err, recover()); err != nil {
+			result = nil
+		}
+	}()
 	for i := range values {
-		result[i] = toFloat(values[i])
+		result = append(result, toFloat(values[i]))
 	}
 	return
 }
@@ -43,7 +46,7 @@ func toArrayOfFloats(values ...interface{}) (result []float64, err error) {
 func process(arg, handler interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	args := convertArgs(arg)
-	if err != nil {
+	if args == nil {
 		return
 	}
 	switch len(args) {
@@ -168,7 +171,7 @@ func compareStrings(values []interface{}, min bool) (result string) {
 	return result
 }
 
-func generateNumericArray(limit bool, params ...interface{}) (result []interface{}, err error) {
+func generateNumericArray(limit bool, params ...interface{}) (result collections.IGenericList, err error) {
 	defer func() { err = trapError(err, recover()) }()
 
 	var start, stop float64
@@ -192,15 +195,16 @@ func generateNumericArray(limit bool, params ...interface{}) (result []interface
 	if step == 0 {
 		return nil, fmt.Errorf("Step cannot be zero")
 	}
-	result = make([]interface{}, 0, int64(math.Abs(stop-start)))
+	array := make([]interface{}, 0, int64(math.Abs(stop-start)))
 	forward := stop > start
 	if !forward {
 		step = -step
 	}
 	for current := start; (forward && current <= stop || !forward && current >= stop) && (limit || current != stop); {
-		current = round(current, precision)
-		result = append(result, simplify(current))
+		current = sprigRound(current, precision)
+		array = append(array, simplify(current))
 		current += step
 	}
+	result = collections.AsList(array)
 	return
 }

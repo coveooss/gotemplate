@@ -22,14 +22,20 @@ const (
 
 var dataFuncsBase = dictionary{
 	"String":    toStringClass,
+	"append":    addElements,
 	"array":     array,
 	"bool":      strconv.ParseBool,
 	"char":      toChar,
+	"contains":  contains,
 	"content":   content,
 	"dict":      createDict,
 	"extract":   extract,
 	"get":       get,
 	"hasKey":    hasKey,
+	"initial":   initial,
+	"isNil":     func(value interface{}) bool { return value == nil },
+	"isSet":     func(value interface{}) bool { return value != nil },
+	"isZero":    isZero,
 	"key":       key,
 	"keys":      keys,
 	"lenc":      utf8.RuneCountInString,
@@ -39,13 +45,18 @@ var dataFuncsBase = dictionary{
 	"pick":      pick,
 	"pickv":     pickv,
 	"pluck":     pluck,
+	"prepend":   prepend,
+	"rest":      rest,
+	"reverse":   reverse,
 	"safeIndex": safeIndex,
 	"set":       set,
 	"slice":     slice,
 	"string":    toString,
-	"values":    values,
 	"undef":     utils.IfUndef,
+	"unique":    unique,
 	"unset":     unset,
+	"values":    values,
+	"without":   without,
 }
 
 var dataFuncsConversion = dictionary{
@@ -60,21 +71,23 @@ var dataFuncsConversion = dictionary{
 	"toQuotedJson":   toQuotedJSON,
 	"toQuotedTFVars": toQuotedTFVars,
 	"toTFVars":       toTFVars,
+	"toYaml":         toYAML,
 	//"toXml":          toXML,
-	"toYaml": toYAML,
 }
 
 var dataFuncsArgs = arguments{
-	"String":         {"value"},
+	"append":         {"list", "elements"},
 	"array":          {"value"},
 	"bool":           {"str"},
 	"char":           {"value"},
+	"contains":       {"list", "elements"},
 	"content":        {"keymap"},
 	"data":           {"data", "context"},
 	"extract":        {"source", "indexes"},
-	"get":            {"map", "key"},
+	"get":            {"map", "key", "default"},
 	"hasKey":         {"dictionary", "key"},
 	"hcl":            {"hcl", "context"},
+	"initial":        {"list"},
 	"json":           {"json", "context"},
 	"key":            {"value"},
 	"keys":           {"dictionary"},
@@ -84,10 +97,14 @@ var dataFuncsArgs = arguments{
 	"pick":           {"dict", "keys"},
 	"pickv":          {"dict", "message", "keys"},
 	"pluck":          {"key", "dictionaries"},
+	"prepend":        {"list", "elements"},
+	"rest":           {"list"},
+	"reverse":        {"list"},
 	"safeIndex":      {"value", "index", "default"},
 	"set":            {"dict", "key", "value"},
 	"slice":          {"value", "args"},
 	"string":         {"value"},
+	"String":         {"value"},
 	"toBash":         {"value"},
 	"toHcl":          {"value"},
 	"toInternalHcl":  {"value"},
@@ -101,15 +118,21 @@ var dataFuncsArgs = arguments{
 	"toTFVars":       {"value"},
 	"toYaml":         {"value"},
 	"undef":          {"default", "values"},
+	"unique":         {"list"},
 	"unset":          {"dictionary", "key"},
+	"without":        {"list", "elements"},
 	"xml":            {"yaml", "context"},
 	"yaml":           {"yaml", "context"},
 }
 
 var dataFuncsAliases = aliases{
+	"append":        {"push"},
+	"contains":      {"has"},
 	"data":          {"DATA", "fromData", "fromDATA"},
 	"dict":          {"dictionary"},
 	"hcl":           {"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"},
+	"isNil":         {"isNull"},
+	"isZero":        {"isEmpty"},
 	"json":          {"JSON", "fromJson", "fromJSON"},
 	"lenc":          {"nbChars"},
 	"toHcl":         {"toHCL"},
@@ -123,6 +146,7 @@ var dataFuncsAliases = aliases{
 	"toXml":         {"toXML"},
 	"toYaml":        {"toYAML"},
 	"undef":         {"ifUndef"},
+	"unique":        {"uniq"},
 	"unset":         {"delete", "remove"},
 	"xml":           {"XML", "fromXml", "fromXML"},
 	"yaml":          {"YAML", "fromYaml", "fromYAML"},
@@ -130,9 +154,11 @@ var dataFuncsAliases = aliases{
 
 var dataFuncsHelp = descriptions{
 	"String":         "Returns a String class object that allows invoking standard string operations as method.",
+	"append":         "Append new items to an existing list, creating a new list.",
 	"array":          "Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value).",
 	"bool":           "Converts the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)",
 	"char":           "Returns the character corresponging to the supplied integer value",
+	"contains":       "Test to see if a list has a particular elements.",
 	"content":        "Returns the content of a single element map (used to retrieve content in a declaration like `value \"name\" { a = 1 b = 3}`)",
 	"data":           "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.",
 	"dict":           "Returns a new dictionary from a list of pairs (key, value).",
@@ -140,6 +166,10 @@ var dataFuncsHelp = descriptions{
 	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)",
 	"hasKey":         "Returns true if the dictionary contains the specified key.",
 	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
+	"initial":        "Returns but the last element. ",
+	"isNil":          "Returns true if the supplied value is nil.",
+	"isSet":          "Returns true if the supplied value is not nil.",
+	"isZero":         "Returns true if the supplied value is false, 0, nil or empty.",
 	"json":           "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.",
 	"key":            "Returns the key name of a single element map (used to retrieve name in a declaration like `value \"name\" { a = 1 b = 3}`)",
 	"keys":           "Returns a list of all of the keys in a dict (in alphabetical order).",
@@ -150,6 +180,9 @@ var dataFuncsHelp = descriptions{
 	"pick":           "Selects just the given keys out of a dictionary, creating a new dict.",
 	"pickv":          "Same as pick, but returns an error message if there are intruders in supplied dictionary.",
 	"pluck":          "Extracts a list of values matching the supplied key from a list of dictionary.",
+	"prepend":        "Push elements onto the front of a list, creating a new list.",
+	"rest":           "Gets the tail of the list (everything but the first item)",
+	"reverse":        "Produces a new list with the reversed elements of the given list.",
 	"safeIndex":      "Returns the element at index position or default if index is outside bounds.",
 	"set":            "Adds the value to the supplied map using key as identifier.",
 	"slice":          "Returns a slice of the supplied object (equivalent to object[from:to]).",
@@ -169,16 +202,18 @@ var dataFuncsHelp = descriptions{
 	"toXml":          "Converts the supplied value to XML representation.",
 	"toYaml":         "Converts the supplied value to YAML representation.",
 	"undef":          "Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, \"\" are not considered as unset).",
+	"unique":         "Generates a list with all of the duplicates removed.",
 	"unset":          "Removes an element from a dictionary.",
+	"without":        "Filters items out of a list.",
 	"xml":            "Converts the supplied xml string into data structure (Go spec). If context is omitted, default context is used.",
 	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",
 }
 
 func (t *Template) addDataFuncs() {
-	options := funcOptions{
-		funcHelp:    dataFuncsHelp,
-		funcArgs:    dataFuncsArgs,
-		funcAliases: dataFuncsAliases,
+	options := FuncOptions{
+		FuncHelp:    dataFuncsHelp,
+		FuncArgs:    dataFuncsArgs,
+		FuncAliases: dataFuncsAliases,
 	}
 	t.AddFunctions(dataFuncsBase, dataBase, options)
 	t.AddFunctions(dataFuncsConversion, dataConversion, options)
@@ -277,16 +312,28 @@ func array(value interface{}) interface{} {
 	}
 }
 
-func get(arg1, arg2 interface{}) (interface{}, error) {
+func get(arg1, arg2 interface{}, defValue ...interface{}) (interface{}, error) {
 	// In pipe execution, the map is often the last parameter, but we also support to
 	// put the map as the first parameter.
+	var result interface{}
 	if dict, err := collections.TryAsDictionary(arg1); err == nil {
-		return dict.Get(arg2), nil
+		result = dict.Get(arg2)
 	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
-		return dict.Get(arg1), nil
+		result = dict.Get(arg1)
 	} else {
 		return nil, fmt.Errorf("Must supply dictionary object")
 	}
+	if result == nil {
+		switch len(defValue) {
+		case 0:
+			break
+		case 1:
+			result = defValue[0]
+		default:
+			result = defValue
+		}
+	}
+	return result, nil
 }
 
 func hasKey(arg1, arg2 interface{}) (interface{}, error) {
@@ -416,7 +463,7 @@ func pickv(dict Dictionary, message string, key interface{}, otherKeys ...interf
 	o := dict.Omit(key, otherKeys...)
 
 	if o.Len() > 0 {
-		over := strings.Join(toStrings(o.Keys()), ", ")
+		over := strings.Join(toStrings(o.GetKeys()), ", ")
 		if strings.Contains(message, "%v") {
 			message = fmt.Sprintf(message, over)
 		} else {
@@ -428,8 +475,8 @@ func pickv(dict Dictionary, message string, key interface{}, otherKeys ...interf
 	return pick(dict, append(otherKeys, key)), nil
 }
 
-func keys(dict Dictionary) List   { return dict.Keys() }
-func values(dict Dictionary) List { return dict.Values() }
+func keys(dict Dictionary) List   { return dict.GetKeys() }
+func values(dict Dictionary) List { return dict.GetValues() }
 
 func createDict(v ...interface{}) (Dictionary, error) {
 	if len(v)%2 != 0 {
@@ -451,4 +498,48 @@ func pluck(key interface{}, dicts ...Dictionary) List {
 		}
 	}
 	return result
+}
+
+func rest(list interface{}) (interface{}, error)    { return slice(list, 1, -1) }
+func initial(list interface{}) (interface{}, error) { return slice(list, 0, -2) }
+
+func addElements(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return collections.AsList(list).Append(elements...), nil
+}
+
+func prepend(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return collections.AsList(list).Prepend(elements...), nil
+}
+
+func reverse(list interface{}) (r collections.IGenericList, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return collections.AsList(list).Reverse(), nil
+}
+
+func unique(list interface{}) (r collections.IGenericList, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return collections.AsList(list).Unique(), nil
+}
+
+func contains(list interface{}, elements ...interface{}) (r bool, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	if _, err := collections.TryAsList(list); err != nil && len(elements) == 1 {
+		if _, err2 := collections.TryAsList(elements[0]); err2 != nil {
+			return false, err
+		}
+		// Sprig has bad documentation and inverse the arguments, so we try to support both modes.
+		list, elements = elements[0], []interface{}{list}
+	}
+	return collections.AsList(list).Contains(elements...), nil
+}
+
+func without(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return collections.AsList(list).Without(elements...), nil
+}
+
+func isZero(value interface{}) bool {
+	return sprigDef(0, value) == 0
 }

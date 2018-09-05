@@ -15,7 +15,7 @@ To solve that problem, it is possible to inject pseudo comment into you code to 
 | ----------------        | -----------     | ----
 | `# 4`              | `4`   | Pseudo comment starting with #
 | `// 4`             | `4`   | Pseudo comment starting with //
-| `4 `        | `4`   | Pseudo comment within /* */
+| ` 4 `        | `4`   | Pseudo comment within /* */
 
 ### Example with JSON code
 

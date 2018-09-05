@@ -10,7 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/json"
 	logging "github.com/op/go-logging"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -18,7 +19,7 @@ import (
 func TestTemplate_applyRazor(t *testing.T) {
 	dmp := diffmatchpatch.New()
 	SetLogLevel(logging.WARNING)
-	template := NewTemplate("../docs/doc_test", nil, "", nil)
+	template := MustNewTemplate("../docs/doc_test", nil, "", nil)
 	files, err := filepath.Glob(filepath.Join(template.folder, "*.md"))
 	if err != nil {
 		t.Fatalf("Unable to read test files (documentation in %s)", template.folder)
@@ -39,7 +40,11 @@ func TestTemplate_applyRazor(t *testing.T) {
 		return path
 	}
 
-	load := func(path string) []byte { return errors.Must(ioutil.ReadFile(path)).([]byte) }
+	collections.ListHelper = json.GenericListHelper
+	collections.DictionaryHelper = json.DictionaryHelper
+	template.options[AcceptNoValue] = true
+
+	load := func(path string) []byte { return must(ioutil.ReadFile(path)).([]byte) }
 
 	tests := make([]test, 0, len(files))
 	for _, file := range files {

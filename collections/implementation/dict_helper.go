@@ -33,7 +33,7 @@ func (dh DictHelper) AsDictionary(object interface{}) baseIDict {
 // Clone returns a distinct copy of the object with only supplied keys. If no keys are supplied, all keys from d are copied.
 func (dh DictHelper) Clone(dict baseIDict, keys []interface{}) baseIDict {
 	if len(keys) == 0 {
-		keys = dict.Keys().AsArray()
+		keys = dict.GetKeys().AsArray()
 	}
 	newDict := dh.CreateDictionary(dict.Len())
 	for i := range keys {
@@ -66,7 +66,7 @@ func (dh DictHelper) Delete(dict baseIDict, keys []interface{}) (baseIDict, erro
 // Flush removes all specified keys from the dictionary. If no key is specified, all keys are removed.
 func (dh DictHelper) Flush(dict baseIDict, keys []interface{}) baseIDict {
 	if len(keys) == 0 {
-		keys = dict.Keys().AsArray()
+		keys = dict.GetKeys().AsArray()
 	}
 	dh.delete(dict, keys, false)
 	return dict
@@ -83,8 +83,8 @@ func (dh DictHelper) Has(dict baseIDict, key interface{}) bool {
 	return ok
 }
 
-// Keys returns the keys in the dictionary in alphabetical order.
-func (dh DictHelper) Keys(dict baseIDict) baseIList {
+// GetKeys returns the keys in the dictionary in alphabetical order.
+func (dh DictHelper) GetKeys(dict baseIDict) baseIList {
 	keys := dict.KeysAsString()
 	result := dh.CreateList(dict.Len())
 
@@ -139,8 +139,8 @@ func (dh DictHelper) Set(dict baseIDict, key interface{}, value interface{}) bas
 	return dict
 }
 
-// Values returns the values in the dictionary in key alphabetical order.
-func (dh DictHelper) Values(dict baseIDict) baseIList {
+// GetValues returns the values in the dictionary in key alphabetical order.
+func (dh DictHelper) GetValues(dict baseIDict) baseIList {
 	result := dh.CreateList(dict.Len())
 	for i, key := range dict.KeysAsString() {
 		result.Set(i, dict.Get(key))

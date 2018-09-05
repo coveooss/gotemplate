@@ -27,6 +27,8 @@ const (
 var sprigFuncs funcTableMap
 
 var sprigFuncMap = sprig.GenericFuncMap()
+var sprigDef = sprigFuncMap["default"].(func(interface{}, ...interface{}) interface{})
+var sprigRound = sprigFuncMap["round"].(func(a interface{}, p int, r_opt ...float64) float64)
 
 func (t *Template) addSprigFuncs() {
 	if sprigFuncs == nil {
@@ -179,16 +181,16 @@ var sprigFuncRef = map[string]struct {
 	"values": {group: sprigDict, aliases: []string{"valuesSprig"}},
 
 	// Lists functions
-	"append":  {group: sprigList, aliases: []string{"push"}},
-	"prepend": {group: sprigList},
+	"append":  {group: sprigList, aliases: []string{"push", "appendSprig"}},
+	"prepend": {group: sprigList, aliases: []string{"prependSprig"}},
 	"first":   {group: sprigList},
-	"rest":    {group: sprigList},
+	"rest":    {group: sprigList, aliases: []string{"restSprig"}},
 	"last":    {group: sprigList},
-	"initial": {group: sprigList},
-	"reverse": {group: sprigList},
-	"uniq":    {group: sprigList},
-	"without": {group: sprigList},
-	"has":     {group: sprigList},
+	"initial": {group: sprigList, aliases: []string{"initialSprig"}},
+	"reverse": {group: sprigList, aliases: []string{"reverseSprig"}},
+	"uniq":    {group: sprigList, aliases: []string{"uniqSprig"}},
+	"without": {group: sprigList, aliases: []string{"withoutSprig"}},
+	"has":     {group: sprigList, aliases: []string{"hasSprig"}},
 	"slice":   {group: sprigList, aliases: []string{"sliceSprig"}},
 
 	// Cryptographics functions

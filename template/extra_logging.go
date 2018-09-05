@@ -9,9 +9,6 @@ import (
 )
 
 const (
-	// DebugEnvVar is the name of the environment variable used to set the debug logging level
-	DebugEnvVar = "GOTEMPLATE_DEBUG"
-
 	logger         = "gotemplate"
 	loggerInternal = "gotemplate-int"
 	loggingBase    = "Logging"
@@ -72,10 +69,10 @@ var loggingFuncsHelp = descriptions{
 }
 
 func (t *Template) addLoggingFuncs() {
-	t.AddFunctions(loggingFuncs, loggingBase, funcOptions{
-		funcHelp:    loggingFuncsHelp,
-		funcArgs:    loggingFuncsArgs,
-		funcAliases: loggingFuncsAliases,
+	t.AddFunctions(loggingFuncs, loggingBase, FuncOptions{
+		FuncHelp:    loggingFuncsHelp,
+		FuncArgs:    loggingFuncsArgs,
+		FuncAliases: loggingFuncsAliases,
 	})
 }
 
@@ -92,6 +89,7 @@ func logBasef(f func(string, ...interface{}), format string, args ...interface{}
 // Log is the logger used to log message during template processing
 var Log = logging.MustGetLogger(logger)
 
+// log is application logger used to follow the behaviour of the application
 var log = logging.MustGetLogger(loggerInternal)
 
 func getLogLevelInternal() logging.Level {
@@ -121,8 +119,8 @@ func ConfigureLogging(level, internalLevel logging.Level, simple bool) {
 
 // InitLogging allows configuration of the default logging level
 func InitLogging() int {
-	if level, err := strconv.Atoi(utils.GetEnv(DebugEnvVar, "2")); err != nil {
-		log.Warningf("Unable to convert %s into integer: %s", DebugEnvVar, os.Getenv(DebugEnvVar))
+	if level, err := strconv.Atoi(utils.GetEnv(EnvDebug, "2")); err != nil {
+		log.Warningf("Unable to convert %s into integer: %s", EnvDebug, os.Getenv(EnvDebug))
 	} else {
 		logging.SetLevel(logging.Level(level), loggerInternal)
 	}

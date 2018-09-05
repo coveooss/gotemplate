@@ -2,8 +2,6 @@ package template
 
 import (
 	"math"
-
-	"github.com/Masterminds/sprig"
 )
 
 const (
@@ -282,10 +280,10 @@ var mathFuncsHelp = descriptions{
 
 func (t *Template) addMathFuncs() {
 	// Enhance mathematic functions
-	options := funcOptions{
-		funcHelp:    mathFuncsHelp,
-		funcArgs:    mathFuncsArgs,
-		funcAliases: mathFuncsAliases,
+	options := FuncOptions{
+		FuncHelp:    mathFuncsHelp,
+		FuncArgs:    mathFuncsArgs,
+		FuncAliases: mathFuncsAliases,
 	}
 
 	t.AddFunctions(mathBaseFuncs, mathBase, options)
@@ -315,6 +313,7 @@ func (t *Template) addMathFuncs() {
 		"MaxUint8":               math.MaxUint8,
 		"MaxUint16":              math.MaxUint16,
 		"MaxUint32":              math.MaxUint32,
+		// Those values are commented because they causes problem with object serialization.
 		// "MaxInt64":            math.MaxInt64,
 		// "MaxUint64":           uint(math.MaxUint64),
 		// "Nan":                 math.NaN(),
@@ -330,8 +329,6 @@ func (t *Template) addMathFuncs() {
 		t.optionsEnabled[Math] = true
 	}
 }
-
-var round = sprig.GenericFuncMap()["round"].(func(a interface{}, p int, r_opt ...float64) float64)
 
 func to(params ...interface{}) (interface{}, error)    { return generateNumericArray(true, params...) }
 func until(params ...interface{}) (interface{}, error) { return generateNumericArray(false, params...) }

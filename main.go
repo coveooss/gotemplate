@@ -6,10 +6,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
-	"strconv"
 	"strings"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/json"
 	"github.com/coveo/gotemplate/template"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
@@ -18,10 +19,12 @@ import (
 )
 
 // Version is initialized at build time through -ldflags "-X main.Version=<version number>"
-var version = "master"
+var version = "2.6.0"
 var tempFolder = errors.Must(ioutil.TempDir("", "gotemplate-")).(string)
 
-const disableStdinCheck = "GOTEMPLATE_NO_STDIN"
+const (
+	envDisableStdinCheck = "GOTEMPLATE_NO_STDIN"
+)
 const description = `
 An extended template processor for go.
 
@@ -54,7 +57,7 @@ func main() {
 		includePatterns  = run.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
 		excludedPatterns = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
 		overwrite        = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
-		substitutes      = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
+		substitutes      = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp) or specify that value through "+template.EnvSubstitutes+" where each substitute is separated by a newline").PlaceHolder("exp").Short('s').Strings()
 		recursive        = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
 		recursionDepth   = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
 		sourceFolder     = run.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").ExistingDir()
@@ -63,7 +66,8 @@ func main() {
 		followSymLinks   = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
 		print            = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
 		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
-		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl)").PlaceHolder("level").Int8()
+		acceptNoValue    = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error (--nv) or env: "+template.EnvAcceptNoValue).Bool()
+		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl) or env: "+template.EnvDebug).Default("2").PlaceHolder("level").Int8()
 		logLevel         = run.Flag("log-level", "Set the logging level 0-9 (--ll)").Short('L').PlaceHolder("level").Int8()
 		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
 		templates        = run.Arg("templates", "Template files or commands to process").Strings()
@@ -82,6 +86,7 @@ func main() {
 	app.Flag("dl", "short version of --debug-log-level").Hidden().Int8Var(debugLogLevel)
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "short version of --delimiters").Hidden().StringVar(delimiters)
+	app.Flag("nv", "short version of --accept-no-value").Hidden().BoolVar(acceptNoValue)
 
 	// Set the options for the available options (most of them are on by default)
 	optionsOff := app.Flag("base", "Turn off all extensions (they could then be enabled explicitly)").Bool()
@@ -119,14 +124,10 @@ func main() {
 	}
 
 	// Actually parse the parameters (do not evaluate args before that point since parameter values are not yet set)
+	app.UsageWriter(os.Stdout)
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
 	command := kingpin.Parse()
-
-	if *debugLogLevel == 0 {
-		l, _ := strconv.Atoi(utils.GetEnv(template.DebugEnvVar, "2"))
-		*debugLogLevel = int8(l)
-	}
 
 	if *logLevel == 0 {
 		*logLevel = 4
@@ -147,9 +148,14 @@ func main() {
 		optionsSet = template.DefaultOptions()
 	}
 
+	// By default, we generate JSON list and dictionary
+	collections.ListHelper = json.GenericListHelper
+	collections.DictionaryHelper = json.DictionaryHelper
+
 	optionsSet[template.RenderingDisabled] = *disableRender
 	optionsSet[template.Overwrite] = *overwrite
 	optionsSet[template.OutputStdout] = *print
+	optionsSet[template.AcceptNoValue] = *acceptNoValue
 	for i := range options {
 		optionsSet[template.Options(i)] = options[i]
 	}
@@ -191,11 +197,15 @@ func main() {
 	*overwrite = *overwrite || *sourceFolder != *targetFolder
 
 	stat, _ := os.Stdin.Stat()
-	if (stat.Mode()&os.ModeCharDevice) == 0 && os.Getenv(disableStdinCheck) == "" {
+	if (stat.Mode()&os.ModeCharDevice) == 0 && os.Getenv(envDisableStdinCheck) == "" {
 		*forceStdin = true
 	}
 
-	t := template.NewTemplate("", createContext(*varFiles, *namedVars), *delimiters, optionsSet, *substitutes...)
+	t, err := template.NewTemplate("", createContext(*varFiles, *namedVars), *delimiters, optionsSet, *substitutes...)
+	if err != nil {
+		errors.Print(err)
+		os.Exit(3)
+	}
 	t.TempFolder = tempFolder
 
 	if command == list.FullCommand() {

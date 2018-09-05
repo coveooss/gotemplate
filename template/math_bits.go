@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/coveo/gotemplate/errors"
 )
 
 func leftShift(a, b interface{}) (r interface{}, err error) {
@@ -64,6 +62,6 @@ func hex(a interface{}) (r interface{}, err error) {
 func decimal(a interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return process(a, func(a interface{}) interface{} {
-		return errors.Must(strconv.ParseInt(strings.TrimPrefix(fmt.Sprint(a), "0x"), 16, 64))
+		return must(strconv.ParseInt(strings.TrimPrefix(fmt.Sprint(a), "0x"), 16, 64))
 	})
 }

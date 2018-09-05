@@ -75,7 +75,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 	const specialFormat = "#HCL_ARRAY_MAP#!"
 
 	switch value := value.(type) {
-	case int, float64, bool:
+	case int, int64, float64, bool:
 		result = fmt.Sprint(value)
 	case string:
 		value = fmt.Sprintf("%q", value)
