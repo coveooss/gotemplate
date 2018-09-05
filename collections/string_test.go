@@ -114,15 +114,15 @@ func TestString_FindWord(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.s.Str(), func(t *testing.T) {
-			got, pos := tt.s.FindWord(tt.args.pos, tt.args.accept...)
+			got, pos := tt.s.GetWordAtPosition(tt.args.pos, tt.args.accept...)
 			if got != tt.want {
-				t.Errorf("String.FindWord() got = %v, want %v", got, tt.want)
+				t.Errorf("String.GetWordAtPosition() got = %v, want %v", got, tt.want)
 			}
 			if pos != tt.wantPos {
-				t.Errorf("String.FindWord() pos = %d, want %d", pos, tt.wantPos)
+				t.Errorf("String.GetWordAtPosition() pos = %d, want %d", pos, tt.wantPos)
 			}
 			if got2 := tt.s.SelectWord(tt.args.pos, tt.args.accept...); got != got2 {
-				t.Errorf("String.SelectWord() returns %v while String.FindWord() returns %v", got, got2)
+				t.Errorf("String.SelectWord() returns %v while String.GetWordAtPosition() returns %v", got, got2)
 			}
 		})
 	}
@@ -154,12 +154,12 @@ func TestString_FindContext(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.s.Str(), func(t *testing.T) {
-			got, pos := tt.s.FindContext(tt.args.pos, tt.args.left, tt.args.right)
+			got, pos := tt.s.GetContextAtPosition(tt.args.pos, tt.args.left, tt.args.right)
 			if got != tt.want {
-				t.Errorf("String.FindContext() got = %v, want %v", got, tt.want)
+				t.Errorf("String.GetContextAtPosition() got = %v, want %v", got, tt.want)
 			}
 			if pos != tt.wantPos {
-				t.Errorf("String.FindContext() pos = %v, want %v", pos, tt.wantPos)
+				t.Errorf("String.GetContextAtPosition() pos = %v, want %v", pos, tt.wantPos)
 			}
 			if got2 := tt.s.SelectContext(tt.args.pos, tt.args.left, tt.args.right); got != got2 {
 				t.Errorf("String.SelectWord() returns %v while String.SelectWord() returns %v", got, got2)

@@ -3,8 +3,10 @@ package template
 import (
 	"fmt"
 	"math"
+	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/coveo/gotemplate/errors"
@@ -117,4 +119,21 @@ func AddLineNumber(content string, space int) string {
 		lines[i] = fmt.Sprintf("%*d %s", space, i+1, lines[i])
 	}
 	return strings.Join(lines, "\n")
+}
+
+// ParseBoolFromEnv returns true if variable exist and is not clearly a false value
+//    i.e. empty, 0, Off, No, n, false, f
+func ParseBoolFromEnv(name string) bool {
+	value := strings.ToUpper(os.Getenv(name))
+	// We first try with the strconv library
+	if result, err := strconv.ParseBool(value); err == nil {
+		return result
+	}
+	switch value {
+	case "", "N", "NO", "OFF":
+		return false
+	default:
+		// Any other value is considered as true
+		return true
+	}
 }

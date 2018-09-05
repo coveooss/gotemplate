@@ -1,6 +1,7 @@
 package template
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
@@ -35,6 +36,36 @@ func TestProtectString(t *testing.T) {
 			restored := RestoreProtectedString(got, array)
 			if tt.name != restored {
 				t.Errorf("RestoreProtectedString() got %v, want %v", restored, tt.name)
+			}
+		})
+	}
+}
+
+func TestParseBoolFromEnv(t *testing.T) {
+	tests := []struct {
+		value string
+		want  bool
+	}{
+		{"", false},
+		{"1", true},
+		{"0", false},
+		{"F", false},
+		{"False", false},
+		{"FALSE", false},
+		{"No", false},
+		{"N", false},
+		{"T", true},
+		{"true", true},
+		{"on", true},
+		{"OFF", false},
+		{"Whatever", true},
+		{"YES", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.value, func(t *testing.T) {
+			os.Setenv("TEST_VALUE", tt.value)
+			if got := ParseBoolFromEnv("TEST_VALUE"); got != tt.want {
+				t.Errorf("ParseBoolFromEnv() = %v, want %v", got, tt.want)
 			}
 		})
 	}

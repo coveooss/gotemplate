@@ -9,8 +9,8 @@ EqualFold(string) bool
 Fields() StringArray
 FieldsFunc(func(int32) bool) StringArray
 FieldsID() StringArray
-FindContext(int, string, string) String, int
-FindWord(int, ...string) String, int
+GetContextAtPosition(int, string, string) String, int
+GetWordAtPosition(int, ...string) String, int
 HasPrefix(string) bool
 HasSuffix(string) bool
 Indent(string) String

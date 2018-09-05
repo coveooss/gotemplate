@@ -264,8 +264,8 @@ func (s String) UnIndent() String {
 	return String(UnIndent(string(s)))
 }
 
-// FindWord returns the selected word and the start position from the specified position.
-func (s String) FindWord(pos int, accept ...string) (String, int) {
+// GetWordAtPosition returns the selected word and the start position from the specified position.
+func (s String) GetWordAtPosition(pos int, accept ...string) (String, int) {
 	if pos < 0 || pos >= len(s) {
 		return "", -1
 	}
@@ -289,12 +289,12 @@ func (s String) FindWord(pos int, accept ...string) (String, int) {
 
 // SelectWord returns the selected word from the specified position.
 func (s String) SelectWord(pos int, accept ...string) String {
-	result, _ := s.FindWord(pos, accept...)
+	result, _ := s.GetWordAtPosition(pos, accept...)
 	return result
 }
 
-// FindContext tries to extend the context from the specified position within specified boundaries.
-func (s String) FindContext(pos int, left, right string) (String, int) {
+// GetContextAtPosition tries to extend the context from the specified position within specified boundaries.
+func (s String) GetContextAtPosition(pos int, left, right string) (String, int) {
 	if pos >= len(s) {
 		pos = len(s) - 1
 	}
@@ -316,6 +316,6 @@ func (s String) FindContext(pos int, left, right string) (String, int) {
 
 // SelectContext returns the selected word from the specified position.
 func (s String) SelectContext(pos int, left, right string) String {
-	result, _ := s.FindContext(pos, left, right)
+	result, _ := s.GetContextAtPosition(pos, left, right)
 	return result
 }
