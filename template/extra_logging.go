@@ -9,9 +9,6 @@ import (
 )
 
 const (
-	// DebugEnvVar is the name of the environment variable used to set the debug logging level
-	DebugEnvVar = "GOTEMPLATE_DEBUG"
-
 	logger         = "gotemplate"
 	loggerInternal = "gotemplate-int"
 	loggingBase    = "Logging"
@@ -122,8 +119,8 @@ func ConfigureLogging(level, internalLevel logging.Level, simple bool) {
 
 // InitLogging allows configuration of the default logging level
 func InitLogging() int {
-	if level, err := strconv.Atoi(utils.GetEnv(DebugEnvVar, "2")); err != nil {
-		log.Warningf("Unable to convert %s into integer: %s", DebugEnvVar, os.Getenv(DebugEnvVar))
+	if level, err := strconv.Atoi(utils.GetEnv(EnvDebug, "2")); err != nil {
+		log.Warningf("Unable to convert %s into integer: %s", EnvDebug, os.Getenv(EnvDebug))
 	} else {
 		logging.SetLevel(logging.Level(level), loggerInternal)
 	}

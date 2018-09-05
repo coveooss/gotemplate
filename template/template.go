@@ -33,10 +33,20 @@ type Template struct {
 	optionsEnabled OptionsSet
 }
 
-// ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2).
-var ExtensionDepth = 2
+// Environment variables that could be defined to override default behaviors.
+const (
+	EnvAcceptNoValue = "GOTEMPLATE_NO_VALUE"
+	EnvSubstitutes   = "GOTEMPLATE_SUBSTITUTES"
+	EnvDebug         = "GOTEMPLATE_DEBUG"
+	EnvExtensionPath = "GOTEMPLATE_PATH"
+)
 
-var toStrings = collections.ToStrings
+var (
+	// ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2).
+	ExtensionDepth = 2
+	toStrings      = collections.ToStrings
+	acceptNoValue  = ParseBoolFromEnv(EnvAcceptNoValue)
+)
 
 // NewTemplate creates an Template object with default initialization.
 func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) (result *Template, err error) {
@@ -48,6 +58,9 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	t := Template{Template: template.New("Main")}
 	must(t.Parse(""))
 	t.options = iif(options != nil, options, DefaultOptions()).(OptionsSet)
+	if acceptNoValue {
+		t.options[AcceptNoValue] = true
+	}
 	t.optionsEnabled = make(OptionsSet)
 	t.folder, _ = filepath.Abs(iif(folder != "", folder, utils.Pwd()).(string))
 	t.context = iif(context != nil, context, make(dictionary))
@@ -55,8 +68,11 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	t.delimiters = []string{"{{", "}}", "@"}
 
 	// Set the regular expression replacements
-	baseRegex := []string{`/(?m)^\s*#!\s*$/`}
-	t.substitutes = utils.InitReplacers(append(baseRegex, substitutes...)...)
+	baseSubstitutesRegex := []string{`/(?m)^\s*#!\s*$/`}
+	if substitutesFromEnv := os.Getenv(EnvSubstitutes); substitutesFromEnv != "" {
+		baseSubstitutesRegex = append(baseSubstitutesRegex, strings.Split(substitutesFromEnv, "\n")...)
+	}
+	t.substitutes = utils.InitReplacers(append(baseSubstitutesRegex, substitutes...)...)
 
 	if t.options[Extension] {
 		t.initExtension()
@@ -152,10 +168,12 @@ func (t *Template) initExtension() {
 	defer func() { logging.SetLevel(logLevel, logger) }()
 
 	var extensionfiles []string
-	if extensionFolders := strings.TrimSpace(os.Getenv("GOTEMPLATE_PATH")); extensionFolders != "" {
+	if extensionFolders := strings.TrimSpace(os.Getenv(EnvExtensionPath)); extensionFolders != "" {
 		for _, path := range strings.Split(extensionFolders, string(os.PathListSeparator)) {
-			files, _ := utils.FindFilesMaxDepth(path, ExtensionDepth, false, "*.gte")
-			extensionfiles = append(extensionfiles, files...)
+			if path != "" {
+				files, _ := utils.FindFilesMaxDepth(path, ExtensionDepth, false, "*.gte")
+				extensionfiles = append(extensionfiles, files...)
+			}
 		}
 	}
 	extensionfiles = append(extensionfiles, utils.MustFindFilesMaxDepth(ext.folder, ExtensionDepth, false, "*.gte")...)

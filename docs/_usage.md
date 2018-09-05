@@ -27,7 +27,8 @@ Flags:
   -p, --patterns=pattern ...   Additional patterns that should be processed by gotemplate
   -e, --exclude=pattern ...    Exclude file patterns (comma separated) when applying gotemplate recursively
   -o, --overwrite              Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
-  -s, --substitute=exp ...     Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)
+  -s, --substitute=exp ...     Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp) or specify that value through
+                               GOTEMPLATE_SUBSTITUTES where each substitute is separated by a newline
   -r, --recursive              Process all template files recursively
   -R, --recursion-depth=depth  Process template files recursively specifying depth
       --source=folder          Specify a source folder (default to the current folder)
@@ -57,7 +58,8 @@ Commands:
     -p, --patterns=pattern ...   Additional patterns that should be processed by gotemplate
     -e, --exclude=pattern ...    Exclude file patterns (comma separated) when applying gotemplate recursively
     -o, --overwrite              Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
-    -s, --substitute=exp ...     Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)
+    -s, --substitute=exp ...     Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp) or specify that value through
+                                 GOTEMPLATE_SUBSTITUTES where each substitute is separated by a newline
     -r, --recursive              Process all template files recursively
     -R, --recursion-depth=depth  Process template files recursively specifying depth
         --source=folder          Specify a source folder (default to the current folder)
