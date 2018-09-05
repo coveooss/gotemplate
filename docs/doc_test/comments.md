@@ -20,17 +20,17 @@ To solve that problem, it is possible to inject pseudo comment into you code to 
 ### Example with JSON code
 
 ```go
-/*@ $value := 2 + 8 * 15 @*/
+/*@ @{value} := 2 + 8 * 15 @*/
 {
     "Str": "string",
     "Int": 123,
     "Float": 1.23,
     "PiAsString": "@Math.Pi",
-    "ComputedAsString": "@$value",
+    "ComputedAsString": "@{value}",
 
     /* You can use the special << syntax to extract the value from the string delimiter */
     "Pi": "<<@Math.Pi",
-    "Computed": "<<@$value",
+    "Computed": "<<@{value}",
 }
 ```
 

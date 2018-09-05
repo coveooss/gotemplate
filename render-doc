@@ -42,7 +42,7 @@ gotemplate '{% include navigation.html %}
 @-foreach ($category := categories())
 ### @($category.Name)
     @-foreach ($func := $category.Functions())
-        $func := function($func)
+        @{func} := function($func)
         @-if (!$func.IsAlias)
             @<;@<;```go
             @-if ($func.Description)

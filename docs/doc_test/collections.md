@@ -26,7 +26,7 @@
 
 ```go
 @-foreach($key, $value := razorDict)
-    @$key, @$value, @get($.razorDict, $key)
+    @{key}, @{value}, @get($.razorDict, $key)
 @end foreach
 ```
 
@@ -68,7 +68,7 @@
 
 ```go
 @-foreach($index, $value := razorList)
-    @$index, @$value, @extract($.razorList, $index)
+    @{index}, @{value}, @extract($.razorList, $index)
 @end foreach
 ```
 

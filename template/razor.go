@@ -93,9 +93,9 @@ var expressions = [][]interface{}{
 	{"various ends", `@(?P<command>end[sp](if|range|define|block|with|for[sp]each|for|))endexpr;`, "{{- end }}"},
 
 	// Assignations
-	{"Assign local flexible - @$var := value", `(?mU)@\$(?P<id>[id])[sp]:=[sp]?(?P<expr>[expr]+)(?:;|$)`, `{{- $$${id} := ${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 	{"Assign - @var := value", `(?P<type>@[\$\.]?)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
-	{"Assign - $var := value", `(?:{{-?[sp](?:if|range|with)?[sp](\$[id],)?[sp])?(?P<type>\$)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - @{var} := value", `(?P<type>@{)(?P<id>[id])}[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - @{var := expr}", `(?P<type>@{)(?P<id>[id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+?)}endexpr;`, ``, replacementFunc(assignExpressionAcceptError)},
 
 	// Function calls
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@${reduce}((${expr})${selection});`, replacementFunc(expressionParserSkipError)},
@@ -117,12 +117,10 @@ var expressions = [][]interface{}{
 	{"Local variables - @$var or @.var", `@reduce;(?P<name>[\$\.][\p{L}\d_\.]*)endexpr;`, `{{${reduce} ${name} }}`},
 
 	// Expressions
-	// {"Expression @(var).selector", `@\([sp](?P<name>[idSel])[sp]\)selector;endexpr;`, `@($$.${name}${selection});`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(var)[...]", `@reduce;(?P<expr>\([sp](?P<name>[idSel])[sp]\)index;)endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(var)", `@reduce;\([sp](?P<expr>[idSel])[sp]\)endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError)},
-	// {"Expression @(expr).selector", `@\([sp](?P<expr>[expr]+)[sp]\)selector;endexpr;`, `@(${expr}${selection});`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)[...]", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Expression @(expr)", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"Expression @(expr)", `@reduce;\([sp](?P<assign>.*?:= ?)?[sp](?P<expr>[expr]+)[sp]\)endexpr;`, `{{${reduce} ${assign}${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 
 	{"Space eater", `@-`, `{{- "" -}}`},
 
@@ -153,11 +151,14 @@ var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*
 var idRegex = regexp.MustCompile(`^[\p{L}\d_]+$`)
 
 func assignExpression(repl replacement, match string) string {
-	if strings.HasPrefix(match, repl.delimiters[0]) {
-		// This is an already go template assignation
-		return match
-	}
+	return assignExpressionInternal(repl, match, false)
+}
 
+func assignExpressionAcceptError(repl replacement, match string) string {
+	return assignExpressionInternal(repl, match, true)
+}
+
+func assignExpressionInternal(repl replacement, match string, acceptError bool) string {
 	subExp := repl.re.SubexpNames()
 	subMatches := repl.re.FindStringSubmatch(match)
 	tp := valueOf("type", subExp, subMatches)
@@ -169,9 +170,9 @@ func assignExpression(repl replacement, match string) string {
 		return match
 	}
 
-	local := tp == "$" && idRegex.MatchString(id)
+	local := (tp == "$" || tp == "@{") && idRegex.MatchString(id)
 	var err error
-	if expr, err = expressionParserInternal(exprRepl, expr, true, !local); err != nil {
+	if expr, err = expressionParserInternal(exprRepl, expr, true, !local); err != nil && !acceptError {
 		return match
 	}
 
