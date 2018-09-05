@@ -99,7 +99,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			faultyColumn := 0
 			key, message, errText, code := matches[tagKey], matches[tagMsg], matches[tagErr], matches[tagCode]
 
-			if strings.Contains(errText, "unclosed action") {
+			if strings.Contains(errText, "unclosed action") && faultyLine > 0 {
 				// Unclosed action reports error on the line following the non closed action
 				faultyLine--
 			}
@@ -114,6 +114,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				// TODO: This code can be removed once issue has been fixed
 				parserBug = color.HiRedString("\nBad error line reported: check: https://github.com/golang/go/issues/27319")
 			}
+
 			currentLine := String(lines[faultyLine])
 			if faultyColumn != 0 && strings.Contains(" (", currentLine[faultyColumn:faultyColumn+1].Str()) {
 				// Sometime, the error is not reporting the exact column, we move 1 char forward to get the real problem
