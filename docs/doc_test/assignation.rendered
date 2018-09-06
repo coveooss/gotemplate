@@ -1,5 +1,6 @@
 {% include navigation.html %}
 {% raw %}
+
 # Assignation
 
 ## Global variables
@@ -17,23 +18,24 @@
 
 ## Local variables
 
-| Razor expression                            | Go Template                                        | Note
-| ----------------                            | -----------                                        | ----
-| ``                | ``                  | Local assignation of string
-| ``                          | ``                            | Local assignation of integer
-| ``                        | ``                          | Local assignation of floating point
-| ``                        | ``                          | Local assignation of large scientific number
-| ``                        | ``                          | Local assignation of small scientific number
-| ``                          | ``                            | Local assignation of hexadecimal number
-| ``                      | ``                | Local assignation of mathematic expression
-| `` | ``  | Local assignation of generic expression
+| Razor expression                             | Go Template                                        | Note
+| ----------------                             | -----------                                        | ----
+| ``                | ``                 | Local assignation of string
+| ``                          | ``                           | Local assignation of integer
+| ``                        | ``                         | Local assignation of floating point
+| ``                        | ``                         | Local assignation of large scientific number
+| ``                        | ``                         | Local assignation of small scientific number
+| ``                          | ``                           | Local assignation of hexadecimal number
+| ``                      | ``               | Local assignation of mathematic expression
+| `` | `` | Local assignation of generic expression
 
 ### Exception
 
-| Razor expression                              | Go Template                                        | Note
-| ----------------                              | -----------                                        | ----
-| ` "hello" "world" | upper;`  | ` "hello" "world" | upper`  | Using a mixup of go template expression and razor expression could lead to undesired result
-| ``   | ``    | Adding a @ before assign expression solve the evaluation problem
+| Razor expression                                | Go Template                                        | Note
+| ----------------                                | -----------                                        | ----
+| ` "hello" "world" | upper`   | ` "hello" "world" | upper` | Using a mixup of go template expression and razor expression could lead to undesired result
+| ``     | ``   | Enclosing the whole assignation statement within {} ensures that the whole expression is assigned
+| ``    | ``   | Using that syntax give the exact same result
 
 ### Assignation within expression
 
@@ -70,4 +72,5 @@
 ```go
     value = 4
 ```
+
 {% endraw %}

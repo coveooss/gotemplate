@@ -12,14 +12,14 @@ It is possible to run OS commands using the following go template functions:
 
 ### Razor
 ```
-@$example := exec("printf 'SomeData: test2\nSomeData2: test3'")
-First result: @$example.SomeData
-Second result: @$example.SomeData2
-@$example
+@{example} := exec("printf 'SomeData: test2\nSomeData2: test3'")
+First result: @{example.SomeData}
+Second result: @{example.SomeData2}
+@{example}
 
-@$example2 := exec("printf 'Test'")
+@{example2} := exec("printf 'Test'")
 Should be `string`: @typeOf($example2)
-@$example2
+@{example2}
 ```
 
 ### Gotemplate
@@ -49,9 +49,9 @@ Test
 
 ### Razor
 ```
-@$example := run("printf 'SomeData: test2\nSomeData2: test3'")
+@{example} := run("printf 'SomeData: test2\nSomeData2: test3'")
 Should be `string`: @typeOf($example)
-@$example
+@{example}
 ```
 
 ### Gotemplate
