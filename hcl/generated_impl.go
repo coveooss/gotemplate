@@ -18,6 +18,7 @@ func (l hclList) Clone() hclIList                     { return hclListHelper.Clo
 func (l hclList) Contains(values ...interface{}) bool { return hclListHelper.Contains(l, values...) }
 func (l hclList) Count() int                          { return len(l) }
 func (l hclList) Create(args ...int) hclIList         { return hclListHelper.CreateList(args...) }
+func (l hclList) CreateDict(args ...int) hclIDict     { return hclListHelper.CreateDictionary(args...) }
 func (l hclList) Get(index int) interface{}           { return hclListHelper.GetIndex(l, index) }
 func (l hclList) Len() int                            { return len(l) }
 func (l hclList) New(args ...interface{}) hclIList    { return hclListHelper.NewList(args...) }
@@ -46,11 +47,13 @@ type Dictionary = hclDict
 type hclIDict = collections.IDictionary
 type hclDict map[string]interface{}
 
+func (d hclDict) Add(key, v interface{}) hclIDict    { return hclDictHelper.Add(d, key, v) }
 func (d hclDict) AsMap() map[string]interface{}      { return (map[string]interface{})(d) }
 func (d hclDict) Native() interface{}                { return collections.ToNativeRepresentation(d) }
 func (d hclDict) Count() int                         { return len(d) }
 func (d hclDict) Len() int                           { return len(d) }
 func (d hclDict) Clone(keys ...interface{}) hclIDict { return hclDictHelper.Clone(d, keys) }
+func (d hclDict) Create(args ...int) hclIDict        { return hclListHelper.CreateDictionary(args...) }
 func (d hclDict) CreateList(args ...int) hclIList    { return hclHelper.CreateList(args...) }
 func (d hclDict) Flush(keys ...interface{}) hclIDict { return hclDictHelper.Flush(d, keys) }
 func (d hclDict) Get(key interface{}) interface{}    { return hclDictHelper.Get(d, key) }
@@ -58,6 +61,8 @@ func (d hclDict) Has(key interface{}) bool           { return hclDictHelper.Has(
 func (d hclDict) GetKeys() hclIList                  { return hclDictHelper.GetKeys(d) }
 func (d hclDict) KeysAsString() []string             { return hclDictHelper.KeysAsString(d) }
 func (d hclDict) GetValues() hclIList                { return hclDictHelper.GetValues(d) }
+func (d hclDict) Set(key, v interface{}) hclIDict    { return hclDictHelper.Set(d, key, v) }
+func (d hclDict) Transpose() hclIDict                { return hclDictHelper.Transpose(d) }
 
 func (d hclDict) Default(key, defVal interface{}) interface{} {
 	return hclDictHelper.Default(d, key, defVal)
@@ -73,10 +78,6 @@ func (d hclDict) Merge(dict hclIDict, otherDicts ...hclIDict) hclIDict {
 
 func (d hclDict) Omit(key interface{}, otherKeys ...interface{}) hclIDict {
 	return hclDictHelper.Omit(d, append([]interface{}{key}, otherKeys...))
-}
-
-func (d hclDict) Set(key interface{}, v interface{}) hclIDict {
-	return hclDictHelper.Set(d, key, v)
 }
 
 // Generic helpers to simplify physical implementation

@@ -108,18 +108,6 @@ func simplify(value float64) interface{} {
 	return utils.IIf(math.Floor(value) == value, int64(value), value)
 }
 
-func trapError(err error, rec interface{}) error {
-	if rec != nil {
-		switch err := rec.(type) {
-		case error:
-			return err
-		default:
-			return fmt.Errorf("%[1]T %[1]v", err)
-		}
-	}
-	return err
-}
-
 func compareInternal(min bool, values []interface{}) interface{} {
 	if len(values) == 0 {
 		return nil

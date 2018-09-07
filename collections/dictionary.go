@@ -8,24 +8,27 @@ import (
 
 // IDictionary represents objects that act as map[string]interface.
 type IDictionary interface {
+	Add(key, value interface{}) IDictionary                           // Add value to key (if key exist, convert the key value into list and append the new value).
 	AsMap() map[string]interface{}                                    // Returns the object casted as map[string]interface{}.
-	Native() interface{}                                              // Returns the object casted as native go type (applied recursively).
 	Clone(keys ...interface{}) IDictionary                            // Returns a distinct copy of the object with only supplied keys. If no keys are supplied, all keys from d are copied.
 	Count() int                                                       // Simply an alias for Len.
+	Create(...int) IDictionary                                        // Instantiates a new dictionary of the same type with optional size.
 	CreateList(...int) IGenericList                                   // Instantiates a list of the same type as current dictionary with optional size and capacity.
 	Default(key, defVal interface{}) interface{}                      // Returns defVal if dictionary doesn't contain key, otherwise, simply returns entry corresponding to key.
 	Delete(key interface{}, keys ...interface{}) (IDictionary, error) // Removes the entry value associated with key. The entry must exist.
 	Flush(keys ...interface{}) IDictionary                            // Removes all specified keys from the dictionary. If no key is specified, all keys are removed.
 	Get(key interface{}) interface{}                                  // Returns the value associated with key.
-	Has(key interface{}) bool                                         // Returns true if the dictionary object contains the key.
 	GetKeys() IGenericList                                            // Returns the keys in the dictionary in alphabetical order.
+	GetValues() IGenericList                                          // Returns the values in the dictionary in alphabetical order of keys.
+	Has(key interface{}) bool                                         // Returns true if the dictionary object contains the key.
 	KeysAsString() []string                                           // Returns the keys in the dictionary in alphabetical order.
 	Len() int                                                         // Returns the number of keys in the dictionary.
 	Merge(IDictionary, ...IDictionary) IDictionary                    // Merges the other dictionaries into the current dictionary.
+	Native() interface{}                                              // Returns the object casted as native go type (applied recursively).
 	Omit(key interface{}, keys ...interface{}) IDictionary            // Returns a distinct copy of the object including all keys except specified ones.
 	Set(key, value interface{}) IDictionary                           // Sets key to value in the dictionary.
 	String() string                                                   // Returns the string representation of the dictionary.
-	GetValues() IGenericList                                          // Returns the values in the dictionary in alphabetical order of keys.
+	Transpose() IDictionary                                           // Transpose keys/values and return the resulting dictionary
 }
 
 // IDictionaryHelper represents objects that implement IDictionary compatible objects

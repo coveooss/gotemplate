@@ -111,9 +111,7 @@ func (dh DictHelper) Merge(target baseIDict, sources []baseIDict) baseIDict {
 		if sources[i] == nil {
 			continue
 		}
-		if err := mergo.Merge(&m, dh.ConvertDict(sources[i]).AsMap()); err != nil {
-			panic(err)
-		}
+		must(mergo.Merge(&m, dh.ConvertDict(sources[i]).AsMap()))
 	}
 	return target
 }
@@ -135,7 +133,31 @@ func (dh DictHelper) Omit(dict baseIDict, keys []interface{}) baseIDict {
 
 // Set sets key to value in the dictionary.
 func (dh DictHelper) Set(dict baseIDict, key interface{}, value interface{}) baseIDict {
+	if dict.AsMap() == nil {
+		dict = dh.CreateDictionary()
+	}
 	dict.AsMap()[fmt.Sprint(key)] = dh.Convert(value)
+	return dict
+}
+
+// Add adds value to an existing key instead of replacing the value as done by set.
+func (dh DictHelper) Add(dict baseIDict, key interface{}, value interface{}) baseIDict {
+	if dict.AsMap() == nil {
+		dict = dh.CreateDictionary()
+	}
+	m := dict.AsMap()
+	k := fmt.Sprint(key)
+
+	if current, ok := m[k]; ok {
+		if list, err := collections.TryAsList(current); err == nil {
+			m[k] = list.Append(value)
+		} else {
+			// Convert the current value into a list
+			m[k] = dict.CreateList().Append(current, value)
+		}
+	} else {
+		m[k] = dh.Convert(value)
+	}
 	return dict
 }
 
@@ -144,6 +166,24 @@ func (dh DictHelper) GetValues(dict baseIDict) baseIList {
 	result := dh.CreateList(dict.Len())
 	for i, key := range dict.KeysAsString() {
 		result.Set(i, dict.Get(key))
+	}
+	return result
+}
+
+// Transpose returns a dictionary with values as keys and keys as values. The resulting dictionary
+// is a dictionary where each key could contains single value or list of values if there are multiple matches.
+func (dh DictHelper) Transpose(dict baseIDict) baseIDict {
+	result := dh.CreateDictionary()
+	for _, key := range dict.GetKeys().AsArray() {
+		value := dict.Get(key)
+		if list, err := collections.TryAsList(value); err == nil {
+			// If the element is a list, we scan each element
+			for _, value := range list.AsArray() {
+				result.Add(value, key)
+			}
+		} else {
+			result.Add(value, key)
+		}
 	}
 	return result
 }

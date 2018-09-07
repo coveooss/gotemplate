@@ -62,7 +62,7 @@ func (bh BaseHelper) CreateDictionary(args ...int) baseIDict {
 	case 1:
 		capacity = args[0]
 	default:
-		panic(fmt.Errorf("CreateList only accept 2 arguments, size and capacity"))
+		panic(fmt.Errorf("CreateList only accept 1 argument for size"))
 	}
 	return bh.ConvertDict(make(baseDict, capacity))
 }

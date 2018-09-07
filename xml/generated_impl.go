@@ -18,6 +18,7 @@ func (l xmlList) Clone() xmlIList                     { return xmlListHelper.Clo
 func (l xmlList) Contains(values ...interface{}) bool { return xmlListHelper.Contains(l, values...) }
 func (l xmlList) Count() int                          { return len(l) }
 func (l xmlList) Create(args ...int) xmlIList         { return xmlListHelper.CreateList(args...) }
+func (l xmlList) CreateDict(args ...int) xmlIDict     { return xmlListHelper.CreateDictionary(args...) }
 func (l xmlList) Get(index int) interface{}           { return xmlListHelper.GetIndex(l, index) }
 func (l xmlList) Len() int                            { return len(l) }
 func (l xmlList) New(args ...interface{}) xmlIList    { return xmlListHelper.NewList(args...) }
@@ -46,11 +47,13 @@ type Dictionary = xmlDict
 type xmlIDict = collections.IDictionary
 type xmlDict map[string]interface{}
 
+func (d xmlDict) Add(key, v interface{}) xmlIDict    { return xmlDictHelper.Add(d, key, v) }
 func (d xmlDict) AsMap() map[string]interface{}      { return (map[string]interface{})(d) }
 func (d xmlDict) Native() interface{}                { return collections.ToNativeRepresentation(d) }
 func (d xmlDict) Count() int                         { return len(d) }
 func (d xmlDict) Len() int                           { return len(d) }
 func (d xmlDict) Clone(keys ...interface{}) xmlIDict { return xmlDictHelper.Clone(d, keys) }
+func (d xmlDict) Create(args ...int) xmlIDict        { return xmlListHelper.CreateDictionary(args...) }
 func (d xmlDict) CreateList(args ...int) xmlIList    { return xmlHelper.CreateList(args...) }
 func (d xmlDict) Flush(keys ...interface{}) xmlIDict { return xmlDictHelper.Flush(d, keys) }
 func (d xmlDict) Get(key interface{}) interface{}    { return xmlDictHelper.Get(d, key) }
@@ -58,6 +61,8 @@ func (d xmlDict) Has(key interface{}) bool           { return xmlDictHelper.Has(
 func (d xmlDict) GetKeys() xmlIList                  { return xmlDictHelper.GetKeys(d) }
 func (d xmlDict) KeysAsString() []string             { return xmlDictHelper.KeysAsString(d) }
 func (d xmlDict) GetValues() xmlIList                { return xmlDictHelper.GetValues(d) }
+func (d xmlDict) Set(key, v interface{}) xmlIDict    { return xmlDictHelper.Set(d, key, v) }
+func (d xmlDict) Transpose() xmlIDict                { return xmlDictHelper.Transpose(d) }
 
 func (d xmlDict) Default(key, defVal interface{}) interface{} {
 	return xmlDictHelper.Default(d, key, defVal)
@@ -73,10 +78,6 @@ func (d xmlDict) Merge(dict xmlIDict, otherDicts ...xmlIDict) xmlIDict {
 
 func (d xmlDict) Omit(key interface{}, otherKeys ...interface{}) xmlIDict {
 	return xmlDictHelper.Omit(d, append([]interface{}{key}, otherKeys...))
-}
-
-func (d xmlDict) Set(key interface{}, v interface{}) xmlIDict {
-	return xmlDictHelper.Set(d, key, v)
 }
 
 // Generic helpers to simplify physical implementation

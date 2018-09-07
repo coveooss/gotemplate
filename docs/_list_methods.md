@@ -7,6 +7,7 @@ Clone() IGenericList
 Contains(...interface{}) bool
 Count() int
 Create(...int) IGenericList
+CreateDict(...int) IDictionary
 Get(int) interface{}
 Len() int
 New(...interface{}) IGenericList

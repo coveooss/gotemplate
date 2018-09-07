@@ -1,7 +1,9 @@
 ```go
-@AsMap() map[string]interface{}
+@Add(interface{}, interface{}) IDictionary
+AsMap() map[string]interface{}
 Clone(...interface{}) IDictionary
 Count() int
+Create(...int) IDictionary
 CreateList(...int) IGenericList
 Default(interface{}, interface{}) interface{}
 Delete(interface{}, ...interface{}) IDictionary, error
@@ -17,4 +19,5 @@ Native() interface{}
 Omit(interface{}, ...interface{}) IDictionary
 Set(interface{}, interface{}) IDictionary
 String() string
+Transpose() IDictionary
 ```

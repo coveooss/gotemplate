@@ -14,6 +14,7 @@ import (
 )
 
 var must = errors.Must
+var trapError = errors.Trap
 
 func getTargetFile(targetFile, sourcePath, targetPath string) string {
 	if targetPath != "" {

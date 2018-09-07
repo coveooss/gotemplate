@@ -1,9 +1,12 @@
 package implementation
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/coveo/gotemplate/errors"
 )
 
 var strFixture = baseList(baseListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
@@ -16,7 +19,7 @@ func Test_list_Append(t *testing.T) {
 		want   baseIList
 	}{
 		{"Empty", baseList{}, []interface{}{1, 2, 3}, baseList{1, 2, 3}},
-		{"List of int", baseList{1, 2, 3}, []interface{}{4}, baseList{1, 2, 3, 4}},
+		{"List of int", baseList{1, 2, 3}, []interface{}{4, 5}, baseList{1, 2, 3, 4, 5}},
 		{"List of string", strFixture, []interface{}{"That's all folks!"}, baseList{"Hello", "World,", "I'm", "Foo", "Bar!", "That's all folks!"}},
 	}
 
@@ -24,6 +27,27 @@ func Test_list_Append(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("baseList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_Prepend(t *testing.T) {
+	tests := []struct {
+		name   string
+		l      baseIList
+		values []interface{}
+		want   baseIList
+	}{
+		{"Empty", baseList{}, []interface{}{1, 2, 3}, baseList{1, 2, 3}},
+		{"List of int", baseList{1, 2, 3}, []interface{}{4, 5}, baseList{4, 5, 1, 2, 3}},
+		{"List of string", strFixture, []interface{}{"That's all folks!"}, baseList{"That's all folks!", "Hello", "World,", "I'm", "Foo", "Bar!"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Prepend(tt.values...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Prepend():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -149,28 +173,186 @@ func Test_list_Len(t *testing.T) {
 	}
 }
 
-func Test_NewList(t *testing.T) {
-	type args struct {
-		size     int
-		capacity int
+func Test_CreateList(t *testing.T) {
+	tests := []struct {
+		name    string
+		args    []int
+		want    baseIList
+		wantErr bool
+	}{
+		{"Empty", nil, baseList{}, false},
+		{"With nil elements", []int{10}, make(baseList, 10), false},
+		{"With capacity", []int{0, 10}, make(baseList, 0, 10), false},
+		{"Too much args", []int{0, 10, 1}, nil, true},
 	}
+	for _, tt := range tests {
+		var got baseIList
+		var err error
+		func() {
+			defer func() { err = errors.Trap(err, recover()) }()
+			got = baseListHelper.CreateList(tt.args...)
+		}()
+		if (err != nil) != tt.wantErr {
+			t.Errorf("CreateList() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
+		if err != nil {
+			return
+		}
+		if !reflect.DeepEqual(got, tt.want) {
+			t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+		}
+		if got.Capacity() != tt.want.Cap() {
+			t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
+		}
+	}
+}
+
+func Test_list_Create(t *testing.T) {
 	tests := []struct {
 		name string
-		args args
+		l    baseList
+		args []int
 		want baseIList
 	}{
-		{"Empty", args{0, 0}, baseList{}},
-		{"With nil elements", args{10, 0}, make(baseList, 10)},
+		{"Empty", nil, nil, baseList{}},
+		{"Existing List", baseList{1, 2}, nil, baseList{}},
+		{"With Empty spaces", baseList{1, 2}, []int{5}, baseList{nil, nil, nil, nil, nil}},
+		{"With Capacity", baseList{1, 2}, []int{0, 5}, baseListHelper.CreateList(0, 5)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := baseListHelper.CreateList(tt.args.size, tt.args.capacity); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			got := tt.l.Create(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got.Capacity() != tt.want.Capacity() {
+				t.Errorf("baseList.Create() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Capacity(), tt.want.Capacity())
 			}
 		})
 	}
 }
 
+func Test_list_New(t *testing.T) {
+	tests := []struct {
+		name string
+		l    baseList
+		args []interface{}
+		want baseIList
+	}{
+		{"Empty", nil, nil, baseList{}},
+		{"Existing List", baseList{1, 2}, nil, baseList{}},
+		{"With elements", baseList{1, 2}, []interface{}{3, 4, 5}, baseList{3, 4, 5}},
+		{"With strings", baseList{1, 2}, []interface{}{"Hello", "World"}, baseList{"Hello", "World"}},
+		{"With nothing", baseList{1, 2}, []interface{}{}, baseList{}},
+		{"With nil", baseList{1, 2}, nil, baseList{}},
+		{"Adding array", baseList{1, 2}, []interface{}{baseList{3, 4}}, baseList{3, 4}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.New(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_CreateDict(t *testing.T) {
+	tests := []struct {
+		name    string
+		l       baseList
+		args    []int
+		want    baseIDict
+		wantErr bool
+	}{
+		{"Empty", nil, nil, baseDict{}, false},
+		{"With capacity", nil, []int{10}, baseDict{}, false},
+		{"With too much parameter", nil, []int{10, 1}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got baseIDict
+			var err error
+			func() {
+				defer func() { err = errors.Trap(err, recover()) }()
+				got = tt.l.CreateDict(tt.args...)
+			}()
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("baseList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
+
+func Test_list_Contains(t *testing.T) {
+	tests := []struct {
+		name string
+		l    baseList
+		args []interface{}
+		want bool
+	}{
+		{"Empty List", nil, []interface{}{}, false},
+		{"Search nothing", baseList{1}, nil, true},
+		{"Search nothing 2", baseList{1}, []interface{}{}, true},
+		{"Not there", baseList{1}, []interface{}{2}, false},
+		{"Included", baseList{1, 2}, []interface{}{2}, true},
+		{"Partially there", baseList{1, 2}, []interface{}{2, 3}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_Without(t *testing.T) {
+	tests := []struct {
+		name string
+		l    baseList
+		args []interface{}
+		want baseList
+	}{
+		{"Empty List", nil, []interface{}{}, baseList{}},
+		{"Remove nothing", baseList{1}, nil, baseList{1}},
+		{"Remove nothing 2", baseList{1}, []interface{}{}, baseList{1}},
+		{"Not there", baseList{1}, []interface{}{2}, baseList{1}},
+		{"Included", baseList{1, 2}, []interface{}{2}, baseList{1}},
+		{"Partially there", baseList{1, 2}, []interface{}{2, 3}, baseList{1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Without(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Without():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_Unique(t *testing.T) {
+	tests := []struct {
+		name string
+		l    baseList
+		want baseList
+	}{
+		{"Empty List", nil, baseList{}},
+		{"Remove nothing", baseList{1}, baseList{1}},
+		{"Duplicates following", baseList{1, 1, 2, 3}, baseList{1, 2, 3}},
+		{"Duplicates not following", baseList{1, 2, 3, 1, 2, 3, 4}, baseList{1, 2, 3, 4}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Unique(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Unique():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
 func Test_list_Reverse(t *testing.T) {
 	tests := []struct {
 		name string
@@ -328,6 +510,37 @@ func Test_baseDict_CreateList(t *testing.T) {
 			}
 			if got.Len() != tt.wantLen || got.Cap() != tt.wantCapacity {
 				t.Errorf("baseDict.CreateList() size: %d, %d vs %d, %d", got.Len(), got.Cap(), tt.wantLen, tt.wantCapacity)
+			}
+		})
+	}
+}
+
+func Test_dict_Create(t *testing.T) {
+	tests := []struct {
+		name    string
+		d       baseDict
+		args    []int
+		want    baseIDict
+		wantErr bool
+	}{
+		{"Empty", nil, nil, baseDict{}, false},
+		{"With capacity", nil, []int{10}, baseDict{}, false},
+		{"With too much parameter", nil, []int{10, 1}, nil, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got baseIDict
+			var err error
+			func() {
+				defer func() { err = errors.Trap(err, recover()) }()
+				got = tt.d.Create(tt.args...)
+			}()
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("baseList.Create() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
 		})
 	}
@@ -515,6 +728,76 @@ func Test_dict_Values(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.GetValues(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("baseDict.GetValues():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_dict_Add(t *testing.T) {
+	type args struct {
+		key interface{}
+		v   interface{}
+	}
+	tests := []struct {
+		name string
+		d    baseDict
+		args args
+		want baseIDict
+	}{
+		{"Empty", nil, args{"A", 1}, baseDict{"A": 1}},
+		{"With element", baseDict{"A": 1}, args{"A", 2}, baseDict{"A": baseList{1, 2}}},
+		{"With element, another value", baseDict{"A": 1}, args{"B", 2}, baseDict{"A": 1, "B": 2}},
+		{"With list element", baseDict{"A": baseList{1, 2}}, args{"A", 3}, baseDict{"A": baseList{1, 2, 3}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.d.Add(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseDict.Add() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_dict_Set(t *testing.T) {
+	type args struct {
+		key interface{}
+		v   interface{}
+	}
+	tests := []struct {
+		name string
+		d    baseDict
+		args args
+		want baseIDict
+	}{
+		{"Empty", nil, args{"A", 1}, baseDict{"A": 1}},
+		{"With element", baseDict{"A": 1}, args{"A", 2}, baseDict{"A": 2}},
+		{"With element, another value", baseDict{"A": 1}, args{"B", 2}, baseDict{"A": 1, "B": 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.d.Set(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseDict.Set() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_dict_Transpose(t *testing.T) {
+	tests := []struct {
+		name string
+		d    baseDict
+		want baseIDict
+	}{
+		{"Empty", nil, baseDict{}},
+		{"Base", baseDict{"A": 1}, baseDict{"1": "A"}},
+		{"Multiple", baseDict{"A": 1, "B": 2, "C": 1}, baseDict{"1": baseList{"A", "C"}, "2": "B"}},
+		{"List", baseDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, baseDict{"1": "A", "2": baseList{"A", "B"}, "3": baseList{"A", "C"}}},
+		{"Complex", baseDict{"A": baseDict{"1": 1, "2": 2}, "B": 2, "C": 3}, baseDict{"2": "B", "3": "C", fmt.Sprint(baseDict{"1": 1, "2": 2}): "A"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.d.Transpose(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseDict.Transpose() = %v, want %v", got, tt.want)
 			}
 		})
 	}
