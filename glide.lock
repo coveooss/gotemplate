@@ -1,5 +1,5 @@
-hash: d6775831eb4a216531158f0c39b27183e666154386de11fd65b9c79d1a3e00b3
-updated: 2018-08-13T15:03:31.436697-04:00
+hash: 078d5ec26cabd74670acbed392807abfba66bd64b9a630197399567522be3e94
+updated: 2018-09-08T21:42:38.4338775-04:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -43,7 +43,8 @@ imports:
 - name: github.com/mattn/go-isatty
   version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
 - name: github.com/op/go-logging
-  version: 970db520ece77730c7e4724c61121037378659d9
+  version: c6b9702d88ba878b81c49272d3fc470593698733
+  repo: https://github.com/shenwei356/go-logging.git
 - name: github.com/PuerkitoBio/goquery
   version: dc2ec5c7ca4d9aae063b79b9f581dd3ea6afd2b2
 - name: github.com/sergi/go-diff

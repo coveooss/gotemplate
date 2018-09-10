@@ -30,7 +30,7 @@ func Test_list_Append(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -51,7 +51,7 @@ func Test_list_Prepend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Prepend(tt.values...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Prepend():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Prepend():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -70,7 +70,7 @@ func Test_list_AsArray(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.AsArray(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -89,7 +89,7 @@ func Test_YamlList_Strings(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Strings(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Strings() = %v, want %v", got, tt.want)
+				t.Errorf("YamlList.Strings() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -106,7 +106,7 @@ func Test_list_Capacity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Capacity(); got != tt.want {
-				t.Errorf("yamlList.Capacity() = %v, want %v", got, tt.want)
+				t.Errorf("YamlList.Capacity() = %v, want %v", got, tt.want)
 			}
 			if tt.l.Capacity() != tt.l.Cap() {
 				t.Errorf("Cap and Capacity return different values")
@@ -128,7 +128,7 @@ func Test_list_Clone(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Clone(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -149,7 +149,7 @@ func Test_list_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Get(tt.index); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Get() = %v, want %v", got, tt.want)
+				t.Errorf("YamlList.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -168,7 +168,7 @@ func Test_list_Len(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Len(); got != tt.want {
-				t.Errorf("yamlList.Len() = %v, want %v", got, tt.want)
+				t.Errorf("YamlList.Len() = %v, want %v", got, tt.want)
 			}
 			if tt.l.Len() != tt.l.Count() {
 				t.Errorf("Len and Count return different values")
@@ -228,10 +228,10 @@ func Test_list_Create(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.l.Create(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 			if got.Capacity() != tt.want.Capacity() {
-				t.Errorf("yamlList.Create() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Capacity(), tt.want.Capacity())
+				t.Errorf("YamlList.Create() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Capacity(), tt.want.Capacity())
 			}
 		})
 	}
@@ -255,7 +255,7 @@ func Test_list_New(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.New(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -282,10 +282,10 @@ func Test_list_CreateDict(t *testing.T) {
 				got = tt.l.CreateDict(tt.args...)
 			}()
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 			if (err != nil) != tt.wantErr {
-				t.Errorf("yamlList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("YamlList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
@@ -309,7 +309,7 @@ func Test_list_Contains(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -332,7 +332,7 @@ func Test_list_Without(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Without(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Without():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Without():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -352,7 +352,7 @@ func Test_list_Unique(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Unique(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Unique():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Unique():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -371,7 +371,7 @@ func Test_list_Reverse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			l := tt.l.Clone()
 			if got := l.Reverse(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Reverse():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Reverse():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -398,11 +398,11 @@ func Test_list_Set(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.l.Clone().Set(tt.args.i, tt.args.v)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("yamlList.Set() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("YamlList.Set() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -449,7 +449,7 @@ func Test_dict_AsMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.AsMap(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.AsMap():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlDict.AsMap():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -471,7 +471,7 @@ func Test_dict_Clone(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.d.Clone(tt.keys...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlDict.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 
@@ -510,10 +510,10 @@ func Test_YamlDict_CreateList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.d.CreateList(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.CreateList() = %v, want %v", got, tt.want)
+				t.Errorf("YamlDict.CreateList() = %v, want %v", got, tt.want)
 			}
 			if got.Len() != tt.wantLen || got.Cap() != tt.wantCapacity {
-				t.Errorf("yamlDict.CreateList() size: %d, %d vs %d, %d", got.Len(), got.Cap(), tt.wantLen, tt.wantCapacity)
+				t.Errorf("YamlDict.CreateList() size: %d, %d vs %d, %d", got.Len(), got.Cap(), tt.wantLen, tt.wantCapacity)
 			}
 		})
 	}
@@ -540,10 +540,10 @@ func Test_dict_Create(t *testing.T) {
 				got = tt.d.Create(tt.args...)
 			}()
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 			if (err != nil) != tt.wantErr {
-				t.Errorf("yamlList.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("YamlList.Create() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
@@ -569,7 +569,7 @@ func Test_dict_Default(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Default(tt.args.key, tt.args.defVal); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Default() = %v, want %v", got, tt.want)
+				t.Errorf("YamlDict.Default() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -598,11 +598,11 @@ func Test_dict_Delete(t *testing.T) {
 			d := tt.d.Clone()
 			got, err := d.Delete(tt.args.key, tt.args.keys...)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("yamlDict.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("YamlDict.Delete() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Delete():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlDict.Delete():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 		})
@@ -627,7 +627,7 @@ func Test_dict_Flush(t *testing.T) {
 			d := tt.d.Clone()
 			got := d.Flush(tt.keys...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Flush():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlDict.Flush():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 			if !reflect.DeepEqual(d, got) {
@@ -650,7 +650,7 @@ func Test_dict_Keys(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.GetKeys(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.GetKeys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlDict.GetKeys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -668,7 +668,7 @@ func Test_dict_KeysAsString(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.KeysAsString(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.KeysAsString():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlDict.KeysAsString():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -712,7 +712,7 @@ func Test_dict_Merge(t *testing.T) {
 			d := tt.d.Clone()
 			got := d.Merge(tt.args.yamlDict, tt.args.dicts...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Merge():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlDict.Merge():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 		})
@@ -731,7 +731,7 @@ func Test_dict_Values(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.GetValues(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.GetValues():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("YamlDict.GetValues():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -756,7 +756,7 @@ func Test_dict_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Add(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Add() = %v, want %v", got, tt.want)
+				t.Errorf("YamlDict.Add() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -780,7 +780,7 @@ func Test_dict_Set(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Set(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Set() = %v, want %v", got, tt.want)
+				t.Errorf("YamlDict.Set() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -801,7 +801,7 @@ func Test_dict_Transpose(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Transpose(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("yamlDict.Transpose() = %v, want %v", got, tt.want)
+				t.Errorf("YamlDict.Transpose() = %v, want %v", got, tt.want)
 			}
 		})
 	}

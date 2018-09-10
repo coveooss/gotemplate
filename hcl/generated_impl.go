@@ -11,20 +11,24 @@ type List = hclList
 type hclIList = collections.IGenericList
 type hclList []interface{}
 
-func (l hclList) AsArray() []interface{}              { return []interface{}(l) }
-func (l hclList) Cap() int                            { return cap(l) }
-func (l hclList) Capacity() int                       { return cap(l) }
-func (l hclList) Clone() hclIList                     { return hclListHelper.Clone(l) }
-func (l hclList) Contains(values ...interface{}) bool { return hclListHelper.Contains(l, values...) }
-func (l hclList) Count() int                          { return len(l) }
-func (l hclList) Create(args ...int) hclIList         { return hclListHelper.CreateList(args...) }
-func (l hclList) CreateDict(args ...int) hclIDict     { return hclListHelper.CreateDictionary(args...) }
-func (l hclList) Get(index int) interface{}           { return hclListHelper.GetIndex(l, index) }
-func (l hclList) Len() int                            { return len(l) }
-func (l hclList) New(args ...interface{}) hclIList    { return hclListHelper.NewList(args...) }
-func (l hclList) Reverse() hclIList                   { return hclListHelper.Reverse(l) }
-func (l hclList) Strings() []string                   { return hclListHelper.GetStrings(l) }
-func (l hclList) Unique() hclIList                    { return hclListHelper.Unique(l) }
+func (l hclList) AsArray() []interface{} { return []interface{}(l) }
+func (l hclList) Cap() int               { return cap(l) }
+func (l hclList) Capacity() int          { return cap(l) }
+func (l hclList) Clone() hclIList        { return hclListHelper.Clone(l) }
+func (l hclList) Contains(values ...interface{}) bool {
+	return hclListHelper.Contains(l, values...)
+}
+func (l hclList) Count() int                  { return len(l) }
+func (l hclList) Create(args ...int) hclIList { return hclListHelper.CreateList(args...) }
+func (l hclList) CreateDict(args ...int) hclIDict {
+	return hclListHelper.CreateDictionary(args...)
+}
+func (l hclList) Get(index int) interface{}        { return hclListHelper.GetIndex(l, index) }
+func (l hclList) Len() int                         { return len(l) }
+func (l hclList) New(args ...interface{}) hclIList { return hclListHelper.NewList(args...) }
+func (l hclList) Reverse() hclIList                { return hclListHelper.Reverse(l) }
+func (l hclList) Strings() []string                { return hclListHelper.GetStrings(l) }
+func (l hclList) Unique() hclIList                 { return hclListHelper.Unique(l) }
 
 func (l hclList) Append(values ...interface{}) hclIList {
 	return hclListHelper.Add(l, false, values...)

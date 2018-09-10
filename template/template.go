@@ -41,11 +41,18 @@ const (
 	EnvExtensionPath = "GOTEMPLATE_PATH"
 )
 
+// Common variables
 var (
 	// ExtensionDepth the depth level of search of gotemplate extension from the current directory (default = 2).
 	ExtensionDepth = 2
 	toStrings      = collections.ToStrings
-	acceptNoValue  = ParseBoolFromEnv(EnvAcceptNoValue)
+	acceptNoValue  = String(os.Getenv(EnvAcceptNoValue)).ParseBool()
+	Print          = utils.ColorPrint
+	Printf         = utils.ColorPrintf
+	Println        = utils.ColorPrintln
+	ErrPrintf      = utils.ColorErrorPrintf
+	ErrPrintln     = utils.ColorErrorPrintln
+	ErrPrint       = utils.ColorErrorPrint
 )
 
 // IsRazor determines if the supplied code appears to have Razor code (using default delimiters).

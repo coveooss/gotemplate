@@ -1,4 +1,5 @@
 ```go
+AddLineNumber(int) String
 Center(int) String
 Compare(string) int
 Contains(string) bool
@@ -28,9 +29,12 @@ LastIndexFunc(func(int32) bool) int
 Len() int
 Lines() StringArray
 Map(func(int32) int32) String
+ParseBool() bool
+Protect() String, StringArray
 Repeat(int) String
 Replace(string, string) String
 ReplaceN(string, string, int) String
+RestoreProtected(StringArray) String
 SelectContext(int, string, string) String
 SelectWord(int, ...string) String
 Split(string) StringArray

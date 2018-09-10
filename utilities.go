@@ -13,6 +13,8 @@ import (
 	goerrors "github.com/go-errors/errors"
 )
 
+var must = errors.Must
+
 func cleanup() {
 	os.RemoveAll(tempFolder)
 
@@ -32,7 +34,7 @@ func readStdin() string {
 	if stdinContent != "" {
 		return stdinContent
 	}
-	stdinContent = string(errors.Must(ioutil.ReadAll(os.Stdin)).([]byte))
+	stdinContent = string(must(ioutil.ReadAll(os.Stdin)).([]byte))
 	return stdinContent
 }
 
@@ -49,7 +51,7 @@ func exclude(files []string, patterns []string) []string {
 		var excluded bool
 		for _, pattern := range patterns {
 			file = iif(strings.ContainsAny(pattern, `/\`), file, filepath.Base(file)).(string)
-			if excluded = errors.Must(filepath.Match(pattern, file)).(bool); excluded {
+			if excluded = must(filepath.Match(pattern, file)).(bool); excluded {
 				template.Log.Noticef("%s ignored", files[i])
 				break
 			}

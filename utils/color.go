@@ -74,6 +74,8 @@ const (
 	BgHiWhite
 )
 
+var EOL = fmt.Sprintln()
+
 //go:generate stringer -type=Attribute -output generated_colors.go
 
 // Color returns a color attribute build from supplied attribute names
@@ -137,7 +139,37 @@ func SprintColor(args ...interface{}) (string, error) {
 	if strings.Contains(format, "%") {
 		return c.Sprintf(format, args[i+1:]...), nil
 	}
-	return c.Sprint(args[i:]...), nil
+	return c.Sprint(strings.TrimSuffix(fmt.Sprintln(args[i:]...), EOL)), nil
 }
 
 var nameValues map[string]color.Attribute
+
+// ColorPrintln call standard fmt.Println function but using the color out stream.
+func ColorPrintln(args ...interface{}) (int, error) {
+	return fmt.Fprintln(color.Output, args...)
+}
+
+// ColorPrintf call standard fmt.Printf function but using the color out stream.
+func ColorPrintf(format string, args ...interface{}) (int, error) {
+	return fmt.Fprintf(color.Output, format, args...)
+}
+
+// ColorPrint call standard fmt.Printf function but using the color out stream.
+func ColorPrint(args ...interface{}) (int, error) {
+	return fmt.Fprint(color.Output, args...)
+}
+
+// ColorErrorPrintln call standard fmt.Println function but using the color out stream.
+func ColorErrorPrintln(args ...interface{}) (int, error) {
+	return fmt.Fprintln(color.Error, args...)
+}
+
+// ColorErrorPrintf call standard fmt.Printf function but using the color out stream.
+func ColorErrorPrintf(format string, args ...interface{}) (int, error) {
+	return fmt.Fprintf(color.Error, format, args...)
+}
+
+// ColorErrorPrint call standard fmt.Printf function but using the color out stream.
+func ColorErrorPrint(args ...interface{}) (int, error) {
+	return fmt.Fprint(color.Error, args...)
+}

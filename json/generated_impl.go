@@ -11,20 +11,24 @@ type List = jsonList
 type jsonIList = collections.IGenericList
 type jsonList []interface{}
 
-func (l jsonList) AsArray() []interface{}              { return []interface{}(l) }
-func (l jsonList) Cap() int                            { return cap(l) }
-func (l jsonList) Capacity() int                       { return cap(l) }
-func (l jsonList) Clone() jsonIList                    { return jsonListHelper.Clone(l) }
-func (l jsonList) Contains(values ...interface{}) bool { return jsonListHelper.Contains(l, values...) }
-func (l jsonList) Count() int                          { return len(l) }
-func (l jsonList) Create(args ...int) jsonIList        { return jsonListHelper.CreateList(args...) }
-func (l jsonList) CreateDict(args ...int) jsonIDict    { return jsonListHelper.CreateDictionary(args...) }
-func (l jsonList) Get(index int) interface{}           { return jsonListHelper.GetIndex(l, index) }
-func (l jsonList) Len() int                            { return len(l) }
-func (l jsonList) New(args ...interface{}) jsonIList   { return jsonListHelper.NewList(args...) }
-func (l jsonList) Reverse() jsonIList                  { return jsonListHelper.Reverse(l) }
-func (l jsonList) Strings() []string                   { return jsonListHelper.GetStrings(l) }
-func (l jsonList) Unique() jsonIList                   { return jsonListHelper.Unique(l) }
+func (l jsonList) AsArray() []interface{} { return []interface{}(l) }
+func (l jsonList) Cap() int               { return cap(l) }
+func (l jsonList) Capacity() int          { return cap(l) }
+func (l jsonList) Clone() jsonIList       { return jsonListHelper.Clone(l) }
+func (l jsonList) Contains(values ...interface{}) bool {
+	return jsonListHelper.Contains(l, values...)
+}
+func (l jsonList) Count() int                   { return len(l) }
+func (l jsonList) Create(args ...int) jsonIList { return jsonListHelper.CreateList(args...) }
+func (l jsonList) CreateDict(args ...int) jsonIDict {
+	return jsonListHelper.CreateDictionary(args...)
+}
+func (l jsonList) Get(index int) interface{}         { return jsonListHelper.GetIndex(l, index) }
+func (l jsonList) Len() int                          { return len(l) }
+func (l jsonList) New(args ...interface{}) jsonIList { return jsonListHelper.NewList(args...) }
+func (l jsonList) Reverse() jsonIList                { return jsonListHelper.Reverse(l) }
+func (l jsonList) Strings() []string                 { return jsonListHelper.GetStrings(l) }
+func (l jsonList) Unique() jsonIList                 { return jsonListHelper.Unique(l) }
 
 func (l jsonList) Append(values ...interface{}) jsonIList {
 	return jsonListHelper.Add(l, false, values...)

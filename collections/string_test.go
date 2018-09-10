@@ -167,3 +167,67 @@ func TestString_FindContext(t *testing.T) {
 		})
 	}
 }
+
+func TestString_Protect(t *testing.T) {
+	tests := []struct {
+		name      String
+		want      String
+		wantArray StringArray
+	}{
+		{"", "", nil},
+		{`"This is a string"`, `"♠0"`, StringArray{`"This is a string"`}},
+		{`A test with a "single string"`, `A test with a "♠0"`, StringArray{`"single string"`}},
+		{"A test with `backtick string`", `A test with "♠0"`, StringArray{"`backtick string`"}},
+		{`Non closed "string`, `Non closed "string`, nil},
+		{`This contains two "string1" and "string2"`, `This contains two "♠0" and "♠1"`, StringArray{`"string1"`, `"string2"`}},
+		{"A mix of `backtick` and \"regular\" string", `A mix of "♠0" and "♠1" string`, StringArray{"`backtick`", `"regular"`}},
+		{"A confused one of `backtick with \"` and \"regular with \\\" quoted and ` inside\" string", "A confused one of \"♠0\" and \"♠1\" string", StringArray{"`backtick with \"`", "\"regular with \\\" quoted and ` inside\""}},
+		{`A string with "false \\\\\\" inside"`, `A string with "♠0" inside"`, StringArray{`"false \\\\\\"`}},
+		{`A string with "true \\\\\\\" inside"`, `A string with "♠0"`, StringArray{`"true \\\\\\\" inside"`}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name.Str(), func(t *testing.T) {
+			got, array := tt.name.Protect()
+			if got != tt.want {
+				t.Errorf("String.Protect() got = *%v, want %v", got, tt.want)
+			}
+			if !reflect.DeepEqual(array, tt.wantArray) {
+				t.Errorf("String.Protect() array = %v, want %v", array, tt.wantArray)
+			}
+
+			restored := got.RestoreProtected(array)
+			if tt.name != restored {
+				t.Errorf("String.RestoreProtected() got %v, want %v", restored, tt.name)
+			}
+		})
+	}
+}
+
+func TestString_ParseBool(t *testing.T) {
+	tests := []struct {
+		value String
+		want  bool
+	}{
+		{"", false},
+		{"1", true},
+		{"0", false},
+		{"F", false},
+		{"False", false},
+		{"FALSE", false},
+		{"No", false},
+		{"N", false},
+		{"T", true},
+		{"true", true},
+		{"on", true},
+		{"OFF", false},
+		{"Whatever", true},
+		{"YES", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.value.Str(), func(t *testing.T) {
+			if got := tt.value.ParseBool(); got != tt.want {
+				t.Errorf("ParseBoolFromEnv() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

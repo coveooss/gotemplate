@@ -5,7 +5,6 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -35,7 +34,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 		}
 	}
 	content = []byte(strings.Replace(string(content), funcCall, "", -1))
-	log.Noticef("Generated content\n\n%s\n", color.HiCyanString(AddLineNumber(string(content), 0)))
+	log.Noticef("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
 	return content
 }
 
@@ -250,26 +249,26 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		}
 
 		// We first protect strings declared in the expression
-		protected, includedStrings := ProtectString(expression)
+		protected, includedStrings := String(expression).Protect()
 
 		// We transform the expression into a valid go statement
-		protected = strings.Replace(protected, "$", stringRep, -1)
-		protected = strings.Replace(protected, "range", rangeExpr, -1)
-		protected = strings.Replace(protected, "default", defaultExpr, -1)
-		protected = strings.Replace(protected, "func", funcExpr, -1)
-		protected = strings.Replace(protected, "...", ellipsisRep, -1)
-		protected = dotPrefix.ReplaceAllString(protected, fmt.Sprintf("${prefix}%s${value}", dotRep))
-		protected = strings.Replace(protected, ellipsisRep, "...", -1)
-		protected = strings.Replace(protected, "<>", "!=", -1)
-		protected = strings.Replace(protected, "÷", "/", -1)
+		protected = protected.Replace("$", stringRep)
+		protected = protected.Replace("range", rangeExpr)
+		protected = protected.Replace("default", defaultExpr)
+		protected = protected.Replace("func", funcExpr)
+		protected = protected.Replace("...", ellipsisRep)
+		protected = String(dotPrefix.ReplaceAllString(protected.Str(), fmt.Sprintf("${prefix}%s${value}", dotRep)))
+		protected = protected.Replace(ellipsisRep, "...")
+		protected = protected.Replace("<>", "!=")
+		protected = protected.Replace("÷", "/")
 		for key, val := range ops {
-			protected = strings.Replace(protected, " "+val+" ", key, -1)
+			protected = protected.Replace(" "+val+" ", key)
 		}
 		// We add support to partial slice
-		protected = indexExpression(protected)
+		protected = String(indexExpression(protected.Str()))
 
 		// We restore the strings into the expression
-		expr = RestoreProtectedString(protected, includedStrings)
+		expr = protected.RestoreProtected(includedStrings).Str()
 	}
 
 	if indexExpr := valueOf("index", subNames, subMatches); indexExpr != "" {
@@ -638,7 +637,7 @@ func printDebugInfo(r replacement, content string) {
 
 	log.Infof("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
 	if len(matches) > 0 {
-		fmt.Fprintln(os.Stderr)
+		ErrPrintln()
 	}
 }
 

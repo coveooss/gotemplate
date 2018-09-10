@@ -30,7 +30,7 @@ func Test_list_Append(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -51,7 +51,7 @@ func Test_list_Prepend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Prepend(tt.values...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Prepend():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Prepend():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -70,7 +70,7 @@ func Test_list_AsArray(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.AsArray(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -89,7 +89,7 @@ func Test_JsonList_Strings(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Strings(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Strings() = %v, want %v", got, tt.want)
+				t.Errorf("JsonList.Strings() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -106,7 +106,7 @@ func Test_list_Capacity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Capacity(); got != tt.want {
-				t.Errorf("jsonList.Capacity() = %v, want %v", got, tt.want)
+				t.Errorf("JsonList.Capacity() = %v, want %v", got, tt.want)
 			}
 			if tt.l.Capacity() != tt.l.Cap() {
 				t.Errorf("Cap and Capacity return different values")
@@ -128,7 +128,7 @@ func Test_list_Clone(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Clone(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -149,7 +149,7 @@ func Test_list_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Get(tt.index); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Get() = %v, want %v", got, tt.want)
+				t.Errorf("JsonList.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -168,7 +168,7 @@ func Test_list_Len(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Len(); got != tt.want {
-				t.Errorf("jsonList.Len() = %v, want %v", got, tt.want)
+				t.Errorf("JsonList.Len() = %v, want %v", got, tt.want)
 			}
 			if tt.l.Len() != tt.l.Count() {
 				t.Errorf("Len and Count return different values")
@@ -228,10 +228,10 @@ func Test_list_Create(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.l.Create(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 			if got.Capacity() != tt.want.Capacity() {
-				t.Errorf("jsonList.Create() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Capacity(), tt.want.Capacity())
+				t.Errorf("JsonList.Create() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Capacity(), tt.want.Capacity())
 			}
 		})
 	}
@@ -255,7 +255,7 @@ func Test_list_New(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.New(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -282,10 +282,10 @@ func Test_list_CreateDict(t *testing.T) {
 				got = tt.l.CreateDict(tt.args...)
 			}()
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 			if (err != nil) != tt.wantErr {
-				t.Errorf("jsonList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("JsonList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
@@ -309,7 +309,7 @@ func Test_list_Contains(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -332,7 +332,7 @@ func Test_list_Without(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Without(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Without():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Without():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -352,7 +352,7 @@ func Test_list_Unique(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Unique(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Unique():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Unique():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -371,7 +371,7 @@ func Test_list_Reverse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			l := tt.l.Clone()
 			if got := l.Reverse(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Reverse():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Reverse():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -398,11 +398,11 @@ func Test_list_Set(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.l.Clone().Set(tt.args.i, tt.args.v)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("jsonList.Set() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("JsonList.Set() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -449,7 +449,7 @@ func Test_dict_AsMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.AsMap(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.AsMap():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonDict.AsMap():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -471,7 +471,7 @@ func Test_dict_Clone(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.d.Clone(tt.keys...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonDict.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 
@@ -510,10 +510,10 @@ func Test_JsonDict_CreateList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.d.CreateList(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.CreateList() = %v, want %v", got, tt.want)
+				t.Errorf("JsonDict.CreateList() = %v, want %v", got, tt.want)
 			}
 			if got.Len() != tt.wantLen || got.Cap() != tt.wantCapacity {
-				t.Errorf("jsonDict.CreateList() size: %d, %d vs %d, %d", got.Len(), got.Cap(), tt.wantLen, tt.wantCapacity)
+				t.Errorf("JsonDict.CreateList() size: %d, %d vs %d, %d", got.Len(), got.Cap(), tt.wantLen, tt.wantCapacity)
 			}
 		})
 	}
@@ -540,10 +540,10 @@ func Test_dict_Create(t *testing.T) {
 				got = tt.d.Create(tt.args...)
 			}()
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 			if (err != nil) != tt.wantErr {
-				t.Errorf("jsonList.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("JsonList.Create() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
@@ -569,7 +569,7 @@ func Test_dict_Default(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Default(tt.args.key, tt.args.defVal); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.Default() = %v, want %v", got, tt.want)
+				t.Errorf("JsonDict.Default() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -598,11 +598,11 @@ func Test_dict_Delete(t *testing.T) {
 			d := tt.d.Clone()
 			got, err := d.Delete(tt.args.key, tt.args.keys...)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("jsonDict.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("JsonDict.Delete() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.Delete():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonDict.Delete():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 		})
@@ -627,7 +627,7 @@ func Test_dict_Flush(t *testing.T) {
 			d := tt.d.Clone()
 			got := d.Flush(tt.keys...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.Flush():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonDict.Flush():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 			if !reflect.DeepEqual(d, got) {
@@ -650,7 +650,7 @@ func Test_dict_Keys(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.GetKeys(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.GetKeys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonDict.GetKeys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -668,7 +668,7 @@ func Test_dict_KeysAsString(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.KeysAsString(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.KeysAsString():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonDict.KeysAsString():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -712,7 +712,7 @@ func Test_dict_Merge(t *testing.T) {
 			d := tt.d.Clone()
 			got := d.Merge(tt.args.jsonDict, tt.args.dicts...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.Merge():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonDict.Merge():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 		})
@@ -731,7 +731,7 @@ func Test_dict_Values(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.GetValues(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.GetValues():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("JsonDict.GetValues():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -756,7 +756,7 @@ func Test_dict_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Add(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.Add() = %v, want %v", got, tt.want)
+				t.Errorf("JsonDict.Add() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -780,7 +780,7 @@ func Test_dict_Set(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Set(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.Set() = %v, want %v", got, tt.want)
+				t.Errorf("JsonDict.Set() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -801,7 +801,7 @@ func Test_dict_Transpose(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Transpose(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("jsonDict.Transpose() = %v, want %v", got, tt.want)
+				t.Errorf("JsonDict.Transpose() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -30,7 +30,7 @@ func Test_list_Append(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -51,7 +51,7 @@ func Test_list_Prepend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Prepend(tt.values...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Prepend():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Prepend():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -70,7 +70,7 @@ func Test_list_AsArray(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.AsArray(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -89,7 +89,7 @@ func Test_HclList_Strings(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Strings(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Strings() = %v, want %v", got, tt.want)
+				t.Errorf("HclList.Strings() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -106,7 +106,7 @@ func Test_list_Capacity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Capacity(); got != tt.want {
-				t.Errorf("hclList.Capacity() = %v, want %v", got, tt.want)
+				t.Errorf("HclList.Capacity() = %v, want %v", got, tt.want)
 			}
 			if tt.l.Capacity() != tt.l.Cap() {
 				t.Errorf("Cap and Capacity return different values")
@@ -128,7 +128,7 @@ func Test_list_Clone(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Clone(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -149,7 +149,7 @@ func Test_list_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Get(tt.index); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Get() = %v, want %v", got, tt.want)
+				t.Errorf("HclList.Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -168,7 +168,7 @@ func Test_list_Len(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Len(); got != tt.want {
-				t.Errorf("hclList.Len() = %v, want %v", got, tt.want)
+				t.Errorf("HclList.Len() = %v, want %v", got, tt.want)
 			}
 			if tt.l.Len() != tt.l.Count() {
 				t.Errorf("Len and Count return different values")
@@ -228,10 +228,10 @@ func Test_list_Create(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.l.Create(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 			if got.Capacity() != tt.want.Capacity() {
-				t.Errorf("hclList.Create() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Capacity(), tt.want.Capacity())
+				t.Errorf("HclList.Create() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Capacity(), tt.want.Capacity())
 			}
 		})
 	}
@@ -255,7 +255,7 @@ func Test_list_New(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.New(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -282,10 +282,10 @@ func Test_list_CreateDict(t *testing.T) {
 				got = tt.l.CreateDict(tt.args...)
 			}()
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 			if (err != nil) != tt.wantErr {
-				t.Errorf("hclList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("HclList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
@@ -309,7 +309,7 @@ func Test_list_Contains(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -332,7 +332,7 @@ func Test_list_Without(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Without(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Without():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Without():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -352,7 +352,7 @@ func Test_list_Unique(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Unique(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Unique():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Unique():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -371,7 +371,7 @@ func Test_list_Reverse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			l := tt.l.Clone()
 			if got := l.Reverse(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Reverse():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Reverse():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -398,11 +398,11 @@ func Test_list_Set(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.l.Clone().Set(tt.args.i, tt.args.v)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("hclList.Set() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("HclList.Set() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -449,7 +449,7 @@ func Test_dict_AsMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.AsMap(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.AsMap():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclDict.AsMap():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -471,7 +471,7 @@ func Test_dict_Clone(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.d.Clone(tt.keys...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclDict.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 
@@ -510,10 +510,10 @@ func Test_HclDict_CreateList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.d.CreateList(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.CreateList() = %v, want %v", got, tt.want)
+				t.Errorf("HclDict.CreateList() = %v, want %v", got, tt.want)
 			}
 			if got.Len() != tt.wantLen || got.Cap() != tt.wantCapacity {
-				t.Errorf("hclDict.CreateList() size: %d, %d vs %d, %d", got.Len(), got.Cap(), tt.wantLen, tt.wantCapacity)
+				t.Errorf("HclDict.CreateList() size: %d, %d vs %d, %d", got.Len(), got.Cap(), tt.wantLen, tt.wantCapacity)
 			}
 		})
 	}
@@ -540,10 +540,10 @@ func Test_dict_Create(t *testing.T) {
 				got = tt.d.Create(tt.args...)
 			}()
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 			if (err != nil) != tt.wantErr {
-				t.Errorf("hclList.Create() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("HclList.Create() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 		})
@@ -569,7 +569,7 @@ func Test_dict_Default(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Default(tt.args.key, tt.args.defVal); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.Default() = %v, want %v", got, tt.want)
+				t.Errorf("HclDict.Default() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -598,11 +598,11 @@ func Test_dict_Delete(t *testing.T) {
 			d := tt.d.Clone()
 			got, err := d.Delete(tt.args.key, tt.args.keys...)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("hclDict.Delete() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("HclDict.Delete() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.Delete():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclDict.Delete():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 		})
@@ -627,7 +627,7 @@ func Test_dict_Flush(t *testing.T) {
 			d := tt.d.Clone()
 			got := d.Flush(tt.keys...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.Flush():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclDict.Flush():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 			if !reflect.DeepEqual(d, got) {
@@ -650,7 +650,7 @@ func Test_dict_Keys(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.GetKeys(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.GetKeys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclDict.GetKeys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -668,7 +668,7 @@ func Test_dict_KeysAsString(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.KeysAsString(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.KeysAsString():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclDict.KeysAsString():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -712,7 +712,7 @@ func Test_dict_Merge(t *testing.T) {
 			d := tt.d.Clone()
 			got := d.Merge(tt.args.hclDict, tt.args.dicts...)
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.Merge():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclDict.Merge():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 				dumpKeys(t, got, tt.want)
 			}
 		})
@@ -731,7 +731,7 @@ func Test_dict_Values(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.GetValues(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.GetValues():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+				t.Errorf("HclDict.GetValues():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
 		})
 	}
@@ -756,7 +756,7 @@ func Test_dict_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Add(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.Add() = %v, want %v", got, tt.want)
+				t.Errorf("HclDict.Add() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -780,7 +780,7 @@ func Test_dict_Set(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Set(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.Set() = %v, want %v", got, tt.want)
+				t.Errorf("HclDict.Set() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -801,7 +801,7 @@ func Test_dict_Transpose(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Transpose(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("hclDict.Transpose() = %v, want %v", got, tt.want)
+				t.Errorf("HclDict.Transpose() = %v, want %v", got, tt.want)
 			}
 		})
 	}

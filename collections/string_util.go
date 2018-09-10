@@ -8,7 +8,10 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/sprig"
+	"github.com/coveo/gotemplate/errors"
 )
+
+var must = errors.Must
 
 // CenterString returns string s centered within width
 func CenterString(s string, width int) string {
