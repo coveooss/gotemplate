@@ -524,25 +524,20 @@ func unique(list interface{}) (r collections.IGenericList, err error) {
 }
 
 func contains(list interface{}, elements ...interface{}) (r bool, err error) {
-	if s, isString := list.(collections.String); isString {
-		// Check if the list argument is of type String
-		list = string(s)
-	}
-
-	if s, isString := list.(string); isString {
-		// Check if the list argument is of type string
-		for _, element := range elements {
-			if !strings.Contains(s, fmt.Sprint(element)) {
-				return false, nil
-			}
-		}
-		return true, nil
-	}
-
 	// Then, the list argument must be a real list of elements
 	defer func() { err = trapError(err, recover()) }()
 	if _, err := collections.TryAsList(list); err != nil && len(elements) == 1 {
 		if _, err2 := collections.TryAsList(elements[0]); err2 != nil {
+			str, subStr := elements[0], list
+			if s, isString := str.(collections.String); isString {
+				// Check if the str argument is of type String
+				str = string(s)
+			}
+
+			if s, isString := str.(string); isString {
+				// Check if the list argument is of type string
+				return strings.Contains(s, fmt.Sprint(subStr)), nil
+			}
 			return false, err
 		}
 		// Sprig has bad documentation and inverse the arguments, so we try to support both modes.

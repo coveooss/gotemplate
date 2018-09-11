@@ -185,14 +185,14 @@ sortAlpha               splitList               toStrings
 
 Sprig Strings http://masterminds.github.io/sprig/strings.html
 
-abbrev                  lower                   randNumeric             title                   untitle                 
-abbrevboth              nindent                 repeatSprig             toString                upper                   
-camelcase               nospace                 replace                 trim                    wrapSprig               
-cat                     plural                  shuffle                 trimAll                 wrapWith                
+abbrev                  initials                randAscii               swapcase                truncSprig              
+abbrevboth              lower                   randNumeric             title                   untitle                 
+camelcase               nindent                 repeatSprig             toString                upper                   
+cat                     nospace                 replace                 trim                    wrapSprig               
+containsSprig           plural                  shuffle                 trimAll                 wrapWith                
 hasPrefix               quote                   snakecase               trimPrefix              
 hasSuffix               randAlpha               squote                  trimSuffix              
 indent                  randAlphaNum            substr                  trimall                 
-initials                randAscii               swapcase                truncSprig              
 
 Sprig Type Conversion http://masterminds.github.io/sprig/conversion.html
 
