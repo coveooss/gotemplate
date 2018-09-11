@@ -73,7 +73,7 @@ var sprigFuncRef = map[string]struct {
 	"abbrevboth":   {group: sprigString, description: "Abbreviates both sides with ellipses (...).", arguments: []string{"left", "right", "str"}},
 	"camelcase":    {group: sprigString, description: "Converts string from snake_case to CamelCase.", arguments: []string{"str"}},
 	"cat":          {group: sprigString, description: "Concatenates multiple strings together into one, separating them with spaces."},
-	"contains":     {group: sprigString, description: "Tests to see if one string is contained inside of another.", arguments: []string{"substr", "str"}},
+	"contains":     {group: sprigString, description: "Tests to see if one string is contained inside of another.", arguments: []string{"substr", "str"}, aliases: []string{"containsSprig"}},
 	"hasPrefix":    {group: sprigString, description: "Tests whether a string has a given prefix.", arguments: []string{"prefix", "str"}},
 	"hasSuffix":    {group: sprigString, description: "Tests whether a string has a given suffix.", arguments: []string{"suffix", "str"}},
 	"indent":       {group: sprigString, description: "Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.", arguments: []string{"spaces", "str"}},
