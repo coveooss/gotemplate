@@ -9,6 +9,8 @@ import (
 	"github.com/coveo/gotemplate/errors"
 )
 
+var must = errors.Must
+
 // FindFiles returns the list of the files matching the array of patterns
 func FindFiles(folder string, recursive, followLinks bool, patterns ...string) ([]string, error) {
 	depth := 0
@@ -23,7 +25,7 @@ func FindFilesMaxDepth(folder string, maxDepth int, followLinks bool, patterns .
 	visited := map[string]bool{}
 	var walker func(folder string) ([]string, error)
 	walker = func(folder string) ([]string, error) {
-		results := errors.Must(findFiles(folder, patterns...)).([]string)
+		results := must(findFiles(folder, patterns...)).([]string)
 		folder, _ = filepath.Abs(folder)
 		if maxDepth == 0 {
 			return results, nil
@@ -35,7 +37,7 @@ func FindFilesMaxDepth(folder string, maxDepth int, followLinks bool, patterns .
 			}
 			if info.IsDir() {
 				visited[path] = true
-				depth := strings.Count(errors.Must(filepath.Rel(path, folder)).(string), "..")
+				depth := strings.Count(must(filepath.Rel(path, folder)).(string), "..")
 				if depth > maxDepth {
 					return filepath.SkipDir
 				}
@@ -88,12 +90,12 @@ func findFiles(folder string, patterns ...string) ([]string, error) {
 
 // MustFindFiles returns the list of the files matching the array of patterns with panic on error
 func MustFindFiles(folder string, recursive, followLinks bool, patterns ...string) []string {
-	return errors.Must(FindFiles(folder, recursive, followLinks, patterns...)).([]string)
+	return must(FindFiles(folder, recursive, followLinks, patterns...)).([]string)
 }
 
 // MustFindFilesMaxDepth returns the list of the files matching the array of patterns with panic on error
 func MustFindFilesMaxDepth(folder string, maxDepth int, followLinks bool, patterns ...string) []string {
-	return errors.Must(FindFilesMaxDepth(folder, maxDepth, followLinks, patterns...)).([]string)
+	return must(FindFilesMaxDepth(folder, maxDepth, followLinks, patterns...)).([]string)
 }
 
 func globFunc(trimUnmatch bool, args ...interface{}) (result []string) {
@@ -120,7 +122,7 @@ func GlobFuncTrim(args ...interface{}) []string { return globFunc(true, args...)
 
 // Pwd returns the current folder
 func Pwd() string {
-	return errors.Must(os.Getwd()).(string)
+	return must(os.Getwd()).(string)
 }
 
 // Relative returns the relative path of file from folder
@@ -128,5 +130,5 @@ func Relative(folder, file string) string {
 	if !filepath.IsAbs(file) {
 		return file
 	}
-	return errors.Must(filepath.Rel(folder, file)).(string)
+	return must(filepath.Rel(folder, file)).(string)
 }

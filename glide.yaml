@@ -5,3 +5,5 @@ owners:
 import:
 - package: github.com/Masterminds/sprig
 - package: github.com/drhodes/goLorem
+- package: "github.com/op/go-logging"
+  repo: https://github.com/shenwei356/go-logging.git

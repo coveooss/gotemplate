@@ -2,8 +2,6 @@ package collections
 
 import (
 	"fmt"
-
-	"github.com/coveo/gotemplate/errors"
 )
 
 // IDictionary represents objects that act as map[string]interface.
@@ -51,7 +49,7 @@ func assertDictionaryHelper() {
 
 // AsDictionary returns the object casted as IDictionary.
 func AsDictionary(object interface{}) IDictionary {
-	return errors.Must(TryAsDictionary(object)).(IDictionary)
+	return must(TryAsDictionary(object)).(IDictionary)
 }
 
 // CreateDictionary instantiates a new dictionary with optional size.

@@ -90,9 +90,9 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			originalSourceLines = strings.Split(originalContent, "\n")
 		}
 
-		regexGroup := must(getRegexGroup("Parse", templateErrors)).([]*regexp.Regexp)
+		regexGroup := must(utils.GetRegexGroup("Parse", templateErrors)).([]*regexp.Regexp)
 
-		if matches, _ := multiMatch(err.Error(), regexGroup...); len(matches) > 0 {
+		if matches, _ := utils.MultiMatch(err.Error(), regexGroup...); len(matches) > 0 {
 			// We remove the faulty line and continue the processing to get all errors at once
 			lines := strings.Split(content, "\n")
 			faultyLine := toInt(matches[tagLine]) - 1
@@ -146,11 +146,11 @@ func (t Template) processContentInternal(originalContent, source string, origina
 					fmt.Sprintf(`%[1]s(?P<%[3]s>%[3]s|isNil|isNull|isEmpty|isSet)\s+%[4]s%[2]s`, left, right, isZero, undefError),
 					fmt.Sprintf(`%[1]s%[3]s\s+(?P<%[3]s>%[4]s).*?%[2]s`, left, right, assert, undefError),
 				}
-				expressions, errRegex := getRegexGroup(fmt.Sprintf("Undef%s", t.delimiters), undefRegexDefintions)
+				expressions, errRegex := utils.GetRegexGroup(fmt.Sprintf("Undef%s", t.delimiters), undefRegexDefintions)
 				if errRegex != nil {
 					log.Error(errRegex)
 				}
-				undefMatches, n := multiMatch(newContext, expressions...)
+				undefMatches, n := utils.MultiMatch(newContext, expressions...)
 
 				if undefMatches[ifUndef] != "" {
 					logMessage = fmt.Sprintf("Managed undefined value %s: %s", key, context)
@@ -270,7 +270,9 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 	}
 
 	if isCode {
-		fmt.Println(result)
+		// This occurs when gotemplate code has been supplied as a filename. In that case, we simply render
+		// the result to the stdout
+		Println(result)
 		return "", nil
 	}
 	resultFile = template
@@ -381,9 +383,9 @@ func (t Template) printResult(source, target, result string) (err error) {
 	} else {
 		log.Notice(target)
 	}
-	fmt.Print(result)
+	Print(result)
 	if result != "" && terminal.IsTerminal(int(os.Stdout.Fd())) {
-		fmt.Println()
+		Println()
 	}
 
 	return

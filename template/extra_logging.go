@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/coveo/gotemplate/utils"
+	"github.com/fatih/color"
 	logging "github.com/op/go-logging"
 )
 
@@ -112,7 +113,7 @@ func ConfigureLogging(level, internalLevel logging.Level, simple bool) {
 	if simple {
 		format = `[%{level}] %{message}`
 	}
-	logging.SetBackend(logging.NewBackendFormatter(logging.NewLogBackend(os.Stderr, "", 0), logging.MustStringFormatter(format)))
+	logging.SetBackend(logging.NewBackendFormatter(logging.NewLogBackend(color.Error, "", 0), logging.MustStringFormatter(format)))
 	SetLogLevel(level)
 	logging.SetLevel(internalLevel, loggerInternal)
 }

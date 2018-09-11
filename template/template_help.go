@@ -3,7 +3,6 @@ package template
 import (
 	"fmt"
 	"math"
-	"os"
 	"sort"
 	"strings"
 
@@ -34,11 +33,11 @@ func (t Template) PrintTemplates(all, long bool) {
 			}
 			folder := utils.Relative(t.folder, tpl.ParseName)
 			if folder+name != "." {
-				fmt.Fprintf(os.Stderr, "%-[3]*[1]s %[2]s\n", name, faint(folder), maxLen)
+				ErrPrintf("%-[3]*[1]s %[2]s\n", name, faint(folder), maxLen)
 			}
 		}
 	}
-	fmt.Fprintln(os.Stderr)
+	ErrPrintln()
 }
 
 // PrintFunctions outputs the list of functions available.
@@ -78,10 +77,10 @@ func (t Template) PrintFunctions(all, long, groupByCategory bool, filters ...str
 			if link != "" {
 				link = color.BlackString(fmt.Sprintf(" http%s", link))
 			}
-			fmt.Printf("%s%s\n\n", title, link)
+			Printf("%s%s\n\n", title, link)
 		}
 		print(categories[key], maxLength, all)
-		fmt.Println()
+		Println()
 	}
 }
 
@@ -142,12 +141,12 @@ func (t Template) printFunctionsShort(functions []string, maxLength int, alias b
 
 			if t.functions[item].alias != nil {
 				ex := len(color.HiBlackString(""))
-				fmt.Printf("%-[1]*[2]s", maxLength+2+ex, color.HiBlackString(item))
+				Printf("%-[1]*[2]s", maxLength+2+ex, color.HiBlackString(item))
 			} else {
-				fmt.Printf("%-[1]*[2]s", maxLength+2+extraLen, item)
+				Printf("%-[1]*[2]s", maxLength+2+extraLen, item)
 			}
 		}
-		fmt.Println()
+		Println()
 	}
 }
 
@@ -171,16 +170,16 @@ func (t Template) printFunctionsDetailed(functions []string, maxLength int, alia
 	for i := range functions {
 		fi := t.functions[functions[i]]
 		if fi.description != "" {
-			fmt.Printf(color.GreenString("%s\n"), fi.description)
+			Printf(color.GreenString("%s\n"), fi.description)
 		}
-		fmt.Println(fi.Signature())
+		Println(fi.Signature())
 
 		if alias {
 			sort.Strings(fi.aliases)
 			for i := range fi.aliases {
-				fmt.Println(t.functions[fi.aliases[i]].Signature())
+				Println(t.functions[fi.aliases[i]].Signature())
 			}
 		}
-		fmt.Println()
+		Println()
 	}
 }

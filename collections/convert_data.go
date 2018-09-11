@@ -163,16 +163,16 @@ func ToNativeRepresentation(value interface{}) (x interface{}) {
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		return errors.Must(strconv.Atoi(fmt.Sprint(value))).(int)
+		return must(strconv.Atoi(fmt.Sprint(value))).(int)
 
 	case reflect.Int64, reflect.Uint64:
-		return errors.Must(strconv.ParseInt(fmt.Sprint(value), 10, 64)).(int64)
+		return must(strconv.ParseInt(fmt.Sprint(value), 10, 64)).(int64)
 
 	case reflect.Float32, reflect.Float64:
-		return errors.Must(strconv.ParseFloat(fmt.Sprint(value), 64)).(float64)
+		return must(strconv.ParseFloat(fmt.Sprint(value), 64)).(float64)
 
 	case reflect.Bool:
-		return errors.Must(strconv.ParseBool(fmt.Sprint(value))).(bool)
+		return must(strconv.ParseBool(fmt.Sprint(value))).(bool)
 
 	case reflect.Slice, reflect.Array:
 		result := make([]interface{}, val.Len())

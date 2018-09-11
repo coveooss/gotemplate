@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
 	"github.com/imdario/mergo"
 )
 
@@ -27,7 +26,7 @@ type DictHelper struct {
 
 // AsDictionary returns the object casted as IDictionary.
 func (dh DictHelper) AsDictionary(object interface{}) baseIDict {
-	return errors.Must(dh.TryAsDictionary(object)).(baseIDict)
+	return must(dh.TryAsDictionary(object)).(baseIDict)
 }
 
 // Clone returns a distinct copy of the object with only supplied keys. If no keys are supplied, all keys from d are copied.

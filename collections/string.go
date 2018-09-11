@@ -1,6 +1,10 @@
 package collections
 
 import (
+	"fmt"
+	"math"
+	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -69,8 +73,8 @@ func (s String) IndexFunc(f func(rune) bool) int { return strings.IndexFunc(stri
 // invalid UTF-8 byte sequence.
 func (s String) IndexRune(r rune) int { return strings.IndexRune(string(s), r) }
 
-// Join concatenates the elements of a to create a single string. The separator string
-// sep is placed between elements in the resulting string.
+// Join concatenates the elements of array to create a single string. The string
+// object is placed between elements in the resulting string.
 func (s String) Join(array ...string) String { return String(strings.Join(array, string(s))) }
 
 // LastIndex returns the index of the last instance of substr in s, or -1 if substr is not present in s.
@@ -318,4 +322,82 @@ func (s String) GetContextAtPosition(pos int, left, right string) (String, int) 
 func (s String) SelectContext(pos int, left, right string) String {
 	result, _ := s.GetContextAtPosition(pos, left, right)
 	return result
+}
+
+// Protect returns a string with all included strings replaced by a token and an array of all replaced strings.
+// The function is able to detect strings enclosed between quotes "" or backtick `` and it detects escaped characters.
+func (s String) Protect() (result String, array StringArray) {
+	defer func() { result += s }()
+
+	escaped := func(from int) bool {
+		// Determine if the previous characters are escaping the current value
+		count := 0
+		for ; s[from-count] == '\\'; count++ {
+		}
+		return count%2 == 1
+	}
+
+	for end := 0; end >= 0; {
+		pos := s.IndexAny("`\"")
+		if pos < 0 {
+			break
+		}
+
+		for end = s[pos+1:].IndexRune(rune(s[pos])); end >= 0; {
+			end += pos + 1
+			if s[end] == '"' && escaped(end-1) {
+				// The quote has been escaped, so we find the next one
+				if newEnd := s[end+1:].IndexRune('"'); newEnd >= 0 {
+					end += newEnd - pos
+				}
+			} else {
+				array = append(array, s[pos:end+1])
+				result += s[:pos] + String(fmt.Sprintf(replacementFormat, len(array)-1))
+				s = s[end+1:]
+				break
+			}
+		}
+	}
+	return
+}
+
+// RestoreProtected restores a string transformed by ProtectString to its original value.
+func (s String) RestoreProtected(array StringArray) String {
+	return String(replacementRegex.ReplaceAllStringFunc(s.Str(), func(match string) string {
+		index := must(strconv.Atoi(replacementRegex.FindStringSubmatch(match)[1])).(int)
+		return array[index].Str()
+	}))
+}
+
+const replacementFormat = `"♠%d"`
+
+var replacementRegex = regexp.MustCompile(`"♠(\d+)"`)
+
+// AddLineNumber adds line number to a string
+func (s String) AddLineNumber(space int) String {
+	lines := s.Lines()
+	if space <= 0 {
+		space = int(math.Log10(float64(len(lines)))) + 1
+	}
+
+	for i := range lines {
+		lines[i] = String(fmt.Sprintf("%*d %s", space, i+1, lines[i]))
+	}
+	return String("\n").Join(lines.Strings()...)
+}
+
+// ParseBool returns true if variable exist and is not clearly a false value
+//    i.e. empty, 0, Off, No, n, false, f
+func (s String) ParseBool() bool {
+	// We first try with the strconv library
+	if result, err := strconv.ParseBool(s.Str()); err == nil {
+		return result
+	}
+	switch s.ToUpper() {
+	case "", "N", "NO", "OFF":
+		return false
+	default:
+		// Any other value is considered as true
+		return true
+	}
 }

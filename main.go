@@ -31,12 +31,19 @@ An extended template processor for go.
 See: https://github.com/coveo/gotemplate/blob/master/README.md for complete documentation.
 `
 
+var (
+	print     = utils.ColorPrint
+	printf    = utils.ColorPrintf
+	println   = utils.ColorPrintln
+	errPrintf = utils.ColorErrorPrintf
+)
+
 func main() {
 	var exitCode int
 
 	defer func() {
 		if rec := recover(); rec != nil {
-			fmt.Printf(color.RedString("Recovered %v\n"), rec)
+			errPrintf(color.RedString("Recovered %v\n"), rec)
 			debug.PrintStack()
 			exitCode = -1
 		}
@@ -81,7 +88,6 @@ func main() {
 		listFilters   = list.Arg("filters", "List only functions that contains one of the filter").Strings()
 	)
 
-	quiet := app.Flag("quiet", "Deprecated").Hidden().Short('q').Bool()
 	app.Flag("ll", "short version of --log-level").Hidden().Int8Var(logLevel)
 	app.Flag("dl", "short version of --debug-log-level").Hidden().Int8Var(debugLogLevel)
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
@@ -176,15 +182,11 @@ func main() {
 	}
 
 	if *getVersion {
-		fmt.Println(version)
+		println(version)
 		os.Exit(0)
 	}
 
 	template.ConfigureLogging(logging.Level(*logLevel), logging.Level(*debugLogLevel), *logSimple)
-
-	if *quiet {
-		template.Log.Warning("--quiet options is deprecated, use --logginglevel instead")
-	}
 
 	if *targetFolder == "" {
 		// Target folder default to source folder
@@ -249,7 +251,7 @@ func main() {
 		// If there is input in stdin and it has not already been consumed as data (---var)
 		content := readStdin()
 		if result, err := t.ProcessContent(content, "Piped input"); err == nil {
-			fmt.Println(result)
+			println(result)
 		} else {
 			errors.Print(err)
 			exitCode = 2

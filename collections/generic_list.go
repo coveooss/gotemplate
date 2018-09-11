@@ -2,8 +2,6 @@ package collections
 
 import (
 	"fmt"
-
-	"github.com/coveo/gotemplate/errors"
 )
 
 // IGenericList represents objects that act as []interface{}.
@@ -51,7 +49,7 @@ func assertListHelper() {
 
 // AsList returns the object casted as IGenericList.
 func AsList(object interface{}) IGenericList {
-	return errors.Must(TryAsList(object)).(IGenericList)
+	return must(TryAsList(object)).(IGenericList)
 }
 
 // CreateList instantiates a new generic list with optional size and capacity.

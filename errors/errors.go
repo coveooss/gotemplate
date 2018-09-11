@@ -2,7 +2,6 @@ package errors
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/fatih/color"
@@ -21,7 +20,7 @@ func Printf(format string, args ...interface{}) {
 
 // Print print error to the stderr in red
 func Print(err error) {
-	fmt.Fprintln(os.Stderr, color.RedString(fmt.Sprintf("%v", err)))
+	fmt.Fprintln(color.Error, color.RedString(fmt.Sprintf("%v", err)))
 }
 
 // Must traps errors and return the remaining results to the caller
