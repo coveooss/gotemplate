@@ -8,6 +8,8 @@ import (
 type dictionary = map[string]interface{}
 
 func TestToNativeRepresentation(t *testing.T) {
+	t.Parallel()
+
 	type SubStruct struct {
 		U int64
 		I interface{}
@@ -69,6 +71,8 @@ func TestToNativeRepresentation(t *testing.T) {
 }
 
 func Test_quote(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		arg  string
@@ -76,7 +80,6 @@ func Test_quote(t *testing.T) {
 	}{
 		{"Simple value", "Foo", "Foo"},
 		{"Simple value", "Foo Bar", `"Foo Bar"`},
-		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

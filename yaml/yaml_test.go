@@ -9,6 +9,8 @@ import (
 )
 
 func Test_list_String(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    yamlList
@@ -39,6 +41,8 @@ func Test_list_String(t *testing.T) {
 }
 
 func Test_dict_String(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		d    yamlDict
@@ -74,6 +78,8 @@ func Test_dict_String(t *testing.T) {
 }
 
 func TestUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		yaml string
@@ -94,6 +100,8 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func TestUnmarshalWithError(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		yaml string
@@ -112,6 +120,8 @@ func TestUnmarshalWithError(t *testing.T) {
 }
 
 func TestUnmarshalStrict(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		yaml    string

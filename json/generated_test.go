@@ -16,6 +16,8 @@ import (
 var strFixture = jsonList(jsonListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
 
 func Test_list_Append(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name   string
 		l      jsonIList
@@ -37,6 +39,8 @@ func Test_list_Append(t *testing.T) {
 }
 
 func Test_list_Prepend(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name   string
 		l      jsonIList
@@ -58,6 +62,8 @@ func Test_list_Prepend(t *testing.T) {
 }
 
 func Test_list_AsArray(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -77,6 +83,8 @@ func Test_list_AsArray(t *testing.T) {
 }
 
 func Test_JsonList_Strings(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -96,6 +104,8 @@ func Test_JsonList_Strings(t *testing.T) {
 }
 
 func Test_list_Capacity(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonIList
@@ -116,6 +126,8 @@ func Test_list_Capacity(t *testing.T) {
 }
 
 func Test_list_Clone(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -135,6 +147,8 @@ func Test_list_Clone(t *testing.T) {
 }
 
 func Test_list_Get(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name  string
 		l     jsonList
@@ -156,6 +170,8 @@ func Test_list_Get(t *testing.T) {
 }
 
 func Test_list_Len(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -178,6 +194,8 @@ func Test_list_Len(t *testing.T) {
 }
 
 func Test_CreateList(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		args    []int
@@ -213,6 +231,8 @@ func Test_CreateList(t *testing.T) {
 }
 
 func Test_list_Create(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -238,6 +258,8 @@ func Test_list_Create(t *testing.T) {
 }
 
 func Test_list_New(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -262,6 +284,8 @@ func Test_list_New(t *testing.T) {
 }
 
 func Test_list_CreateDict(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		l       jsonList
@@ -293,6 +317,8 @@ func Test_list_CreateDict(t *testing.T) {
 }
 
 func Test_list_Contains(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -316,6 +342,8 @@ func Test_list_Contains(t *testing.T) {
 }
 
 func Test_list_Without(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -339,6 +367,8 @@ func Test_list_Without(t *testing.T) {
 }
 
 func Test_list_Unique(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -358,6 +388,8 @@ func Test_list_Unique(t *testing.T) {
 	}
 }
 func Test_list_Reverse(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    jsonList
@@ -378,6 +410,8 @@ func Test_list_Reverse(t *testing.T) {
 }
 
 func Test_list_Set(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		i int
 		v interface{}
@@ -427,6 +461,8 @@ var mapFixture = map[string]interface{}{
 var dictFixture = jsonDict(jsonDictHelper.AsDictionary(mapFixture).AsMap())
 
 func dumpKeys(t *testing.T, d1, d2 jsonIDict) {
+	t.Parallel()
+
 	for key := range d1.AsMap() {
 		v1, v2 := d1.Get(key), d2.Get(key)
 		if reflect.DeepEqual(v1, v2) {
@@ -437,6 +473,8 @@ func dumpKeys(t *testing.T, d1, d2 jsonIDict) {
 }
 
 func Test_dict_AsMap(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		d    jsonDict
@@ -456,6 +494,8 @@ func Test_dict_AsMap(t *testing.T) {
 }
 
 func Test_dict_Clone(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		d    jsonDict
@@ -491,6 +531,8 @@ func Test_dict_Clone(t *testing.T) {
 }
 
 func Test_JsonDict_CreateList(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name         string
 		d            jsonDict
@@ -520,6 +562,8 @@ func Test_JsonDict_CreateList(t *testing.T) {
 }
 
 func Test_dict_Create(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		d       jsonDict
@@ -551,6 +595,8 @@ func Test_dict_Create(t *testing.T) {
 }
 
 func Test_dict_Default(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		key    interface{}
 		defVal interface{}
@@ -576,6 +622,8 @@ func Test_dict_Default(t *testing.T) {
 }
 
 func Test_dict_Delete(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		key  interface{}
 		keys []interface{}
@@ -610,6 +658,8 @@ func Test_dict_Delete(t *testing.T) {
 }
 
 func Test_dict_Flush(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		d    jsonDict
@@ -639,6 +689,8 @@ func Test_dict_Flush(t *testing.T) {
 }
 
 func Test_dict_Keys(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		d    jsonDict
@@ -657,6 +709,8 @@ func Test_dict_Keys(t *testing.T) {
 }
 
 func Test_dict_KeysAsString(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		d    jsonDict
@@ -675,6 +729,8 @@ func Test_dict_KeysAsString(t *testing.T) {
 }
 
 func Test_dict_Merge(t *testing.T) {
+	t.Parallel()
+
 	adding1 := jsonDict{
 		"int":        1000,
 		"Add1Int":    1,
@@ -720,6 +776,8 @@ func Test_dict_Merge(t *testing.T) {
 }
 
 func Test_dict_Values(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		d    jsonDict
@@ -738,6 +796,8 @@ func Test_dict_Values(t *testing.T) {
 }
 
 func Test_dict_Add(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		key interface{}
 		v   interface{}
@@ -763,6 +823,8 @@ func Test_dict_Add(t *testing.T) {
 }
 
 func Test_dict_Set(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		key interface{}
 		v   interface{}
@@ -787,6 +849,8 @@ func Test_dict_Set(t *testing.T) {
 }
 
 func Test_dict_Transpose(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		d    jsonDict

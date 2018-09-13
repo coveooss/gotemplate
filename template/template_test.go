@@ -6,6 +6,8 @@ import (
 )
 
 func Test_getTargetFile(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		fileName   string
 		sourcePath string
@@ -29,6 +31,8 @@ func Test_getTargetFile(t *testing.T) {
 }
 
 func Test_templateWithErrors(t *testing.T) {
+	t.Parallel()
+
 	template, _ := NewTemplate(".", nil, "", nil)
 	tests := []struct {
 		name    string

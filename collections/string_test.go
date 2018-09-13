@@ -7,6 +7,8 @@ import (
 )
 
 func TestUnIndent(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		s string
 	}
@@ -47,6 +49,8 @@ func TestUnIndent(t *testing.T) {
 }
 
 func TestString_ToTitle(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		s    String
 		want string
@@ -63,6 +67,8 @@ func TestString_ToTitle(t *testing.T) {
 }
 
 func TestWrapString(t *testing.T) {
+	t.Parallel()
+
 	sample := "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 	tests := []struct {
 		s          string
@@ -90,6 +96,8 @@ func TestWrapString(t *testing.T) {
 }
 
 func TestString_FindWord(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		pos    int
 		accept []string
@@ -129,6 +137,8 @@ func TestString_FindWord(t *testing.T) {
 }
 
 func TestString_FindContext(t *testing.T) {
+	t.Parallel()
+
 	type args struct {
 		pos   int
 		left  string
@@ -169,6 +179,8 @@ func TestString_FindContext(t *testing.T) {
 }
 
 func TestString_Protect(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      String
 		want      String
@@ -204,6 +216,8 @@ func TestString_Protect(t *testing.T) {
 }
 
 func TestString_ParseBool(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		value String
 		want  bool

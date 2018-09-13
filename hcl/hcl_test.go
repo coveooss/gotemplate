@@ -9,6 +9,8 @@ import (
 )
 
 func Test_list_String(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		l    hclList
@@ -29,6 +31,8 @@ func Test_list_String(t *testing.T) {
 }
 
 func Test_dict_String(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name string
 		d    hclDict
@@ -48,6 +52,8 @@ func Test_dict_String(t *testing.T) {
 }
 
 func TestMarshalHCLVars(t *testing.T) {
+	t.Parallel()
+
 	type test struct {
 		Name  string `hcl:",omitempty"`
 		Value int    `hcl:",omitempty"`
@@ -75,6 +81,12 @@ func TestMarshalHCLVars(t *testing.T) {
 		{"Null value", args{nil, noIndent}, "null"},
 		{"Null struct", args{testNilPtr, noIndent}, "null"},
 		{"List of integer", args{[]int{0, 1, 2, 3}, noIndent}, "[0,1,2,3]"},
+		{"One level map", args{hclDict{"a": hclDict{"b": 10}}, noIndent}, "a {b=10}"},
+		{"One level map (pretty)", args{hclDict{"a": hclDict{"b": 10}}, indent}, "a {\n  b = 10\n}"},
+		{"Two level map 1", args{hclDict{"a": hclDict{"b": hclDict{"c": 10, "d": 20}}}, noIndent}, "a b {c=10 d=20}"},
+		{"Two level map 1 (pretty)", args{hclDict{"a": hclDict{"b": hclDict{"c": 10, "d": 20}}}, indent}, "a b {\n  c = 10\n  d = 20\n}"},
+		{"Two level map 2", args{hclDict{"a": hclDict{"b": hclDict{"c": 10, "d": 20}}, "e": 30}, noIndent}, "a b {c=10 d=20} e=30"},
+		{"Two level map 2 (pretty)", args{hclDict{"a": hclDict{"b": hclDict{"c": 10, "d": 20}}, "e": 30}, indent}, "e = 30\n\na b {\n  c = 10\n  d = 20\n}"},
 		{"Map", args{hclDict{"a": 0, "bb": 1}, noIndent}, "a=0 bb=1"},
 		{"Map (pretty)", args{hclDict{"a": 0, "bb": 1}, indent}, "a  = 0\nbb = 1"},
 		{"Structure (pretty)", args{test{"name", 1}, indent}, "Name  = \"name\"\nValue = 1"},
@@ -93,6 +105,8 @@ func TestMarshalHCLVars(t *testing.T) {
 }
 
 func TestUnmarshal(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		hcl     string
@@ -120,6 +134,8 @@ func TestUnmarshal(t *testing.T) {
 }
 
 func TestUnmarshalStrict(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		hcl     string

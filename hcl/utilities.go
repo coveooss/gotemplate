@@ -189,8 +189,11 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 					items = append(items, strings.Replace(rendered, specialFormat, id(key), -1))
 
 				} else {
-					if indent == "" && strings.HasPrefix(rendered, `"`) && equal == "" {
-						keyLen = len(id(key)) + 1
+					if indent == "" {
+						keyLen = 0
+						if equal == "" && !strings.HasPrefix(rendered, `{`) {
+							keyLen = len(id(key)) + 1
+						}
 					}
 					items = append(items, fmt.Sprintf("%*s%s%s", -keyLen, id(key), equal, rendered))
 				}

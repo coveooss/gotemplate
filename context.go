@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -11,8 +12,6 @@ import (
 )
 
 func createContext(varsFiles []string, namedVars []string) (context collections.IDictionary) {
-	context = collections.CreateDictionary()
-
 	type fileDef struct {
 		name    string
 		value   interface{}
@@ -102,6 +101,10 @@ func createContext(varsFiles []string, namedVars []string) (context collections.
 		}
 
 		if loader == nil {
+			if context == nil {
+				// The context is not initialized yet, so we create it with the default collection type
+				context = collections.CreateDictionary()
+			}
 			context.Set(nv.name, nv.value)
 			continue
 		}
@@ -109,12 +112,18 @@ func createContext(varsFiles []string, namedVars []string) (context collections.
 		if err != nil {
 			errors.Raise("Error %v while loading vars file %s", nv.value, err)
 		}
+		if context == nil {
+			// The context is not initialized yet, so we create it with the same type of the
+			// first file argument
+			context = content.Create()
+		}
 		for key, value := range content.AsMap() {
 			context.Set(key, value)
 		}
 	}
 
 	if len(unnamed) > 0 {
+		fmt.Printf("3 Adding %[1]s = %[2]v (%[2]T)\n", "ARGS", unnamed)
 		context.Set("ARGS", unnamed)
 	}
 	return
