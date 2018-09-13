@@ -217,7 +217,10 @@ func (t Template) processContentInternal(originalContent, source string, origina
 
 	context := t.GetNewContext(filepath.Dir(source), true)
 	newTemplate := context.New(source)
-	if !topCall && !t.options[AcceptNoValue] {
+
+	if topCall {
+		newTemplate.Option("missingkey=default")
+	} else if !t.options[AcceptNoValue] {
 		// To help detect errors on second run, we enable the option to raise error on nil values
 		// log.Infof("%s(%d): Activating the missing key error option", source, retryCount)
 		newTemplate.Option("missingkey=error")
