@@ -147,7 +147,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				newContext := context.Replace(current.Str(), undefError).Str()
 				newLine := currentLine.Replace(context.Str(), newContext)
 
-				left := fmt.Sprintf(`(?P<begin>(%s-?\s*(if|range|with)\s.*|\()\s*)`, regexp.QuoteMeta(t.LeftDelim()))
+				left := fmt.Sprintf(`(?P<begin>(%s-?\s*(if|range|with)\s.*|\()\s*)?`, regexp.QuoteMeta(t.LeftDelim()))
 				right := fmt.Sprintf(`(?P<end>\s*(-?%s|\)))`, regexp.QuoteMeta(t.RightDelim()))
 				const (
 					ifUndef = "ifUndef"
