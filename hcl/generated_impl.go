@@ -34,12 +34,20 @@ func (l hclList) Append(values ...interface{}) hclIList {
 	return hclListHelper.Add(l, false, values...)
 }
 
+func (l hclList) Intersect(values ...interface{}) hclIList {
+	return hclListHelper.Intersect(l, values...)
+}
+
 func (l hclList) Prepend(values ...interface{}) hclIList {
 	return hclListHelper.Add(l, true, values...)
 }
 
 func (l hclList) Set(i int, v interface{}) (hclIList, error) {
 	return hclListHelper.SetIndex(l, i, v)
+}
+
+func (l hclList) Union(values ...interface{}) hclIList {
+	return hclListHelper.Add(l, false, values...).Unique()
 }
 
 func (l hclList) Without(values ...interface{}) hclIList {

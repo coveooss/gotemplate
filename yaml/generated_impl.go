@@ -34,12 +34,20 @@ func (l yamlList) Append(values ...interface{}) yamlIList {
 	return yamlListHelper.Add(l, false, values...)
 }
 
+func (l yamlList) Intersect(values ...interface{}) yamlIList {
+	return yamlListHelper.Intersect(l, values...)
+}
+
 func (l yamlList) Prepend(values ...interface{}) yamlIList {
 	return yamlListHelper.Add(l, true, values...)
 }
 
 func (l yamlList) Set(i int, v interface{}) (yamlIList, error) {
 	return yamlListHelper.SetIndex(l, i, v)
+}
+
+func (l yamlList) Union(values ...interface{}) yamlIList {
+	return yamlListHelper.Add(l, false, values...).Unique()
 }
 
 func (l yamlList) Without(values ...interface{}) yamlIList {

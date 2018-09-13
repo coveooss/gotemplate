@@ -314,6 +314,11 @@ func initial(list interface{}) interface{}, error
 ```
 
 ```go
+// Returns a list that is the intersection of the list and all arguments (removing duplicates).
+func intersect(list interface{}, elements ...interface{}) IGenericList, error
+```
+
+```go
 // Returns true if the supplied value is nil.
 // Aliases: isNull
 func isNil(arg1 interface{}) bool
@@ -415,6 +420,11 @@ func string(value interface{}) string
 // Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, "" are not considered as unset).
 // Aliases: ifUndef
 func undef(default interface{}, values ...interface{}) interface{}
+```
+
+```go
+// Returns a list that is the union of the list and all arguments (removing duplicates).
+func union(list interface{}, elements ...interface{}) IGenericList, error
 ```
 
 ```go

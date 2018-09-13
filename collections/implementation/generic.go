@@ -28,12 +28,20 @@ func (l baseList) Append(values ...interface{}) baseIList {
 	return baseListHelper.Add(l, false, values...)
 }
 
+func (l baseList) Intersect(values ...interface{}) baseIList {
+	return baseListHelper.Intersect(l, values...)
+}
+
 func (l baseList) Prepend(values ...interface{}) baseIList {
 	return baseListHelper.Add(l, true, values...)
 }
 
 func (l baseList) Set(i int, v interface{}) (baseIList, error) {
 	return baseListHelper.SetIndex(l, i, v)
+}
+
+func (l baseList) Union(values ...interface{}) baseIList {
+	return baseListHelper.Add(l, false, values...).Unique()
 }
 
 func (l baseList) Without(values ...interface{}) baseIList {

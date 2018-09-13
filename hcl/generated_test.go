@@ -341,6 +341,58 @@ func Test_list_Contains(t *testing.T) {
 	}
 }
 
+func Test_list_Intersect(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		l    hclList
+		args []interface{}
+		want hclList
+	}{
+		{"Empty List", nil, []interface{}{}, hclList{}},
+		{"Intersect nothing", hclList{1}, nil, hclList{}},
+		{"Intersect nothing 2", hclList{1}, []interface{}{}, hclList{}},
+		{"Not there", hclList{1}, []interface{}{2}, hclList{}},
+		{"Included", hclList{1, 2}, []interface{}{2}, hclList{2}},
+		{"Partially there", hclList{1, 2}, []interface{}{2, 3}, hclList{2}},
+		{"With duplicates", hclList{1, 2, 3, 4, 5, 4, 3, 2, 1}, []interface{}{3, 4, 5, 6, 7, 8, 7, 6, 5, 5, 4, 3}, hclList{3, 4, 5}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Intersect(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HclList.Intersect():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_Union(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		l    hclList
+		args []interface{}
+		want hclList
+	}{
+		{"Empty List", nil, []interface{}{}, hclList{}},
+		{"Intersect nothing", hclList{1}, nil, hclList{1}},
+		{"Intersect nothing 2", hclList{1}, []interface{}{}, hclList{1}},
+		{"Not there", hclList{1}, []interface{}{2}, hclList{1, 2}},
+		{"Included", hclList{1, 2}, []interface{}{2}, hclList{1, 2}},
+		{"Partially there", hclList{1, 2}, []interface{}{2, 3}, hclList{1, 2, 3}},
+		{"With duplicates", hclList{1, 2, 3, 4, 5, 4, 3, 2, 1}, []interface{}{8, 7, 6, 5, 6, 7, 8}, hclList{1, 2, 3, 4, 5, 8, 7, 6}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Union(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HclList.Union():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_list_Without(t *testing.T) {
 	t.Parallel()
 
