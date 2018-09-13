@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -95,6 +96,8 @@ var expressions = [][]interface{}{
 	{"Assign - @var := value", `(?P<type>@[\$\.]?)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 	{"Assign - @{var} := value", `(?P<type>@{)(?P<id>[id])}[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 	{"Assign - @{var := expr}", `(?P<type>@{)(?P<id>[id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+?)}endexpr;`, ``, replacementFunc(assignExpressionAcceptError)},
+	// TODO Remove in future version
+	{"DEPRECATED Assign - $var := value", `(?:{{-?[sp](?:if|range|with)?[sp](\$[id],)?[sp])?(?P<type>\$)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 
 	// Function calls
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@${reduce}((${expr})${selection});`, replacementFunc(expressionParserSkipError)},
@@ -157,7 +160,22 @@ func assignExpressionAcceptError(repl replacement, match string) string {
 	return assignExpressionInternal(repl, match, true)
 }
 
+// TODO: Deprecated, to remove in future version
+var deprecatedAssign = String(os.Getenv(EnvDeprecatedAssign)).ParseBool()
+
 func assignExpressionInternal(repl replacement, match string, acceptError bool) string {
+	// TODO: Deprecated, to remove in future version
+	if strings.HasPrefix(match, repl.delimiters[0]) {
+		// This is an already go template assignation
+		return match
+	}
+	if strings.HasPrefix(match, "$") {
+		if deprecatedAssign {
+			return match
+		}
+		Log.Warningf("$var := value assignation is deprecated, use @{var} := value instead. In: %s", color.HiBlackString(match))
+	}
+
 	subExp := repl.re.SubexpNames()
 	subMatches := repl.re.FindStringSubmatch(match)
 	tp := valueOf("type", subExp, subMatches)
