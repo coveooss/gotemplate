@@ -34,12 +34,20 @@ func (l xmlList) Append(values ...interface{}) xmlIList {
 	return xmlListHelper.Add(l, false, values...)
 }
 
+func (l xmlList) Intersect(values ...interface{}) xmlIList {
+	return xmlListHelper.Intersect(l, values...)
+}
+
 func (l xmlList) Prepend(values ...interface{}) xmlIList {
 	return xmlListHelper.Add(l, true, values...)
 }
 
 func (l xmlList) Set(i int, v interface{}) (xmlIList, error) {
 	return xmlListHelper.SetIndex(l, i, v)
+}
+
+func (l xmlList) Union(values ...interface{}) xmlIList {
+	return xmlListHelper.Add(l, false, values...).Unique()
 }
 
 func (l xmlList) Without(values ...interface{}) xmlIList {

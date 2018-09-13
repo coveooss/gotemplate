@@ -117,6 +117,19 @@ func (lh ListHelper) Unique(list baseIList) baseIList {
 	return target
 }
 
+// Intersect returns a new list that is the result of the intersection of the list and the parameters.
+func (lh ListHelper) Intersect(list baseIList, values ...interface{}) baseIList {
+	source := list.Unique().AsArray()
+	include := collections.AsList(values)
+	target := lh.CreateList(0, include.Len())
+	for i := range source {
+		if include.Contains(source[i]) {
+			target = target.Append(source[i])
+		}
+	}
+	return target
+}
+
 // Without returns a copy of the list removing specified elements.
 func (lh ListHelper) Without(list baseIList, values ...interface{}) baseIList {
 	source := list.AsArray()

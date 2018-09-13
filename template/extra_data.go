@@ -33,6 +33,7 @@ var dataFuncsBase = dictionary{
 	"get":       get,
 	"hasKey":    hasKey,
 	"initial":   initial,
+	"intersect": intersect,
 	"isNil":     func(value interface{}) bool { return value == nil },
 	"isSet":     func(value interface{}) bool { return value != nil },
 	"isZero":    isZero,
@@ -54,6 +55,7 @@ var dataFuncsBase = dictionary{
 	"string":    toString,
 	"undef":     utils.IfUndef,
 	"unique":    unique,
+	"union":     union,
 	"unset":     unset,
 	"values":    values,
 	"without":   without,
@@ -88,6 +90,7 @@ var dataFuncsArgs = arguments{
 	"hasKey":         {"dictionary", "key"},
 	"hcl":            {"hcl", "context"},
 	"initial":        {"list"},
+	"intersect":      {"list", "elements"},
 	"json":           {"json", "context"},
 	"key":            {"value"},
 	"keys":           {"dictionary"},
@@ -119,6 +122,7 @@ var dataFuncsArgs = arguments{
 	"toYaml":         {"value"},
 	"undef":          {"default", "values"},
 	"unique":         {"list"},
+	"union":          {"list", "elements"},
 	"unset":          {"dictionary", "key"},
 	"without":        {"list", "elements"},
 	"xml":            {"yaml", "context"},
@@ -167,6 +171,7 @@ var dataFuncsHelp = descriptions{
 	"hasKey":         "Returns true if the dictionary contains the specified key.",
 	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
 	"initial":        "Returns but the last element. ",
+	"intersect":      "Returns a list that is the intersection of the list and all arguments (removing duplicates).",
 	"isNil":          "Returns true if the supplied value is nil.",
 	"isSet":          "Returns true if the supplied value is not nil.",
 	"isZero":         "Returns true if the supplied value is false, 0, nil or empty.",
@@ -202,6 +207,7 @@ var dataFuncsHelp = descriptions{
 	"toXml":          "Converts the supplied value to XML representation.",
 	"toYaml":         "Converts the supplied value to YAML representation.",
 	"undef":          "Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, \"\" are not considered as unset).",
+	"union":          "Returns a list that is the union of the list and all arguments (removing duplicates).",
 	"unique":         "Generates a list with all of the duplicates removed.",
 	"unset":          "Removes an element from a dictionary.",
 	"without":        "Filters items out of a list.",
@@ -544,6 +550,16 @@ func contains(list interface{}, elements ...interface{}) (r bool, err error) {
 		list, elements = elements[0], []interface{}{list}
 	}
 	return collections.AsList(list).Contains(elements...), nil
+}
+
+func intersect(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return collections.AsList(list).Intersect(elements...), nil
+}
+
+func union(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+	defer func() { err = trapError(err, recover()) }()
+	return collections.AsList(list).Union(elements...), nil
 }
 
 func without(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {

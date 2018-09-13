@@ -34,12 +34,20 @@ func (l jsonList) Append(values ...interface{}) jsonIList {
 	return jsonListHelper.Add(l, false, values...)
 }
 
+func (l jsonList) Intersect(values ...interface{}) jsonIList {
+	return jsonListHelper.Intersect(l, values...)
+}
+
 func (l jsonList) Prepend(values ...interface{}) jsonIList {
 	return jsonListHelper.Add(l, true, values...)
 }
 
 func (l jsonList) Set(i int, v interface{}) (jsonIList, error) {
 	return jsonListHelper.SetIndex(l, i, v)
+}
+
+func (l jsonList) Union(values ...interface{}) jsonIList {
+	return jsonListHelper.Add(l, false, values...).Unique()
 }
 
 func (l jsonList) Without(values ...interface{}) jsonIList {

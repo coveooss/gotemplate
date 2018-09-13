@@ -341,6 +341,58 @@ func Test_list_Contains(t *testing.T) {
 	}
 }
 
+func Test_list_Intersect(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		l    yamlList
+		args []interface{}
+		want yamlList
+	}{
+		{"Empty List", nil, []interface{}{}, yamlList{}},
+		{"Intersect nothing", yamlList{1}, nil, yamlList{}},
+		{"Intersect nothing 2", yamlList{1}, []interface{}{}, yamlList{}},
+		{"Not there", yamlList{1}, []interface{}{2}, yamlList{}},
+		{"Included", yamlList{1, 2}, []interface{}{2}, yamlList{2}},
+		{"Partially there", yamlList{1, 2}, []interface{}{2, 3}, yamlList{2}},
+		{"With duplicates", yamlList{1, 2, 3, 4, 5, 4, 3, 2, 1}, []interface{}{3, 4, 5, 6, 7, 8, 7, 6, 5, 5, 4, 3}, yamlList{3, 4, 5}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Intersect(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("YamlList.Intersect():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_Union(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		l    yamlList
+		args []interface{}
+		want yamlList
+	}{
+		{"Empty List", nil, []interface{}{}, yamlList{}},
+		{"Intersect nothing", yamlList{1}, nil, yamlList{1}},
+		{"Intersect nothing 2", yamlList{1}, []interface{}{}, yamlList{1}},
+		{"Not there", yamlList{1}, []interface{}{2}, yamlList{1, 2}},
+		{"Included", yamlList{1, 2}, []interface{}{2}, yamlList{1, 2}},
+		{"Partially there", yamlList{1, 2}, []interface{}{2, 3}, yamlList{1, 2, 3}},
+		{"With duplicates", yamlList{1, 2, 3, 4, 5, 4, 3, 2, 1}, []interface{}{8, 7, 6, 5, 6, 7, 8}, yamlList{1, 2, 3, 4, 5, 8, 7, 6}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Union(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("YamlList.Union():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_list_Without(t *testing.T) {
 	t.Parallel()
 
