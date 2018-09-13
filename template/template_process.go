@@ -51,10 +51,10 @@ const (
 
 // ProcessContent loads and runs the file template.
 func (t Template) ProcessContent(content, source string) (string, error) {
-	return t.processContentInternal(content, source, nil, 0)
+	return t.processContentInternal(content, source, nil, 0, true)
 }
 
-func (t Template) processContentInternal(originalContent, source string, originalSourceLines []string, retryCount int) (result string, err error) {
+func (t Template) processContentInternal(originalContent, source string, originalSourceLines []string, retryCount int, cloneContext bool) (result string, err error) {
 	topCall := originalSourceLines == nil
 	content := originalContent
 	if topCall {
@@ -214,7 +214,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			}
 			if lines[faultyLine] != currentLine.Str() || strings.Contains(err.Error(), noValueError) {
 				// If we changed something in the current text, we try to continue the evaluation to get further errors
-				result, err2 := t.processContentInternal(strings.Join(lines, "\n"), source, originalSourceLines, retryCount+1)
+				result, err2 := t.processContentInternal(strings.Join(lines, "\n"), source, originalSourceLines, retryCount+1, false)
 				if err2 != nil {
 					if err != nil && errText != noValueError {
 						if err.Error() == err2.Error() {
@@ -249,7 +249,11 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		return handleError(err)
 	}
 	var out bytes.Buffer
-	if err = newTemplate.Execute(&out, collections.AsDictionary(t.context).Clone()); err != nil {
+	workingContext := t.context
+	if cloneContext {
+		workingContext = collections.AsDictionary(workingContext).Clone()
+	}
+	if err = newTemplate.Execute(&out, workingContext); err != nil {
 		log.Infof("%s(%d): Execution error %v", source, retryCount, err)
 		return handleError(err)
 	}
