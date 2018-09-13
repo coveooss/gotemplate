@@ -19,7 +19,7 @@ import (
 
 var (
 	templateExt    = []string{".gt", ".template"}
-	linePrefix     = `^template: ` + p(tagFile, `.*?:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
+	linePrefix     = `^template: ` + p(tagLocation, p(tagFile, `.*?`)+`:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
 	execPrefix     = linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
 	templateErrors = []string{
 		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"$`,
@@ -43,6 +43,7 @@ const (
 	tagCol       = "column"
 	tagCode      = "code"
 	tagMsg       = "message"
+	tagLocation  = "location"
 	tagFile      = "file"
 	tagKey       = "key"
 	tagErr       = "error"
@@ -116,6 +117,18 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			}
 
 			currentLine := String(lines[faultyLine])
+
+			if matches[tagFile] != source {
+				// An error occurred in an included external template file, we cannot try to recuperate
+				// and try to find further errors, so we just return the error.
+
+				if fileContent, err := ioutil.ReadFile(matches[tagFile]); err != nil {
+					currentLine = String(fmt.Sprintf("Unable to read file: %v", err))
+				} else {
+					currentLine = String(fileContent).Lines()[toInt(matches[tagLine])-1]
+				}
+				return "", fmt.Errorf("%s %v in: %s", color.WhiteString(source), err, color.HiBlackString(currentLine.Str()))
+			}
 			if faultyColumn != 0 && strings.Contains(" (", currentLine[faultyColumn:faultyColumn+1].Str()) {
 				// Sometime, the error is not reporting the exact column, we move 1 char forward to get the real problem
 				faultyColumn++
@@ -178,21 +191,26 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				logMessage = fmt.Sprintf("Execution error: %s", err)
 				context := String(currentLine).SelectContext(faultyColumn, t.LeftDelim(), t.RightDelim())
 				errorText = fmt.Sprintf(color.RedString("%s (%s)", errText, code))
-				lines[faultyLine] = currentLine.Replace(context.Str(), runError).Str()
+				if context == "" {
+					// We have not been able to find the current context, we wipe the erroneous line
+					lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
+				} else {
+					lines[faultyLine] = currentLine.Replace(context.Str(), runError).Str()
+				}
 			} else if errText != noValueError {
 				logMessage = fmt.Sprintf("Parsing error: %s", err)
 				lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
 			}
-			if strings.Contains(currentLine.Str(), runError) || strings.Contains(code, undefError) {
+			if currentLine.Contains(runError) || strings.Contains(code, undefError) {
 				// The erroneous line has already been replaced, we do not report the error again
 				err, errorText = nil, ""
 				log.Debugf("Ignored error %s", logMessage)
-			} else {
+			} else if logMessage != "" {
 				log.Debug(logMessage)
 			}
 
 			if err != nil {
-				err = fmt.Errorf("%s%s%s%s", color.WhiteString(matches[tagFile]), errorText, errorLine, parserBug)
+				err = fmt.Errorf("%s%s%s%s", color.WhiteString(matches[tagLocation]), errorText, errorLine, parserBug)
 			}
 			if lines[faultyLine] != currentLine.Str() || strings.Contains(err.Error(), noValueError) {
 				// If we changed something in the current text, we try to continue the evaluation to get further errors
