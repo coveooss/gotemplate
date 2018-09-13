@@ -19,13 +19,13 @@ import (
 
 var (
 	templateExt    = []string{".gt", ".template"}
-	linePrefix     = `^template: ` + p(tagFile, `.*?:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
+	linePrefix     = `^template: ` + p(tagLocation, p(tagFile, `.*?`)+`:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
 	execPrefix     = linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
 	templateErrors = []string{
-		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"$`,
+		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"`,
 		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
-		execPrefix + p(tagErr, `.*`) + `$`,
-		linePrefix + p(tagErr, `.*`) + `$`,
+		execPrefix + p(tagErr, `.*`),
+		linePrefix + p(tagErr, `.*`),
 	}
 )
 
@@ -43,6 +43,7 @@ const (
 	tagCol       = "column"
 	tagCode      = "code"
 	tagMsg       = "message"
+	tagLocation  = "location"
 	tagFile      = "file"
 	tagKey       = "key"
 	tagErr       = "error"
@@ -50,10 +51,10 @@ const (
 
 // ProcessContent loads and runs the file template.
 func (t Template) ProcessContent(content, source string) (string, error) {
-	return t.processContentInternal(content, source, nil, 0)
+	return t.processContentInternal(content, source, nil, 0, true)
 }
 
-func (t Template) processContentInternal(originalContent, source string, originalSourceLines []string, retryCount int) (result string, err error) {
+func (t Template) processContentInternal(originalContent, source string, originalSourceLines []string, retryCount int, cloneContext bool) (result string, err error) {
 	topCall := originalSourceLines == nil
 	content := originalContent
 	if topCall {
@@ -116,6 +117,18 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			}
 
 			currentLine := String(lines[faultyLine])
+
+			if matches[tagFile] != source {
+				// An error occurred in an included external template file, we cannot try to recuperate
+				// and try to find further errors, so we just return the error.
+
+				if fileContent, err := ioutil.ReadFile(matches[tagFile]); err != nil {
+					currentLine = String(fmt.Sprintf("Unable to read file: %v", err))
+				} else {
+					currentLine = String(fileContent).Lines()[toInt(matches[tagLine])-1]
+				}
+				return "", fmt.Errorf("%s %v in: %s", color.WhiteString(source), err, color.HiBlackString(currentLine.Str()))
+			}
 			if faultyColumn != 0 && strings.Contains(" (", currentLine[faultyColumn:faultyColumn+1].Str()) {
 				// Sometime, the error is not reporting the exact column, we move 1 char forward to get the real problem
 				faultyColumn++
@@ -134,7 +147,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				newContext := context.Replace(current.Str(), undefError).Str()
 				newLine := currentLine.Replace(context.Str(), newContext)
 
-				left := fmt.Sprintf(`(?P<begin>(%s-?\s*(if|range|with)\s.*|\()\s*)`, regexp.QuoteMeta(t.LeftDelim()))
+				left := fmt.Sprintf(`(?P<begin>(%s-?\s*(if|range|with)\s.*|\()\s*)?`, regexp.QuoteMeta(t.LeftDelim()))
 				right := fmt.Sprintf(`(?P<end>\s*(-?%s|\)))`, regexp.QuoteMeta(t.RightDelim()))
 				const (
 					ifUndef = "ifUndef"
@@ -178,25 +191,30 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				logMessage = fmt.Sprintf("Execution error: %s", err)
 				context := String(currentLine).SelectContext(faultyColumn, t.LeftDelim(), t.RightDelim())
 				errorText = fmt.Sprintf(color.RedString("%s (%s)", errText, code))
-				lines[faultyLine] = currentLine.Replace(context.Str(), runError).Str()
+				if context == "" {
+					// We have not been able to find the current context, we wipe the erroneous line
+					lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
+				} else {
+					lines[faultyLine] = currentLine.Replace(context.Str(), runError).Str()
+				}
 			} else if errText != noValueError {
 				logMessage = fmt.Sprintf("Parsing error: %s", err)
 				lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
 			}
-			if strings.Contains(currentLine.Str(), runError) || strings.Contains(code, undefError) {
+			if currentLine.Contains(runError) || strings.Contains(code, undefError) {
 				// The erroneous line has already been replaced, we do not report the error again
 				err, errorText = nil, ""
 				log.Debugf("Ignored error %s", logMessage)
-			} else {
+			} else if logMessage != "" {
 				log.Debug(logMessage)
 			}
 
 			if err != nil {
-				err = fmt.Errorf("%s%s%s%s", color.WhiteString(matches[tagFile]), errorText, errorLine, parserBug)
+				err = fmt.Errorf("%s%s%s%s", color.WhiteString(matches[tagLocation]), errorText, errorLine, parserBug)
 			}
 			if lines[faultyLine] != currentLine.Str() || strings.Contains(err.Error(), noValueError) {
 				// If we changed something in the current text, we try to continue the evaluation to get further errors
-				result, err2 := t.processContentInternal(strings.Join(lines, "\n"), source, originalSourceLines, retryCount+1)
+				result, err2 := t.processContentInternal(strings.Join(lines, "\n"), source, originalSourceLines, retryCount+1, false)
 				if err2 != nil {
 					if err != nil && errText != noValueError {
 						if err.Error() == err2.Error() {
@@ -217,7 +235,10 @@ func (t Template) processContentInternal(originalContent, source string, origina
 
 	context := t.GetNewContext(filepath.Dir(source), true)
 	newTemplate := context.New(source)
-	if !topCall && !t.options[AcceptNoValue] {
+
+	if topCall {
+		newTemplate.Option("missingkey=default")
+	} else if !t.options[AcceptNoValue] {
 		// To help detect errors on second run, we enable the option to raise error on nil values
 		// log.Infof("%s(%d): Activating the missing key error option", source, retryCount)
 		newTemplate.Option("missingkey=error")
@@ -228,7 +249,11 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		return handleError(err)
 	}
 	var out bytes.Buffer
-	if err = newTemplate.Execute(&out, collections.AsDictionary(t.context).Clone()); err != nil {
+	workingContext := t.context
+	if cloneContext {
+		workingContext = collections.AsDictionary(workingContext).Clone()
+	}
+	if err = newTemplate.Execute(&out, workingContext); err != nil {
 		log.Infof("%s(%d): Execution error %v", source, retryCount, err)
 		return handleError(err)
 	}

@@ -201,7 +201,8 @@ func (t *Template) initExtension() {
 		content := string(must(ioutil.ReadFile(file)).([]byte))
 
 		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
-		if _, err := ext.ProcessContent(content, file); err != nil {
+		// We also do not ask to clone the context as we wish to let extension to be able to alter the supplied context
+		if _, err := ext.processContentInternal(content, file, nil, 0, false); err != nil {
 			log.Error(err)
 		}
 	}
