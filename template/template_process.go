@@ -22,10 +22,10 @@ var (
 	linePrefix     = `^template: ` + p(tagLocation, p(tagFile, `.*?`)+`:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
 	execPrefix     = linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
 	templateErrors = []string{
-		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"$`,
+		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"`,
 		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
-		execPrefix + p(tagErr, `.*`) + `$`,
-		linePrefix + p(tagErr, `.*`) + `$`,
+		execPrefix + p(tagErr, `.*`),
+		linePrefix + p(tagErr, `.*`),
 	}
 )
 
