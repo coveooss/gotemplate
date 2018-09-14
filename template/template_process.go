@@ -82,6 +82,22 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			content = strings.Replace(content, noValue, noValueRepl, -1)
 			content = strings.Replace(content, nilValue, nilValueRepl, -1)
 		}
+
+		defer func() {
+			// If we get errors and the file is not an explicit gotemplate file, or contains
+			// gotemplate! or the strict error check mode is not enabled, we simply
+			// add a trace with the error content and return the content unaltered
+			if err != nil {
+				strictMode := t.options[StrictErrorCheck]
+				strictMode = strictMode || strings.Contains(originalContent, explicitGoTemplate)
+				extension := filepath.Ext(source)
+				strictMode = strictMode || (extension != "" && strings.Contains(".gt,.gte,.template", extension))
+				if !(strictMode) {
+					Log.Noticef("Ignored gotemplate error in %s (file left unchanged):\n%s", color.CyanString(source), err.Error())
+					result, err = originalContent, nil
+				}
+			}
+		}()
 	}
 
 	// This local functions handle all errors from Parse or Execute and tries to fix the template to allow discovering

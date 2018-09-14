@@ -74,6 +74,7 @@ func main() {
 		print            = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
 		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
 		acceptNoValue    = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error (--nv) or env: "+template.EnvAcceptNoValue).Bool()
+		strictError      = run.Flag("strict-error-validation", "Consider error encountered in any file as real error (--strict) or env: "+template.EnvStrictErrorCheck).Short('S').Bool()
 		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl) or env: "+template.EnvDebug).Default("2").PlaceHolder("level").Int8()
 		logLevel         = run.Flag("log-level", "Set the logging level 0-9 (--ll)").Short('L').PlaceHolder("level").Int8()
 		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
@@ -93,6 +94,7 @@ func main() {
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "short version of --delimiters").Hidden().StringVar(delimiters)
 	app.Flag("nv", "short version of --accept-no-value").Hidden().BoolVar(acceptNoValue)
+	app.Flag("strict", "short version of --strict-error-validation").Hidden().BoolVar(strictError)
 
 	// Set the options for the available options (most of them are on by default)
 	optionsOff := app.Flag("base", "Turn off all extensions (they could then be enabled explicitly)").Bool()
@@ -162,6 +164,7 @@ func main() {
 	optionsSet[template.Overwrite] = *overwrite
 	optionsSet[template.OutputStdout] = *print
 	optionsSet[template.AcceptNoValue] = *acceptNoValue
+	optionsSet[template.StrictErrorCheck] = *strictError
 	for i := range options {
 		optionsSet[template.Options(i)] = options[i]
 	}

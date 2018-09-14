@@ -23,6 +23,7 @@ const (
 	OutputStdout
 	RenderingDisabled
 	AcceptNoValue
+	StrictErrorCheck
 )
 
 // DefaultOptions returns a OptionsSet with the first options turned on by default

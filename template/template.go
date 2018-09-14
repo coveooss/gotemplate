@@ -35,12 +35,19 @@ type Template struct {
 
 // Environment variables that could be defined to override default behaviors.
 const (
-	EnvAcceptNoValue = "GOTEMPLATE_NO_VALUE"
-	EnvSubstitutes   = "GOTEMPLATE_SUBSTITUTES"
-	EnvDebug         = "GOTEMPLATE_DEBUG"
-	EnvExtensionPath = "GOTEMPLATE_PATH"
+	EnvAcceptNoValue    = "GOTEMPLATE_NO_VALUE"
+	EnvStrictErrorCheck = "GOTEMPLATE_STRICT_ERROR"
+	EnvSubstitutes      = "GOTEMPLATE_SUBSTITUTES"
+	EnvDebug            = "GOTEMPLATE_DEBUG"
+	EnvExtensionPath    = "GOTEMPLATE_PATH"
 	// TODO: Deprecated, to remove in future version
 	EnvDeprecatedAssign = "GOTEMPLATE_DEPRECATED_ASSIGN"
+)
+
+const (
+	noGoTemplate       = "no-gotemplate!"
+	noRazor            = "no-razor!"
+	explicitGoTemplate = "gotemplate!"
 )
 
 // Common variables
@@ -49,6 +56,7 @@ var (
 	ExtensionDepth = 2
 	toStrings      = collections.ToStrings
 	acceptNoValue  = String(os.Getenv(EnvAcceptNoValue)).ParseBool()
+	strictError    = String(os.Getenv(EnvStrictErrorCheck)).ParseBool()
 	Print          = utils.ColorPrint
 	Printf         = utils.ColorPrintf
 	Println        = utils.ColorPrintln
@@ -77,6 +85,9 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	t.options = iif(options != nil, options, DefaultOptions()).(OptionsSet)
 	if acceptNoValue {
 		t.options[AcceptNoValue] = true
+	}
+	if strictError {
+		t.options[StrictErrorCheck] = true
 	}
 	t.optionsEnabled = make(OptionsSet)
 	t.folder, _ = filepath.Abs(iif(folder != "", folder, utils.Pwd()).(string))
@@ -146,12 +157,12 @@ func (t Template) GetNewContext(folder string, useCache bool) *Template {
 
 // IsCode determines if the supplied code appears to have gotemplate code.
 func (t Template) IsCode(code string) bool {
-	return t.IsRazor(code) || strings.Contains(code, t.LeftDelim()) || strings.Contains(code, t.RightDelim())
+	return !strings.Contains(code, noGoTemplate) && (t.IsRazor(code) || strings.Contains(code, t.LeftDelim()) || strings.Contains(code, t.RightDelim()))
 }
 
 // IsRazor determines if the supplied code appears to have Razor code.
 func (t Template) IsRazor(code string) bool {
-	return strings.Contains(code, t.RazorDelim())
+	return strings.Contains(code, t.RazorDelim()) && !strings.Contains(code, noGoTemplate) && !strings.Contains(code, noRazor)
 }
 
 // LeftDelim returns the left delimiter.
