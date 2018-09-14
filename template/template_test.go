@@ -34,6 +34,7 @@ func Test_templateWithErrors(t *testing.T) {
 	t.Parallel()
 
 	template, _ := NewTemplate(".", nil, "", nil)
+	template.SetOption(StrictErrorCheck, true)
 	tests := []struct {
 		name    string
 		content string
