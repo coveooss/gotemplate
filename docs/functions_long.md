@@ -464,84 +464,50 @@ func Fir(size int, bg string, fg string, char string, reverse bool) interface{},
 
 ```go
 // Logs a message using CRITICAL as log level (0).
+// Aliases: criticalf
 func critical(args ...interface{}) string
 ```
 
 ```go
-// Logs a message with format string using CRITICAL as log level (0).
-func criticalf(format string, args ...interface{}) string
-```
-
-```go
 // Logs a message using DEBUG as log level (5).
+// Aliases: debugf
 func debug(args ...interface{}) string
 ```
 
 ```go
-// Logs a message with format using DEBUG as log level (5).
-func debugf(format string, args ...interface{}) string
-```
-
-```go
 // Logs a message using ERROR as log level (1).
+// Aliases: errorf
 func error(args ...interface{}) string
 ```
 
 ```go
-// Logs a message with format using ERROR as log level (1).
-func errorf(format string, args ...interface{}) string
-```
-
-```go
 // Equivalents to critical followed by a call to os.Exit(1).
+// Aliases: fatalf
 func fatal(args ...interface{}) string
 ```
 
 ```go
-// Equivalents to criticalf followed by a call to os.Exit(1).
-func fatalf(format string, args ...interface{}) string
-```
-
-```go
 // Logs a message using INFO as log level (4).
+// Aliases: infof
 func info(args ...interface{}) string
 ```
 
 ```go
-// Logs a message with format using INFO as log level (4).
-func infof(format string, args ...interface{}) string
-```
-
-```go
 // Logs a message using NOTICE as log level (3).
+// Aliases: noticef
 func notice(args ...interface{}) string
 ```
 
 ```go
-// Logs a message with format using NOTICE as log level (3).
-func noticef(format string, args ...interface{}) string
-```
-
-```go
 // Equivalents to critical followed by a call to panic.
+// Aliases: panicf
 func panic(args ...interface{}) string
 ```
 
 ```go
-// Equivalents to criticalf followed by a call to panic.
-func panicf(format string, args ...interface{}) string
-```
-
-```go
 // Logs a message using WARNING as log level (2).
-// Aliases: warn
+// Aliases: warn, warnf, warningf
 func warning(args ...interface{}) string
-```
-
-```go
-// Logs a message with format using WARNING as log level (2).
-// Aliases: warnf
-func warningf(format string, args ...interface{}) string
 ```
 ### Mathematic Bit Operations
 
@@ -1392,6 +1358,12 @@ func assert(test interface{}, message ...interface{}) string, error
 ```
 
 ```go
+// Issues a formated warning if the test condition is false.
+// Aliases: assertw
+func assertWarning(test interface{}, message ...interface{}) string
+```
+
+```go
 // Returns all functions group by categories.
 // 
 // The returned value has the following properties:
@@ -1476,7 +1448,7 @@ func localAlias(name string, function string, source interface{}, args ...interf
 ```go
 // Raise a formated error.
 // Aliases: raiseError
-func raise(message interface{}, arguments ...interface{}) string, error
+func raise(args ...interface{}) string, error
 ```
 
 ```go

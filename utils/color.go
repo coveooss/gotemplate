@@ -130,16 +130,24 @@ func SprintColor(args ...interface{}) (string, error) {
 	}
 
 	c, _ := Color(colorArgs...)
+	return c.Sprint(FormatMessage(args[i:]...)), nil
+}
 
-	var format string
-	if i < len(args) {
-		format = fmt.Sprint(args[i])
+// FormatMessage analyses the arguments to determine if printf or println should be used.
+func FormatMessage(args ...interface{}) string {
+	switch len(args) {
+	case 0:
+		return ""
+	case 1:
+		return fmt.Sprint(args[0])
+	default:
+		if format, args := fmt.Sprint(args[0]), args[1:]; strings.Contains(format, "%") {
+			if result := fmt.Sprintf(format, args...); !strings.Contains(result, "%!") {
+				return result
+			}
+		}
+		return strings.TrimSuffix(fmt.Sprintln(args...), EOL)
 	}
-
-	if strings.Contains(format, "%") {
-		return c.Sprintf(format, args[i+1:]...), nil
-	}
-	return c.Sprint(strings.TrimSuffix(fmt.Sprintln(args[i:]...), EOL)), nil
 }
 
 var nameValues map[string]color.Attribute

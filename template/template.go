@@ -39,6 +39,8 @@ const (
 	EnvSubstitutes   = "GOTEMPLATE_SUBSTITUTES"
 	EnvDebug         = "GOTEMPLATE_DEBUG"
 	EnvExtensionPath = "GOTEMPLATE_PATH"
+	// TODO: Deprecated, to remove in future version
+	EnvDeprecatedAssign = "GOTEMPLATE_DEPRECATED_ASSIGN"
 )
 
 // Common variables

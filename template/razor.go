@@ -5,6 +5,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -95,6 +96,8 @@ var expressions = [][]interface{}{
 	{"Assign - @var := value", `(?P<type>@[\$\.]?)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 	{"Assign - @{var} := value", `(?P<type>@{)(?P<id>[id])}[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 	{"Assign - @{var := expr}", `(?P<type>@{)(?P<id>[id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+?)}endexpr;`, ``, replacementFunc(assignExpressionAcceptError)},
+	// TODO Remove in future version
+	{"DEPRECATED Assign - $var := value", `(?:{{-?[sp](?:if|range|with)?[sp](\$[id],)?[sp]|@\(\s*)?(?P<type>\$)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 
 	// Function calls
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@${reduce}((${expr})${selection});`, replacementFunc(expressionParserSkipError)},
@@ -157,7 +160,21 @@ func assignExpressionAcceptError(repl replacement, match string) string {
 	return assignExpressionInternal(repl, match, true)
 }
 
+// TODO: Deprecated, to remove in future version
+var deprecatedAssign = String(os.Getenv(EnvDeprecatedAssign)).ParseBool()
+
 func assignExpressionInternal(repl replacement, match string, acceptError bool) string {
+	// TODO: Deprecated, to remove in future version
+	if strings.HasPrefix(match, repl.delimiters[0]) || strings.HasPrefix(match, repl.delimiters[2]+"(") {
+		// This is an already go template assignation
+		return match
+	}
+	if strings.HasPrefix(match, "$") {
+		if deprecatedAssign {
+			return match
+		}
+	}
+
 	subExp := repl.re.SubexpNames()
 	subMatches := repl.re.FindStringSubmatch(match)
 	tp := valueOf("type", subExp, subMatches)
@@ -176,6 +193,11 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	}
 
 	if local {
+		if strings.HasPrefix(match, "$") {
+			// TODO: Deprecated, to remove in future version
+			Log.Warningf("$var := value assignation is deprecated, use @{var} := value instead. In: %s", color.HiBlackString(match))
+		}
+
 		return fmt.Sprintf("%s- $%s %s %s %s", repl.delimiters[0], id, assign, expr, repl.delimiters[1])
 	}
 
@@ -198,10 +220,13 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 		object = iif(object == "", "$", "$."+object).(string)
 	}
 
+	// To avoid breaking change, we issue a warning instead of assertion if the variable has not been declared before being set
+	// or declared more than once and the feature flag GOTEMPLATE_DEPRECATED_ASSIGN is not set
+	validateFunction := iif(deprecatedAssign, "assert", "assertWarning")
 	validateCode := fmt.Sprintf(map[bool]string{
-		true:  `assert (not (isNil %[1]s)) "%[1]s does not exist, use := to declare new variable"`,
-		false: `assert (isNil %[1]s) "%[1]s has already been declared, use = to overwrite existing value"`,
-	}[assign == "="], fmt.Sprintf("%s%s", iif(strings.HasSuffix(object, "."), object, object+"."), id))
+		true:  `%[2]s (not (isNil %[1]s)) "%[1]s does not exist, use := to declare new variable"`,
+		false: `%[2]s (isNil %[1]s) "%[1]s has already been declared, use = to overwrite existing value"`,
+	}[assign == "="], fmt.Sprintf("%s%s", iif(strings.HasSuffix(object, "."), object, object+"."), id), validateFunction)
 
 	return fmt.Sprintf(`%[1]s- %[3]s %[2]s%[1]s- set %[4]s "%[5]s" %s %[2]s`, repl.delimiters[0], repl.delimiters[1], validateCode, object, id, expr, repl.delimiters[1])
 }
