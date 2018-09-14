@@ -310,7 +310,9 @@ func (s String) GetContextAtPosition(pos int, left, right string) (String, int) 
 		begin = strings.LastIndex(s[:pos].Str(), left)
 	}
 	if right != "" {
-		end = strings.Index(s[pos:].Str(), right) + pos + len(right)
+		if end = strings.Index(s[pos:].Str(), right); end >= 0 {
+			end += pos + len(right)
+		}
 	}
 	if begin < 0 || end < 0 {
 		return "", -1

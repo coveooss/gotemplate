@@ -109,12 +109,13 @@ concat                  iif                     repeat                  ternary
 
 Runtime
 
-alias                   attributes              exit                    getSignature            run                     
-aliases                 categories              func                    include                 sign                    
-allFunctions            current                 function                localAlias              signature               
-assert                  ellipsis                functions               methods                 substitute              
-assertion               exec                    getAttributes           raise                   templateNames           
-attr                    execute                 getMethods              raiseError              templates               
+alias                   attr                    exit                    include                 signature               
+aliases                 attributes              func                    localAlias              substitute              
+allFunctions            categories              function                methods                 templateNames           
+assert                  current                 functions               raise                   templates               
+assertWarning           ellipsis                getAttributes           raiseError              
+assertion               exec                    getMethods              run                     
+assertw                 execute                 getSignature            sign                    
 
 Sprig Cryptographic & Security http://masterminds.github.io/sprig/crypto.html
 

@@ -159,8 +159,8 @@ func TestString_FindContext(t *testing.T) {
 		{"A context (with (double level parenthesis))", args{22, "(", ")"}, "(double level parenthesis)", 16},
 		{"A context (with no bracket)", args{19, "[", "]"}, "", -1},
 		{"A context (with no enclosing context)", args{15, "", ""}, " ", 15},
-		// 123456789012345678901234567890123456789012345678901234567890
-		//          1         2         3         4         5         6
+		{"A context (outside of context)", args{1, "(", ")"}, "", -1},
+		{"(context) after", args{12, "(", ")"}, "", -1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.s.Str(), func(t *testing.T) {

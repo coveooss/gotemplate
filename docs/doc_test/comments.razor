@@ -53,7 +53,7 @@ will give :
 ### Example with HCL code
 
 ```go
-{{- assert (isNil $.value) "$.value has already been declared, use = to overwrite existing value" }}{{- set $ "value" (add 2 (mul 8 15)) }}
+{{- assertWarning (isNil $.value) "$.value has already been declared, use = to overwrite existing value" }}{{- set $ "value" (add 2 (mul 8 15)) }}
 
 Str              = "string"
 Int              = 123
