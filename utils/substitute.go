@@ -25,8 +25,24 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 		if len(expression) != 3 || expression[1] == "" {
 			errors.Raise("Bad replacer %s", replacers[i])
 		}
+
+		if expression[2] == "d" {
+			// If the replace expression is a single d (as in delete), we replace the
+			// expression by nothing
+			if strings.HasSuffix(expression[1], "$") {
+				// If we really want to delete lines, we must add \n explicitly
+				expression[1] += `\n`
+				if !strings.HasPrefix(expression[1], "(?m)") {
+					// If the search expression doesn't enable multi line
+					// we enable it
+					expression[1] = "(?m)" + expression[1]
+				}
+			}
+			expression[2] = ""
+		}
 		result[i].regex = regexp.MustCompile(expression[1])
 		result[i].replace = expression[2]
+
 	}
 	return result
 }

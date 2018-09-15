@@ -65,6 +65,7 @@ func main() {
 		excludedPatterns = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
 		overwrite        = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
 		substitutes      = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp) or specify that value through "+template.EnvSubstitutes+" where each substitute is separated by a newline").PlaceHolder("exp").Short('s').Strings()
+		removeEmptyLines = run.Flag("remove-empty-lines", "Remove empty lines from the result (--re)").Short('E').Bool()
 		recursive        = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
 		recursionDepth   = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
 		sourceFolder     = run.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").ExistingDir()
@@ -95,6 +96,7 @@ func main() {
 	app.Flag("del", "short version of --delimiters").Hidden().StringVar(delimiters)
 	app.Flag("nv", "short version of --accept-no-value").Hidden().BoolVar(acceptNoValue)
 	app.Flag("strict", "short version of --strict-error-validation").Hidden().BoolVar(strictError)
+	app.Flag("re", "short version of --remove-empty-lines").Hidden().BoolVar(removeEmptyLines)
 
 	// Set the options for the available options (most of them are on by default)
 	optionsOff := app.Flag("base", "Turn off all extensions (they could then be enabled explicitly)").Bool()
@@ -206,6 +208,10 @@ func main() {
 		*forceStdin = true
 	}
 
+	if *removeEmptyLines {
+		// Options to remove empty lines
+		*substitutes = append(*substitutes, `/^\s*$/d`)
+	}
 	t, err := template.NewTemplate("", createContext(*varFiles, *namedVars), *delimiters, optionsSet, *substitutes...)
 	if err != nil {
 		errors.Print(err)
