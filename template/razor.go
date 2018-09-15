@@ -48,16 +48,16 @@ var defval = utils.Default
 // Warning: The declaration order is important
 var customMetaclass = [][2]string{
 	{"function;", `@reduce;(?P<expr>[id]\([sp][expr]*[sp]\))`},
-	{"assign;", `(?P<assign>(?:\$[id][ \t,]*){1,2}:=[sp])`}, // Optional assignment
-	{"index;", `(?P<index>\[[expr]+\])`},                    // Extended index operator that support picky selection using ',' as element separator
-	{"selector;", `(?P<selection>\.[expr]+)`},               // Optional selector following expression indicating that the expression must include the content after the closing ) (i.e. @function(args).selection)
-	{"reduce;", `(?P<reduce>-?)`},                           // Optional reduce sign (-) indicating that the generated code must start with {{-
-	{"endexpr;", `(?:[sp];)?`},                              // End expression (spaces + ; or end of line)
-	{"[sp]", `[[:blank:]]*`},                                // Optional spaces
-	{"[id]", `[\p{L}\d_]+`},                                 // Go language id
-	{"[flexible_id]", `[map_id;][map_id;\.\-]*`},            // Id with additional character that could be used to create variables in maps
-	{"[idSel]", `[\p{L}_][\p{L}\d_\.]*`},                    // Id with optional selection (object.selection.subselection)
-	{"map_id;", `\p{L}\d_\+\*%#!~`},                         // Id with additional character that could be used to create variables in maps
+	{"assign;", `(?P<assign>(?:\$[id][ \t,]*){1,2}:=[sp])`},       // Optional assignment
+	{"index;", `(?P<index>\[[expr]+\])`},                          // Extended index operator that support picky selection using ',' as element separator
+	{"selector;", `(?P<selection>\.[expr]+)`},                     // Optional selector following expression indicating that the expression must include the content after the closing ) (i.e. @function(args).selection)
+	{"reduce;", `(?P<reduce>((?P<reduce1>-)|_)?(?P<reduce2>-?))`}, // Optional reduces sign (-) indicating that the generated code must start with {{- (and end with -}} if two dashes are specified @--)
+	{"endexpr;", `(?:[sp];)?`},                                    // End expression (spaces + ; or end of line)
+	{"[sp]", `[[:blank:]]*`},                                      // Optional spaces
+	{"[id]", `[\p{L}\d_]+`},                                       // Go language id
+	{"[flexible_id]", `[map_id;][map_id;\.\-]*`},                  // Id with additional character that could be used to create variables in maps
+	{"[idSel]", `[\p{L}_][\p{L}\d_\.]*`},                          // Id with optional selection (object.selection.subselection)
+	{"map_id;", `\p{L}\d_\+\*%#!~`},                               // Id with additional character that could be used to create variables in maps
 }
 
 // Expression (any character that is not a new line, a start of razor expression or a semicolumn)
@@ -78,19 +78,20 @@ var expressions = [][]interface{}{
 	{"Newline expression", `@<`, `{{- $.NEWLINE }}@`},
 
 	// Comments
-	{"Pseudo line comments - #! @", `(?m)(?:^[sp](?:#|//)![sp])@`, "@"},
+	{"Pseudo line comments - #! @", `(?m)(?:[sp](?:#|//)![sp])@`, "@"},
 	{"Pseudo block comments - /*@  @*/", `(?s)/\*@(?P<content>.*?)@\*/`, "${content}"},
-	{"Real comments - ##|/// @ comment", `(?m)^[sp](?:##|///)[sp]@.*$`, ""},
-	{"Line comment - @// or @#", `(?m)@(#|//)[sp](?P<line_comment>.*)[sp]$`, "{{/* ${line_comment} */}}"},
-	{"Block comment - @/* */", `(?s)@/\*(?P<block_comment>.*?)\*/`, "{{/*${block_comment}*/}}"},
+	{"Real comments - ##|/// @ comment", `(?m)[sp](?:##|///)[sp]@.*$`, `{{- "" }}`},
+	{"Line comment - @// or @#", `(?m)@reduce;(#|//)[sp](?P<line_comment>.*)[sp]$`, "{{${reduce1} /* ${line_comment} */ ${reduce2}}}"},
+	{"Block comment - @/* */", `(?s)@reduce;/\*(?P<block_comment>.*?)\*/`, "{{${reduce1} /*${block_comment}*/ ${reduce2}}}"},
+	{"", `{{ /\*`, `{{/*`}, {"", `\*/ }}`, `*/}}`}, // Gotemplate is picky about spaces around comment {{- /* comment */ -}} and {{/* comment */}} are valid, but {{-/* comment */-}} and {{ /* comment */ }} are not.
 
 	// Commands
 	{"Foreach", `@reduce;for(?:[sp]each)?[sp]\(`, "@${reduce}range("},
-	{"Single line command - @command (expr) action;", `@reduce;(?P<command>if|with|range)[sp]\([sp]assign;?[sp](?P<expr>[expr]+)[sp]\)[sp](?P<action>[^\n]+?)[sp];`, `{{${reduce} ${command} ${assign}${expr} }}${action}{{- end }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
-	{"Single line command - @command (expr) { action }", `(?m)@reduce;(?P<command>if|with|range)[sp]\([sp]assign;?[sp](?P<expr>[expr]+)[sp]\)[sp]{[sp](?P<action>[^\n]+?)}[sp]$`, `{{${reduce} ${command} ${assign}${expr} }}${action}{{- end }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
-	{"Command(expr)", `@reduce;(?P<command>if|else[sp]if|block|with|define|range)[sp]\([sp]assign;?[sp](?P<expr>[expr]+)[sp]\)[sp]`, `{{${reduce} ${command} ${assign}${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
-	{"else", `@else`, "{{- else }}"},
-	{"various ends", `@(?P<command>end[sp](if|range|define|block|with|for[sp]each|for|))endexpr;`, "{{- end }}"},
+	{"Single line command - @command (expr) action;", `@reduce;(?P<command>if|with|range)[sp]\([sp]assign;?[sp](?P<expr>[expr]+)[sp]\)[sp](?P<action>[^\n]+?)[sp];`, `{{${reduce1} ${command} ${assign}${expr} ${reduce2}}}${action}{{${reduce1} end ${reduce2}}}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"Single line command - @command (expr) { action }", `(?m)@reduce;(?P<command>if|with|range)[sp]\([sp]assign;?[sp](?P<expr>[expr]+)[sp]\)[sp]{[sp](?P<action>[^\n]+?)}[sp]$`, `{{${reduce1} ${command} ${assign}${expr} ${reduce2}}}${action}{{${reduce1} end ${reduce2}}}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"Command(expr)", `@reduce;(?P<command>if|else[sp]if|block|with|define|range)[sp]\([sp]assign;?[sp](?P<expr>[expr]+)[sp]\)[sp]`, `{{${reduce1} ${command} ${assign}${expr} ${reduce2}}}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"else", `@reduce;else`, "{{${reduce1} else ${reduce2}}}"},
+	{"various ends", `@reduce;(?P<command>end[sp](if|range|define|block|with|for[sp]each|for|))endexpr;`, "{{${reduce1} end ${reduce2}}}"},
 
 	// Assignations
 	{"Assign - @var := value", `(?P<type>@[\$\.]?)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
@@ -101,28 +102,28 @@ var expressions = [][]interface{}{
 
 	// Function calls
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@${reduce}((${expr})${selection});`, replacementFunc(expressionParserSkipError)},
-	{"Function call with slice - @func(args...)[...]", `function;index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Function call - @func(args...)", `function;endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError)},
-	{"Function unmanaged - @func(value | func)", `@reduce;(?P<function>[id])\([sp](?P<args>[expr]+)[sp]\)endexpr;`, `{{${reduce} ${function} ${args} }}`},
+	{"Function call with slice - @func(args...)[...]", `function;index;endexpr;`, `{{${reduce1} ${slicer} (${expr}) ${index} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
+	{"Function call - @func(args...)", `function;endexpr;`, `{{${reduce1} ${expr} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
+	{"Function unmanaged - @func(value | func)", `@reduce;(?P<function>[id])\([sp](?P<args>[expr]+)[sp]\)endexpr;`, `{{${reduce1} ${function} ${args} ${reduce2}}}`},
 
 	// Variables
 	{"Local variables - @{var}", `@reduce;{[sp](?P<name>[\p{L}\d_\.]*)[sp]}(?P<end>endexpr;)`, `@${reduce}($$${name});`},
 	{"Global variables followed by expression", `@reduce;(?P<expr>[idSel]selector;index;?)(?P<end>endexpr;)`, `@${reduce}(${expr});`, replacementFunc(expressionParserSkipError)},
 	{"Context variables - @.var", `@reduce;\.(?P<name>[idSel])endexpr;`, `@${reduce}(.${name})`},
-	{"Global variables with slice - @var[...]", `@reduce;(?P<name>[idSel])index;endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Context variables special with slice", `@reduce;\.(?P<expr>(?P<name>[flexible_id])index;)endexpr;`, `{{${reduce} ${slicer} (get . "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Global variables special with slice", `@reduce;(?P<expr>(?P<name>[flexible_id])index;)endexpr;`, `{{${reduce} ${slicer} (get $$ "${name}") ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Local variables with slice", `@reduce;(?P<expr>(?P<name>[\$\.][\p{L}\d_\.]*)index;)endexpr;`, `{{${reduce} ${slicer} ${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Global variables - @var", `@reduce;(?P<name>[idSel])endexpr;`, `{{${reduce} $$.${name} }}`},
-	{"Context variables special - @.var", `@reduce;\.(?P<name>[flexible_id])endexpr;`, `{{${reduce} get . "${name}" }}`},
-	{"Global variables special - @var", `@reduce;(?P<name>[flexible_id])endexpr;`, `{{${reduce} get $$ "${name}" }}`},
-	{"Local variables - @$var or @.var", `@reduce;(?P<name>[\$\.][\p{L}\d_\.]*)endexpr;`, `{{${reduce} ${name} }}`},
+	{"Global variables with slice - @var[...]", `@reduce;(?P<name>[idSel])index;endexpr;`, `{{${reduce1} ${slicer} $$.${name} ${index} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
+	{"Context variables special with slice", `@reduce;\.(?P<expr>(?P<name>[flexible_id])index;)endexpr;`, `{{${reduce1} ${slicer} (get . "${name}") ${index} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
+	{"Global variables special with slice", `@reduce;(?P<expr>(?P<name>[flexible_id])index;)endexpr;`, `{{${reduce1} ${slicer} (get $$ "${name}") ${index} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
+	{"Local variables with slice", `@reduce;(?P<expr>(?P<name>[\$\.][\p{L}\d_\.]*)index;)endexpr;`, `{{${reduce1} ${slicer} ${name} ${index} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
+	{"Global variables - @var", `@reduce;(?P<name>[idSel])endexpr;`, `{{${reduce1} $$.${name} ${reduce2}}}`},
+	{"Context variables special - @.var", `@reduce;\.(?P<name>[flexible_id])endexpr;`, `{{${reduce1} get . "${name}" ${reduce2}}}`},
+	{"Global variables special - @var", `@reduce;(?P<name>[flexible_id])endexpr;`, `{{${reduce1} get $$ "${name}" ${reduce2}}}`},
+	{"Local variables - @$var or @.var", `@reduce;(?P<name>[\$\.][\p{L}\d_\.]*)endexpr;`, `{{${reduce1} ${name} ${reduce2}}}`},
 
 	// Expressions
-	{"Expression @(var)[...]", `@reduce;(?P<expr>\([sp](?P<name>[idSel])[sp]\)index;)endexpr;`, `{{${reduce} ${slicer} $$.${name} ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Expression @(var)", `@reduce;\([sp](?P<expr>[idSel])[sp]\)endexpr;`, `{{${reduce} ${expr} }}`, replacementFunc(expressionParserSkipError)},
-	{"Expression @(expr)[...]", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)index;endexpr;`, `{{${reduce} ${slicer} (${expr}) ${index} }}`, replacementFunc(expressionParserSkipError)},
-	{"Expression @(expr)", `@reduce;\([sp](?P<assign>.*?:= ?)?[sp](?P<expr>[expr]+)[sp]\)endexpr;`, `{{${reduce} ${assign}${expr} }}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
+	{"Expression @(var)[...]", `@reduce;(?P<expr>\([sp](?P<name>[idSel])[sp]\)index;)endexpr;`, `{{${reduce1} ${slicer} $$.${name} ${index} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
+	{"Expression @(var)", `@reduce;\([sp](?P<expr>[idSel])[sp]\)endexpr;`, `{{${reduce1} ${expr} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
+	{"Expression @(expr)[...]", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)index;endexpr;`, `{{${reduce1} ${slicer} (${expr}) ${index} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
+	{"Expression @(expr)", `@reduce;\([sp](?P<assign>.*?:= ?)?[sp](?P<expr>[expr]+)[sp]\)endexpr;`, `{{${reduce1} ${assign}${expr} ${reduce2}}}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 
 	{"Space eater", `@-`, `{{- "" -}}`},
 

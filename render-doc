@@ -32,28 +32,31 @@ gotemplate '```go@<@getMethods(dict())@<;```' > $DOC_FOLDER/_dict_methods.md
 # Generate detailed function info
 gotemplate '{% include navigation.html %}
 
-## Functions@<;
+## Function family@<;
 
 @-foreach ($category := categories())
     @<;[@(String($category.Name).Split(",")[0])](#@(String($category.Name).Replace(" ", "-"));)
     @<;
-@end foreach
+@-end foreach
+
+## Functions@<;
 
 @-foreach ($category := categories())
-### @($category.Name)
+@-// We have to make a trick here by adding {{ "" }} otherwise, the entire line will be considered as a comment
+### {{ "" }}@($category.Name)
     @-foreach ($func := $category.Functions())
         @{func} := function($func)
         @-if (!$func.IsAlias)
             @<;@<;```go
             @-if ($func.Description)
                 @<;// @(String($func.Description).Lines.Join("\n// "))
-            @end if
+            @-endif
             @-if ($func.Aliases)
                 @<;// Aliases: @join(", ", $func.Aliases)
-            @end if
+            @-endif
             @<;func @($func.Signature)
             @<;```
-        @end if
-    @end foreach
-@end
+        @-endif
+    @-end foreach
+@-end foreach
 ' > $DOC_FOLDER/functions_long.md

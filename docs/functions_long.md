@@ -1,6 +1,6 @@
 {% include navigation.html %}
 
-## Functions
+## Function family
 
 [Base go template functions](#Base-go-template-functions)
 
@@ -63,6 +63,9 @@
 [Sprig Type Conversion](#Sprig-Type-Conversion,-http://masterminds.github.io/sprig/conversion.html)
 
 [Sprig Version comparison](#Sprig-Version-comparison,-http://masterminds.github.io/sprig/semver.html)
+
+
+## Functions
 
 ### Base go template functions
 

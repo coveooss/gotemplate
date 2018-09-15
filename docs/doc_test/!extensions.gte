@@ -8,8 +8,8 @@ Template to define algorithm to draw a fir.
   @-if (reverse) @{r = $r[-1:0]};
   @-foreach ($n := $r)
     @center($len, color($colors, char * $n))
-  @end foreach
-@end define
+  @-end foreach
+@-end define
 
 Default configuration for regular fir.
 @{firConfig} := data(`
