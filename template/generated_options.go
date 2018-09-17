@@ -4,9 +4,9 @@ package template
 
 import "strconv"
 
-const _Options_name = "RazorExtensionMathSprigDataLoggingRuntimeUtilsNetOSOptionOnByDefaultCountOverwriteOutputStdoutRenderingDisabledAcceptNoValue"
+const _Options_name = "RazorExtensionMathSprigDataLoggingRuntimeUtilsNetOSOptionOnByDefaultCountOverwriteOutputStdoutRenderingDisabledAcceptNoValueStrictErrorCheck"
 
-var _Options_index = [...]uint8{0, 5, 14, 18, 23, 27, 34, 41, 46, 49, 51, 73, 82, 94, 111, 124}
+var _Options_index = [...]uint8{0, 5, 14, 18, 23, 27, 34, 41, 46, 49, 51, 73, 82, 94, 111, 124, 140}
 
 func (i Options) String() string {
 	if i < 0 || i >= Options(len(_Options_index)-1) {

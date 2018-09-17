@@ -30,6 +30,10 @@ func (l yamlList) Reverse() yamlIList                { return yamlListHelper.Rev
 func (l yamlList) Strings() []string                 { return yamlListHelper.GetStrings(l) }
 func (l yamlList) Unique() yamlIList                 { return yamlListHelper.Unique(l) }
 
+func (l yamlList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return yamlDictHelper, yamlListHelper
+}
+
 func (l yamlList) Append(values ...interface{}) yamlIList {
 	return yamlListHelper.Add(l, false, values...)
 }
@@ -75,6 +79,10 @@ func (d yamlDict) KeysAsString() []string              { return yamlDictHelper.K
 func (d yamlDict) GetValues() yamlIList                { return yamlDictHelper.GetValues(d) }
 func (d yamlDict) Set(key, v interface{}) yamlIDict    { return yamlDictHelper.Set(d, key, v) }
 func (d yamlDict) Transpose() yamlIDict                { return yamlDictHelper.Transpose(d) }
+
+func (d yamlDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return yamlDictHelper, yamlListHelper
+}
 
 func (d yamlDict) Default(key, defVal interface{}) interface{} {
 	return yamlDictHelper.Default(d, key, defVal)

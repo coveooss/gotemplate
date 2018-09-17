@@ -13,7 +13,7 @@ const (
 	sprigFlow           = "Sprig Flow Control, http://masterminds.github.io/sprig/flow_control.html"
 	sprigGen            = "Sprig General, http://masterminds.github.io/sprig/"
 	sprigList           = "Sprig List, http://masterminds.github.io/sprig/lists.html"
-	sprigMath           = "Sprig Sprig Mathematics, http://masterminds.github.io/sprig/math.html"
+	sprigMath           = "Sprig Mathematics, http://masterminds.github.io/sprig/math.html"
 	sprigRegex          = "Sprig Regex, http://masterminds.github.io/sprig/strings.html"
 	sprigSemver         = "Sprig Version comparison, http://masterminds.github.io/sprig/semver.html"
 	sprigString         = "Sprig Strings, http://masterminds.github.io/sprig/strings.html"
@@ -43,9 +43,13 @@ func (t *Template) addSprigFuncs() {
 		sprigFuncs = make(funcTableMap)
 		for key, value := range sprigFuncMap {
 			info := sprigFuncRef[key]
-			if info.group == "" && aliases[key] == "" {
-				log.Warning(key, "not found")
-				continue
+			if info.group == "" {
+				if aliases[key] == "" {
+					log.Warning(key, "not found")
+					continue
+				}
+				key = aliases[key]
+				info = sprigFuncRef[key]
 			}
 			sprigFuncs[key] = FuncInfo{function: value, group: info.group, aliases: info.aliases, arguments: info.arguments, description: info.description}
 		}
@@ -69,47 +73,47 @@ var sprigFuncRef = map[string]struct {
 	"toDate":         {group: sprigDate, description: "Converts a string to a date. The first argument is the date layout and the second the date string. If the string can’t be convert it returns the zero value.", arguments: []string{"fmt", "str"}},
 
 	// Strings functions
-	"abbrev":       {group: sprigString, description: "Truncates a string with ellipses (...).", arguments: []string{"width", "str"}},
-	"abbrevboth":   {group: sprigString, description: "Abbreviates both sides with ellipses (...).", arguments: []string{"left", "right", "str"}},
-	"camelcase":    {group: sprigString, description: "Converts string from snake_case to CamelCase.", arguments: []string{"str"}},
-	"cat":          {group: sprigString, description: "Concatenates multiple strings together into one, separating them with spaces."},
-	"contains":     {group: sprigString, description: "Tests to see if one string is contained inside of another.", arguments: []string{"substr", "str"}, aliases: []string{"containsSprig"}},
-	"hasPrefix":    {group: sprigString, description: "Tests whether a string has a given prefix.", arguments: []string{"prefix", "str"}},
-	"hasSuffix":    {group: sprigString, description: "Tests whether a string has a given suffix.", arguments: []string{"suffix", "str"}},
-	"indent":       {group: sprigString, description: "Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.", arguments: []string{"spaces", "str"}},
-	"initials":     {group: sprigString, description: "Given multiple words, takes the first letter of each word and combine.", arguments: []string{"str"}},
-	"lower":        {group: sprigString, description: "Converts the entire string to lowercase.", arguments: []string{"str"}},
-	"nindent":      {group: sprigString, description: "Same as the indent function, but prepends a new line to the beginning of the string.", arguments: []string{"spaces", "str"}},
-	"nospace":      {group: sprigString, description: "Removes all whitespace from a string.", arguments: []string{"str"}},
-	"plural":       {group: sprigString, description: "Pluralizes a string.", arguments: []string{"one", "many", "count"}},
-	"quote":        {group: sprigString, description: "Wraps each argument with double quotes.", arguments: []string{"str"}},
-	"randAlpha":    {group: sprigString, description: "Generates random string with letters.", arguments: []string{"count"}},
-	"randAlphaNum": {group: sprigString, description: "Generates random string with letters and digits.", arguments: []string{"count"}},
-	"randAscii":    {group: sprigString, description: "Generates random string with ASCII printable characters.", arguments: []string{"count"}},
-	"randNumeric":  {group: sprigString, description: "Generates random string with digits.", arguments: []string{"count"}},
-	"repeat":       {group: sprigString, description: "Repeats a string multiple times.", arguments: []string{"count", "str"}, aliases: []string{"repeatSprig"}},
-	"replace":      {group: sprigString, description: "Performs simple string replacement.", arguments: []string{"old", "new", "src"}},
-	"shuffle":      {group: sprigString, description: "Shuffle a string.", arguments: []string{"str"}},
-	"snakecase":    {group: sprigString, description: "Converts string from camelCase to snake_case.", arguments: []string{"str"}},
-	"squote":       {group: sprigString, description: "Wraps each argument with single quotes."},
-	"substr":       {group: sprigString, description: "Get a substring from a string.", arguments: []string{"start", "length", "str"}},
-	"swapcase":     {group: sprigString, description: "Swaps the uppercase to lowercase and lowercase to uppercase.", arguments: []string{"str"}},
-	"title":        {group: sprigString, description: "Converts to title case.", arguments: []string{"str"}},
-	"toString":     {group: sprigString, description: "Converts any value to string.", arguments: []string{"value"}},
-	"trim":         {group: sprigString, description: "Removes space from either side of a string.", arguments: []string{"str"}},
-	"trimAll":      {group: sprigString, description: "Removes given characters from the front or back of a string.", aliases: []string{"trimall"}, arguments: []string{"chars", "str"}},
-	"trimPrefix":   {group: sprigString, description: "Trims just the prefix from a string if present.", arguments: []string{"prefix", "str"}},
-	"trimSuffix":   {group: sprigString, description: "Trims just the suffix from a string if present.", arguments: []string{"suffix", "str"}},
-	"trunc":        {group: sprigString, description: "Truncates a string (and add no suffix).", arguments: []string{"length", "str"}, aliases: []string{"truncSprig"}},
-	"untitle":      {group: sprigString, description: `Removes title casing.`, arguments: []string{"str"}},
-	"upper":        {group: sprigString, description: "Converts the entire string to uppercase.", arguments: []string{"str"}},
-	"wrap":         {group: sprigString, description: "Wraps text at a given column count.", arguments: []string{"length", "str"}, aliases: []string{"wrapSprig"}},
-	"wrapWith":     {group: sprigString, description: "Works as wrap, but lets you specify the string to wrap with (wrap uses \\n).", arguments: []string{"length", "spe", "str"}},
+	"abbrev":        {group: sprigString, description: "Truncates a string with ellipses (...).", arguments: []string{"width", "str"}},
+	"abbrevboth":    {group: sprigString, description: "Abbreviates both sides with ellipses (...).", arguments: []string{"left", "right", "str"}},
+	"camelcase":     {group: sprigString, description: "Converts string from snake_case to CamelCase.", arguments: []string{"str"}},
+	"cat":           {group: sprigString, description: "Concatenates multiple strings together into one, separating them with spaces."},
+	"containsSprig": {group: sprigString, description: "Tests to see if one string is contained inside of another.", arguments: []string{"substr", "str"}, aliases: []string{"contains"}},
+	"hasPrefix":     {group: sprigString, description: "Tests whether a string has a given prefix.", arguments: []string{"prefix", "str"}},
+	"hasSuffix":     {group: sprigString, description: "Tests whether a string has a given suffix.", arguments: []string{"suffix", "str"}},
+	"indentSprig":   {group: sprigString, description: "Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.", arguments: []string{"spaces", "str"}, aliases: []string{"indent"}},
+	"initials":      {group: sprigString, description: "Given multiple words, takes the first letter of each word and combine.", arguments: []string{"str"}},
+	"lower":         {group: sprigString, description: "Converts the entire string to lowercase.", arguments: []string{"str"}},
+	"nindentSprig":  {group: sprigString, description: "Same as the indent function, but prepends a new line to the beginning of the string.", arguments: []string{"spaces", "str"}, aliases: []string{"nindent"}},
+	"nospace":       {group: sprigString, description: "Removes all whitespace from a string.", arguments: []string{"str"}},
+	"plural":        {group: sprigString, description: "Pluralizes a string.", arguments: []string{"one", "many", "count"}},
+	"quote":         {group: sprigString, description: "Wraps each argument with double quotes.", arguments: []string{"str"}},
+	"randAlpha":     {group: sprigString, description: "Generates random string with letters.", arguments: []string{"count"}},
+	"randAlphaNum":  {group: sprigString, description: "Generates random string with letters and digits.", arguments: []string{"count"}},
+	"randAscii":     {group: sprigString, description: "Generates random string with ASCII printable characters.", arguments: []string{"count"}},
+	"randNumeric":   {group: sprigString, description: "Generates random string with digits.", arguments: []string{"count"}},
+	"repeatSprig":   {group: sprigString, description: "Repeats a string multiple times.", arguments: []string{"count", "str"}, aliases: []string{"repeat"}},
+	"replace":       {group: sprigString, description: "Performs simple string replacement.", arguments: []string{"old", "new", "src"}},
+	"shuffle":       {group: sprigString, description: "Shuffle a string.", arguments: []string{"str"}},
+	"snakecase":     {group: sprigString, description: "Converts string from camelCase to snake_case.", arguments: []string{"str"}},
+	"squote":        {group: sprigString, description: "Wraps each argument with single quotes."},
+	"substr":        {group: sprigString, description: "Get a substring from a string.", arguments: []string{"start", "length", "str"}},
+	"swapcase":      {group: sprigString, description: "Swaps the uppercase to lowercase and lowercase to uppercase.", arguments: []string{"str"}},
+	"title":         {group: sprigString, description: "Converts to title case.", arguments: []string{"str"}},
+	"toString":      {group: sprigString, description: "Converts any value to string.", arguments: []string{"value"}},
+	"trim":          {group: sprigString, description: "Removes space from either side of a string.", arguments: []string{"str"}},
+	"trimAll":       {group: sprigString, description: "Removes given characters from the front or back of a string.", aliases: []string{"trimall"}, arguments: []string{"chars", "str"}},
+	"trimPrefix":    {group: sprigString, description: "Trims just the prefix from a string if present.", arguments: []string{"prefix", "str"}},
+	"trimSuffix":    {group: sprigString, description: "Trims just the suffix from a string if present.", arguments: []string{"suffix", "str"}},
+	"truncSprig":    {group: sprigString, description: "Truncates a string (and add no suffix).", arguments: []string{"length", "str"}, aliases: []string{"trunc"}},
+	"untitle":       {group: sprigString, description: `Removes title casing.`, arguments: []string{"str"}},
+	"upper":         {group: sprigString, description: "Converts the entire string to uppercase.", arguments: []string{"str"}},
+	"wrapSprig":     {group: sprigString, description: "Wraps text at a given column count.", arguments: []string{"length", "str"}, aliases: []string{"wrap"}},
+	"wrapWith":      {group: sprigString, description: "Works as wrap, but lets you specify the string to wrap with (wrap uses \\n).", arguments: []string{"length", "spe", "str"}},
 
-	"atoi":    {group: sprigTypeConversion},
-	"int64":   {group: sprigTypeConversion},
-	"int":     {group: sprigTypeConversion, aliases: []string{"intSprig"}},
-	"float64": {group: sprigTypeConversion},
+	"atoi":     {group: sprigTypeConversion},
+	"int64":    {group: sprigTypeConversion},
+	"intSprig": {group: sprigTypeConversion, aliases: []string{"int"}},
+	"float64":  {group: sprigTypeConversion},
 
 	"split":     {group: sprigStringList},
 	"splitn":    {group: sprigStringList},
@@ -119,36 +123,36 @@ var sprigFuncRef = map[string]struct {
 	"sortAlpha": {group: sprigStringList},
 
 	// VERY basic arithmetic.
-	"add1":  {group: sprigMath},
-	"add":   {group: sprigMath, aliases: []string{"addSprig"}},
-	"sub":   {group: sprigMath, aliases: []string{"subSprig"}},
-	"div":   {group: sprigMath, aliases: []string{"divSprig"}},
-	"mod":   {group: sprigMath, aliases: []string{"modSprig"}},
-	"mul":   {group: sprigMath, aliases: []string{"mulSprig"}},
-	"max":   {group: sprigMath, aliases: []string{"maxSprig", "biggest"}},
-	"min":   {group: sprigMath, aliases: []string{"minSprig"}},
-	"ceil":  {group: sprigMath, aliases: []string{"ceilSprig"}},
-	"floor": {group: sprigMath, aliases: []string{"floorSprig"}},
-	"round": {group: sprigMath},
+	"add1":       {group: sprigMath},
+	"addSprig":   {group: sprigMath, aliases: []string{"add"}},
+	"subSprig":   {group: sprigMath, aliases: []string{"sub"}},
+	"divSprig":   {group: sprigMath, aliases: []string{"div"}},
+	"modSprig":   {group: sprigMath, aliases: []string{"mod"}},
+	"mulSprig":   {group: sprigMath, aliases: []string{"mul"}},
+	"maxSprig":   {group: sprigMath, aliases: []string{"max", "biggest", "biggestSprig"}},
+	"minSprig":   {group: sprigMath, aliases: []string{"min"}},
+	"ceilSprig":  {group: sprigMath, aliases: []string{"ceil"}},
+	"floorSprig": {group: sprigMath, aliases: []string{"floor"}},
+	"round":      {group: sprigMath},
 
-	"until":     {group: sprigMath, aliases: []string{"untilSprig"}},
+	"until":     {group: sprigMath, aliases: []string{"until"}},
 	"untilStep": {group: sprigMath},
 
 	// Defaults
-	"default":      {group: sprigDefault},
-	"empty":        {group: sprigDefault},
-	"coalesce":     {group: sprigDefault},
-	"compact":      {group: sprigDefault},
-	"toJson":       {group: sprigDefault, aliases: []string{"toJsonSprig"}},
-	"toPrettyJson": {group: sprigDefault, aliases: []string{"toJsonSprig"}},
-	"ternary":      {group: sprigDefault, aliases: []string{"ternarySprig"}},
+	"default":           {group: sprigDefault},
+	"empty":             {group: sprigDefault},
+	"coalesce":          {group: sprigDefault},
+	"compact":           {group: sprigDefault},
+	"toJsonSprig":       {group: sprigDefault, aliases: []string{"toJson"}},
+	"toPrettyJsonSprig": {group: sprigDefault, aliases: []string{"toPrettyJson"}},
+	"ternarySprig":      {group: sprigDefault, aliases: []string{"ternary"}},
 
 	// Reflection
-	"typeOf":     {group: sprigReflect},
-	"typeIs":     {group: sprigReflect},
-	"typeIsLike": {group: sprigReflect},
-	"kindOf":     {group: sprigReflect},
-	"kindIs":     {group: sprigReflect},
+	"typeOf":     {group: sprigReflect, aliases: []string{"typeof"}},
+	"typeIs":     {group: sprigReflect, aliases: []string{"typeis"}},
+	"typeIsLike": {group: sprigReflect, aliases: []string{"typeisLike"}},
+	"kindOf":     {group: sprigReflect, aliases: []string{"kindof"}},
+	"kindIs":     {group: sprigReflect, aliases: []string{"kindis"}},
 
 	// OS:
 	"env":       {group: sprigOS},
@@ -168,30 +172,30 @@ var sprigFuncRef = map[string]struct {
 	"b32dec": {group: sprigEncoding},
 
 	// Data Structures:
-	"list":   {group: sprigDict, aliases: []string{"tuple"}},
-	"dict":   {group: sprigDict, aliases: []string{"dictSprig"}},
-	"set":    {group: sprigDict, aliases: []string{"setSprig"}},
-	"unset":  {group: sprigDict, aliases: []string{"unsetSprig"}},
-	"hasKey": {group: sprigDict, aliases: []string{"hasKeySprig"}},
-	"pluck":  {group: sprigDict, aliases: []string{"pluckSprig"}},
-	"keys":   {group: sprigDict, aliases: []string{"keysSprig"}},
-	"pick":   {group: sprigDict, aliases: []string{"pickSprig"}},
-	"omit":   {group: sprigDict, aliases: []string{"omitSprig"}},
-	"merge":  {group: sprigDict, aliases: []string{"mergeSprig"}},
-	"values": {group: sprigDict, aliases: []string{"valuesSprig"}},
+	"listSprig":   {group: sprigDict, aliases: []string{"list", "tuple", "tupleSprig"}},
+	"dictSprig":   {group: sprigDict, aliases: []string{"dict"}},
+	"setSprig":    {group: sprigDict, aliases: []string{"set"}},
+	"unsetSprig":  {group: sprigDict, aliases: []string{"unset"}},
+	"hasKeySprig": {group: sprigDict, aliases: []string{"hasKey"}},
+	"pluckSprig":  {group: sprigDict, aliases: []string{"pluck"}},
+	"keysSprig":   {group: sprigDict, aliases: []string{"keys"}},
+	"pickSprig":   {group: sprigDict, aliases: []string{"pick"}},
+	"omitSprig":   {group: sprigDict, aliases: []string{"omit"}},
+	"mergeSprig":  {group: sprigDict, aliases: []string{"merge"}},
+	"valuesSprig": {group: sprigDict, aliases: []string{"values"}},
 
 	// Lists functions
-	"append":  {group: sprigList, aliases: []string{"push", "appendSprig"}},
-	"prepend": {group: sprigList, aliases: []string{"prependSprig"}},
-	"first":   {group: sprigList},
-	"rest":    {group: sprigList, aliases: []string{"restSprig"}},
-	"last":    {group: sprigList},
-	"initial": {group: sprigList, aliases: []string{"initialSprig"}},
-	"reverse": {group: sprigList, aliases: []string{"reverseSprig"}},
-	"uniq":    {group: sprigList, aliases: []string{"uniqSprig"}},
-	"without": {group: sprigList, aliases: []string{"withoutSprig"}},
-	"has":     {group: sprigList, aliases: []string{"hasSprig"}},
-	"slice":   {group: sprigList, aliases: []string{"sliceSprig"}},
+	"appendSprig":  {group: sprigList, aliases: []string{"append", "push", "pushSprig"}},
+	"prependSprig": {group: sprigList, aliases: []string{"prepend"}},
+	"first":        {group: sprigList},
+	"restSprig":    {group: sprigList, aliases: []string{"rest"}},
+	"last":         {group: sprigList},
+	"initialSprig": {group: sprigList, aliases: []string{"initial"}},
+	"reverseSprig": {group: sprigList, aliases: []string{"reverse"}},
+	"uniqSprig":    {group: sprigList, aliases: []string{"uniq"}},
+	"withoutSprig": {group: sprigList, aliases: []string{"without"}},
+	"hasSprig":     {group: sprigList, aliases: []string{"has"}},
+	"sliceSprig":   {group: sprigList, aliases: []string{"slice"}},
 
 	// Cryptographics functions
 	"sha1sum":           {group: sprigCrypto, description: "Computes SHA1 digest.", arguments: []string{"input"}},

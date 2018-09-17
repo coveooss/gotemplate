@@ -8,114 +8,82 @@ ge                      js                      ne                      printf
 
 Data Conversion
 
-DATA                    fromHcl                 tfvars                  toJson                  toQuotedJson            
-HCL                     fromJSON                toBash                  toPrettyHCL             toQuotedTFVars          
-JSON                    fromJson                toHCL                   toPrettyHcl             toTFVars                
-TFVARS                  fromTFVARS              toHcl                   toPrettyJSON            toYAML                  
-YAML                    fromTFVars              toIHCL                  toPrettyJson            toYaml                  
-data                    fromYAML                toIHcl                  toPrettyTFVars          yaml                    
-fromDATA                fromYaml                toInternalHCL           toQuotedHCL             
-fromData                hcl                     toInternalHcl           toQuotedHcl             
-fromHCL                 json                    toJSON                  toQuotedJSON            
+data                    toHcl                   toPrettyJson            toQuotedTFVars          
+hcl                     toInternalHcl           toPrettyTFVars          toTFVars                
+json                    toJson                  toQuotedHcl             toYaml                  
+toBash                  toPrettyHcl             toQuotedJson            yaml                    
 
 Data Manipulation
 
-String                  extract                 isSet                   pickv                   string                  
-append                  get                     isZero                  pluck                   undef                   
-array                   has                     key                     prepend                 union                   
-bool                    hasKey                  keys                    push                    uniq                    
-char                    ifUndef                 lenc                    remove                  unique                  
-contains                initial                 list                    rest                    unset                   
-content                 intersect               merge                   reverse                 values                  
-delete                  isEmpty                 nbChars                 safeIndex               without                 
-dict                    isNil                   omit                    set                     
-dictionary              isNull                  pick                    slice                   
+String                  extract                 key                     pluck                   undef                   
+append                  get                     keys                    prepend                 union                   
+array                   hasKey                  lenc                    rest                    unique                  
+bool                    initial                 list                    reverse                 unset                   
+char                    intersect               merge                   safeIndex               values                  
+contains                isNil                   omit                    set                     without                 
+content                 isSet                   pick                    slice                   
+dict                    isZero                  pickv                   string                  
 
 Logging
 
-critical                error                   info                    panic                   warning                 
-criticalf               errorf                  infof                   panicf                  warningf                
-debug                   fatal                   notice                  warn                    
-debugf                  fatalf                  noticef                 warnf                   
+critical                error                   info                    panic                   
+debug                   fatal                   notice                  warning                 
 
 Mathematic Bit Operations
 
-band                    bitwiseClear            bor                     lshift                  
-bclear                  bitwiseOR               bxor                    rightShift              
-bitwiseAND              bitwiseXOR              leftShift               rshift                  
+band                    bor                     lshift                  
+bclear                  bxor                    rshift                  
 
 Mathematic Fundamental
 
-add                     expm1                   modulo                  product                 sub                     
-cbrt                    exponent                mul                     quotient                subtract                
-ceil                    exponent2               multiply                rem                     sum                     
-dim                     floor                   pow                     remainder               trunc                   
-div                     int                     pow10                   roundDown               truncate                
-divide                  integer                 power                   roundUp                 
-exp                     mod                     power10                 rounddown               
-exp2                    modf                    prod                    roundup                 
+add                     div                     floor                   pow                     trunc                   
+cbrt                    exp                     mod                     pow10                   
+ceil                    exp2                    modf                    rem                     
+dim                     expm1                   mul                     sub                     
 
 Mathematic Stats
 
-average                 biggest                 maximum                 minimum                 
-avg                     max                     min                     smallest                
+avg                     max                     min                     
 
 Mathematic Trigonometry
 
-acos                    arcTangent2             firstBessel0            log                     sine                    
-acosh                   asin                    firstBessel1            log10                   sineCosine              
-arcCosine               asinh                   firstBesselN            log1p                   sinh                    
-arcCosinus              atan                    hyperbolicCosine        log2                    sinus                   
-arcHyperbolicCosine     atan2                   hyperbolicCosinus       logb                    sinusCosinus            
-arcHyperbolicCosinus    atanh                   hyperbolicSine          rad                     tan                     
-arcHyperbolicSine       cos                     hyperbolicSinus         radian                  tangent                 
-arcHyperbolicSinus      cosh                    hyperbolicTangent       secondBessel0           tanh                    
-arcHyperbolicTangent    cosine                  ilogb                   secondBessel1           y0                      
-arcSine                 cosinus                 j0                      secondBesselN           y1                      
-arcSinus                deg                     j1                      sin                     yn                      
-arcTangent              degree                  jn                      sincos                  
+acos                    atanh                   j1                      logb                    tanh                    
+acosh                   cos                     jn                      rad                     y0                      
+asin                    cosh                    log                     sin                     y1                      
+asinh                   deg                     log10                   sincos                  yn                      
+atan                    ilogb                   log1p                   sinh                    
+atan2                   j0                      log2                    tan                     
 
 Mathematic Utilities
 
-abs                     gamma                   hypotenuse              lgamma                  to                      
-absolute                hex                     isInf                   nextAfter               until                   
-dec                     hexa                    isInfinity              signBit                 
-decimal                 hexaDecimal             isNaN                   sqrt                    
-frexp                   hypot                   ldexp                   squareRoot              
+abs                     gamma                   isInf                   lgamma                  sqrt                    
+dec                     hex                     isNaN                   nextAfter               to                      
+frexp                   hypot                   ldexp                   signBit                 until                   
 
 Net
 
-curl                    httpDoc                 httpDocument            httpGet                 
+httpDoc                 httpGet                 
 
 Operating systems functions
 
-currentDir              fileStat                isExist                 lookPath                username                
-currentUser             glob                    isFile                  mode                    whereIs                 
-diff                    group                   isFolder                pwd                     which                   
-difference              home                    isReadable              save                    write                   
-exists                  homeDir                 isWriteable             size                    writeTo                 
-expand                  homeFolder              lastMod                 stat                    
-fileExists              isDir                   lastModification        type                    
-fileMode                isDirectory             lastModificationTime    user                    
-fileSize                isExecutable            look                    userGroup               
+diff                    home                    isReadable              mode                    stat                    
+exists                  isDir                   isWriteable             pwd                     user                    
+glob                    isExecutable            lastMod                 save                    username                
+group                   isFile                  lookPath                size                    
 
 Other utilities
 
-center                  enhanced                joinLines               sIndent                 wrap                    
-centered                formatList              lorem                   sindent                 wrapped                 
-color                   id                      loremIpsum              spaceIndent             
-colored                 identifier              mergeList               splitLines              
-concat                  iif                     repeat                  ternary                 
+center                  formatList              indent                  mergeList               sIndent                 
+color                   id                      joinLines               nIndent                 splitLines              
+concat                  iif                     lorem                   repeat                  wrap                    
 
 Runtime
 
-alias                   attr                    exit                    include                 signature               
-aliases                 attributes              func                    localAlias              substitute              
-allFunctions            categories              function                methods                 templateNames           
-assert                  current                 functions               raise                   templates               
-assertWarning           ellipsis                getAttributes           raiseError              
-assertion               exec                    getMethods              run                     
-assertw                 execute                 getSignature            sign                    
+alias                   categories              func                    getSignature            substitute              
+aliases                 current                 function                include                 templateNames           
+allFunctions            ellipsis                functions               localAlias              templates               
+assert                  exec                    getAttributes           raise                   
+assertWarning           exit                    getMethods              run                     
 
 Sprig Cryptographic & Security http://masterminds.github.io/sprig/crypto.html
 
@@ -124,19 +92,19 @@ derivePassword          genPrivateKey           genSignedCert           sha256su
 
 Sprig Date http://masterminds.github.io/sprig/date.html
 
-ago                     dateInZone              date_in_zone            htmlDate                now                     
-date                    dateModify              date_modify             htmlDateInZone          toDate                  
+ago                     dateInZone              htmlDate                now                     
+date                    dateModify              htmlDateInZone          toDate                  
 
 Sprig Default http://masterminds.github.io/sprig/defaults.html
 
-coalesce                default                 ternarySprig            
+coalesce                default                 ternarySprig            toPrettyJsonSprig       
 compact                 empty                   toJsonSprig             
 
 Sprig Dictionnary http://masterminds.github.io/sprig/dicst.html
 
-dictSprig               mergeSprig              pluckSprig              unsetSprig              
-hasKeySprig             omitSprig               setSprig                valuesSprig             
-keysSprig               pickSprig               tuple                   
+dictSprig               listSprig               pickSprig               unsetSprig              
+hasKeySprig             mergeSprig              pluckSprig              valuesSprig             
+keysSprig               omitSprig               setSprig                
 
 Sprig Encoding http://masterminds.github.io/sprig/encoding.html
 
@@ -152,13 +120,19 @@ fail
 
 Sprig General http://masterminds.github.io/sprig/
 
-GUID                    guid                    hello                   uuid                    uuidv4                  
+hello                   uuidv4                  
 
 Sprig List http://masterminds.github.io/sprig/lists.html
 
 appendSprig             initialSprig            restSprig               uniqSprig               
 first                   last                    reverseSprig            withoutSprig            
 hasSprig                prependSprig            sliceSprig              
+
+Sprig Mathematics http://masterminds.github.io/sprig/math.html
+
+add1                    divSprig                minSprig                round                   
+addSprig                floorSprig              modSprig                subSprig                
+ceilSprig               maxSprig                mulSprig                untilStep               
 
 Sprig OS http://masterminds.github.io/sprig/defaults.html
 
@@ -173,12 +147,6 @@ Sprig Regex http://masterminds.github.io/sprig/strings.html
 regexFind               regexMatch              regexReplaceAllLiteral  
 regexFindAll            regexReplaceAll         regexSplit              
 
-Sprig Sprig Mathematics http://masterminds.github.io/sprig/math.html
-
-add1                    divSprig                minSprig                round                   untilStep               
-addSprig                floorSprig              modSprig                subSprig                
-ceilSprig               maxSprig                mulSprig                untilSprig              
-
 Sprig String Slice http://masterminds.github.io/sprig/string_slice.html
 
 join                    split                   splitn                  
@@ -186,14 +154,14 @@ sortAlpha               splitList               toStrings
 
 Sprig Strings http://masterminds.github.io/sprig/strings.html
 
-abbrev                  initials                randAscii               swapcase                truncSprig              
-abbrevboth              lower                   randNumeric             title                   untitle                 
-camelcase               nindent                 repeatSprig             toString                upper                   
-cat                     nospace                 replace                 trim                    wrapSprig               
-containsSprig           plural                  shuffle                 trimAll                 wrapWith                
+abbrev                  initials                randAscii               swapcase                untitle                 
+abbrevboth              lower                   randNumeric             title                   upper                   
+camelcase               nindentSprig            repeatSprig             toString                wrapSprig               
+cat                     nospace                 replace                 trim                    wrapWith                
+containsSprig           plural                  shuffle                 trimAll                 
 hasPrefix               quote                   snakecase               trimPrefix              
 hasSuffix               randAlpha               squote                  trimSuffix              
-indent                  randAlphaNum            substr                  trimall                 
+indentSprig             randAlphaNum            substr                  truncSprig              
 
 Sprig Type Conversion http://masterminds.github.io/sprig/conversion.html
 

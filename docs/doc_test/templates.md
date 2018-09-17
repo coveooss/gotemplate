@@ -11,8 +11,8 @@
   For each item in var2:  
   @-for ($item := .var2)
     Print it: @$item  
-  @end for
-@end define
+  @-end for
+@-end define
 ```
 
 ### Gotemplate

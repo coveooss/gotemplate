@@ -225,6 +225,12 @@ func (s String) Str() string { return string(s) }
 // Len returns the length of the string.
 func (s String) Len() int { return len(s) }
 
+// Escape returns the representation of the string with escape characters
+func (s String) Escape() String {
+	q := fmt.Sprintf("%q", s.Str())
+	return String(q[1 : len(q)-1])
+}
+
 // FieldsID splits the string s at character that is not a valid identifier character (letter, digit or underscore).
 func (s String) FieldsID() StringArray {
 	f := func(c rune) bool {
@@ -297,21 +303,56 @@ func (s String) SelectWord(pos int, accept ...string) String {
 	return result
 }
 
-// GetContextAtPosition tries to extend the context from the specified position within specified boundaries.
-func (s String) GetContextAtPosition(pos int, left, right string) (String, int) {
-	if pos >= len(s) {
-		pos = len(s) - 1
+// IndexAll returns all positions where substring is found within s.
+func (s String) IndexAll(substr string) (result []int) {
+	if substr == "" || s == "" {
+		return nil
 	}
-	if pos < 0 {
+	start, lenSubstr := 0, len(substr)
+	for pos := s.Index(substr); pos >= 0; pos = s[start:].Index(substr) {
+		result = append(result, start+pos)
+		start += pos + lenSubstr
+	}
+	return
+}
+
+// GetContextAtPosition tries to extend the context from the specified position within specified boundaries.
+func (s String) GetContextAtPosition(pos int, left, right string) (a String, b int) {
+	if pos < 0 || pos >= len(s) {
+		// Trying to select context out of bound
 		return "", -1
 	}
-	begin, end := pos, pos+1
-	if left != "" {
-		begin = strings.LastIndex(s[:pos].Str(), left)
+
+	findLeft := func(s String, pos int) int {
+		if left == "" {
+			return pos
+		}
+		return s[:pos].LastIndex(left)
 	}
-	if right != "" {
-		if end = strings.Index(s[pos:].Str(), right); end >= 0 {
-			end += pos + len(right)
+	begin, end, lenLeft, lenRight := findLeft(s, pos), pos+1, len(left), len(right)
+
+	if begin >= 0 && lenRight > 0 {
+		if end = s[pos:].Index(right); end >= 0 {
+			end += pos + lenRight
+			back := findLeft(s[:end], end-lenRight)
+			if left != "" && back != begin {
+				// There is at least one enclosed start, we must find the corresponding end
+				pos = begin + lenLeft
+				lefts := s[pos:].IndexAll(left)
+				rights := s[pos:].IndexAll(right)
+				for i := range lefts {
+					if i == len(rights) {
+						return "", -1
+					}
+					if lefts[i] > rights[i] {
+						return s[begin : rights[i]+pos+lenRight], begin
+					}
+				}
+				if len(rights) > len(lefts) {
+					return s[begin : rights[len(lefts)]+pos+lenRight], begin
+				}
+				end = -1
+			}
 		}
 	}
 	if begin < 0 || end < 0 {
@@ -349,9 +390,11 @@ func (s String) Protect() (result String, array StringArray) {
 			end += pos + 1
 			if s[end] == '"' && escaped(end-1) {
 				// The quote has been escaped, so we find the next one
-				if newEnd := s[end+1:].IndexRune('"'); newEnd >= 0 {
-					end += newEnd - pos
+				newEnd := s[end+1:].IndexRune('"')
+				if newEnd < 0 {
+					return
 				}
+				end += newEnd - pos
 			} else {
 				array = append(array, s[pos:end+1])
 				result += s[:pos] + String(fmt.Sprintf(replacementFormat, len(array)-1))

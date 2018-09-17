@@ -139,6 +139,7 @@ var dataFuncsAliases = aliases{
 	"isZero":        {"isEmpty"},
 	"json":          {"JSON", "fromJson", "fromJSON"},
 	"lenc":          {"nbChars"},
+	"list":          {"tuple"},
 	"toHcl":         {"toHCL"},
 	"toInternalHcl": {"toInternalHCL", "toIHCL", "toIHcl"},
 	"toJson":        {"toJSON"},
@@ -380,7 +381,7 @@ func unset(arg1, arg2 interface{}) (string, error) {
 	return "", nil
 }
 
-func merge(target Dictionary, dict Dictionary, otherDicts ...Dictionary) Dictionary {
+func merge(target iDictionary, dict iDictionary, otherDicts ...iDictionary) iDictionary {
 	return target.Merge(dict, otherDicts...)
 }
 
@@ -451,21 +452,15 @@ func (t Template) dataConverter(source interface{}, context ...interface{}) (res
 		source, context...)
 }
 
-// Dictionary represents an implementation of IDictionary
-type Dictionary = collections.IDictionary
-
-// List represents an implementation of IGenericList
-type List = collections.IGenericList
-
-func pick(dict Dictionary, keys ...interface{}) Dictionary {
+func pick(dict iDictionary, keys ...interface{}) iDictionary {
 	return dict.Clone(keys...)
 }
 
-func omit(dict Dictionary, key interface{}, otherKeys ...interface{}) Dictionary {
+func omit(dict iDictionary, key interface{}, otherKeys ...interface{}) iDictionary {
 	return dict.Omit(key, otherKeys...)
 }
 
-func pickv(dict Dictionary, message string, key interface{}, otherKeys ...interface{}) (interface{}, error) {
+func pickv(dict iDictionary, message string, key interface{}, otherKeys ...interface{}) (interface{}, error) {
 	o := dict.Omit(key, otherKeys...)
 
 	if o.Len() > 0 {
@@ -481,10 +476,10 @@ func pickv(dict Dictionary, message string, key interface{}, otherKeys ...interf
 	return pick(dict, append(otherKeys, key)), nil
 }
 
-func keys(dict Dictionary) List   { return dict.GetKeys() }
-func values(dict Dictionary) List { return dict.GetValues() }
+func keys(dict iDictionary) iList   { return dict.GetKeys() }
+func values(dict iDictionary) iList { return dict.GetValues() }
 
-func createDict(v ...interface{}) (Dictionary, error) {
+func createDict(v ...interface{}) (iDictionary, error) {
 	if len(v)%2 != 0 {
 		return nil, fmt.Errorf("Must supply even number of arguments (keypair)")
 	}
@@ -496,7 +491,7 @@ func createDict(v ...interface{}) (Dictionary, error) {
 	return result, nil
 }
 
-func pluck(key interface{}, dicts ...Dictionary) List {
+func pluck(key interface{}, dicts ...iDictionary) iList {
 	result := collections.CreateList(0, len(dicts))
 	for i := range dicts {
 		if dicts[i].Has(key) {
@@ -509,22 +504,22 @@ func pluck(key interface{}, dicts ...Dictionary) List {
 func rest(list interface{}) (interface{}, error)    { return slice(list, 1, -1) }
 func initial(list interface{}) (interface{}, error) { return slice(list, 0, -2) }
 
-func addElements(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+func addElements(list interface{}, elements ...interface{}) (r iList, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return collections.AsList(list).Append(elements...), nil
 }
 
-func prepend(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+func prepend(list interface{}, elements ...interface{}) (r iList, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return collections.AsList(list).Prepend(elements...), nil
 }
 
-func reverse(list interface{}) (r collections.IGenericList, err error) {
+func reverse(list interface{}) (r iList, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return collections.AsList(list).Reverse(), nil
 }
 
-func unique(list interface{}) (r collections.IGenericList, err error) {
+func unique(list interface{}) (r iList, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return collections.AsList(list).Unique(), nil
 }
@@ -552,17 +547,17 @@ func contains(list interface{}, elements ...interface{}) (r bool, err error) {
 	return collections.AsList(list).Contains(elements...), nil
 }
 
-func intersect(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+func intersect(list interface{}, elements ...interface{}) (r iList, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return collections.AsList(list).Intersect(elements...), nil
 }
 
-func union(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+func union(list interface{}, elements ...interface{}) (r iList, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return collections.AsList(list).Union(elements...), nil
 }
 
-func without(list interface{}, elements ...interface{}) (r collections.IGenericList, err error) {
+func without(list interface{}, elements ...interface{}) (r iList, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return collections.AsList(list).Without(elements...), nil
 }

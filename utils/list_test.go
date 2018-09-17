@@ -3,7 +3,13 @@ package utils
 import (
 	"reflect"
 	"testing"
+
+	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/collections/implementation"
 )
+
+type iList = collections.IGenericList
+type list = implementation.ListTypeName
 
 func TestFormatList(t *testing.T) {
 	type args struct {
@@ -13,10 +19,10 @@ func TestFormatList(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []string
+		want iList
 	}{
-		{"quote", args{"\"%v\"", []int{1, 2}}, []string{"\"1\"", "\"2\""}},
-		{"greating", args{"Hello %v", []int{1, 2}}, []string{"Hello 1", "Hello 2"}},
+		{"quote", args{`"%v"`, []int{1, 2}}, list{`"1"`, `"2"`}},
+		{"greating", args{"Hello %v", []int{1, 2}}, list{"Hello 1", "Hello 2"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -28,22 +34,19 @@ func TestFormatList(t *testing.T) {
 }
 
 func TestMergeLists(t *testing.T) {
-	type args struct {
-		lists [][]interface{}
-	}
 	tests := []struct {
 		name string
-		args args
-		want []interface{}
+		args []iList
+		want iList
 	}{
-		{"Empty list", args{nil}, nil},
-		{"Simple list", args{[][]interface{}{{1, 2, 3}}}, []interface{}{1, 2, 3}},
-		{"Two lists", args{[][]interface{}{{1, 2, 3}, {4, 5, 6}}}, []interface{}{1, 2, 3, 4, 5, 6}},
-		{"Three lists mixed", args{[][]interface{}{{"One", 2, "3"}, {4, 5, 6}, {"7", "8", "9"}}}, []interface{}{"One", 2, "3", 4, 5, 6, "7", "8", "9"}},
+		{"Empty list", nil, nil},
+		{"Simple list", []iList{list{1, 2, 3}}, list{1, 2, 3}},
+		{"Two lists", []iList{list{1, 2, 3}, list{4, 5, 6}}, list{1, 2, 3, 4, 5, 6}},
+		{"Three lists mixed", []iList{list{"One", 2, "3"}, list{4, 5, 6}, list{"7", "8", "9"}}, list{"One", 2, "3", 4, 5, 6, "7", "8", "9"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MergeLists(tt.args.lists...); !reflect.DeepEqual(got, tt.want) {
+			if got := MergeLists(tt.args...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MergeLists() = %v, want %v", got, tt.want)
 			}
 		})

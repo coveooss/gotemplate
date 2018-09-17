@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -11,11 +10,17 @@ import (
 	"github.com/coveo/gotemplate/errors"
 )
 
-func createContext(varsFiles []string, namedVars []string) (context collections.IDictionary) {
+func createContext(varsFiles []string, namedVars []string, mode string) (context collections.IDictionary) {
 	type fileDef struct {
 		name    string
 		value   interface{}
 		unnamed bool
+	}
+
+	if mode != "" {
+		// The type has been specified on the command line, so we initialize the context
+		// with the default type manager
+		context = collections.CreateDictionary()
 	}
 
 	nameValuePairs := make([]fileDef, 0, len(varsFiles)+len(namedVars))
@@ -116,6 +121,7 @@ func createContext(varsFiles []string, namedVars []string) (context collections.
 			// The context is not initialized yet, so we create it with the same type of the
 			// first file argument
 			context = content.Create()
+			collections.DictionaryHelper, collections.ListHelper = content.GetHelpers()
 		}
 		for key, value := range content.AsMap() {
 			context.Set(key, value)
@@ -123,7 +129,6 @@ func createContext(varsFiles []string, namedVars []string) (context collections.
 	}
 
 	if len(unnamed) > 0 {
-		fmt.Printf("3 Adding %[1]s = %[2]v (%[2]T)\n", "ARGS", unnamed)
 		context.Set("ARGS", unnamed)
 	}
 	return

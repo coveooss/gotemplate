@@ -9,6 +9,7 @@ Count() int
 Create(...int) IGenericList
 CreateDict(...int) IDictionary
 Get(int) interface{}
+GetHelpers() IDictionaryHelper, IListHelper
 Intersect(...interface{}) IGenericList
 Len() int
 New(...interface{}) IGenericList

@@ -10,7 +10,7 @@
 | ``    | ``   | Creation
 | ``  | `` | Creation
 | ``                 | ``                      | Update
-| ``                 | ``                      | Update 
+| ``                 | ``                      | Update
 | ``    | ``    | Merge (First dict has priority)
 | `4`                             | `4`                              | Should be `4`
 | `5`                             | `5`                              | Should be `5`

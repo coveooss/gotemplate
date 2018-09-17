@@ -2,67 +2,39 @@
 
 ## Functions
 
-[Base go template functions](#Base-go-template-functions)
 
-[Data Conversion](#Data-Conversion)
+| 
+[Base go template functions](#base-go-template-functions) |
+[Data Conversion](#data-conversion) |
+[Data Manipulation](#data-manipulation) |
+[Logging](#logging) |
+[Mathematic Bit Operations](#mathematic-bit-operations) |
+[Mathematic Fundamental](#mathematic-fundamental) |
+[Mathematic Stats](#mathematic-stats) |
+[Mathematic Trigonometry](#mathematic-trigonometry) |
+[Mathematic Utilities](#mathematic-utilities) |
+[Net](#net) |
+[Operating systems functions](#operating-systems-functions) |
+[Other utilities](#other-utilities) |
+[Runtime](#runtime) |
+[Sprig Cryptographic & Security](#sprig-cryptographic-&-security,-http://masterminds.github.io/sprig/crypto.html) |
+[Sprig Date](#sprig-date,-http://masterminds.github.io/sprig/date.html) |
+[Sprig Default](#sprig-default,-http://masterminds.github.io/sprig/defaults.html) |
+[Sprig Dictionnary](#sprig-dictionnary,-http://masterminds.github.io/sprig/dicst.html) |
+[Sprig Encoding](#sprig-encoding,-http://masterminds.github.io/sprig/encoding.html) |
+[Sprig File Path](#sprig-file-path,-http://masterminds.github.io/sprig/paths.html) |
+[Sprig Flow Control](#sprig-flow-control,-http://masterminds.github.io/sprig/flow_control.html) |
+[Sprig General](#sprig-general,-http://masterminds.github.io/sprig/) |
+[Sprig List](#sprig-list,-http://masterminds.github.io/sprig/lists.html) |
+[Sprig Mathematics](#sprig-mathematics,-http://masterminds.github.io/sprig/math.html) |
+[Sprig OS](#sprig-os,-http://masterminds.github.io/sprig/defaults.html) |
+[Sprig Reflection](#sprig-reflection,-http://masterminds.github.io/sprig/reflection.html) |
+[Sprig Regex](#sprig-regex,-http://masterminds.github.io/sprig/strings.html) |
+[Sprig String Slice](#sprig-string-slice,-http://masterminds.github.io/sprig/string_slice.html) |
+[Sprig Strings](#sprig-strings,-http://masterminds.github.io/sprig/strings.html) |
+[Sprig Type Conversion](#sprig-type-conversion,-http://masterminds.github.io/sprig/conversion.html) |
+[Sprig Version comparison](#sprig-version-comparison,-http://masterminds.github.io/sprig/semver.html) |
 
-[Data Manipulation](#Data-Manipulation)
-
-[Funny demo functions](#Funny-demo-functions)
-
-[Logging](#Logging)
-
-[Mathematic Bit Operations](#Mathematic-Bit-Operations)
-
-[Mathematic Fundamental](#Mathematic-Fundamental)
-
-[Mathematic Stats](#Mathematic-Stats)
-
-[Mathematic Trigonometry](#Mathematic-Trigonometry)
-
-[Mathematic Utilities](#Mathematic-Utilities)
-
-[Net](#Net)
-
-[Operating systems functions](#Operating-systems-functions)
-
-[Other utilities](#Other-utilities)
-
-[Runtime](#Runtime)
-
-[Sprig Cryptographic & Security](#Sprig-Cryptographic-&-Security,-http://masterminds.github.io/sprig/crypto.html)
-
-[Sprig Date](#Sprig-Date,-http://masterminds.github.io/sprig/date.html)
-
-[Sprig Default](#Sprig-Default,-http://masterminds.github.io/sprig/defaults.html)
-
-[Sprig Dictionnary](#Sprig-Dictionnary,-http://masterminds.github.io/sprig/dicst.html)
-
-[Sprig Encoding](#Sprig-Encoding,-http://masterminds.github.io/sprig/encoding.html)
-
-[Sprig File Path](#Sprig-File-Path,-http://masterminds.github.io/sprig/paths.html)
-
-[Sprig Flow Control](#Sprig-Flow-Control,-http://masterminds.github.io/sprig/flow_control.html)
-
-[Sprig General](#Sprig-General,-http://masterminds.github.io/sprig/)
-
-[Sprig List](#Sprig-List,-http://masterminds.github.io/sprig/lists.html)
-
-[Sprig OS](#Sprig-OS,-http://masterminds.github.io/sprig/defaults.html)
-
-[Sprig Reflection](#Sprig-Reflection,-http://masterminds.github.io/sprig/reflection.html)
-
-[Sprig Regex](#Sprig-Regex,-http://masterminds.github.io/sprig/strings.html)
-
-[Sprig Sprig Mathematics](#Sprig-Sprig-Mathematics,-http://masterminds.github.io/sprig/math.html)
-
-[Sprig String Slice](#Sprig-String-Slice,-http://masterminds.github.io/sprig/string_slice.html)
-
-[Sprig Strings](#Sprig-Strings,-http://masterminds.github.io/sprig/strings.html)
-
-[Sprig Type Conversion](#Sprig-Type-Conversion,-http://masterminds.github.io/sprig/conversion.html)
-
-[Sprig Version comparison](#Sprig-Version-comparison,-http://masterminds.github.io/sprig/semver.html)
 
 ### Base go template functions
 
@@ -353,6 +325,7 @@ func lenc(str string) int
 
 ```go
 // Returns a generic list from the supplied arguments.
+// Aliases: tuple
 func list(args ...interface{}) IGenericList
 ```
 
@@ -446,19 +419,6 @@ func values(arg1 IDictionary) IGenericList
 ```go
 // Filters items out of a list.
 func without(list interface{}, elements ...interface{}) IGenericList, error
-```
-### Funny demo functions
-
-```go
-// Draw a christmas tree.
-// Aliases: ct
-func ChristmasTree(size int, bg string, fg string, char string, reverse bool) interface{}, error
-```
-
-```go
-// Draw a plain regular fir.
-// Aliases: fir
-func Fir(size int, bg string, fg string, char string, reverse bool) interface{}, error
 ```
 ### Logging
 
@@ -1247,7 +1207,7 @@ func username() string
 ```go
 // Returns the concatenation of supplied arguments centered within width.
 // Aliases: centered
-func center(width interface{}, args ...interface{}) string
+func center(width interface{}, args ...interface{}) string, error
 ```
 
 ```go
@@ -1277,7 +1237,15 @@ func concat(args ...interface{}) string
 
 ```go
 // Return a list of strings by applying the format to each element of the supplied list.
-func formatList(format string, list interface{}) []string
+// 
+// You can also use autoWrap as Razor expression if you don't want to specify the format.
+// The format is then automatically induced by the context around the declaration).
+// Valid aliases for autoWrap are: aWrap, awrap.
+// 
+// Ex:
+//     Hello @<autoWrap(to(10)) World!
+// Aliases: autoWrap, aWrap, awrap
+func formatList(format string, list ...interface{}) IGenericList
 ```
 
 ```go
@@ -1294,6 +1262,11 @@ func iif(testValue interface{}, valueTrue interface{}, valueFalse interface{}) i
 ```
 
 ```go
+// Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.
+func indent(nbSpace int, args ...interface{}) string
+```
+
+```go
 // Merge the supplied objects into a newline separated string.
 func joinLines(format ...interface{}) string
 ```
@@ -1306,7 +1279,12 @@ func lorem(loremType interface{}, params ...int) string, error
 
 ```go
 // Return a single list containing all elements from the lists supplied.
-func mergeList(lists ...[]interface{}) []interface{}
+func mergeList(lists ...IGenericList) IGenericList
+```
+
+```go
+// Aliases: nindent
+func nIndent(nbSpace int, args ...interface{}) string
 ```
 
 ```go
@@ -1315,12 +1293,12 @@ func repeat(n int, element interface{}) IGenericList, error
 ```
 
 ```go
-// Intents the the elements using the provided spacer.
+// Indents the elements using the provided spacer.
 // 
 // You can also use autoIndent as Razor expression if you don't want to specify the spacer.
 // Spacer will then be auto determined by the spaces that precede the expression.
 // Valid aliases for autoIndent are: aIndent, aindent.
-// Aliases: sindent, spaceIndent
+// Aliases: sindent, spaceIndent, autoIndent, aindent, aIndent
 func sIndent(spacer string, args ...interface{}) string
 ```
 
@@ -1332,7 +1310,7 @@ func splitLines(content interface{}) []interface{}
 ```go
 // Wraps the rendered arguments within width.
 // Aliases: wrapped
-func wrap(width interface{}, args ...interface{}) string
+func wrap(width interface{}, args ...interface{}) string, error
 ```
 ### Runtime
 
@@ -1566,7 +1544,77 @@ func default(arg1 interface{}, args ...interface{}) interface{}
 ```go
 func empty(arg1 interface{}) bool
 ```
+
+```go
+// Aliases: ternary
+func ternarySprig(arg1 interface{}, arg2 interface{}, arg3 bool) interface{}
+```
+
+```go
+// Aliases: toJson
+func toJsonSprig(arg1 interface{}) string
+```
+
+```go
+// Aliases: toPrettyJson
+func toPrettyJsonSprig(arg1 interface{}) string
+```
 ### Sprig Dictionnary, http://masterminds.github.io/sprig/dicst.html
+
+```go
+// Aliases: dict
+func dictSprig(args ...interface{}) map[string]interface{}
+```
+
+```go
+// Aliases: hasKey
+func hasKeySprig(arg1 map[string]interface{}, arg2 string) bool
+```
+
+```go
+// Aliases: keys
+func keysSprig(args ...map[string]interface{}) []string
+```
+
+```go
+// Aliases: list, tuple, tupleSprig
+func listSprig(args ...interface{}) []interface{}
+```
+
+```go
+// Aliases: merge
+func mergeSprig(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
+```
+
+```go
+// Aliases: omit
+func omitSprig(arg1 map[string]interface{}, args ...string) map[string]interface{}
+```
+
+```go
+// Aliases: pick
+func pickSprig(arg1 map[string]interface{}, args ...string) map[string]interface{}
+```
+
+```go
+// Aliases: pluck
+func pluckSprig(arg1 string, args ...map[string]interface{}) []interface{}
+```
+
+```go
+// Aliases: set
+func setSprig(arg1 map[string]interface{}, arg2 string, arg3 interface{}) map[string]interface{}
+```
+
+```go
+// Aliases: unset
+func unsetSprig(arg1 map[string]interface{}, arg2 string) map[string]interface{}
+```
+
+```go
+// Aliases: values
+func valuesSprig(arg1 map[string]interface{}) []interface{}
+```
 ### Sprig Encoding, http://masterminds.github.io/sprig/encoding.html
 
 ```go
@@ -1625,11 +1673,114 @@ func uuidv4() string
 ### Sprig List, http://masterminds.github.io/sprig/lists.html
 
 ```go
+// Aliases: append, push, pushSprig
+func appendSprig(arg1 interface{}, arg2 interface{}) []interface{}
+```
+
+```go
 func first(arg1 interface{}) interface{}
 ```
 
 ```go
+// Aliases: has
+func hasSprig(arg1 interface{}, arg2 interface{}) bool
+```
+
+```go
+// Aliases: initial
+func initialSprig(arg1 interface{}) []interface{}
+```
+
+```go
 func last(arg1 interface{}) interface{}
+```
+
+```go
+// Aliases: prepend
+func prependSprig(arg1 interface{}, arg2 interface{}) []interface{}
+```
+
+```go
+// Aliases: rest
+func restSprig(arg1 interface{}) []interface{}
+```
+
+```go
+// Aliases: reverse
+func reverseSprig(arg1 interface{}) []interface{}
+```
+
+```go
+// Aliases: slice
+func sliceSprig(arg1 interface{}, args ...interface{}) interface{}
+```
+
+```go
+// Aliases: uniq
+func uniqSprig(arg1 interface{}) []interface{}
+```
+
+```go
+// Aliases: without
+func withoutSprig(arg1 interface{}, args ...interface{}) []interface{}
+```
+### Sprig Mathematics, http://masterminds.github.io/sprig/math.html
+
+```go
+func add1(arg1 interface{}) int64
+```
+
+```go
+// Aliases: add
+func addSprig(args ...interface{}) int64
+```
+
+```go
+// Aliases: ceil
+func ceilSprig(arg1 interface{}) float64
+```
+
+```go
+// Aliases: div
+func divSprig(arg1 interface{}, arg2 interface{}) int64
+```
+
+```go
+// Aliases: floor
+func floorSprig(arg1 interface{}) float64
+```
+
+```go
+// Aliases: max, biggest, biggestSprig
+func maxSprig(arg1 interface{}, args ...interface{}) int64
+```
+
+```go
+// Aliases: min
+func minSprig(arg1 interface{}, args ...interface{}) int64
+```
+
+```go
+// Aliases: mod
+func modSprig(arg1 interface{}, arg2 interface{}) int64
+```
+
+```go
+// Aliases: mul
+func mulSprig(arg1 interface{}, args ...interface{}) int64
+```
+
+```go
+func round(arg1 interface{}, arg2 int, args ...float64) float64
+```
+
+```go
+// Aliases: sub
+func subSprig(arg1 interface{}, arg2 interface{}) int64
+```
+
+```go
+func untilStep(arg1 int, arg2 int, arg3 int) []int
 ```
 ### Sprig OS, http://masterminds.github.io/sprig/defaults.html
 
@@ -1643,22 +1794,27 @@ func expandenv(arg1 string) string
 ### Sprig Reflection, http://masterminds.github.io/sprig/reflection.html
 
 ```go
+// Aliases: kindis
 func kindIs(arg1 string, arg2 interface{}) bool
 ```
 
 ```go
+// Aliases: kindof
 func kindOf(arg1 interface{}) string
 ```
 
 ```go
+// Aliases: typeis
 func typeIs(arg1 string, arg2 interface{}) bool
 ```
 
 ```go
+// Aliases: typeisLike
 func typeIsLike(arg1 string, arg2 interface{}) bool
 ```
 
 ```go
+// Aliases: typeof
 func typeOf(arg1 interface{}) string
 ```
 ### Sprig Regex, http://masterminds.github.io/sprig/strings.html
@@ -1691,19 +1847,6 @@ func regexReplaceAllLiteral(regex string, str string, repl string) string
 ```go
 // Slices the input string into substrings separated by the expression and returns a slice of the substrings between those expression matches. The last parameter n determines the number of substrings to return, where -1 means return all matches.
 func regexSplit(regex string, str string, n int) []string
-```
-### Sprig Sprig Mathematics, http://masterminds.github.io/sprig/math.html
-
-```go
-func add1(arg1 interface{}) int64
-```
-
-```go
-func round(arg1 interface{}, arg2 int, args ...float64) float64
-```
-
-```go
-func untilStep(arg1 int, arg2 int, arg3 int) []int
 ```
 ### Sprig String Slice, http://masterminds.github.io/sprig/string_slice.html
 
@@ -1753,6 +1896,12 @@ func cat(args ...interface{}) string
 ```
 
 ```go
+// Tests to see if one string is contained inside of another.
+// Aliases: contains
+func containsSprig(substr string, str string) bool
+```
+
+```go
 // Tests whether a string has a given prefix.
 func hasPrefix(prefix string, str string) bool
 ```
@@ -1764,7 +1913,8 @@ func hasSuffix(suffix string, str string) bool
 
 ```go
 // Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.
-func indent(spaces int, str string) string
+// Aliases: indent
+func indentSprig(spaces int, str string) string
 ```
 
 ```go
@@ -1779,7 +1929,8 @@ func lower(str string) string
 
 ```go
 // Same as the indent function, but prepends a new line to the beginning of the string.
-func nindent(spaces int, str string) string
+// Aliases: nindent
+func nindentSprig(spaces int, str string) string
 ```
 
 ```go
@@ -1815,6 +1966,12 @@ func randAscii(count int) string
 ```go
 // Generates random string with digits.
 func randNumeric(count int) string
+```
+
+```go
+// Repeats a string multiple times.
+// Aliases: repeat
+func repeatSprig(count int, str string) string
 ```
 
 ```go
@@ -1879,6 +2036,12 @@ func trimSuffix(suffix string, str string) string
 ```
 
 ```go
+// Truncates a string (and add no suffix).
+// Aliases: trunc
+func truncSprig(length int, str string) string
+```
+
+```go
 // Removes title casing.
 func untitle(str string) string
 ```
@@ -1886,6 +2049,12 @@ func untitle(str string) string
 ```go
 // Converts the entire string to uppercase.
 func upper(str string) string
+```
+
+```go
+// Wraps text at a given column count.
+// Aliases: wrap
+func wrapSprig(length int, str string) string
 ```
 
 ```go
@@ -1904,6 +2073,11 @@ func float64(arg1 interface{}) float64
 
 ```go
 func int64(arg1 interface{}) int64
+```
+
+```go
+// Aliases: int
+func intSprig(arg1 interface{}) int
 ```
 ### Sprig Version comparison, http://masterminds.github.io/sprig/semver.html
 

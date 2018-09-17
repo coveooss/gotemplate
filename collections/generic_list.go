@@ -16,6 +16,7 @@ type IGenericList interface {
 	Create(...int) IGenericList                             // Allocates a new list of the same type implementation as this list. Optional arguments are size and capacity.
 	CreateDict(...int) IDictionary                          // Instantiates a new dictionary of the same type with optional size.
 	Get(index int) interface{}                              // Returns the element at position index in the list. If index is out of bound, nil is returned.
+	GetHelpers() (IDictionaryHelper, IListHelper)           // Returns the helpers implementation associated with the current type.
 	Intersect(...interface{}) IGenericList                  // Returns a list that is the result of the intersection of the list and the parameters (removing duplicates).
 	Len() int                                               // Returns the number of elements in the list.
 	New(...interface{}) IGenericList                        // Creates a new generic list from the supplied arguments.
@@ -51,7 +52,11 @@ func assertListHelper() {
 
 // AsList returns the object casted as IGenericList.
 func AsList(object interface{}) IGenericList {
-	return must(TryAsList(object)).(IGenericList)
+	result, err := TryAsList(object)
+	if err != nil {
+		return NewList(object)
+	}
+	return result
 }
 
 // CreateList instantiates a new generic list with optional size and capacity.
