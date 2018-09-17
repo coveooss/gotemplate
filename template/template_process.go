@@ -355,9 +355,9 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 
 	mode := must(os.Stat(template)).(os.FileInfo).Mode()
 	if !isTemplate && !t.options[Overwrite] {
-		newName := template + ".originalSourceLines"
+		newName := template + ".original"
 		log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
-		must(os.Rename(template, template+".originalSourceLines"))
+		must(os.Rename(template, template+".original"))
 	}
 
 	if sourceFolder != targetFolder {
@@ -420,7 +420,7 @@ func (t Template) printResult(source, target, result string) (err error) {
 	}
 
 	if !t.isTemplate(source) && !t.options[Overwrite] {
-		source += ".originalSourceLines"
+		source += ".original"
 	}
 
 	source = utils.Relative(t.folder, source)

@@ -1,5 +1,5 @@
 hash: 078d5ec26cabd74670acbed392807abfba66bd64b9a630197399567522be3e94
-updated: 2018-09-08T21:42:38.4338775-04:00
+updated: 2018-09-17T16:52:32.151926-04:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -20,7 +20,7 @@ imports:
 - name: github.com/google/uuid
   version: 064e2069ce9c359c118179501254f67d7d37ba24
 - name: github.com/hashicorp/hcl
-  version: ef8a98b0bbce4a65b5aa4c368430a80ddc533168
+  version: 65a6292f0157eff210d03ed1bf6c59b190b8b906
   subpackages:
   - hcl/ast
   - hcl/parser
@@ -31,17 +31,17 @@ imports:
   - json/scanner
   - json/token
 - name: github.com/huandu/xstrings
-  version: 7bb0250b58e5c15670406e6f93ffda43281305b1
+  version: 8bbcf2f9ccb55755e748b7644164cd4bdce94c1d
 - name: github.com/imdario/mergo
   version: 7fe0c75c13abdee74b09fcacef5ea1c6bba6a874
 - name: github.com/Masterminds/semver
   version: 59c29afe1a994eacb71c833025ca7acf874bb1da
 - name: github.com/Masterminds/sprig
-  version: 77bb58b7f5e10889a1195c21b9e7a96ee166f199
+  version: 15f9564e7e9cf0da02a48e0d25f12a7b83559aa6
 - name: github.com/mattn/go-colorable
   version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
 - name: github.com/mattn/go-isatty
-  version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
+  version: 3fb116b820352b7f0c281308a4d6250c22d94e27
 - name: github.com/op/go-logging
   version: c6b9702d88ba878b81c49272d3fc470593698733
   repo: https://github.com/shenwei356/go-logging.git
@@ -52,18 +52,18 @@ imports:
   subpackages:
   - diffmatchpatch
 - name: golang.org/x/crypto
-  version: de0752318171da717af4ce24d0a2e8626afaeb11
+  version: 0e37d006457bf46f9e6692014ba72ef82c33022c
   subpackages:
   - pbkdf2
   - scrypt
   - ssh/terminal
 - name: golang.org/x/net
-  version: c39426892332e1bb5ec0a434a079bf82f5d30c54
+  version: 26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2
   subpackages:
   - html
   - html/atom
 - name: golang.org/x/sys
-  version: 98c5dad5d1a0e8a73845ecc8897d0bd56586511d
+  version: d0be0721c37eeb5299f245a996a483160fc36940
   subpackages:
   - unix
   - windows

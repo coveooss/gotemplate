@@ -12,6 +12,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
 	"github.com/op/go-logging"
@@ -555,7 +556,12 @@ func opName(token token.Token) (string, error) {
 
 func nodeValueInternal(node ast.Node) (result string, err error) {
 	result, err = nodeValue(node)
-	if !strings.HasPrefix(result, dotRep) && !strings.HasPrefix(result, "\"") && strings.ContainsAny(result, " \t") {
+
+	if strings.HasPrefix(result, `"`) || !strings.ContainsAny(result, " \t") {
+		return
+	}
+
+	if first, _ := collections.Split2(result, " "); !strings.HasPrefix(first, dotRep) || strings.Contains(first, funcCall) {
 		result = fmt.Sprintf("(%s)", result)
 	}
 	return
