@@ -21,7 +21,7 @@ import (
 )
 
 // Version is initialized at build time through -ldflags "-X main.Version=<version number>"
-var version = "2.6.4"
+var version = "2.6.3"
 var tempFolder = errors.Must(ioutil.TempDir("", "gotemplate-")).(string)
 
 const (

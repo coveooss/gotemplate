@@ -103,9 +103,11 @@ func (d xmlDict) Omit(key interface{}, otherKeys ...interface{}) xmlIDict {
 }
 
 // Generic helpers to simplify physical implementation
-func xmlListConvert(list xmlIList) xmlIList  { return xmlList(list.AsArray()) }
-func xmlDictConvert(dict xmlIDict) xmlIDict  { return xmlDict(dict.AsMap()) }
-func needConversion(object interface{}) bool { return needConversionImpl(object, "Xml") }
+func xmlListConvert(list xmlIList) xmlIList { return xmlList(list.AsArray()) }
+func xmlDictConvert(dict xmlIDict) xmlIDict { return xmlDict(dict.AsMap()) }
+func needConversion(object interface{}, strict bool) bool {
+	return needConversionImpl(object, strict, "Xml")
+}
 
 var xmlHelper = helperBase{ConvertList: xmlListConvert, ConvertDict: xmlDictConvert, NeedConversion: needConversion}
 var xmlListHelper = helperList{BaseHelper: xmlHelper}

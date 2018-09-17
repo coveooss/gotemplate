@@ -103,9 +103,11 @@ func (d hclDict) Omit(key interface{}, otherKeys ...interface{}) hclIDict {
 }
 
 // Generic helpers to simplify physical implementation
-func hclListConvert(list hclIList) hclIList  { return hclList(list.AsArray()) }
-func hclDictConvert(dict hclIDict) hclIDict  { return hclDict(dict.AsMap()) }
-func needConversion(object interface{}) bool { return needConversionImpl(object, "Hcl") }
+func hclListConvert(list hclIList) hclIList { return hclList(list.AsArray()) }
+func hclDictConvert(dict hclIDict) hclIDict { return hclDict(dict.AsMap()) }
+func needConversion(object interface{}, strict bool) bool {
+	return needConversionImpl(object, strict, "Hcl")
+}
 
 var hclHelper = helperBase{ConvertList: hclListConvert, ConvertDict: hclDictConvert, NeedConversion: needConversion}
 var hclListHelper = helperList{BaseHelper: hclHelper}

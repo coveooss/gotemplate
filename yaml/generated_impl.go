@@ -105,7 +105,9 @@ func (d yamlDict) Omit(key interface{}, otherKeys ...interface{}) yamlIDict {
 // Generic helpers to simplify physical implementation
 func yamlListConvert(list yamlIList) yamlIList { return yamlList(list.AsArray()) }
 func yamlDictConvert(dict yamlIDict) yamlIDict { return yamlDict(dict.AsMap()) }
-func needConversion(object interface{}) bool   { return needConversionImpl(object, "Yaml") }
+func needConversion(object interface{}, strict bool) bool {
+	return needConversionImpl(object, strict, "Yaml")
+}
 
 var yamlHelper = helperBase{ConvertList: yamlListConvert, ConvertDict: yamlDictConvert, NeedConversion: needConversion}
 var yamlListHelper = helperList{BaseHelper: yamlHelper}

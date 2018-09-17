@@ -99,7 +99,9 @@ func (d baseDict) Omit(key interface{}, otherKeys ...interface{}) baseIDict {
 // Generic helpers to simplify physical implementation
 func baseListConvert(list baseIList) baseIList { return baseList(list.AsArray()) }
 func baseDictConvert(dict baseIDict) baseIDict { return baseDict(dict.AsMap()) }
-func needConversion(object interface{}) bool   { return needConversionImpl(object, "base") }
+func needConversion(object interface{}, strict bool) bool {
+	return needConversionImpl(object, strict, "base")
+}
 
 var baseHelper = helperBase{ConvertList: baseListConvert, ConvertDict: baseDictConvert, NeedConversion: needConversion}
 var baseListHelper = helperList{BaseHelper: baseHelper}

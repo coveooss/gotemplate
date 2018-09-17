@@ -105,7 +105,9 @@ func (d jsonDict) Omit(key interface{}, otherKeys ...interface{}) jsonIDict {
 // Generic helpers to simplify physical implementation
 func jsonListConvert(list jsonIList) jsonIList { return jsonList(list.AsArray()) }
 func jsonDictConvert(dict jsonIDict) jsonIDict { return jsonDict(dict.AsMap()) }
-func needConversion(object interface{}) bool   { return needConversionImpl(object, "Json") }
+func needConversion(object interface{}, strict bool) bool {
+	return needConversionImpl(object, strict, "Json")
+}
 
 var jsonHelper = helperBase{ConvertList: jsonListConvert, ConvertDict: jsonDictConvert, NeedConversion: needConversion}
 var jsonListHelper = helperList{BaseHelper: jsonHelper}

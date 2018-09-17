@@ -2,6 +2,7 @@ package template
 
 import (
 	"sort"
+	"sync"
 
 	"github.com/coveo/gotemplate/utils"
 )
@@ -10,8 +11,14 @@ const (
 	goTemplateBase = "Base go template functions"
 )
 
+var addFuncMutex sync.Mutex
+
 // Add additional functions to the go template context
 func (t *Template) addFuncs() {
+	// We cannot create functions table in multiple threads concurrently
+	addFuncMutex.Lock()
+	defer addFuncMutex.Unlock()
+
 	if baseGoTemplateFuncs == nil {
 		baseGoTemplateFuncs = make(funcTableMap, len(baseGoTemplate))
 		for key, val := range baseGoTemplate {

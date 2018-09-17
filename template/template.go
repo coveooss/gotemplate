@@ -94,7 +94,7 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	}
 	t.optionsEnabled = make(OptionsSet)
 	t.folder, _ = filepath.Abs(iif(folder != "", folder, utils.Pwd()).(string))
-	t.context = iif(context != nil, context, make(dictionary))
+	t.context = iif(context != nil, context, collections.CreateDictionary())
 	t.aliases = make(funcTableMap)
 	t.delimiters = []string{"{{", "}}", "@"}
 

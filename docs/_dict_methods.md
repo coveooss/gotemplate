@@ -21,4 +21,5 @@ Omit(interface{}, ...interface{}) IDictionary
 Set(interface{}, interface{}) IDictionary
 String() string
 Transpose() IDictionary
+TypeName() string
 ```

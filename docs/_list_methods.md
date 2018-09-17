@@ -18,6 +18,7 @@ Reverse() IGenericList
 Set(int, interface{}) IGenericList, error
 String() string
 Strings() []string
+TypeName() string
 Union(...interface{}) IGenericList
 Unique() IGenericList
 Without(...interface{}) IGenericList
