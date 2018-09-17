@@ -50,13 +50,10 @@ func Test_templateWithErrors(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, err := template.ProcessContent(tt.content, tt.name); err != tt.err {
-				if err != nil && tt.err != nil {
-					if err.Error() != tt.err.Error() {
-						t.Errorf("targetFile() = %v, want %v", err.Error(), tt.err)
-					}
-				} else {
-					t.Errorf("targetFile() = %v, want %v", err, tt.err)
+				if err != nil && tt.err != nil && err.Error() == tt.err.Error() {
+					return
 				}
+				t.Errorf("ProcessContent()= %v, want %v", err, tt.err)
 			}
 		})
 	}

@@ -30,6 +30,10 @@ func (l jsonList) Reverse() jsonIList                { return jsonListHelper.Rev
 func (l jsonList) Strings() []string                 { return jsonListHelper.GetStrings(l) }
 func (l jsonList) Unique() jsonIList                 { return jsonListHelper.Unique(l) }
 
+func (l jsonList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return jsonDictHelper, jsonListHelper
+}
+
 func (l jsonList) Append(values ...interface{}) jsonIList {
 	return jsonListHelper.Add(l, false, values...)
 }
@@ -75,6 +79,10 @@ func (d jsonDict) KeysAsString() []string              { return jsonDictHelper.K
 func (d jsonDict) GetValues() jsonIList                { return jsonDictHelper.GetValues(d) }
 func (d jsonDict) Set(key, v interface{}) jsonIDict    { return jsonDictHelper.Set(d, key, v) }
 func (d jsonDict) Transpose() jsonIDict                { return jsonDictHelper.Transpose(d) }
+
+func (d jsonDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return jsonDictHelper, jsonListHelper
+}
 
 func (d jsonDict) Default(key, defVal interface{}) interface{} {
 	return jsonDictHelper.Default(d, key, defVal)

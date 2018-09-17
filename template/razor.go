@@ -73,7 +73,8 @@ var expressions = [][]interface{}{
 	{"", `@{{`, literalStart},
 	{"", "(?s)`+.*?`+", "", replacementFunc(protectMultiLineStrings)},
 	{"", `@<;`, `{{- $.NEWLINE }}`},
-	{"Auto indent", `(?m)^(?P<spaces>.*)@(?:autoIndent|aindent|aIndent)\(`, "@<-sIndent(\"${spaces}\", "},
+	{"Auto indent", `(?m)^(?P<before>.*)@reduce;(?:autoIndent|aindent|aIndent)\(`, "@<-spaceIndent(`${before}`, "},
+	{"Auto wrap", `(?m)^(?P<before>.*)@(?P<nl><)?reduce;(?P<func>autoWrap|awrap|aWrap)(?P<context>\(.*)$`, "", replacementFunc(autoWrap)},
 	{`Inline content "@<...>"`, `"@reduce;<(?P<content>.*?)>"`, `"<<@${reduce}(${content})"`},
 	{"Newline expression", `@<`, `{{- $.NEWLINE }}@`},
 
@@ -176,12 +177,11 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 		}
 	}
 
-	subExp := repl.re.SubexpNames()
-	subMatches := repl.re.FindStringSubmatch(match)
-	tp := valueOf("type", subExp, subMatches)
-	id := valueOf("id", subExp, subMatches)
-	expr := valueOf("expr", subExp, subMatches)
-	assign := valueOf("assign", subExp, subMatches)
+	matches, _ := utils.MultiMatch(match, repl.re)
+	tp := matches["type"]
+	id := matches["id"]
+	expr := matches["expr"]
+	assign := matches["assign"]
 	if tp == "" || id == "" || expr == "" || assign == "" {
 		log.Errorf("Invalid assign regex %s: %s, must contains type, id and expr", repl.name, repl.expr)
 		return match
@@ -232,6 +232,27 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	return fmt.Sprintf(`%[1]s- %[3]s %[2]s%[1]s- set %[4]s "%[5]s" %s %[2]s`, repl.delimiters[0], repl.delimiters[1], validateCode, object, id, expr, repl.delimiters[1])
 }
 
+func autoWrap(repl replacement, match string) string {
+	matches, _ := utils.MultiMatch(match, repl.re)
+	before := String(matches["before"])
+	context := String(matches["context"])
+	context, strings := context.Protect()
+	args := context.SelectContext(1, "(", ")")
+	if args == "" {
+		log.Warningf("Missing closing parenthesis in %s%s", matches["func"], context.RestoreProtected(strings))
+		return match
+	}
+	after := context[len(args):]
+	return fmt.Sprintf("@%s%sjoin(\"%s\", formatList(\"%s%%v%s\", %s)",
+		matches["nl"],
+		matches["reduce"],
+		iif(matches["nl"] != "", "\\n", ""),
+		before.Escape(),
+		after.RestoreProtected(strings).Escape(),
+		args.RestoreProtected(strings)[1:],
+	)
+}
+
 var alreadyIssued = make(map[string]int)
 
 func expressionParser(repl replacement, match string) string {
@@ -244,28 +265,10 @@ func expressionParserSkipError(repl replacement, match string) string {
 	return expr
 }
 
-func indexOf(name string, names []string) int {
-	for i := range names {
-		if name == names[i] {
-			return i
-		}
-	}
-	return -1
-}
-
-func valueOf(name string, names, values []string) string {
-	index := indexOf(name, names)
-	if index < 0 {
-		return ""
-	}
-	return values[index]
-}
-
 func expressionParserInternal(repl replacement, match string, skipError, internal bool) (result string, err error) {
+	matches, _ := utils.MultiMatch(match, repl.re)
 	var expr, expression string
-	subNames := repl.re.SubexpNames()
-	subMatches := repl.re.FindStringSubmatch(match)
-	if expression = valueOf("expr", subNames, subMatches); expression != "" {
+	if expression = matches["expr"]; expression != "" {
 		if getLogLevelInternal() >= logging.DEBUG {
 			defer func() {
 				if !debugMode && result != match {
@@ -278,15 +281,14 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		protected, includedStrings := String(expression).Protect()
 
 		// We transform the expression into a valid go statement
-		protected = protected.Replace("$", stringRep)
-		protected = protected.Replace("range", rangeExpr)
-		protected = protected.Replace("default", defaultExpr)
-		protected = protected.Replace("func", funcExpr)
-		protected = protected.Replace("...", ellipsisRep)
+		for k, v := range map[string]string{"$": stringRep, "range": rangeExpr, "default": defaultExpr, "func": funcExpr, "...": ellipsisRep} {
+			protected = protected.Replace(k, v)
+		}
 		protected = String(dotPrefix.ReplaceAllString(protected.Str(), fmt.Sprintf("${prefix}%s${value}", dotRep)))
-		protected = protected.Replace(ellipsisRep, "...")
-		protected = protected.Replace("<>", "!=")
-		protected = protected.Replace("÷", "/")
+		for k, v := range map[string]string{ellipsisRep: "...", "<>": "!=", "÷": "/", "≠": "!=", "≦": "<=", "≧": ">=", "«": "<<", "»": ">>"} {
+			protected = protected.Replace(k, v)
+		}
+
 		for key, val := range ops {
 			protected = protected.Replace(" "+val+" ", key)
 		}
@@ -297,7 +299,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		expr = protected.RestoreProtected(includedStrings).Str()
 	}
 
-	if indexExpr := valueOf("index", subNames, subMatches); indexExpr != "" {
+	if indexExpr := matches["index"]; indexExpr != "" {
 		indexExpr = indexExpression(indexExpr)
 		indexExpr = indexExpr[1 : len(indexExpr)-1]
 
@@ -319,7 +321,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		repl.replace = strings.Replace(repl.replace, "${slicer}", slicer, -1)
 	}
 
-	if selectExpr := valueOf("selection", subNames, subMatches); selectExpr != "" {
+	if selectExpr := matches["selection"]; selectExpr != "" {
 		if selectExpr, err = expressionParserInternal(exprRepl, selectExpr, true, true); err != nil {
 			return match, err
 		}
@@ -553,7 +555,7 @@ func opName(token token.Token) (string, error) {
 
 func nodeValueInternal(node ast.Node) (result string, err error) {
 	result, err = nodeValue(node)
-	if !strings.HasPrefix(result, "\"") && strings.ContainsAny(result, " \t") {
+	if !strings.HasPrefix(result, dotRep) && !strings.HasPrefix(result, "\"") && strings.ContainsAny(result, " \t") {
 		result = fmt.Sprintf("(%s)", result)
 	}
 	return

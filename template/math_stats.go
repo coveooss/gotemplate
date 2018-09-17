@@ -1,8 +1,15 @@
 package template
 
-func average(a interface{}, args ...interface{}) (r interface{}, err error) {
+import (
+	"fmt"
+)
+
+func average(arg1 interface{}, args ...interface{}) (r interface{}, err error) {
+	if arg1 == nil {
+		return nil, fmt.Errorf("First argument could not be nil")
+	}
 	defer func() { err = trapError(err, recover()) }()
-	args = convertArgs(a, args...)
+	args = convertArgs(arg1, args...).AsArray()
 	if len(args) == 0 {
 		return 0, nil
 	}

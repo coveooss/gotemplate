@@ -24,6 +24,10 @@ func (l baseList) Reverse() baseIList                  { return baseListHelper.R
 func (l baseList) Strings() []string                   { return baseListHelper.GetStrings(l) }
 func (l baseList) Unique() baseIList                   { return baseListHelper.Unique(l) }
 
+func (l baseList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return baseDictHelper, baseListHelper
+}
+
 func (l baseList) Append(values ...interface{}) baseIList {
 	return baseListHelper.Add(l, false, values...)
 }
@@ -69,6 +73,10 @@ func (d baseDict) KeysAsString() []string              { return baseDictHelper.K
 func (d baseDict) GetValues() baseIList                { return baseDictHelper.GetValues(d) }
 func (d baseDict) Set(key, v interface{}) baseIDict    { return baseDictHelper.Set(d, key, v) }
 func (d baseDict) Transpose() baseIDict                { return baseDictHelper.Transpose(d) }
+
+func (d baseDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return baseDictHelper, baseListHelper
+}
 
 func (d baseDict) Default(key, defVal interface{}) interface{} {
 	return baseDictHelper.Default(d, key, defVal)

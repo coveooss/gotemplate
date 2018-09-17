@@ -24,12 +24,13 @@ Flags:
       --delimiters={{,}},@       Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)
   -i, --import=file ...          Import variables files (could be any of YAML, JSON or HCL format)
   -V, --var=values ...           Import named variables (if value is a file, the content is loaded)
+  -t, --type=TYPE                Force the type used for the main context (Json, Yaml, Hcl)
   -p, --patterns=pattern ...     Additional patterns that should be processed by gotemplate
   -e, --exclude=pattern ...      Exclude file patterns (comma separated) when applying gotemplate recursively
   -o, --overwrite                Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
   -s, --substitute=exp ...       Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp) or specify that value through
                                  GOTEMPLATE_SUBSTITUTES where each substitute is separated by a newline
-  -E, --remove-empty-lines       Remove the empty lines in the result (--re)
+  -E, --remove-empty-lines       Remove empty lines from the result (--re)
   -r, --recursive                Process all template files recursively
   -R, --recursion-depth=depth    Process template files recursively specifying depth
       --source=folder            Specify a source folder (default to the current folder)
@@ -57,12 +58,13 @@ Commands:
         --delimiters={{,}},@       Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)
     -i, --import=file ...          Import variables files (could be any of YAML, JSON or HCL format)
     -V, --var=values ...           Import named variables (if value is a file, the content is loaded)
+    -t, --type=TYPE                Force the type used for the main context (Json, Yaml, Hcl)
     -p, --patterns=pattern ...     Additional patterns that should be processed by gotemplate
     -e, --exclude=pattern ...      Exclude file patterns (comma separated) when applying gotemplate recursively
     -o, --overwrite                Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)
     -s, --substitute=exp ...       Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp) or specify that value through
                                    GOTEMPLATE_SUBSTITUTES where each substitute is separated by a newline
-    -E, --remove-empty-lines       Remove the empty lines in the result (--re)
+    -E, --remove-empty-lines       Remove empty lines from the result (--re)
     -r, --recursive                Process all template files recursively
     -R, --recursion-depth=depth    Process template files recursively specifying depth
         --source=folder            Specify a source folder (default to the current folder)

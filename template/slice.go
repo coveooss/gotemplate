@@ -33,7 +33,7 @@ func extract(value interface{}, args ...interface{}) (result interface{}, err er
 func sliceInternal(value interface{}, extract bool, args ...interface{}) (result interface{}, err error) {
 	defer func() { err = errors.Trap(err, recover()) }()
 
-	args = convertArgs(nil, args...)
+	args = convertArgs(nil, args...).AsArray()
 
 	valueOf := reflect.ValueOf(value)
 	switch valueOf.Kind() {

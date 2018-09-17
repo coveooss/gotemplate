@@ -7,6 +7,7 @@ ContainsAny(string) bool
 ContainsRune(int32) bool
 Count(string) int
 EqualFold(string) bool
+Escape() String
 Fields() StringArray
 FieldsFunc(func(int32) bool) StringArray
 FieldsID() StringArray
@@ -17,6 +18,7 @@ HasSuffix(string) bool
 Indent(string) String
 IndentN(int) String
 Index(string) int
+IndexAll(string) []int
 IndexAny(string) int
 IndexByte(uint8) int
 IndexFunc(func(int32) bool) int

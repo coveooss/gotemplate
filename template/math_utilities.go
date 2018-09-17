@@ -29,35 +29,55 @@ func toFloat(value interface{}) float64 {
 	return must(strconv.ParseFloat(fmt.Sprintf("%v", value), 64)).(float64)
 }
 
-func toArrayOfFloats(values ...interface{}) (result []float64, err error) {
-	values = convertArgs(nil, values...)
-	result = make([]float64, 0, len(values))
+func toListOfFloats(values iList) (result iList, err error) {
+	if values == nil {
+		return collections.CreateList(), nil
+	}
+	values = convertArgs(nil, values.AsArray()...)
+	result = values.Clone()
 	defer func() {
 		if err = trapError(err, recover()); err != nil {
 			result = nil
 		}
 	}()
-	for i := range values {
-		result = append(result, toFloat(values[i]))
+	for i := range result.AsArray() {
+		result.Set(i, toFloat(result.Get(i)))
+	}
+	return
+}
+
+func asFloats(values iList) ([]float64, error) {
+	result, err := toListOfFloats(values)
+	if err != nil {
+		return nil, err
+	}
+	return mustAsFloats(result), nil
+}
+
+func mustAsFloats(values iList) (result []float64) {
+	result = make([]float64, values.Len())
+	for i := range result {
+		result[i] = values.Get(i).(float64)
 	}
 	return
 }
 
 func process(arg, handler interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
-	args := convertArgs(arg)
-	if args == nil {
+	arguments := convertArgs(arg)
+	if arguments.Len() == 0 {
 		return
 	}
-	switch len(args) {
+	argArray := arguments.AsArray()
+	switch len(argArray) {
 	case 0:
 		r = 0
 	case 1:
-		r = execute(args[0], handler)
+		r = execute(argArray[0], handler)
 	default:
-		result := make([]interface{}, len(args))
-		for i := range args {
-			result[i] = execute(args[i], handler)
+		result := arguments.Clone()
+		for i := range result.AsArray() {
+			result.Set(i, execute(result.Get(i), handler))
 		}
 		r = result
 	}
@@ -88,71 +108,50 @@ func execute(arg, handler interface{}) interface{} {
 	}
 }
 
-func convertArgs(a interface{}, args ...interface{}) []interface{} {
-	if a == nil {
+func convertArgs(arg1 interface{}, args ...interface{}) (result collections.IGenericList) {
+	if arg1 == nil {
 		// There is no first argument, so we isolate it from the other args
 		if len(args) == 0 {
-			return args
+			return collections.CreateList()
 		}
-		a = args[0]
-		args = args[1:]
+		arg1, args = args[0], args[1:]
 	}
 	if len(args) == 0 {
 		// There is a single argument, we try to convert it into a list
-		return collections.ToInterfaces(collections.ToStrings(a)...)
+		return collections.AsList(arg1)
 	}
-	return append([]interface{}{a}, args...)
+
+	if list, err := collections.TryAsList(arg1); err == nil {
+		return list.Create(0, len(args)+1).Append(arg1).Append(args...)
+	}
+	return collections.NewList(arg1).Append(args...)
 }
 
 func simplify(value float64) interface{} {
 	return utils.IIf(math.Floor(value) == value, int64(value), value)
 }
 
-func compareInternal(min bool, values []interface{}) interface{} {
+func compareNumerics(values []interface{}, useMinFunc bool) interface{} {
 	if len(values) == 0 {
 		return nil
 	}
-	if values, err := toArrayOfFloats(values...); err == nil {
-		result := values[0]
-		for _, value := range values[1:] {
-			if (min && value < result) || (!min && value > result) {
-				result = value
-			}
-		}
-		return simplify(result)
-	}
-
-	sa := collections.ToStrings(values)
-	result := sa[0]
-	for _, value := range sa[1:] {
-		if (min && value < result) || (!min && value > result) {
-			result = value
-		}
-	}
-	return result
-}
-
-func compareNumerics(values []interface{}, min bool) interface{} {
-	if len(values) == 0 {
-		return nil
-	}
-	numerics, err := toArrayOfFloats(values...)
+	numerics, err := asFloats(collections.AsList(values))
 	if err != nil {
-		return compareStrings(values, min)
+		return compareStrings(values, useMinFunc)
 	}
 	result := numerics[0]
-	comp := iif(min, math.Min, math.Max).(func(a, b float64) float64)
+	comp := iif(useMinFunc, math.Min, math.Max).(func(a, b float64) float64)
 	for _, value := range numerics[1:] {
 		result = comp(result, value)
 	}
 	return simplify(result)
 }
 
-func compareStrings(values []interface{}, min bool) (result string) {
+func compareStrings(values []interface{}, useMinFunc bool) (result string) {
 	sa := collections.ToStrings(values)
 	result = sa[0]
 	for _, value := range sa[1:] {
-		if (min && value < result) || (!min && value > result) {
+		if (useMinFunc && value < result) || (!useMinFunc && value > result) {
 			result = value
 		}
 	}

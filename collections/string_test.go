@@ -95,7 +95,7 @@ func TestWrapString(t *testing.T) {
 	}
 }
 
-func TestString_FindWord(t *testing.T) {
+func TestString_GetWordAtPosition(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -136,7 +136,7 @@ func TestString_FindWord(t *testing.T) {
 	}
 }
 
-func TestString_FindContext(t *testing.T) {
+func TestString_GetContextAtPosition(t *testing.T) {
 	t.Parallel()
 
 	type args struct {
@@ -152,6 +152,9 @@ func TestString_FindContext(t *testing.T) {
 	}{
 		{"", args{0, "", ""}, "", -1},
 		{"", args{5, "", ""}, "", -1},
+		{"Before ()", args{-1, "(", ")"}, "", -1},
+		{"After ()", args{100, "(", ")"}, "", -1},
+		{"Function()", args{9, "(", ")"}, "()", 8},
 		{"A context (within parenthesis) should be returned", args{15, "(", ")"}, "(within parenthesis)", 10},
 		{"A context [[within double bracket]] should be returned", args{15, "[[", "]]"}, "[[within double bracket]]", 10},
 		{"A context [[from double bracket]] should be returned", args{24, "[[", ""}, "[[from double b", 10},
@@ -161,6 +164,15 @@ func TestString_FindContext(t *testing.T) {
 		{"A context (with no enclosing context)", args{15, "", ""}, " ", 15},
 		{"A context (outside of context)", args{1, "(", ")"}, "", -1},
 		{"(context) after", args{12, "(", ")"}, "", -1},
+		{"Test (with (parenthesis inside) of the context)", args{7, "(", ")"}, "(with (parenthesis inside) of the context)", 5},
+		{"Test (with (parenthesis inside) unclosed", args{7, "(", ")"}, "", -1},
+		{"Test (with (parenthesis inside) (closed) many time)))", args{7, "(", ")"}, "(with (parenthesis inside) (closed) many time)", 5},
+		{"Test (with ((((((a lot of non closed)", args{7, "(", ")"}, "", -1},
+		{"Test (with (several) (parenthesis (inside)) of the context) (excluded)", args{7, "(", ")"}, "(with (several) (parenthesis (inside)) of the context)", 5},
+		{"Test | with same | left and | right", args{7, "|", "|"}, "| with same |", 5},
+		{"A context [[from [[double]] bracket]] [[with a little extra]]", args{12, "[[", "]]"}, "[[from [[double]] bracket]]", 10},
+		{"A context [[from [[double]] bracket [[unclosed]]", args{12, "[[", "]]"}, "", -1},
+		{"A context [[from [[double]] bracket [[extra]] closed]] many times]]]]", args{12, "[[", "]]"}, "[[from [[double]] bracket [[extra]] closed]]", 10},
 	}
 	for _, tt := range tests {
 		t.Run(tt.s.Str(), func(t *testing.T) {
@@ -172,7 +184,7 @@ func TestString_FindContext(t *testing.T) {
 				t.Errorf("String.GetContextAtPosition() pos = %v, want %v", pos, tt.wantPos)
 			}
 			if got2 := tt.s.SelectContext(tt.args.pos, tt.args.left, tt.args.right); got != got2 {
-				t.Errorf("String.SelectWord() returns %v while String.SelectWord() returns %v", got, got2)
+				t.Errorf("String.SelectContext() returns %v while String.SelectWord() returns %v", got, got2)
 			}
 		})
 	}
@@ -191,6 +203,7 @@ func TestString_Protect(t *testing.T) {
 		{`A test with a "single string"`, `A test with a "♠0"`, StringArray{`"single string"`}},
 		{"A test with `backtick string`", `A test with "♠0"`, StringArray{"`backtick string`"}},
 		{`Non closed "string`, `Non closed "string`, nil},
+		{`Non closed "with" escape "\"`, `Non closed "♠0" escape "\"`, StringArray{`"with"`}},
 		{`This contains two "string1" and "string2"`, `This contains two "♠0" and "♠1"`, StringArray{`"string1"`, `"string2"`}},
 		{"A mix of `backtick` and \"regular\" string", `A mix of "♠0" and "♠1" string`, StringArray{"`backtick`", `"regular"`}},
 		{"A confused one of `backtick with \"` and \"regular with \\\" quoted and ` inside\" string", "A confused one of \"♠0\" and \"♠1\" string", StringArray{"`backtick with \"`", "\"regular with \\\" quoted and ` inside\""}},
@@ -201,7 +214,7 @@ func TestString_Protect(t *testing.T) {
 		t.Run(tt.name.Str(), func(t *testing.T) {
 			got, array := tt.name.Protect()
 			if got != tt.want {
-				t.Errorf("String.Protect() got = *%v, want %v", got, tt.want)
+				t.Errorf("String.Protect() got = %v, want %v", got, tt.want)
 			}
 			if !reflect.DeepEqual(array, tt.wantArray) {
 				t.Errorf("String.Protect() array = %v, want %v", array, tt.wantArray)
@@ -241,6 +254,49 @@ func TestString_ParseBool(t *testing.T) {
 		t.Run(tt.value.Str(), func(t *testing.T) {
 			if got := tt.value.ParseBool(); got != tt.want {
 				t.Errorf("ParseBoolFromEnv() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestString_IndexAll(t *testing.T) {
+	tests := []struct {
+		name       string
+		s          String
+		substr     string
+		wantResult []int
+	}{
+		{"Both empty", "", "", nil},
+		{"Empty substr", "aaa", "", nil},
+		{"Empty source", "", "aa", nil},
+		{"Single", "abaabaaa", "a", []int{0, 2, 3, 5, 6, 7}},
+		{"Double", "abaabaaabaaaa", "aa", []int{2, 5, 9, 11}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if gotResult := tt.s.IndexAll(tt.substr); !reflect.DeepEqual(gotResult, tt.wantResult) {
+				t.Errorf("String.IndexAll() = %v, want %v", gotResult, tt.wantResult)
+			}
+		})
+	}
+}
+
+func TestString_AddLineNumber(t *testing.T) {
+	tests := []struct {
+		name  string
+		s     String
+		space int
+		want  String
+	}{
+		{"Empty", "", 0, "1 "},
+		{"Just a newline", "\n", 0, "1 \n2 "},
+		{"Several lines", "Line 1\nLine 2\nLine 3\n", 0, "1 Line 1\n2 Line 2\n3 Line 3\n4 "},
+		{"Several lines", "Line 1\nLine 2\nLine 3\n", 4, "   1 Line 1\n   2 Line 2\n   3 Line 3\n   4 "},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.s.AddLineNumber(tt.space); got != tt.want {
+				t.Errorf("String.AddLineNumber() = %v, want %v", got, tt.want)
 			}
 		})
 	}

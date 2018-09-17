@@ -11,15 +11,19 @@ import (
 )
 
 func add(a interface{}, args ...interface{}) (r interface{}, err error) {
+	if a == nil {
+		return
+	}
 	defer func() { err = trapError(err, recover()) }()
-	args = convertArgs(a, args...)
+	arguments := convertArgs(a, args...)
+	args = arguments.AsArray()
 
-	values, err := toArrayOfFloats(args...)
+	values, err := toListOfFloats(arguments)
 	if err != nil {
 		if len(args) == 2 {
 			// If the first argument is an array of float, we process it with the generic processor function
-			if af, err := toArrayOfFloats(args[0]); err == nil {
-				if _, err := strconv.ParseFloat(fmt.Sprintf("%v", args[1]), 64); err == nil {
+			if af, err := toListOfFloats(convertArgs(args[0])); err == nil {
+				if _, err := strconv.ParseFloat(fmt.Sprint(args[1]), 64); err == nil {
 					return processFloat2(af, args[1], func(a, b float64) float64 {
 						return a + b
 					})
@@ -35,7 +39,7 @@ func add(a interface{}, args ...interface{}) (r interface{}, err error) {
 			case reflect.Array, reflect.Slice:
 				return utils.MergeLists(convertArgs(args[0]), convertArgs(args[1])), nil
 			default:
-				return append(convertArgs(args[0]), args[1]), nil
+				return convertArgs(args[0]).Append(args[1]), nil
 			}
 		}
 
@@ -46,8 +50,8 @@ func add(a interface{}, args ...interface{}) (r interface{}, err error) {
 	}
 
 	var result float64
-	for i := range values {
-		result += toFloat(values[i])
+	for _, value := range mustAsFloats(values) {
+		result += value
 	}
 	return simplify(result), nil
 }
@@ -57,19 +61,21 @@ func multiply(a interface{}, args ...interface{}) (r interface{}, err error) {
 		return
 	}
 	defer func() { err = trapError(err, recover()) }()
-	args = convertArgs(a, args...)
+	arguments := convertArgs(a, args...)
+	args = arguments.AsArray()
 
-	values, err := toArrayOfFloats(args...)
+	values, err := toListOfFloats(arguments)
 	if err != nil {
 		if len(args) == 2 {
 			// If the first argument is an array of float, we process it with the generic processor function
-			if af, err := toArrayOfFloats(args[0]); err == nil {
+			if af, err := toListOfFloats(convertArgs(args[0])); err == nil {
 				if _, err := strconv.ParseFloat(fmt.Sprintf("%v", args[1]), 64); err == nil {
 					return processFloat2(af, args[1], func(a, b float64) float64 {
 						return a * b
 					})
 				}
-				if af2, err := toArrayOfFloats(args[1]); err == nil {
+				if af2, err := toListOfFloats(convertArgs(args[1])); err == nil {
+					af2 := mustAsFloats(af2)
 					// If the second argument is also an array of float, we then multiply the two arrays
 					result := make([]interface{}, len(af2))
 					for i := range af2 {
@@ -92,20 +98,18 @@ func multiply(a interface{}, args ...interface{}) (r interface{}, err error) {
 		}
 	}
 
-	switch len(values) {
-	case 0:
-		return 0, err
-	case 2:
-		return processFloat2(values[0], values[1], func(a, b float64) float64 {
-			return a * b
-		})
+	{
+		// Values is an array of floats
+		values := mustAsFloats(values)
+		if len(values) == 0 {
+			return 0, nil
+		}
+		var result float64 = 1
+		for _, value := range values {
+			result *= value
+		}
+		return simplify(result), nil
 	}
-
-	var result float64 = 1
-	for i := range values {
-		result *= values[i]
-	}
-	return simplify(result), nil
 }
 
 func subtract(a, b interface{}) (r interface{}, err error) {

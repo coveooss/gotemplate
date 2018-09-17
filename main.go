@@ -10,9 +10,11 @@ import (
 
 	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/json"
 	"github.com/coveo/gotemplate/template"
 	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/yaml"
 	"github.com/fatih/color"
 	logging "github.com/op/go-logging"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -61,6 +63,7 @@ func main() {
 		delimiters       = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
 		varFiles         = run.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
 		namedVars        = run.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
+		typeMode         = run.Flag("type", "Force the type used for the main context (Json, Yaml, Hcl)").Short('t').Enum("Hcl", "h", "hcl", "H", "HCL", "Json", "j", "json", "J", "JSON", "Yaml", "Yml", "y", "yml", "yaml", "Y", "YML", "YAML")
 		includePatterns  = run.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
 		excludedPatterns = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
 		overwrite        = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
@@ -119,6 +122,7 @@ func main() {
 		}
 	}
 
+	_ = typeMode
 	var changedArgs []int
 	for i := range os.Args {
 		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
@@ -159,8 +163,22 @@ func main() {
 	}
 
 	// By default, we generate JSON list and dictionary
-	collections.ListHelper = json.GenericListHelper
-	collections.DictionaryHelper = json.DictionaryHelper
+	if mode := *typeMode; mode != "" {
+		switch strings.ToUpper(mode[:1]) {
+		case "Y":
+			collections.ListHelper = yaml.GenericListHelper
+			collections.DictionaryHelper = yaml.DictionaryHelper
+		case "H":
+			collections.ListHelper = hcl.GenericListHelper
+			collections.DictionaryHelper = hcl.DictionaryHelper
+		case "J":
+			collections.ListHelper = json.GenericListHelper
+			collections.DictionaryHelper = json.DictionaryHelper
+		}
+	} else {
+		collections.ListHelper = json.GenericListHelper
+		collections.DictionaryHelper = json.DictionaryHelper
+	}
 
 	optionsSet[template.RenderingDisabled] = *disableRender
 	optionsSet[template.Overwrite] = *overwrite
@@ -212,7 +230,7 @@ func main() {
 		// Options to remove empty lines
 		*substitutes = append(*substitutes, `/^\s*$/d`)
 	}
-	t, err := template.NewTemplate("", createContext(*varFiles, *namedVars), *delimiters, optionsSet, *substitutes...)
+	t, err := template.NewTemplate("", createContext(*varFiles, *namedVars, *typeMode), *delimiters, optionsSet, *substitutes...)
 	if err != nil {
 		errors.Print(err)
 		os.Exit(3)

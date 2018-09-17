@@ -30,6 +30,10 @@ func (l xmlList) Reverse() xmlIList                { return xmlListHelper.Revers
 func (l xmlList) Strings() []string                { return xmlListHelper.GetStrings(l) }
 func (l xmlList) Unique() xmlIList                 { return xmlListHelper.Unique(l) }
 
+func (l xmlList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return xmlDictHelper, xmlListHelper
+}
+
 func (l xmlList) Append(values ...interface{}) xmlIList {
 	return xmlListHelper.Add(l, false, values...)
 }
@@ -75,6 +79,10 @@ func (d xmlDict) KeysAsString() []string             { return xmlDictHelper.Keys
 func (d xmlDict) GetValues() xmlIList                { return xmlDictHelper.GetValues(d) }
 func (d xmlDict) Set(key, v interface{}) xmlIDict    { return xmlDictHelper.Set(d, key, v) }
 func (d xmlDict) Transpose() xmlIDict                { return xmlDictHelper.Transpose(d) }
+
+func (d xmlDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return xmlDictHelper, xmlListHelper
+}
 
 func (d xmlDict) Default(key, defVal interface{}) interface{} {
 	return xmlDictHelper.Default(d, key, defVal)

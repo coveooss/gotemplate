@@ -77,6 +77,10 @@ func (fi FuncInfo) getArguments(isMethod bool) string {
 		return fi.in
 	}
 
+	if fi.alias != nil {
+		fi = *fi.alias
+	}
+
 	signature := reflect.ValueOf(fi.function).Type()
 	var parameters []string
 	for i := iif(isMethod, 1, 0).(int); i < signature.NumIn(); i++ {

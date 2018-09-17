@@ -185,7 +185,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		return
 	}
 
-	var config Dictionary
+	var config iDictionary
 
 	switch len(defaultArgs) {
 	case 0:
@@ -219,7 +219,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			config.Set("group", val)
 		case "a", "args", "arguments":
 			switch val := val.(type) {
-			case List:
+			case iList:
 				config.Set("args", val)
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
@@ -227,7 +227,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			}
 		case "aliases":
 			switch val := val.(type) {
-			case List:
+			case iList:
 				config.Set("aliases", val)
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
@@ -235,7 +235,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			}
 		case "def", "default", "defaults":
 			switch val := val.(type) {
-			case Dictionary:
+			case iDictionary:
 				config.Set("def", val)
 			default:
 				err = fmt.Errorf("%s must be a dictionary: %T", key, val)
@@ -251,11 +251,11 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		name:        name,
 		group:       defval(config.Get("group"), "User defined functions").(string),
 		description: defval(config.Get("description"), "").(string),
-		arguments:   defval(config.Get("args"), emptyList).(List).Strings(),
-		aliases:     defval(config.Get("aliases"), emptyList).(List).Strings(),
+		arguments:   defval(config.Get("args"), emptyList).(iList).Strings(),
+		aliases:     defval(config.Get("aliases"), emptyList).(iList).Strings(),
 	}
 
-	defaultValues := defval(config.Get("def"), collections.CreateDictionary()).(Dictionary)
+	defaultValues := defval(config.Get("def"), collections.CreateDictionary()).(iDictionary)
 
 	fi.in = fmt.Sprintf("%s", strings.Join(fi.arguments, ", "))
 	for i := range fi.arguments {
