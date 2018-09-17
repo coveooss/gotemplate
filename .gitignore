@@ -11,5 +11,3 @@ docs/_site
 docs/vendor
 docs/Gemfile.lock
 coverage\.sh\.1
-
-\.vscode/
