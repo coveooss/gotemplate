@@ -3,6 +3,7 @@ package template
 import (
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/coveo/gotemplate/utils"
 	"github.com/fatih/color"
@@ -66,17 +67,25 @@ var Log = logging.MustGetLogger(logger)
 // log is application logger used to follow the behaviour of the application
 var log = logging.MustGetLogger(loggerInternal)
 
+var loggingMutex sync.Mutex
+
 func getLogLevelInternal() logging.Level {
+	loggingMutex.Lock()
+	defer loggingMutex.Unlock()
 	return logging.GetLevel(loggerInternal)
 }
 
 // GetLogLevel returns the current logging level for gotemplate
 func GetLogLevel() logging.Level {
+	loggingMutex.Lock()
+	defer loggingMutex.Unlock()
 	return logging.GetLevel(logger)
 }
 
 // SetLogLevel set the logging level for gotemplate
 func SetLogLevel(level logging.Level) {
+	loggingMutex.Lock()
+	defer loggingMutex.Unlock()
 	logging.SetLevel(level, logger)
 }
 

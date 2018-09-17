@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/coveo/gotemplate/collections"
@@ -16,6 +17,8 @@ import (
 
 // String is an alias to collections.String
 type String = collections.String
+
+var templateMutex sync.Mutex
 
 // Template let us extend the functionalities of base go template library.
 type Template struct {

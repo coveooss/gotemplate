@@ -15,8 +15,9 @@ var must = errors.Must
 
 // BaseHelper implements basic functionalities required for both IGenericList & IDictionary
 type BaseHelper struct {
-	ConvertList func(baseIList) baseIList
-	ConvertDict func(baseIDict) baseIDict
+	ConvertList    func(baseIList) baseIList
+	ConvertDict    func(baseIDict) baseIDict
+	NeedConversion func(interface{}) bool
 }
 
 // AsList converts object to IGenericList object. It panics if conversion is impossible.
@@ -99,10 +100,14 @@ func (bh BaseHelper) TryAsDictionary(object interface{}) (baseIDict, error) {
 		}
 	}
 
-	for key, val := range result.AsMap() {
-		// We loop on the key/values to ensure that all values are converted to the
-		// desired type.
-		result.Set(key, val)
+	if bh.NeedConversion(result) {
+		newDict := bh.CreateDictionary()
+		for key, val := range result.AsMap() {
+			// We loop on the key/values to ensure that all values are converted to the
+			// desired type.
+			newDict.Set(key, val)
+		}
+		result = newDict
 	}
 
 	return result, nil
@@ -138,8 +143,12 @@ func (bh BaseHelper) TryAsList(object interface{}) (baseIList, error) {
 			}
 		}
 	}
-	for i, val := range result.AsArray() {
-		result.Set(i, val)
+	if bh.NeedConversion(result) {
+		newList := bh.CreateList(result.Len())
+		for i, val := range result.AsArray() {
+			result.Set(i, val)
+		}
+		result = newList
 	}
 
 	return result, nil
@@ -157,3 +166,38 @@ func (bh BaseHelper) TryConvert(object interface{}) (interface{}, bool) {
 	}
 	return object, false
 }
+
+// NeedConversion determine if the object need deep conversion
+func NeedConversion(object interface{}, typeName string) bool {
+	if object == nil {
+		return false
+	}
+	objectType := reflect.TypeOf(object)
+	switch objectType.Kind() {
+	case reflect.Map:
+		if dict, ok := object.(baseIDict); !ok || dict.TypeName() != typeName {
+			return true
+		}
+
+		value := reflect.ValueOf(object)
+		keys := value.MapKeys()
+		for i := range keys {
+			if NeedConversion(value.MapIndex(keys[i]).Interface(), typeName) {
+				return true
+			}
+		}
+	case reflect.Slice, reflect.Array:
+		if list, ok := object.(baseIList); !ok || list.TypeName() != typeName {
+			return true
+		}
+		value := reflect.ValueOf(object)
+		for i := 0; i < value.Len(); i++ {
+			if NeedConversion(value.Index(i).Interface(), typeName) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+var needConversionImpl = NeedConversion

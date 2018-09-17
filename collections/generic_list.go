@@ -25,6 +25,7 @@ type IGenericList interface {
 	Set(index int, value interface{}) (IGenericList, error) // Sets the value at position index into the list. If list is not large enough, it is enlarged to fit the index.
 	String() string                                         // Returns the string representation of the list.
 	Strings() []string                                      // Returns the current list as list of strings.
+	TypeName() string                                       // Returns the actual type name
 	Unique() IGenericList                                   // Returns a copy of the list removing all duplicate elements.
 	Union(...interface{}) IGenericList                      // Returns a list that represents the union of the list and the elements (removing duplicates).
 	Without(...interface{}) IGenericList                    // Returns a copy of the list removing specified elements.

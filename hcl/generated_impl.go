@@ -28,6 +28,7 @@ func (l hclList) Len() int                         { return len(l) }
 func (l hclList) New(args ...interface{}) hclIList { return hclListHelper.NewList(args...) }
 func (l hclList) Reverse() hclIList                { return hclListHelper.Reverse(l) }
 func (l hclList) Strings() []string                { return hclListHelper.GetStrings(l) }
+func (l hclList) TypeName() string                 { return "Hcl" }
 func (l hclList) Unique() hclIList                 { return hclListHelper.Unique(l) }
 
 func (l hclList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -79,6 +80,7 @@ func (d hclDict) KeysAsString() []string             { return hclDictHelper.Keys
 func (d hclDict) GetValues() hclIList                { return hclDictHelper.GetValues(d) }
 func (d hclDict) Set(key, v interface{}) hclIDict    { return hclDictHelper.Set(d, key, v) }
 func (d hclDict) Transpose() hclIDict                { return hclDictHelper.Transpose(d) }
+func (d hclDict) TypeName() string                   { return "Hcl" }
 
 func (d hclDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return hclDictHelper, hclListHelper
@@ -101,10 +103,11 @@ func (d hclDict) Omit(key interface{}, otherKeys ...interface{}) hclIDict {
 }
 
 // Generic helpers to simplify physical implementation
-func hclListConvert(list hclIList) hclIList { return hclList(list.AsArray()) }
-func hclDictConvert(dict hclIDict) hclIDict { return hclDict(dict.AsMap()) }
+func hclListConvert(list hclIList) hclIList  { return hclList(list.AsArray()) }
+func hclDictConvert(dict hclIDict) hclIDict  { return hclDict(dict.AsMap()) }
+func needConversion(object interface{}) bool { return needConversionImpl(object, "Hcl") }
 
-var hclHelper = helperBase{ConvertList: hclListConvert, ConvertDict: hclDictConvert}
+var hclHelper = helperBase{ConvertList: hclListConvert, ConvertDict: hclDictConvert, NeedConversion: needConversion}
 var hclListHelper = helperList{BaseHelper: hclHelper}
 var hclDictHelper = helperDict{BaseHelper: hclHelper}
 

@@ -28,6 +28,7 @@ func (l yamlList) Len() int                          { return len(l) }
 func (l yamlList) New(args ...interface{}) yamlIList { return yamlListHelper.NewList(args...) }
 func (l yamlList) Reverse() yamlIList                { return yamlListHelper.Reverse(l) }
 func (l yamlList) Strings() []string                 { return yamlListHelper.GetStrings(l) }
+func (l yamlList) TypeName() string                  { return "Yaml" }
 func (l yamlList) Unique() yamlIList                 { return yamlListHelper.Unique(l) }
 
 func (l yamlList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -79,6 +80,7 @@ func (d yamlDict) KeysAsString() []string              { return yamlDictHelper.K
 func (d yamlDict) GetValues() yamlIList                { return yamlDictHelper.GetValues(d) }
 func (d yamlDict) Set(key, v interface{}) yamlIDict    { return yamlDictHelper.Set(d, key, v) }
 func (d yamlDict) Transpose() yamlIDict                { return yamlDictHelper.Transpose(d) }
+func (d yamlDict) TypeName() string                    { return "Yaml" }
 
 func (d yamlDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return yamlDictHelper, yamlListHelper
@@ -103,8 +105,9 @@ func (d yamlDict) Omit(key interface{}, otherKeys ...interface{}) yamlIDict {
 // Generic helpers to simplify physical implementation
 func yamlListConvert(list yamlIList) yamlIList { return yamlList(list.AsArray()) }
 func yamlDictConvert(dict yamlIDict) yamlIDict { return yamlDict(dict.AsMap()) }
+func needConversion(object interface{}) bool   { return needConversionImpl(object, "Yaml") }
 
-var yamlHelper = helperBase{ConvertList: yamlListConvert, ConvertDict: yamlDictConvert}
+var yamlHelper = helperBase{ConvertList: yamlListConvert, ConvertDict: yamlDictConvert, NeedConversion: needConversion}
 var yamlListHelper = helperList{BaseHelper: yamlHelper}
 var yamlDictHelper = helperDict{BaseHelper: yamlHelper}
 

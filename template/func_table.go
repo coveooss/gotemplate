@@ -180,6 +180,9 @@ func (t *Template) AddFunctions(funcs dictionary, group string, options FuncOpti
 }
 
 func (t *Template) addFunctions(funcMap funcTableMap) *Template {
+	templateMutex.Lock()
+	defer templateMutex.Unlock()
+
 	if t.functions == nil {
 		t.functions = make(funcTableMap)
 	}

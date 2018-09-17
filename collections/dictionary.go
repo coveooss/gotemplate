@@ -28,6 +28,7 @@ type IDictionary interface {
 	Set(key, value interface{}) IDictionary                           // Sets key to value in the dictionary.
 	String() string                                                   // Returns the string representation of the dictionary.
 	Transpose() IDictionary                                           // Transpose keys/values and return the resulting dictionary
+	TypeName() string                                                 // Returns the actual type name
 }
 
 // IDictionaryHelper represents objects that implement IDictionary compatible objects

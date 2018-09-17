@@ -260,10 +260,18 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		newTemplate.Option("missingkey=error")
 	}
 
-	if newTemplate, err = newTemplate.Parse(content); err != nil {
+	func() {
+		// Here, we invoke the parser within a pseudo func because we cannot
+		// call the parser without locking
+		templateMutex.Lock()
+		defer templateMutex.Unlock()
+		newTemplate, err = newTemplate.Parse(content)
+	}()
+	if err != nil {
 		log.Infof("%s(%d): Parsing error %v", source, retryCount, err)
 		return handleError(err)
 	}
+
 	var out bytes.Buffer
 	workingContext := t.context
 	if cloneContext {
