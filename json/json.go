@@ -68,9 +68,13 @@ func transformElement(source interface{}) interface{} {
 	return source
 }
 
-type helperBase = implementation.BaseHelper
-type helperList = implementation.ListHelper
-type helperDict = implementation.DictHelper
+type (
+	helperBase = implementation.BaseHelper
+	helperList = implementation.ListHelper
+	helperDict = implementation.DictHelper
+)
+
+var needConversionImpl = implementation.NeedConversion
 
 //go:generate genny -pkg=json -in=../collections/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=json"
 //go:generate genny -pkg=json -in=../collections/implementation/generic_test.go -out=generated_test.go gen "base=json"

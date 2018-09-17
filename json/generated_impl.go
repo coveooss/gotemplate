@@ -28,7 +28,12 @@ func (l jsonList) Len() int                          { return len(l) }
 func (l jsonList) New(args ...interface{}) jsonIList { return jsonListHelper.NewList(args...) }
 func (l jsonList) Reverse() jsonIList                { return jsonListHelper.Reverse(l) }
 func (l jsonList) Strings() []string                 { return jsonListHelper.GetStrings(l) }
+func (l jsonList) TypeName() string                  { return "Json" }
 func (l jsonList) Unique() jsonIList                 { return jsonListHelper.Unique(l) }
+
+func (l jsonList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return jsonDictHelper, jsonListHelper
+}
 
 func (l jsonList) Append(values ...interface{}) jsonIList {
 	return jsonListHelper.Add(l, false, values...)
@@ -75,6 +80,11 @@ func (d jsonDict) KeysAsString() []string              { return jsonDictHelper.K
 func (d jsonDict) GetValues() jsonIList                { return jsonDictHelper.GetValues(d) }
 func (d jsonDict) Set(key, v interface{}) jsonIDict    { return jsonDictHelper.Set(d, key, v) }
 func (d jsonDict) Transpose() jsonIDict                { return jsonDictHelper.Transpose(d) }
+func (d jsonDict) TypeName() string                    { return "Json" }
+
+func (d jsonDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return jsonDictHelper, jsonListHelper
+}
 
 func (d jsonDict) Default(key, defVal interface{}) interface{} {
 	return jsonDictHelper.Default(d, key, defVal)
@@ -95,8 +105,11 @@ func (d jsonDict) Omit(key interface{}, otherKeys ...interface{}) jsonIDict {
 // Generic helpers to simplify physical implementation
 func jsonListConvert(list jsonIList) jsonIList { return jsonList(list.AsArray()) }
 func jsonDictConvert(dict jsonIDict) jsonIDict { return jsonDict(dict.AsMap()) }
+func needConversion(object interface{}, strict bool) bool {
+	return needConversionImpl(object, strict, "Json")
+}
 
-var jsonHelper = helperBase{ConvertList: jsonListConvert, ConvertDict: jsonDictConvert}
+var jsonHelper = helperBase{ConvertList: jsonListConvert, ConvertDict: jsonDictConvert, NeedConversion: needConversion}
 var jsonListHelper = helperList{BaseHelper: jsonHelper}
 var jsonDictHelper = helperDict{BaseHelper: jsonHelper}
 

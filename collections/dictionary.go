@@ -16,6 +16,7 @@ type IDictionary interface {
 	Delete(key interface{}, keys ...interface{}) (IDictionary, error) // Removes the entry value associated with key. The entry must exist.
 	Flush(keys ...interface{}) IDictionary                            // Removes all specified keys from the dictionary. If no key is specified, all keys are removed.
 	Get(key interface{}) interface{}                                  // Returns the value associated with key.
+	GetHelpers() (IDictionaryHelper, IListHelper)                     // Returns the helpers implementation associated with the current type.
 	GetKeys() IGenericList                                            // Returns the keys in the dictionary in alphabetical order.
 	GetValues() IGenericList                                          // Returns the values in the dictionary in alphabetical order of keys.
 	Has(key interface{}) bool                                         // Returns true if the dictionary object contains the key.
@@ -27,6 +28,7 @@ type IDictionary interface {
 	Set(key, value interface{}) IDictionary                           // Sets key to value in the dictionary.
 	String() string                                                   // Returns the string representation of the dictionary.
 	Transpose() IDictionary                                           // Transpose keys/values and return the resulting dictionary
+	TypeName() string                                                 // Returns the actual type name
 }
 
 // IDictionaryHelper represents objects that implement IDictionary compatible objects

@@ -17,6 +17,7 @@ import (
 )
 
 func TestTemplate_applyRazor(t *testing.T) {
+	t.Parallel()
 	dmp := diffmatchpatch.New()
 	SetLogLevel(logging.WARNING)
 	template := MustNewTemplate("../docs/doc_test", nil, "", nil)
@@ -58,7 +59,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		go t.Run(tt.name, func(t *testing.T) {
 			template.options[Razor] = tt.razor != ""
 
 			content := load(tt.path)

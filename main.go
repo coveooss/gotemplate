@@ -10,16 +10,18 @@ import (
 
 	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/hcl"
 	"github.com/coveo/gotemplate/json"
 	"github.com/coveo/gotemplate/template"
 	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/yaml"
 	"github.com/fatih/color"
 	logging "github.com/op/go-logging"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Version is initialized at build time through -ldflags "-X main.Version=<version number>"
-var version = "2.6.1"
+var version = "2.6.3"
 var tempFolder = errors.Must(ioutil.TempDir("", "gotemplate-")).(string)
 
 const (
@@ -61,10 +63,12 @@ func main() {
 		delimiters       = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
 		varFiles         = run.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
 		namedVars        = run.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
+		typeMode         = run.Flag("type", "Force the type used for the main context (Json, Yaml, Hcl)").Short('t').Enum("Hcl", "h", "hcl", "H", "HCL", "Json", "j", "json", "J", "JSON", "Yaml", "Yml", "y", "yml", "yaml", "Y", "YML", "YAML")
 		includePatterns  = run.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
 		excludedPatterns = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
 		overwrite        = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
 		substitutes      = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp) or specify that value through "+template.EnvSubstitutes+" where each substitute is separated by a newline").PlaceHolder("exp").Short('s').Strings()
+		removeEmptyLines = run.Flag("remove-empty-lines", "Remove empty lines from the result (--re)").Short('E').Bool()
 		recursive        = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
 		recursionDepth   = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
 		sourceFolder     = run.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").ExistingDir()
@@ -74,6 +78,7 @@ func main() {
 		print            = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
 		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
 		acceptNoValue    = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error (--nv) or env: "+template.EnvAcceptNoValue).Bool()
+		strictError      = run.Flag("strict-error-validation", "Consider error encountered in any file as real error (--strict) or env: "+template.EnvStrictErrorCheck).Short('S').Bool()
 		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl) or env: "+template.EnvDebug).Default("2").PlaceHolder("level").Int8()
 		logLevel         = run.Flag("log-level", "Set the logging level 0-9 (--ll)").Short('L').PlaceHolder("level").Int8()
 		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
@@ -93,6 +98,8 @@ func main() {
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "short version of --delimiters").Hidden().StringVar(delimiters)
 	app.Flag("nv", "short version of --accept-no-value").Hidden().BoolVar(acceptNoValue)
+	app.Flag("strict", "short version of --strict-error-validation").Hidden().BoolVar(strictError)
+	app.Flag("re", "short version of --remove-empty-lines").Hidden().BoolVar(removeEmptyLines)
 
 	// Set the options for the available options (most of them are on by default)
 	optionsOff := app.Flag("base", "Turn off all extensions (they could then be enabled explicitly)").Bool()
@@ -115,6 +122,7 @@ func main() {
 		}
 	}
 
+	_ = typeMode
 	var changedArgs []int
 	for i := range os.Args {
 		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
@@ -155,13 +163,28 @@ func main() {
 	}
 
 	// By default, we generate JSON list and dictionary
-	collections.ListHelper = json.GenericListHelper
-	collections.DictionaryHelper = json.DictionaryHelper
+	if mode := *typeMode; mode != "" {
+		switch strings.ToUpper(mode[:1]) {
+		case "Y":
+			collections.ListHelper = yaml.GenericListHelper
+			collections.DictionaryHelper = yaml.DictionaryHelper
+		case "H":
+			collections.ListHelper = hcl.GenericListHelper
+			collections.DictionaryHelper = hcl.DictionaryHelper
+		case "J":
+			collections.ListHelper = json.GenericListHelper
+			collections.DictionaryHelper = json.DictionaryHelper
+		}
+	} else {
+		collections.ListHelper = json.GenericListHelper
+		collections.DictionaryHelper = json.DictionaryHelper
+	}
 
 	optionsSet[template.RenderingDisabled] = *disableRender
 	optionsSet[template.Overwrite] = *overwrite
 	optionsSet[template.OutputStdout] = *print
 	optionsSet[template.AcceptNoValue] = *acceptNoValue
+	optionsSet[template.StrictErrorCheck] = *strictError
 	for i := range options {
 		optionsSet[template.Options(i)] = options[i]
 	}
@@ -203,7 +226,11 @@ func main() {
 		*forceStdin = true
 	}
 
-	t, err := template.NewTemplate("", createContext(*varFiles, *namedVars), *delimiters, optionsSet, *substitutes...)
+	if *removeEmptyLines {
+		// Options to remove empty lines
+		*substitutes = append(*substitutes, `/^\s*$/d`)
+	}
+	t, err := template.NewTemplate("", createContext(*varFiles, *namedVars, *typeMode), *delimiters, optionsSet, *substitutes...)
 	if err != nil {
 		errors.Print(err)
 		os.Exit(3)

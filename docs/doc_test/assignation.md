@@ -42,25 +42,25 @@
 ```go
 @-foreach ($value := to(10))
     @{value}
-@end foreach
+@-end foreach
 ```
 
 ```go
 @-foreach ($index, $value := to(10))
     @{index} = @($value * 2)
-@end foreach
+@-end foreach
 ```
 
 ```go
 @-if ($result := 2+2 == 4)
     result = @{result}
-@end if
+@-end if
 ```
 
 ```go
 @-with ($value := 2+2)
     value = @{value}
-@end with
+@-end with
 ```
 
 {% endraw %}

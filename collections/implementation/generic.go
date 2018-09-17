@@ -22,7 +22,12 @@ func (l baseList) Len() int                            { return len(l) }
 func (l baseList) New(args ...interface{}) baseIList   { return baseListHelper.NewList(args...) }
 func (l baseList) Reverse() baseIList                  { return baseListHelper.Reverse(l) }
 func (l baseList) Strings() []string                   { return baseListHelper.GetStrings(l) }
+func (l baseList) TypeName() string                    { return "base" }
 func (l baseList) Unique() baseIList                   { return baseListHelper.Unique(l) }
+
+func (l baseList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return baseDictHelper, baseListHelper
+}
 
 func (l baseList) Append(values ...interface{}) baseIList {
 	return baseListHelper.Add(l, false, values...)
@@ -69,6 +74,11 @@ func (d baseDict) KeysAsString() []string              { return baseDictHelper.K
 func (d baseDict) GetValues() baseIList                { return baseDictHelper.GetValues(d) }
 func (d baseDict) Set(key, v interface{}) baseIDict    { return baseDictHelper.Set(d, key, v) }
 func (d baseDict) Transpose() baseIDict                { return baseDictHelper.Transpose(d) }
+func (d baseDict) TypeName() string                    { return "base" }
+
+func (d baseDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return baseDictHelper, baseListHelper
+}
 
 func (d baseDict) Default(key, defVal interface{}) interface{} {
 	return baseDictHelper.Default(d, key, defVal)
@@ -89,8 +99,11 @@ func (d baseDict) Omit(key interface{}, otherKeys ...interface{}) baseIDict {
 // Generic helpers to simplify physical implementation
 func baseListConvert(list baseIList) baseIList { return baseList(list.AsArray()) }
 func baseDictConvert(dict baseIDict) baseIDict { return baseDict(dict.AsMap()) }
+func needConversion(object interface{}, strict bool) bool {
+	return needConversionImpl(object, strict, "base")
+}
 
-var baseHelper = helperBase{ConvertList: baseListConvert, ConvertDict: baseDictConvert}
+var baseHelper = helperBase{ConvertList: baseListConvert, ConvertDict: baseDictConvert, NeedConversion: needConversion}
 var baseListHelper = helperList{BaseHelper: baseHelper}
 var baseDictHelper = helperDict{BaseHelper: baseHelper}
 

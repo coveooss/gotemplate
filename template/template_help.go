@@ -109,12 +109,12 @@ func (t Template) filterFunctions(all, category, detailed bool, filters ...strin
 			continue
 		}
 
-		search := strings.ToLower(functions[i] + strings.Join(funcInfo.aliases, " "))
+		search := strings.ToLower(functions[i] + " " + strings.Join(funcInfo.aliases, " "))
 		if category {
-			search += strings.ToLower(funcInfo.group)
+			search += " " + strings.ToLower(funcInfo.group)
 		}
 		if detailed {
-			search += strings.ToLower(funcInfo.description)
+			search += " " + strings.ToLower(funcInfo.description)
 		}
 
 		for f := range filters {
@@ -176,8 +176,13 @@ func (t Template) printFunctionsDetailed(functions []string, maxLength int, alia
 
 		if alias {
 			sort.Strings(fi.aliases)
-			for i := range fi.aliases {
-				Println(t.functions[fi.aliases[i]].Signature())
+			for j := range fi.aliases {
+				aliasFunc := t.functions[fi.aliases[j]]
+				if !aliasFunc.IsAlias() || aliasFunc.Arguments() != fi.Arguments() || aliasFunc.Result() != fi.Result() {
+					// The alias has been replaced
+					continue
+				}
+				Println(aliasFunc.Signature())
 			}
 		}
 		Println()

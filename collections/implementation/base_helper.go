@@ -15,8 +15,9 @@ var must = errors.Must
 
 // BaseHelper implements basic functionalities required for both IGenericList & IDictionary
 type BaseHelper struct {
-	ConvertList func(baseIList) baseIList
-	ConvertDict func(baseIDict) baseIDict
+	ConvertList    func(list baseIList) baseIList
+	ConvertDict    func(dict baseIDict) baseIDict
+	NeedConversion func(object interface{}, strict bool) bool
 }
 
 // AsList converts object to IGenericList object. It panics if conversion is impossible.
@@ -69,6 +70,15 @@ func (bh BaseHelper) CreateDictionary(args ...int) baseIDict {
 
 // TryAsDictionary tries to convert any object to IDictionary object.
 func (bh BaseHelper) TryAsDictionary(object interface{}) (baseIDict, error) {
+	return bh.tryAsDictionary(object, false)
+}
+
+// TryAsDictionaryStrict tries to convert any object to IDictionary object.
+func (bh BaseHelper) TryAsDictionaryStrict(object interface{}) (baseIDict, error) {
+	return bh.tryAsDictionary(object, true)
+}
+
+func (bh BaseHelper) tryAsDictionary(object interface{}, strict bool) (baseIDict, error) {
 	if object != nil && reflect.TypeOf(object).Kind() == reflect.Ptr {
 		object = reflect.ValueOf(object).Elem().Interface()
 	}
@@ -99,10 +109,14 @@ func (bh BaseHelper) TryAsDictionary(object interface{}) (baseIDict, error) {
 		}
 	}
 
-	for key, val := range result.AsMap() {
-		// We loop on the key/values to ensure that all values are converted to the
-		// desired type.
-		result.Set(key, val)
+	if bh.NeedConversion(result, strict) {
+		newDict := bh.CreateDictionary()
+		for key, val := range result.AsMap() {
+			// We loop on the key/values to ensure that all values are converted to the
+			// desired type.
+			newDict.Set(key, val)
+		}
+		result = newDict
 	}
 
 	return result, nil
@@ -110,6 +124,15 @@ func (bh BaseHelper) TryAsDictionary(object interface{}) (baseIDict, error) {
 
 // TryAsList tries to convert any object to IGenericList object.
 func (bh BaseHelper) TryAsList(object interface{}) (baseIList, error) {
+	return bh.tryAsList(object, false)
+}
+
+// TryAsListStrict tries to convert any object to IGenericList object.
+func (bh BaseHelper) TryAsListStrict(object interface{}) (baseIList, error) {
+	return bh.tryAsList(object, true)
+}
+
+func (bh BaseHelper) tryAsList(object interface{}, strict bool) (baseIList, error) {
 	if object != nil && reflect.TypeOf(object).Kind() == reflect.Ptr {
 		object = reflect.ValueOf(object).Elem().Interface()
 	}
@@ -138,8 +161,12 @@ func (bh BaseHelper) TryAsList(object interface{}) (baseIList, error) {
 			}
 		}
 	}
-	for i, val := range result.AsArray() {
-		result.Set(i, val)
+	if bh.NeedConversion(result, false) {
+		newList := bh.CreateList(result.Len())
+		for i, val := range result.AsArray() {
+			newList.Set(i, val)
+		}
+		result = newList
 	}
 
 	return result, nil
@@ -157,3 +184,40 @@ func (bh BaseHelper) TryConvert(object interface{}) (interface{}, bool) {
 	}
 	return object, false
 }
+
+// NeedConversion determine if the object need deep conversion.
+//    strict indicates that the type must be converted to the desired type
+//    even if the object implements the Dictionary or List interface.
+func NeedConversion(object interface{}, strict bool, typeName string) bool {
+	if object == nil {
+		return false
+	}
+	objectType := reflect.TypeOf(object)
+	switch objectType.Kind() {
+	case reflect.Map:
+		if dict, ok := object.(baseIDict); !ok || strict && dict.TypeName() != typeName {
+			return true
+		}
+
+		value := reflect.ValueOf(object)
+		keys := value.MapKeys()
+		for i := range keys {
+			if NeedConversion(value.MapIndex(keys[i]).Interface(), strict, typeName) {
+				return true
+			}
+		}
+	case reflect.Slice, reflect.Array:
+		if list, ok := object.(baseIList); !ok || strict && list.TypeName() != typeName {
+			return true
+		}
+		value := reflect.ValueOf(object)
+		for i := 0; i < value.Len(); i++ {
+			if NeedConversion(value.Index(i).Interface(), strict, typeName) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+var needConversionImpl = NeedConversion

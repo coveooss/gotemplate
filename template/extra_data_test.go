@@ -10,6 +10,7 @@ import (
 )
 
 func Test_Data(t *testing.T) {
+	t.Parallel()
 	template := MustNewTemplate("", nil, "", nil)
 	tests := []struct {
 		name    string
@@ -38,6 +39,7 @@ func Test_Data(t *testing.T) {
 }
 
 func Test_YAML(t *testing.T) {
+	t.Parallel()
 	template := MustNewTemplate("", nil, "", nil)
 	tests := []struct {
 		name    string
@@ -64,6 +66,7 @@ func Test_YAML(t *testing.T) {
 }
 
 func Test_HCL(t *testing.T) {
+	t.Parallel()
 	template := MustNewTemplate("", nil, "", nil)
 	tests := []struct {
 		name    string

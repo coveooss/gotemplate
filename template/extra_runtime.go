@@ -21,23 +21,24 @@ const (
 )
 
 var runtimeFuncsArgs = arguments{
-	"alias":      {"name", "function", "source"},
-	"assert":     {"test", "message", "arguments"},
-	"categories": {"functionsGroups"},
-	"ellipsis":   {"function"},
-	"exec":       {"command"},
-	"exit":       {"exitValue"},
-	"func":       {"name", "function", "source", "config"},
-	"function":   {"name"},
-	"include":    {"source", "context"},
-	"localAlias": {"name", "function", "source"},
-	"raise":      {"message", "arguments"},
-	"run":        {"command"},
-	"substitute": {"content"},
+	"alias":         {"name", "function", "source"},
+	"assert":        {"test", "message", "arguments"},
+	"assertWarning": {"test", "message", "arguments"},
+	"categories":    {"functionsGroups"},
+	"ellipsis":      {"function"},
+	"exec":          {"command"},
+	"exit":          {"exitValue"},
+	"func":          {"name", "function", "source", "config"},
+	"function":      {"name"},
+	"include":       {"source", "context"},
+	"localAlias":    {"name", "function", "source"},
+	"run":           {"command"},
+	"substitute":    {"content"},
 }
 
 var runtimeFuncsAliases = aliases{
 	"assert":        {"assertion"},
+	"assertWarning": {"assertw"},
 	"exec":          {"execute"},
 	"getAttributes": {"attr", "attributes"},
 	"getMethods":    {"methods"},
@@ -46,10 +47,11 @@ var runtimeFuncsAliases = aliases{
 }
 
 var runtimeFuncsHelp = descriptions{
-	"alias":        "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
-	"aliases":      "Returns the list of all functions that are simply an alias of another function.",
-	"allFunctions": "Returns the list of all available functions.",
-	"assert":       "Raises a formated error if the test condition is false.",
+	"alias":         "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
+	"aliases":       "Returns the list of all functions that are simply an alias of another function.",
+	"allFunctions":  "Returns the list of all available functions.",
+	"assert":        "Raises a formated error if the test condition is false.",
+	"assertWarning": "Issues a formated warning if the test condition is false.",
 	"categories": strings.TrimSpace(collections.UnIndent(`
 		Returns all functions group by categories.
 
@@ -93,6 +95,7 @@ func (t *Template) addRuntimeFuncs() {
 		"aliases":       t.getAliases,
 		"allFunctions":  t.getAllFunctions,
 		"assert":        assert,
+		"assertWarning": assertWarning,
 		"categories":    t.getCategories,
 		"current":       t.current,
 		"ellipsis":      t.ellipsis,
@@ -182,7 +185,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		return
 	}
 
-	var config Dictionary
+	var config iDictionary
 
 	switch len(defaultArgs) {
 	case 0:
@@ -216,7 +219,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			config.Set("group", val)
 		case "a", "args", "arguments":
 			switch val := val.(type) {
-			case List:
+			case iList:
 				config.Set("args", val)
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
@@ -224,7 +227,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			}
 		case "aliases":
 			switch val := val.(type) {
-			case List:
+			case iList:
 				config.Set("aliases", val)
 			default:
 				err = fmt.Errorf("%[1]s must be a list of strings: %[2]T %[2]v", key, val)
@@ -232,7 +235,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 			}
 		case "def", "default", "defaults":
 			switch val := val.(type) {
-			case Dictionary:
+			case iDictionary:
 				config.Set("def", val)
 			default:
 				err = fmt.Errorf("%s must be a dictionary: %T", key, val)
@@ -248,11 +251,11 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		name:        name,
 		group:       defval(config.Get("group"), "User defined functions").(string),
 		description: defval(config.Get("description"), "").(string),
-		arguments:   defval(config.Get("args"), emptyList).(List).Strings(),
-		aliases:     defval(config.Get("aliases"), emptyList).(List).Strings(),
+		arguments:   defval(config.Get("args"), emptyList).(iList).Strings(),
+		aliases:     defval(config.Get("aliases"), emptyList).(iList).Strings(),
 	}
 
-	defaultValues := defval(config.Get("def"), collections.CreateDictionary()).(Dictionary)
+	defaultValues := defval(config.Get("def"), collections.CreateDictionary()).(iDictionary)
 
 	fi.in = fmt.Sprintf("%s", strings.Join(fi.arguments, ", "))
 	for i := range fi.arguments {
@@ -502,11 +505,8 @@ func getSignature(object interface{}) string {
 	return attributes + methods
 }
 
-func raise(format interface{}, args ...interface{}) (string, error) {
-	if f := fmt.Sprint(format); strings.Contains(f, "%") {
-		return "", fmt.Errorf(f, args...)
-	}
-	return "", fmt.Errorf(strings.TrimSpace(fmt.Sprintln(append([]interface{}{format}, args...)...)))
+func raise(args ...interface{}) (string, error) {
+	return "", fmt.Errorf(utils.FormatMessage(args...))
 }
 
 func assert(test interface{}, args ...interface{}) (string, error) {
@@ -514,7 +514,17 @@ func assert(test interface{}, args ...interface{}) (string, error) {
 		if len(args) == 0 {
 			args = []interface{}{"Assertion failed"}
 		}
-		return raise(args[0], args[1:]...)
+		return raise(args...)
 	}
 	return "", nil
+}
+
+func assertWarning(test interface{}, args ...interface{}) string {
+	if isZero(test) {
+		if len(args) == 0 {
+			args = []interface{}{"Assertion failed"}
+		}
+		Log.Warning(utils.FormatMessage(args...))
+	}
+	return ""
 }

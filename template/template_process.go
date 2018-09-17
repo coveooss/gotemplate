@@ -82,6 +82,22 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			content = strings.Replace(content, noValue, noValueRepl, -1)
 			content = strings.Replace(content, nilValue, nilValueRepl, -1)
 		}
+
+		defer func() {
+			// If we get errors and the file is not an explicit gotemplate file, or contains
+			// gotemplate! or the strict error check mode is not enabled, we simply
+			// add a trace with the error content and return the content unaltered
+			if err != nil {
+				strictMode := t.options[StrictErrorCheck]
+				strictMode = strictMode || strings.Contains(originalContent, explicitGoTemplate)
+				extension := filepath.Ext(source)
+				strictMode = strictMode || (extension != "" && strings.Contains(".gt,.gte,.template", extension))
+				if !(strictMode) {
+					Log.Noticef("Ignored gotemplate error in %s (file left unchanged):\n%s", color.CyanString(source), err.Error())
+					result, err = originalContent, nil
+				}
+			}
+		}()
 	}
 
 	// This local functions handle all errors from Parse or Execute and tries to fix the template to allow discovering
@@ -244,10 +260,18 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		newTemplate.Option("missingkey=error")
 	}
 
-	if newTemplate, err = newTemplate.Parse(content); err != nil {
+	func() {
+		// Here, we invoke the parser within a pseudo func because we cannot
+		// call the parser without locking
+		templateMutex.Lock()
+		defer templateMutex.Unlock()
+		newTemplate, err = newTemplate.Parse(content)
+	}()
+	if err != nil {
 		log.Infof("%s(%d): Parsing error %v", source, retryCount, err)
 		return handleError(err)
 	}
+
 	var out bytes.Buffer
 	workingContext := t.context
 	if cloneContext {
@@ -331,9 +355,9 @@ func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (
 
 	mode := must(os.Stat(template)).(os.FileInfo).Mode()
 	if !isTemplate && !t.options[Overwrite] {
-		newName := template + ".originalSourceLines"
+		newName := template + ".original"
 		log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
-		must(os.Rename(template, template+".originalSourceLines"))
+		must(os.Rename(template, template+".original"))
 	}
 
 	if sourceFolder != targetFolder {
@@ -396,7 +420,7 @@ func (t Template) printResult(source, target, result string) (err error) {
 	}
 
 	if !t.isTemplate(source) && !t.options[Overwrite] {
-		source += ".originalSourceLines"
+		source += ".original"
 	}
 
 	source = utils.Relative(t.folder, source)

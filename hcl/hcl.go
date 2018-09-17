@@ -101,9 +101,13 @@ func SingleContext(context ...interface{}) interface{} {
 	return context
 }
 
-type helperBase = implementation.BaseHelper
-type helperList = implementation.ListHelper
-type helperDict = implementation.DictHelper
+type (
+	helperBase = implementation.BaseHelper
+	helperList = implementation.ListHelper
+	helperDict = implementation.DictHelper
+)
+
+var needConversionImpl = implementation.NeedConversion
 
 //go:generate genny -pkg=hcl -in=../collections/implementation/generic.go -out=generated_impl.go gen "ListTypeName=List DictTypeName=Dictionary base=hcl"
 //go:generate genny -pkg=hcl -in=../collections/implementation/generic_test.go -out=generated_test.go gen "base=hcl"

@@ -7,11 +7,11 @@
 
 | Razor                                           | Gotemplate                                          | Note
 | ---                                             | ---                                                 | ---
-| `{{- assert (isNil $.razorDict) "$.razorDict has already been declared, use = to overwrite existing value" }}{{- set $ "razorDict" (dict "test" 1 "test2" 2) }}`    | `{{- set $ "goDict" (dict "test" 1 "test2" 2) }}`   | Creation
-| `{{- assert (isNil $.razorDict2) "$.razorDict2 has already been declared, use = to overwrite existing value" }}{{- set $ "razorDict2" (dict "test3" 3 "test5" 5) }}`  | `{{- set $ "goDict2" (dict "test3" 3 "test5" 5) }}` | Creation
+| `{{- assertWarning (isNil $.razorDict) "$.razorDict has already been declared, use = to overwrite existing value" }}{{- set $ "razorDict" (dict "test" 1 "test2" 2) }}`    | `{{- set $ "goDict" (dict "test" 1 "test2" 2) }}`   | Creation
+| `{{- assertWarning (isNil $.razorDict2) "$.razorDict2 has already been declared, use = to overwrite existing value" }}{{- set $ "razorDict2" (dict "test3" 3 "test5" 5) }}`  | `{{- set $ "goDict2" (dict "test3" 3 "test5" 5) }}` | Creation
 | `{{ set .razorDict "test2" 3 }}`                 | `{{- set .goDict "test2" 3 }}`                      | Update
-| `{{ set .razorDict "test3" 4 }}`                 | `{{- set .goDict "test3" 4 }}`                      | Update 
-| `{{- assert (not (isNil $.razorDict)) "$.razorDict does not exist, use := to declare new variable" }}{{- set $ "razorDict" (merge $.razorDict $.razorDict2) }}`    | `{{- set $ "goDict" (merge .goDict .goDict2) }}`    | Merge (First dict has priority)
+| `{{ set .razorDict "test3" 4 }}`                 | `{{- set .goDict "test3" 4 }}`                      | Update
+| `{{- assertWarning (not (isNil $.razorDict)) "$.razorDict does not exist, use := to declare new variable" }}{{- set $ "razorDict" (merge $.razorDict $.razorDict2) }}`    | `{{- set $ "goDict" (merge .goDict .goDict2) }}`    | Merge (First dict has priority)
 | `{{ $.razorDict.test3 }}`                             | `{{ $.goDict.test3 }}`                              | Should be `4`
 | `{{ $.razorDict.test5 }}`                             | `{{ $.goDict.test5 }}`                              | Should be `5`
 | `{{ extract $.razorDict "test" "test3" "undef" }}`          | `{{ extract $.goDict "test" "test3" "undef" }}`     | Extract values, should be `[1,4,null]`
@@ -51,9 +51,9 @@
 
 | Razor                                            | Gotemplate                                             | Note
 | ---                                              | ---                                                    | ---
-| `{{- assert (isNil $.razorList) "$.razorList has already been declared, use = to overwrite existing value" }}{{- set $ "razorList" (list "test1" "test2" "test3") }}` | `{{- set $ "goList" (list "test1" "test2" "test3") }}` | Creation
-| `{{- assert (not (isNil $.razorList)) "$.razorList does not exist, use := to declare new variable" }}{{- set $ "razorList" (append $.razorList "test4") }}`       | `{{- set $ "goList" (append .goList "test4") }}`       | Append
-| `{{- assert (not (isNil $.razorList)) "$.razorList does not exist, use := to declare new variable" }}{{- set $ "razorList" (prepend $.razorList "test0") }}`      | `{{- set $ "goList" (prepend .goList "test0") }}`      | Prepend
+| `{{- assertWarning (isNil $.razorList) "$.razorList has already been declared, use = to overwrite existing value" }}{{- set $ "razorList" (list "test1" "test2" "test3") }}` | `{{- set $ "goList" (list "test1" "test2" "test3") }}` | Creation
+| `{{- assertWarning (not (isNil $.razorList)) "$.razorList does not exist, use := to declare new variable" }}{{- set $ "razorList" (append $.razorList "test4") }}`       | `{{- set $ "goList" (append .goList "test4") }}`       | Append
+| `{{- assertWarning (not (isNil $.razorList)) "$.razorList does not exist, use := to declare new variable" }}{{- set $ "razorList" (prepend $.razorList "test0") }}`      | `{{- set $ "goList" (prepend .goList "test0") }}`      | Prepend
 | `{{ $.razorList }}`                                    | `{{ $.goList }}`                                       | Should be `["test0","test1","test2","test3","test4"]`
 | `{{ contains $.razorList "test1" "test2" }}`        | `{{- contains .goList "test1" "test2" }}`              | Check if element is in list
 | `{{ has "test1" $.razorList }}`                      | `{{- has "test1" .goList }}`                           | has is an alias to contains

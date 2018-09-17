@@ -28,7 +28,12 @@ func (l xmlList) Len() int                         { return len(l) }
 func (l xmlList) New(args ...interface{}) xmlIList { return xmlListHelper.NewList(args...) }
 func (l xmlList) Reverse() xmlIList                { return xmlListHelper.Reverse(l) }
 func (l xmlList) Strings() []string                { return xmlListHelper.GetStrings(l) }
+func (l xmlList) TypeName() string                 { return "Xml" }
 func (l xmlList) Unique() xmlIList                 { return xmlListHelper.Unique(l) }
+
+func (l xmlList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return xmlDictHelper, xmlListHelper
+}
 
 func (l xmlList) Append(values ...interface{}) xmlIList {
 	return xmlListHelper.Add(l, false, values...)
@@ -75,6 +80,11 @@ func (d xmlDict) KeysAsString() []string             { return xmlDictHelper.Keys
 func (d xmlDict) GetValues() xmlIList                { return xmlDictHelper.GetValues(d) }
 func (d xmlDict) Set(key, v interface{}) xmlIDict    { return xmlDictHelper.Set(d, key, v) }
 func (d xmlDict) Transpose() xmlIDict                { return xmlDictHelper.Transpose(d) }
+func (d xmlDict) TypeName() string                   { return "Xml" }
+
+func (d xmlDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
+	return xmlDictHelper, xmlListHelper
+}
 
 func (d xmlDict) Default(key, defVal interface{}) interface{} {
 	return xmlDictHelper.Default(d, key, defVal)
@@ -95,8 +105,11 @@ func (d xmlDict) Omit(key interface{}, otherKeys ...interface{}) xmlIDict {
 // Generic helpers to simplify physical implementation
 func xmlListConvert(list xmlIList) xmlIList { return xmlList(list.AsArray()) }
 func xmlDictConvert(dict xmlIDict) xmlIDict { return xmlDict(dict.AsMap()) }
+func needConversion(object interface{}, strict bool) bool {
+	return needConversionImpl(object, strict, "Xml")
+}
 
-var xmlHelper = helperBase{ConvertList: xmlListConvert, ConvertDict: xmlDictConvert}
+var xmlHelper = helperBase{ConvertList: xmlListConvert, ConvertDict: xmlDictConvert, NeedConversion: needConversion}
 var xmlListHelper = helperList{BaseHelper: xmlHelper}
 var xmlDictHelper = helperDict{BaseHelper: xmlHelper}
 

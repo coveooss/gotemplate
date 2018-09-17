@@ -9,6 +9,7 @@ Count() int
 Create(...int) IGenericList
 CreateDict(...int) IDictionary
 Get(int) interface{}
+GetHelpers() IDictionaryHelper, IListHelper
 Intersect(...interface{}) IGenericList
 Len() int
 New(...interface{}) IGenericList
@@ -17,6 +18,7 @@ Reverse() IGenericList
 Set(int, interface{}) IGenericList, error
 String() string
 Strings() []string
+TypeName() string
 Union(...interface{}) IGenericList
 Unique() IGenericList
 Without(...interface{}) IGenericList

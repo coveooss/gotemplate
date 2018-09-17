@@ -9,6 +9,7 @@ Default(interface{}, interface{}) interface{}
 Delete(interface{}, ...interface{}) IDictionary, error
 Flush(...interface{}) IDictionary
 Get(interface{}) interface{}
+GetHelpers() IDictionaryHelper, IListHelper
 GetKeys() IGenericList
 GetValues() IGenericList
 Has(interface{}) bool
@@ -20,4 +21,5 @@ Omit(interface{}, ...interface{}) IDictionary
 Set(interface{}, interface{}) IDictionary
 String() string
 Transpose() IDictionary
+TypeName() string
 ```
