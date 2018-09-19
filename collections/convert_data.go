@@ -54,7 +54,7 @@ func ConvertData(data string, out interface{}) (err error) {
 	}()
 
 	for _, key := range AsDictionary(TypeConverters).KeysAsString() {
-		err = TypeConverters[key]([]byte(data), out)
+		err = TypeConverters[key.Str()]([]byte(data), out)
 		if err == nil {
 			return
 		}
@@ -99,6 +99,7 @@ func toBash(value interface{}, level int) (result string) {
 		for i := range results {
 			results[i] = quote(results[i])
 		}
+		fmt.Println(results)
 		switch level {
 		case 2:
 			result = strings.Join(results, ",")
@@ -114,6 +115,7 @@ func toBash(value interface{}, level int) (result string) {
 		switch level {
 		case 0:
 			for i, key := range value.KeysAsString() {
+				key := key.Str()
 				val := toBash(vMap[key], level+1)
 				if _, err := TryAsList(vMap[key]); err == nil {
 					results[i] = fmt.Sprintf("declare -a %[1]s\n%[1]s=%[2]v", key, val)
@@ -126,6 +128,7 @@ func toBash(value interface{}, level int) (result string) {
 			result = strings.Join(results, "\n")
 		case 1:
 			for i, key := range value.KeysAsString() {
+				key := key.Str()
 				val := toBash(vMap[key], level+1)
 				val = strings.Replace(val, `$`, `\$`, -1)
 				results[i] = fmt.Sprintf("[%s]=%s", key, val)
@@ -133,6 +136,7 @@ func toBash(value interface{}, level int) (result string) {
 			result = fmt.Sprintf("(%s)", strings.Join(results, " "))
 		default:
 			for i, key := range value.KeysAsString() {
+				key := key.Str()
 				val := toBash(vMap[key], level+1)
 				results[i] = fmt.Sprintf("%s=%s", key, quote(val))
 			}
@@ -144,7 +148,7 @@ func toBash(value interface{}, level int) (result string) {
 }
 
 // ToNativeRepresentation converts any object to native (literals, maps, slices)
-func ToNativeRepresentation(value interface{}) (x interface{}) {
+func ToNativeRepresentation(value interface{}) interface{} {
 	if value == nil {
 		return nil
 	}
@@ -159,7 +163,7 @@ func ToNativeRepresentation(value interface{}) (x interface{}) {
 	}
 	switch typ.Kind() {
 	case reflect.String:
-		return value
+		return reflect.ValueOf(value).String()
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
@@ -250,27 +254,6 @@ func ToNativeRepresentation(value interface{}) (x interface{}) {
 		fmt.Fprintf(os.Stderr, "Unknown type %T %v : %v\n", value, typ.Kind(), value)
 		return fmt.Sprintf("%v", value)
 	}
-}
-
-// IsEmptyValue determines if a value is a zero value
-func IsEmptyValue(v reflect.Value) bool {
-	switch v.Kind() {
-	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
-		return v.Len() == 0
-	case reflect.Bool:
-		return !v.Bool()
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return v.Int() == 0
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		return v.Uint() == 0
-	case reflect.Float32, reflect.Float64:
-		return v.Float() == 0
-	case reflect.Interface, reflect.Ptr:
-		return v.IsNil()
-	case reflect.Invalid:
-		return true
-	}
-	return false
 }
 
 // IsExported reports whether the identifier is exported.

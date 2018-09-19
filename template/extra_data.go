@@ -53,7 +53,7 @@ var dataFuncsBase = dictionary{
 	"set":       set,
 	"slice":     slice,
 	"string":    toString,
-	"undef":     utils.IfUndef,
+	"undef":     collections.IfUndef,
 	"unique":    unique,
 	"union":     union,
 	"unset":     unset,

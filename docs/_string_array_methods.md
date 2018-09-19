@@ -3,6 +3,7 @@ Center(int) StringArray
 Indent(string) StringArray
 IndentN(int) StringArray
 Join(interface{}) String
+Sorted() StringArray
 Str() []string
 Strings() []string
 Title() StringArray

@@ -20,7 +20,7 @@ var utilsFuncs = dictionary{
 	"concat":     collections.Concat,
 	"formatList": utils.FormatList,
 	"id":         id,
-	"iif":        utils.IIf,
+	"iif":        collections.IIf,
 	"joinLines":  collections.JoinLines,
 	"lorem":      lorem,
 	"mergeList":  utils.MergeLists,

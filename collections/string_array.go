@@ -1,7 +1,9 @@
 package collections
 
 import (
-	"reflect"
+	"fmt"
+	"sort"
+	"strings"
 	"unicode"
 )
 
@@ -95,7 +97,14 @@ func (as StringArray) UnIndent() StringArray { return as.apply(String.UnIndent) 
 
 // Join joins all lines in the array using sep as the join string.
 func (as StringArray) Join(sep interface{}) String {
-	return String(reflect.ValueOf(sep).String()).Join(ToStrings(as)...)
+	return String(strings.Join(as.Strings(), fmt.Sprint(sep)))
+}
+
+// Sorted apply a sort on the array.
+func (as StringArray) Sorted() StringArray {
+	sorted := as.Strings()
+	sort.Strings(sorted)
+	return stringArray(sorted)
 }
 
 // Utility functions to apply String methods on each element of an array

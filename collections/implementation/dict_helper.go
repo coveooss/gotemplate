@@ -2,8 +2,6 @@ package implementation
 
 import (
 	"fmt"
-	"sort"
-	"strings"
 
 	"github.com/coveo/gotemplate/collections"
 	"github.com/imdario/mergo"
@@ -12,11 +10,10 @@ import (
 func (d baseDict) String() string {
 	// Unlike go maps, we render dictionary keys in order
 	keys := d.KeysAsString()
-	values := make([]string, d.Len())
-	for i := range values {
-		values[i] = fmt.Sprintf("%s:%v", keys[i], d.Get(keys[i]))
+	for i, k := range keys {
+		keys[i] = str(fmt.Sprintf("%s:%v", k, d.Get(k)))
 	}
-	return fmt.Sprintf("dict[%s]", strings.Join(values, " "))
+	return fmt.Sprintf("dict[%s]", keys.Join(" "))
 }
 
 // DictHelper implements basic functionalities required for IDictionary.
@@ -72,14 +69,28 @@ func (dh DictHelper) Flush(dict baseIDict, keys []interface{}) baseIDict {
 }
 
 // Get returns the value associated with key.
-func (dh DictHelper) Get(dict baseIDict, key interface{}) interface{} {
-	return dict.AsMap()[fmt.Sprint(key)]
+func (dh DictHelper) Get(dict baseIDict, keys []interface{}) interface{} {
+	switch len(keys) {
+	case 0:
+		return nil
+	case 1:
+		return dict.AsMap()[fmt.Sprint(keys[0])]
+	}
+	result := dict.CreateList(len(keys))
+	for i := range result.AsArray() {
+		result.Set(i, dict.Get(keys[i]))
+	}
+	return result
 }
 
-// Has returns true if the dictionary object contains the key.
-func (dh DictHelper) Has(dict baseIDict, key interface{}) bool {
-	_, ok := dict.AsMap()[fmt.Sprint(key)]
-	return ok
+// Has returns true if the dictionary object contains all the keys.
+func (dh DictHelper) Has(dict baseIDict, keys []interface{}) bool {
+	for _, key := range keys {
+		if _, ok := dict.AsMap()[fmt.Sprint(key)]; !ok {
+			return false
+		}
+	}
+	return dict.Len() > 0
 }
 
 // GetKeys returns the keys in the dictionary in alphabetical order.
@@ -94,13 +105,12 @@ func (dh DictHelper) GetKeys(dict baseIDict) baseIList {
 }
 
 // KeysAsString returns the keys in the dictionary in alphabetical order.
-func (dh DictHelper) KeysAsString(dict baseIDict) []string {
-	keys := make([]string, 0, dict.Len())
+func (dh DictHelper) KeysAsString(dict baseIDict) collections.StringArray {
+	keys := make(collections.StringArray, 0, dict.Len())
 	for key := range dict.AsMap() {
-		keys = append(keys, key)
+		keys = append(keys, str(key))
 	}
-	sort.Strings(keys)
-	return keys
+	return keys.Sorted()
 }
 
 // Merge merges the other dictionaries into the current dictionary.
@@ -128,6 +138,16 @@ func (dh DictHelper) Omit(dict baseIDict, keys []interface{}) baseIDict {
 		}
 	}
 	return dh.Clone(dict, keep)
+}
+
+// Pop returns and remove the objects with the specified keys.
+func (dh DictHelper) Pop(dict baseIDict, keys []interface{}) interface{} {
+	if len(keys) == 0 {
+		return nil
+	}
+	result := dh.Get(dict, keys)
+	dh.delete(dict, keys, false)
+	return result
 }
 
 // Set sets key to value in the dictionary.

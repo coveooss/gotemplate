@@ -10,6 +10,9 @@ import (
 
 var must = errors.Must
 var trapError = errors.Trap
+var iif = collections.IIf
+var ifUndef = collections.IfUndef
+var defval = collections.Default
 
 type (
 	iList       = collections.IGenericList

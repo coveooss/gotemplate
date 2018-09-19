@@ -17,12 +17,17 @@ func (l baseList) Contains(values ...interface{}) bool { return baseListHelper.C
 func (l baseList) Count() int                          { return len(l) }
 func (l baseList) Create(args ...int) baseIList        { return baseListHelper.CreateList(args...) }
 func (l baseList) CreateDict(args ...int) baseIDict    { return baseListHelper.CreateDictionary(args...) }
-func (l baseList) Get(index int) interface{}           { return baseListHelper.GetIndex(l, index) }
+func (l baseList) First() interface{}                  { return baseListHelper.GetIndexes(l, 0) }
+func (l baseList) Get(indexes ...int) interface{}      { return baseListHelper.GetIndexes(l, indexes...) }
+func (l baseList) Has(values ...interface{}) bool      { return l.Contains(values...) }
+func (l baseList) Last() interface{}                   { return baseListHelper.GetIndexes(l, len(l)-1) }
 func (l baseList) Len() int                            { return len(l) }
 func (l baseList) New(args ...interface{}) baseIList   { return baseListHelper.NewList(args...) }
 func (l baseList) Reverse() baseIList                  { return baseListHelper.Reverse(l) }
 func (l baseList) Strings() []string                   { return baseListHelper.GetStrings(l) }
-func (l baseList) TypeName() string                    { return "base" }
+func (l baseList) StringArray() strArray               { return baseListHelper.GetStringArray(l) }
+func (l baseList) TypeName() str                       { return "base" }
+func (l baseList) Join(sep interface{}) str            { return l.StringArray().Join(sep) }
 func (l baseList) Unique() baseIList                   { return baseListHelper.Unique(l) }
 
 func (l baseList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -37,8 +42,19 @@ func (l baseList) Intersect(values ...interface{}) baseIList {
 	return baseListHelper.Intersect(l, values...)
 }
 
+func (l baseList) Pop(indexes ...int) (interface{}, baseIList) {
+	if len(indexes) == 0 {
+		indexes = []int{len(l) - 1}
+	}
+	return l.Get(indexes...), l.Remove(indexes...)
+}
+
 func (l baseList) Prepend(values ...interface{}) baseIList {
 	return baseListHelper.Add(l, true, values...)
+}
+
+func (l baseList) Remove(indexes ...int) baseIList {
+	return baseListHelper.Remove(l, indexes...)
 }
 
 func (l baseList) Set(i int, v interface{}) (baseIList, error) {
@@ -67,14 +83,15 @@ func (d baseDict) Clone(keys ...interface{}) baseIDict { return baseDictHelper.C
 func (d baseDict) Create(args ...int) baseIDict        { return baseListHelper.CreateDictionary(args...) }
 func (d baseDict) CreateList(args ...int) baseIList    { return baseHelper.CreateList(args...) }
 func (d baseDict) Flush(keys ...interface{}) baseIDict { return baseDictHelper.Flush(d, keys) }
-func (d baseDict) Get(key interface{}) interface{}     { return baseDictHelper.Get(d, key) }
-func (d baseDict) Has(key interface{}) bool            { return baseDictHelper.Has(d, key) }
+func (d baseDict) Get(keys ...interface{}) interface{} { return baseDictHelper.Get(d, keys) }
+func (d baseDict) Has(keys ...interface{}) bool        { return baseDictHelper.Has(d, keys) }
 func (d baseDict) GetKeys() baseIList                  { return baseDictHelper.GetKeys(d) }
-func (d baseDict) KeysAsString() []string              { return baseDictHelper.KeysAsString(d) }
+func (d baseDict) KeysAsString() strArray              { return baseDictHelper.KeysAsString(d) }
+func (d baseDict) Pop(keys ...interface{}) interface{} { return baseDictHelper.Pop(d, keys) }
 func (d baseDict) GetValues() baseIList                { return baseDictHelper.GetValues(d) }
 func (d baseDict) Set(key, v interface{}) baseIDict    { return baseDictHelper.Set(d, key, v) }
 func (d baseDict) Transpose() baseIDict                { return baseDictHelper.Transpose(d) }
-func (d baseDict) TypeName() string                    { return "base" }
+func (d baseDict) TypeName() str                       { return "base" }
 
 func (d baseDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return baseDictHelper, baseListHelper
@@ -112,3 +129,10 @@ var DictionaryHelper collections.IDictionaryHelper = baseDictHelper
 
 // GenericListHelper gives public access to the basic list functions
 var GenericListHelper collections.IListHelper = baseListHelper
+
+type (
+	str      = collections.String
+	strArray = collections.StringArray
+)
+
+var iif = collections.IIf

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/coveo/gotemplate/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 var strFixture = xmlList(xmlListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
@@ -150,19 +151,23 @@ func Test_list_Get(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name  string
-		l     xmlList
-		index int
-		want  interface{}
+		name    string
+		l       xmlList
+		indexes []int
+		want    interface{}
 	}{
-		{"Empty List", xmlList{}, 0, nil},
-		{"Negative index", xmlList{}, -1, nil},
-		{"List of int", xmlList{1, 2, 3}, 0, 1},
-		{"List of string", strFixture, 1, "World,"},
+		{"Empty List", xmlList{}, []int{0}, nil},
+		{"Negative index", xmlList{}, []int{-1}, nil},
+		{"List of int", xmlList{1, 2, 3}, []int{0}, 1},
+		{"List of string", strFixture, []int{1}, "World,"},
+		{"Get last", strFixture, []int{-1}, "Bar!"},
+		{"Get before last", strFixture, []int{-2}, "Foo"},
+		{"A way to before last", strFixture, []int{-12}, nil},
+		{"Get nothing", strFixture, nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.index); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.l.Get(tt.indexes...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("XmlList.Get() = %v, want %v", got, tt.want)
 			}
 		})
@@ -208,24 +213,19 @@ func Test_CreateList(t *testing.T) {
 		{"Too much args", []int{0, 10, 1}, nil, true},
 	}
 	for _, tt := range tests {
-		var got xmlIList
 		var err error
-		func() {
+		t.Run(tt.name, func(t *testing.T) {
 			defer func() { err = errors.Trap(err, recover()) }()
-			got = xmlListHelper.CreateList(tt.args...)
-		}()
+			got := xmlListHelper.CreateList(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got.Capacity() != tt.want.Cap() {
+				t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
+			}
+		})
 		if (err != nil) != tt.wantErr {
 			t.Errorf("CreateList() error = %v, wantErr %v", err, tt.wantErr)
-			return
-		}
-		if err != nil {
-			return
-		}
-		if !reflect.DeepEqual(got, tt.want) {
-			t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-		}
-		if got.Capacity() != tt.want.Cap() {
-			t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
 		}
 	}
 }
@@ -298,21 +298,18 @@ func Test_list_CreateDict(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got xmlIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.l.CreateDict(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.l.CreateDict(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("XmlList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("XmlList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("XmlList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -336,6 +333,69 @@ func Test_list_Contains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("XmlList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got := tt.l.Has(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("XmlList.Has():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_First_Last(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		l         xmlList
+		wantFirst interface{}
+		wantLast  interface{}
+	}{
+		{"Nil", nil, nil, nil},
+		{"Empty", xmlList{}, nil, nil},
+		{"One element", xmlList{1}, 1, 1},
+		{"Many element ", xmlList{1, "two", 3.1415, "four"}, 1, "four"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.First(); !reflect.DeepEqual(got, tt.wantFirst) {
+				t.Errorf("XmlList.First():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantFirst)
+			}
+			if got := tt.l.Last(); !reflect.DeepEqual(got, tt.wantLast) {
+				t.Errorf("XmlList.Last():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantLast)
+			}
+		})
+	}
+}
+
+func Test_list_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		l        xmlList
+		args     []int
+		want     interface{}
+		wantList xmlList
+	}{
+		{"Nil", nil, nil, nil, xmlList{}},
+		{"Empty", xmlList{}, nil, nil, xmlList{}},
+		{"Non existent", xmlList{}, []int{1}, nil, xmlList{}},
+		{"Empty with args", xmlList{}, []int{1, 3}, xmlList{nil, nil}, xmlList{}},
+		{"List with bad index", xmlList{0, 1, 2, 3, 4, 5}, []int{1, 3, 8}, xmlList{1, 3, nil}, xmlList{0, 2, 4, 5}},
+		{"Pop last element", xmlList{0, 1, 2, 3, 4, 5}, nil, 5, xmlList{0, 1, 2, 3, 4}},
+		{"Pop before last", xmlList{0, 1, 2, 3, 4, 5}, []int{-2}, 4, xmlList{0, 1, 2, 3, 5}},
+		{"Pop first element", xmlList{0, 1, 2, 3, 4, 5}, []int{0}, 0, xmlList{1, 2, 3, 4, 5}},
+		{"Pop all", xmlList{0, 1, 2, 3}, []int{0, 1, 2, 3}, xmlList{0, 1, 2, 3}, xmlList{}},
+		{"Pop same element many time", xmlList{0, 1, 2, 3}, []int{1, 1, 2, 2}, xmlList{1, 1, 2, 2}, xmlList{0, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotL := tt.l.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("XmlList.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(gotL, tt.wantList) {
+				t.Errorf("XmlList.Pop():\ngotList %[1]v (%[1]T)\n   want %[2]v (%[2]T)", gotL, tt.wantList)
 			}
 		})
 	}
@@ -628,21 +688,18 @@ func Test_dict_Create(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got xmlIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.d.Create(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.d.Create(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("XmlDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("XmlList.Create() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("XmlList.Create() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -749,7 +806,7 @@ func Test_dict_Keys(t *testing.T) {
 		want xmlIList
 	}{
 		{"Empty", nil, xmlList{}},
-		{"Map", dictFixture, xmlList{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Map", dictFixture, xmlList{str("float"), str("int"), str("list"), str("listInt"), str("map"), str("mapInt"), str("string")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -766,10 +823,10 @@ func Test_dict_KeysAsString(t *testing.T) {
 	tests := []struct {
 		name string
 		d    xmlDict
-		want []string
+		want strArray
 	}{
-		{"Empty", nil, []string{}},
-		{"Map", dictFixture, []string{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Empty", nil, strArray{}},
+		{"Map", dictFixture, strArray{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -847,6 +904,35 @@ func Test_dict_Values(t *testing.T) {
 	}
 }
 
+func Test_dict_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		d          xmlDict
+		args       []interface{}
+		want       interface{}
+		wantObject xmlIDict
+	}{
+		{"Nil", dictFixture, nil, nil, dictFixture},
+		{"Pop one element", dictFixture, []interface{}{"float"}, 1.23, dictFixture.Omit("float")},
+		{"Pop missing element", dictFixture, []interface{}{"undefined"}, nil, dictFixture},
+		{"Pop element twice", dictFixture, []interface{}{"int", "int", "string"}, xmlList{123, 123, "Foo bar"}, dictFixture.Omit("int", "string")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.d.Clone()
+			got := d.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("XmlDict.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(d, tt.wantObject) {
+				t.Errorf("XmlDict.Pop() object:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", d, tt.wantObject)
+			}
+		})
+	}
+}
+
 func Test_dict_Add(t *testing.T) {
 	t.Parallel()
 
@@ -909,10 +995,10 @@ func Test_dict_Transpose(t *testing.T) {
 		want xmlIDict
 	}{
 		{"Empty", nil, xmlDict{}},
-		{"Base", xmlDict{"A": 1}, xmlDict{"1": "A"}},
-		{"Multiple", xmlDict{"A": 1, "B": 2, "C": 1}, xmlDict{"1": xmlList{"A", "C"}, "2": "B"}},
-		{"List", xmlDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, xmlDict{"1": "A", "2": xmlList{"A", "B"}, "3": xmlList{"A", "C"}}},
-		{"Complex", xmlDict{"A": xmlDict{"1": 1, "2": 2}, "B": 2, "C": 3}, xmlDict{"2": "B", "3": "C", fmt.Sprint(xmlDict{"1": 1, "2": 2}): "A"}},
+		{"Base", xmlDict{"A": 1}, xmlDict{"1": str("A")}},
+		{"Multiple", xmlDict{"A": 1, "B": 2, "C": 1}, xmlDict{"1": xmlList{str("A"), str("C")}, "2": str("B")}},
+		{"List", xmlDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, xmlDict{"1": str("A"), "2": xmlList{str("A"), str("B")}, "3": xmlList{str("A"), str("C")}}},
+		{"Complex", xmlDict{"A": xmlDict{"1": 1, "2": 2}, "B": 2, "C": 3}, xmlDict{"2": str("B"), "3": str("C"), fmt.Sprint(xmlDict{"1": 1, "2": 2}): str("A")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -921,4 +1007,60 @@ func Test_dict_Transpose(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_XmlList_Get(t *testing.T) {
+	type args struct {
+		indexes []int
+	}
+	tests := []struct {
+		name string
+		l    xmlList
+		args args
+		want interface{}
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("XmlList.Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_XmlList_TypeName(t *testing.T) {
+	tests := []struct {
+		name string
+		l    xmlList
+		want str
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("XmlList.TypeName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_Xml_TypeName(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, xmlList{}.TypeName(), str("Xml")) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, xmlDict{}.TypeName(), str("Xml")) })
+}
+
+func Test_Xml_GetHelper(t *testing.T) {
+	t.Run("list", func(t *testing.T) {
+		gotD, gotL := xmlList{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), xmlDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), xmlListHelper.CreateList().TypeName())
+	})
+	t.Run("dict", func(t *testing.T) {
+		gotD, gotL := xmlDict{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), xmlDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), xmlListHelper.CreateList().TypeName())
+	})
 }

@@ -7,9 +7,9 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/template"
-	"github.com/coveo/gotemplate/utils"
 	goerrors "github.com/go-errors/errors"
 )
 
@@ -76,4 +76,4 @@ func extend(values []string) []string {
 	return result
 }
 
-var iif = utils.IIf
+var iif = collections.IIf

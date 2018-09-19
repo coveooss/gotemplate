@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/collections/implementation"
 	"github.com/coveo/gotemplate/json"
 )
@@ -13,6 +14,9 @@ type l = implementation.ListTypeName
 type j = json.List
 
 func Test_convertArgs(t *testing.T) {
+	// t.Parallel()
+	collections.DictionaryHelper = implementation.DictionaryHelper
+	collections.ListHelper = implementation.GenericListHelper
 	tests := []struct {
 		name string
 		arg1 interface{}
@@ -42,6 +46,9 @@ func Test_convertArgs(t *testing.T) {
 }
 
 func Test_toListOfFloats(t *testing.T) {
+	// t.Parallel()
+	collections.DictionaryHelper = implementation.DictionaryHelper
+	collections.ListHelper = implementation.GenericListHelper
 	tests := []struct {
 		name       string
 		values     iList
@@ -71,6 +78,7 @@ func Test_toListOfFloats(t *testing.T) {
 }
 
 func Test_asFloats(t *testing.T) {
+	t.Parallel()
 	type a = []interface{}
 	type l = implementation.ListTypeName
 	type j = json.List

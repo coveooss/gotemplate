@@ -75,7 +75,9 @@ func (s String) IndexRune(r rune) int { return strings.IndexRune(string(s), r) }
 
 // Join concatenates the elements of array to create a single string. The string
 // object is placed between elements in the resulting string.
-func (s String) Join(array ...string) String { return String(strings.Join(array, string(s))) }
+func (s String) Join(array ...interface{}) String {
+	return stringArray(ToStrings(array)).Join(string(s))
+}
 
 // LastIndex returns the index of the last instance of substr in s, or -1 if substr is not present in s.
 func (s String) LastIndex(substr string) int { return strings.LastIndex(string(s), substr) }
@@ -225,9 +227,12 @@ func (s String) Str() string { return string(s) }
 // Len returns the length of the string.
 func (s String) Len() int { return len(s) }
 
-// Escape returns the representation of the string with escape characters
+// Quote returns the string between quotes.
+func (s String) Quote() String { return String(fmt.Sprintf("%q", s)) }
+
+// Escape returns the representation of the string with escape characters.
 func (s String) Escape() String {
-	q := fmt.Sprintf("%q", s.Str())
+	q := s.Quote()
 	return String(q[1 : len(q)-1])
 }
 
@@ -428,7 +433,7 @@ func (s String) AddLineNumber(space int) String {
 	for i := range lines {
 		lines[i] = String(fmt.Sprintf("%*d %s", space, i+1, lines[i]))
 	}
-	return String("\n").Join(lines.Strings()...)
+	return lines.Join("\n")
 }
 
 // ParseBool returns true if variable exist and is not clearly a false value

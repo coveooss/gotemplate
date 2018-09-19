@@ -26,6 +26,9 @@ func Print(err error) {
 // Must traps errors and return the remaining results to the caller
 // If there is an error, a panic is issued
 func Must(result ...interface{}) interface{} {
+	if len(result) == 0 {
+		return nil
+	}
 	last := len(result) - 1
 	err := result[last]
 

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/coveo/gotemplate/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 var strFixture = jsonList(jsonListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
@@ -150,19 +151,23 @@ func Test_list_Get(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name  string
-		l     jsonList
-		index int
-		want  interface{}
+		name    string
+		l       jsonList
+		indexes []int
+		want    interface{}
 	}{
-		{"Empty List", jsonList{}, 0, nil},
-		{"Negative index", jsonList{}, -1, nil},
-		{"List of int", jsonList{1, 2, 3}, 0, 1},
-		{"List of string", strFixture, 1, "World,"},
+		{"Empty List", jsonList{}, []int{0}, nil},
+		{"Negative index", jsonList{}, []int{-1}, nil},
+		{"List of int", jsonList{1, 2, 3}, []int{0}, 1},
+		{"List of string", strFixture, []int{1}, "World,"},
+		{"Get last", strFixture, []int{-1}, "Bar!"},
+		{"Get before last", strFixture, []int{-2}, "Foo"},
+		{"A way to before last", strFixture, []int{-12}, nil},
+		{"Get nothing", strFixture, nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.index); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.l.Get(tt.indexes...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("JsonList.Get() = %v, want %v", got, tt.want)
 			}
 		})
@@ -208,24 +213,19 @@ func Test_CreateList(t *testing.T) {
 		{"Too much args", []int{0, 10, 1}, nil, true},
 	}
 	for _, tt := range tests {
-		var got jsonIList
 		var err error
-		func() {
+		t.Run(tt.name, func(t *testing.T) {
 			defer func() { err = errors.Trap(err, recover()) }()
-			got = jsonListHelper.CreateList(tt.args...)
-		}()
+			got := jsonListHelper.CreateList(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got.Capacity() != tt.want.Cap() {
+				t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
+			}
+		})
 		if (err != nil) != tt.wantErr {
 			t.Errorf("CreateList() error = %v, wantErr %v", err, tt.wantErr)
-			return
-		}
-		if err != nil {
-			return
-		}
-		if !reflect.DeepEqual(got, tt.want) {
-			t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-		}
-		if got.Capacity() != tt.want.Cap() {
-			t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
 		}
 	}
 }
@@ -298,21 +298,18 @@ func Test_list_CreateDict(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got jsonIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.l.CreateDict(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.l.CreateDict(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("JsonList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("JsonList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("JsonList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -336,6 +333,69 @@ func Test_list_Contains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("JsonList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got := tt.l.Has(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("JsonList.Has():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_First_Last(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		l         jsonList
+		wantFirst interface{}
+		wantLast  interface{}
+	}{
+		{"Nil", nil, nil, nil},
+		{"Empty", jsonList{}, nil, nil},
+		{"One element", jsonList{1}, 1, 1},
+		{"Many element ", jsonList{1, "two", 3.1415, "four"}, 1, "four"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.First(); !reflect.DeepEqual(got, tt.wantFirst) {
+				t.Errorf("JsonList.First():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantFirst)
+			}
+			if got := tt.l.Last(); !reflect.DeepEqual(got, tt.wantLast) {
+				t.Errorf("JsonList.Last():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantLast)
+			}
+		})
+	}
+}
+
+func Test_list_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		l        jsonList
+		args     []int
+		want     interface{}
+		wantList jsonList
+	}{
+		{"Nil", nil, nil, nil, jsonList{}},
+		{"Empty", jsonList{}, nil, nil, jsonList{}},
+		{"Non existent", jsonList{}, []int{1}, nil, jsonList{}},
+		{"Empty with args", jsonList{}, []int{1, 3}, jsonList{nil, nil}, jsonList{}},
+		{"List with bad index", jsonList{0, 1, 2, 3, 4, 5}, []int{1, 3, 8}, jsonList{1, 3, nil}, jsonList{0, 2, 4, 5}},
+		{"Pop last element", jsonList{0, 1, 2, 3, 4, 5}, nil, 5, jsonList{0, 1, 2, 3, 4}},
+		{"Pop before last", jsonList{0, 1, 2, 3, 4, 5}, []int{-2}, 4, jsonList{0, 1, 2, 3, 5}},
+		{"Pop first element", jsonList{0, 1, 2, 3, 4, 5}, []int{0}, 0, jsonList{1, 2, 3, 4, 5}},
+		{"Pop all", jsonList{0, 1, 2, 3}, []int{0, 1, 2, 3}, jsonList{0, 1, 2, 3}, jsonList{}},
+		{"Pop same element many time", jsonList{0, 1, 2, 3}, []int{1, 1, 2, 2}, jsonList{1, 1, 2, 2}, jsonList{0, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotL := tt.l.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("JsonList.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(gotL, tt.wantList) {
+				t.Errorf("JsonList.Pop():\ngotList %[1]v (%[1]T)\n   want %[2]v (%[2]T)", gotL, tt.wantList)
 			}
 		})
 	}
@@ -628,21 +688,18 @@ func Test_dict_Create(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got jsonIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.d.Create(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.d.Create(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("JsonDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("JsonList.Create() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("JsonList.Create() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -749,7 +806,7 @@ func Test_dict_Keys(t *testing.T) {
 		want jsonIList
 	}{
 		{"Empty", nil, jsonList{}},
-		{"Map", dictFixture, jsonList{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Map", dictFixture, jsonList{str("float"), str("int"), str("list"), str("listInt"), str("map"), str("mapInt"), str("string")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -766,10 +823,10 @@ func Test_dict_KeysAsString(t *testing.T) {
 	tests := []struct {
 		name string
 		d    jsonDict
-		want []string
+		want strArray
 	}{
-		{"Empty", nil, []string{}},
-		{"Map", dictFixture, []string{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Empty", nil, strArray{}},
+		{"Map", dictFixture, strArray{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -847,6 +904,35 @@ func Test_dict_Values(t *testing.T) {
 	}
 }
 
+func Test_dict_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		d          jsonDict
+		args       []interface{}
+		want       interface{}
+		wantObject jsonIDict
+	}{
+		{"Nil", dictFixture, nil, nil, dictFixture},
+		{"Pop one element", dictFixture, []interface{}{"float"}, 1.23, dictFixture.Omit("float")},
+		{"Pop missing element", dictFixture, []interface{}{"undefined"}, nil, dictFixture},
+		{"Pop element twice", dictFixture, []interface{}{"int", "int", "string"}, jsonList{123, 123, "Foo bar"}, dictFixture.Omit("int", "string")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.d.Clone()
+			got := d.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("JsonDict.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(d, tt.wantObject) {
+				t.Errorf("JsonDict.Pop() object:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", d, tt.wantObject)
+			}
+		})
+	}
+}
+
 func Test_dict_Add(t *testing.T) {
 	t.Parallel()
 
@@ -909,10 +995,10 @@ func Test_dict_Transpose(t *testing.T) {
 		want jsonIDict
 	}{
 		{"Empty", nil, jsonDict{}},
-		{"Base", jsonDict{"A": 1}, jsonDict{"1": "A"}},
-		{"Multiple", jsonDict{"A": 1, "B": 2, "C": 1}, jsonDict{"1": jsonList{"A", "C"}, "2": "B"}},
-		{"List", jsonDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, jsonDict{"1": "A", "2": jsonList{"A", "B"}, "3": jsonList{"A", "C"}}},
-		{"Complex", jsonDict{"A": jsonDict{"1": 1, "2": 2}, "B": 2, "C": 3}, jsonDict{"2": "B", "3": "C", fmt.Sprint(jsonDict{"1": 1, "2": 2}): "A"}},
+		{"Base", jsonDict{"A": 1}, jsonDict{"1": str("A")}},
+		{"Multiple", jsonDict{"A": 1, "B": 2, "C": 1}, jsonDict{"1": jsonList{str("A"), str("C")}, "2": str("B")}},
+		{"List", jsonDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, jsonDict{"1": str("A"), "2": jsonList{str("A"), str("B")}, "3": jsonList{str("A"), str("C")}}},
+		{"Complex", jsonDict{"A": jsonDict{"1": 1, "2": 2}, "B": 2, "C": 3}, jsonDict{"2": str("B"), "3": str("C"), fmt.Sprint(jsonDict{"1": 1, "2": 2}): str("A")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -921,4 +1007,60 @@ func Test_dict_Transpose(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_JsonList_Get(t *testing.T) {
+	type args struct {
+		indexes []int
+	}
+	tests := []struct {
+		name string
+		l    jsonList
+		args args
+		want interface{}
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("JsonList.Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_JsonList_TypeName(t *testing.T) {
+	tests := []struct {
+		name string
+		l    jsonList
+		want str
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("JsonList.TypeName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_Json_TypeName(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, jsonList{}.TypeName(), str("Json")) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, jsonDict{}.TypeName(), str("Json")) })
+}
+
+func Test_Json_GetHelper(t *testing.T) {
+	t.Run("list", func(t *testing.T) {
+		gotD, gotL := jsonList{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), jsonDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), jsonListHelper.CreateList().TypeName())
+	})
+	t.Run("dict", func(t *testing.T) {
+		gotD, gotL := jsonDict{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), jsonDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), jsonListHelper.CreateList().TypeName())
+	})
 }

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/coveo/gotemplate/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 var strFixture = yamlList(yamlListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
@@ -150,19 +151,23 @@ func Test_list_Get(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name  string
-		l     yamlList
-		index int
-		want  interface{}
+		name    string
+		l       yamlList
+		indexes []int
+		want    interface{}
 	}{
-		{"Empty List", yamlList{}, 0, nil},
-		{"Negative index", yamlList{}, -1, nil},
-		{"List of int", yamlList{1, 2, 3}, 0, 1},
-		{"List of string", strFixture, 1, "World,"},
+		{"Empty List", yamlList{}, []int{0}, nil},
+		{"Negative index", yamlList{}, []int{-1}, nil},
+		{"List of int", yamlList{1, 2, 3}, []int{0}, 1},
+		{"List of string", strFixture, []int{1}, "World,"},
+		{"Get last", strFixture, []int{-1}, "Bar!"},
+		{"Get before last", strFixture, []int{-2}, "Foo"},
+		{"A way to before last", strFixture, []int{-12}, nil},
+		{"Get nothing", strFixture, nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.index); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.l.Get(tt.indexes...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("YamlList.Get() = %v, want %v", got, tt.want)
 			}
 		})
@@ -208,24 +213,19 @@ func Test_CreateList(t *testing.T) {
 		{"Too much args", []int{0, 10, 1}, nil, true},
 	}
 	for _, tt := range tests {
-		var got yamlIList
 		var err error
-		func() {
+		t.Run(tt.name, func(t *testing.T) {
 			defer func() { err = errors.Trap(err, recover()) }()
-			got = yamlListHelper.CreateList(tt.args...)
-		}()
+			got := yamlListHelper.CreateList(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got.Capacity() != tt.want.Cap() {
+				t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
+			}
+		})
 		if (err != nil) != tt.wantErr {
 			t.Errorf("CreateList() error = %v, wantErr %v", err, tt.wantErr)
-			return
-		}
-		if err != nil {
-			return
-		}
-		if !reflect.DeepEqual(got, tt.want) {
-			t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-		}
-		if got.Capacity() != tt.want.Cap() {
-			t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
 		}
 	}
 }
@@ -298,21 +298,18 @@ func Test_list_CreateDict(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got yamlIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.l.CreateDict(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.l.CreateDict(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("YamlList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("YamlList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("YamlList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -336,6 +333,69 @@ func Test_list_Contains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("YamlList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got := tt.l.Has(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("YamlList.Has():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_First_Last(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		l         yamlList
+		wantFirst interface{}
+		wantLast  interface{}
+	}{
+		{"Nil", nil, nil, nil},
+		{"Empty", yamlList{}, nil, nil},
+		{"One element", yamlList{1}, 1, 1},
+		{"Many element ", yamlList{1, "two", 3.1415, "four"}, 1, "four"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.First(); !reflect.DeepEqual(got, tt.wantFirst) {
+				t.Errorf("YamlList.First():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantFirst)
+			}
+			if got := tt.l.Last(); !reflect.DeepEqual(got, tt.wantLast) {
+				t.Errorf("YamlList.Last():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantLast)
+			}
+		})
+	}
+}
+
+func Test_list_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		l        yamlList
+		args     []int
+		want     interface{}
+		wantList yamlList
+	}{
+		{"Nil", nil, nil, nil, yamlList{}},
+		{"Empty", yamlList{}, nil, nil, yamlList{}},
+		{"Non existent", yamlList{}, []int{1}, nil, yamlList{}},
+		{"Empty with args", yamlList{}, []int{1, 3}, yamlList{nil, nil}, yamlList{}},
+		{"List with bad index", yamlList{0, 1, 2, 3, 4, 5}, []int{1, 3, 8}, yamlList{1, 3, nil}, yamlList{0, 2, 4, 5}},
+		{"Pop last element", yamlList{0, 1, 2, 3, 4, 5}, nil, 5, yamlList{0, 1, 2, 3, 4}},
+		{"Pop before last", yamlList{0, 1, 2, 3, 4, 5}, []int{-2}, 4, yamlList{0, 1, 2, 3, 5}},
+		{"Pop first element", yamlList{0, 1, 2, 3, 4, 5}, []int{0}, 0, yamlList{1, 2, 3, 4, 5}},
+		{"Pop all", yamlList{0, 1, 2, 3}, []int{0, 1, 2, 3}, yamlList{0, 1, 2, 3}, yamlList{}},
+		{"Pop same element many time", yamlList{0, 1, 2, 3}, []int{1, 1, 2, 2}, yamlList{1, 1, 2, 2}, yamlList{0, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotL := tt.l.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("YamlList.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(gotL, tt.wantList) {
+				t.Errorf("YamlList.Pop():\ngotList %[1]v (%[1]T)\n   want %[2]v (%[2]T)", gotL, tt.wantList)
 			}
 		})
 	}
@@ -628,21 +688,18 @@ func Test_dict_Create(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got yamlIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.d.Create(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.d.Create(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("YamlDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("YamlList.Create() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("YamlList.Create() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -749,7 +806,7 @@ func Test_dict_Keys(t *testing.T) {
 		want yamlIList
 	}{
 		{"Empty", nil, yamlList{}},
-		{"Map", dictFixture, yamlList{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Map", dictFixture, yamlList{str("float"), str("int"), str("list"), str("listInt"), str("map"), str("mapInt"), str("string")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -766,10 +823,10 @@ func Test_dict_KeysAsString(t *testing.T) {
 	tests := []struct {
 		name string
 		d    yamlDict
-		want []string
+		want strArray
 	}{
-		{"Empty", nil, []string{}},
-		{"Map", dictFixture, []string{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Empty", nil, strArray{}},
+		{"Map", dictFixture, strArray{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -847,6 +904,35 @@ func Test_dict_Values(t *testing.T) {
 	}
 }
 
+func Test_dict_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		d          yamlDict
+		args       []interface{}
+		want       interface{}
+		wantObject yamlIDict
+	}{
+		{"Nil", dictFixture, nil, nil, dictFixture},
+		{"Pop one element", dictFixture, []interface{}{"float"}, 1.23, dictFixture.Omit("float")},
+		{"Pop missing element", dictFixture, []interface{}{"undefined"}, nil, dictFixture},
+		{"Pop element twice", dictFixture, []interface{}{"int", "int", "string"}, yamlList{123, 123, "Foo bar"}, dictFixture.Omit("int", "string")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.d.Clone()
+			got := d.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("YamlDict.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(d, tt.wantObject) {
+				t.Errorf("YamlDict.Pop() object:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", d, tt.wantObject)
+			}
+		})
+	}
+}
+
 func Test_dict_Add(t *testing.T) {
 	t.Parallel()
 
@@ -909,10 +995,10 @@ func Test_dict_Transpose(t *testing.T) {
 		want yamlIDict
 	}{
 		{"Empty", nil, yamlDict{}},
-		{"Base", yamlDict{"A": 1}, yamlDict{"1": "A"}},
-		{"Multiple", yamlDict{"A": 1, "B": 2, "C": 1}, yamlDict{"1": yamlList{"A", "C"}, "2": "B"}},
-		{"List", yamlDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, yamlDict{"1": "A", "2": yamlList{"A", "B"}, "3": yamlList{"A", "C"}}},
-		{"Complex", yamlDict{"A": yamlDict{"1": 1, "2": 2}, "B": 2, "C": 3}, yamlDict{"2": "B", "3": "C", fmt.Sprint(yamlDict{"1": 1, "2": 2}): "A"}},
+		{"Base", yamlDict{"A": 1}, yamlDict{"1": str("A")}},
+		{"Multiple", yamlDict{"A": 1, "B": 2, "C": 1}, yamlDict{"1": yamlList{str("A"), str("C")}, "2": str("B")}},
+		{"List", yamlDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, yamlDict{"1": str("A"), "2": yamlList{str("A"), str("B")}, "3": yamlList{str("A"), str("C")}}},
+		{"Complex", yamlDict{"A": yamlDict{"1": 1, "2": 2}, "B": 2, "C": 3}, yamlDict{"2": str("B"), "3": str("C"), fmt.Sprint(yamlDict{"1": 1, "2": 2}): str("A")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -921,4 +1007,60 @@ func Test_dict_Transpose(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_YamlList_Get(t *testing.T) {
+	type args struct {
+		indexes []int
+	}
+	tests := []struct {
+		name string
+		l    yamlList
+		args args
+		want interface{}
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("YamlList.Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_YamlList_TypeName(t *testing.T) {
+	tests := []struct {
+		name string
+		l    yamlList
+		want str
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("YamlList.TypeName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_Yaml_TypeName(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, yamlList{}.TypeName(), str("Yaml")) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, yamlDict{}.TypeName(), str("Yaml")) })
+}
+
+func Test_Yaml_GetHelper(t *testing.T) {
+	t.Run("list", func(t *testing.T) {
+		gotD, gotL := yamlList{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), yamlDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), yamlListHelper.CreateList().TypeName())
+	})
+	t.Run("dict", func(t *testing.T) {
+		gotD, gotL := yamlDict{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), yamlDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), yamlListHelper.CreateList().TypeName())
+	})
 }

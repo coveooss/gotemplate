@@ -195,7 +195,7 @@ func NeedConversion(object interface{}, strict bool, typeName string) bool {
 	objectType := reflect.TypeOf(object)
 	switch objectType.Kind() {
 	case reflect.Map:
-		if dict, ok := object.(baseIDict); !ok || strict && dict.TypeName() != typeName {
+		if dict, ok := object.(baseIDict); !ok || strict && dict.TypeName().Str() != typeName {
 			return true
 		}
 
@@ -207,7 +207,7 @@ func NeedConversion(object interface{}, strict bool, typeName string) bool {
 			}
 		}
 	case reflect.Slice, reflect.Array:
-		if list, ok := object.(baseIList); !ok || strict && list.TypeName() != typeName {
+		if list, ok := object.(baseIList); !ok || strict && list.TypeName().Str() != typeName {
 			return true
 		}
 		value := reflect.ValueOf(object)

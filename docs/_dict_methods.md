@@ -8,18 +8,19 @@ CreateList(...int) IGenericList
 Default(interface{}, interface{}) interface{}
 Delete(interface{}, ...interface{}) IDictionary, error
 Flush(...interface{}) IDictionary
-Get(interface{}) interface{}
+Get(...interface{}) interface{}
 GetHelpers() IDictionaryHelper, IListHelper
 GetKeys() IGenericList
 GetValues() IGenericList
-Has(interface{}) bool
-KeysAsString() []string
+Has(...interface{}) bool
+KeysAsString() StringArray
 Len() int
 Merge(IDictionary, ...IDictionary) IDictionary
 Native() interface{}
 Omit(interface{}, ...interface{}) IDictionary
+Pop(...interface{}) interface{}
 Set(interface{}, interface{}) IDictionary
 String() string
 Transpose() IDictionary
-TypeName() string
+TypeName() String
 ```

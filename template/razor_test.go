@@ -59,7 +59,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		go t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			template.options[Razor] = tt.razor != ""
 
 			content := load(tt.path)
@@ -91,6 +91,214 @@ func TestTemplate_applyRazor(t *testing.T) {
 					diffs := dmp.DiffMain(string(result), string(got), true)
 					t.Errorf("Differences on Rendered for %s\n%s", tt.render, dmp.DiffPrettyText(diffs))
 				}
+			}
+		})
+	}
+}
+
+func TestBase(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		razor string
+		want  string
+	}{
+		{"Empty", "", ""},
+		{
+			"Simple global variable",
+			"@Hello",
+			"{{ $.Hello }}",
+		},
+		{
+			"Email",
+			"Hello john.doe@company.com",
+			"Hello john.doe@company.com",
+		},
+		{
+			"Literal",
+			"Hello john.doe@@company",
+			"Hello john.doe@company",
+		},
+		{
+			"No razor",
+			"{{ gotemplate }}",
+			"{{ gotemplate }}",
+		},
+		{
+			"Mix",
+			"@test {{ gotemplate }}",
+			"{{ $.test }} {{ gotemplate }}",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestInvocation(t *testing.T) {
+	tests := []struct {
+		name       string
+		debugLevel int
+		razor      string
+		want       string
+	}{
+		{
+			"Func call", 2,
+			"@func(1,2,3)",
+			"{{ func 1 2 3 }}",
+		},
+		{
+			"Method call", 2,
+			"@object.func(1,2,3)",
+			"{{ $.object.func 1 2 3 }}",
+		},
+		{
+			"Method call on result", 2,
+			"@object.func(1,2).func2(3)",
+			"{{ ($.object.func 1 2).func2 3 }}",
+		},
+		{
+			"Double invocation", 2,
+			"@func1().func2()",
+			"{{ func1.func2 }}",
+		},
+		{
+			"Double invocation with params", 6,
+			"@func1(1).func2(2)",
+			"{{ (func1 1).func2 2 }}",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			logging.SetLevel(logging.Level(tt.debugLevel), loggerInternal)
+			defer func() { logging.SetLevel(logging.Level(2), loggerInternal) }()
+			template := MustNewTemplate(".", nil, "", nil)
+			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAssign(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		razor string
+		want  string
+	}{
+		{
+			"Local assign",
+			"@{a} := 2",
+			"{{- $a := 2 }}",
+		},
+		{
+			"Local assign 2",
+			"@{a := 2}",
+			"{{- $a := 2 }}",
+		},
+		{
+			"Global assign",
+			`@a := "test"`,
+			`{{- assertWarning (isNil $.a) "$.a has already been declared, use = to overwrite existing value" }}{{- set $ "a" "test" }}`,
+		},
+		{
+			"Deprecated local assign with no other razor",
+			`$a := "test"`,
+			`$a := "test"`,
+		},
+		{
+			"Deprecated local assign",
+			`@test; $a := $.test`,
+			`{{ $.test }} {{- $a := $.test }}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAutoWrap(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		razor string
+		want  string
+	}{
+		{
+			"Base",
+			"Before @autoWrap(to(10)) after",
+			`{{ join "" (formatList "Before %v after" (to 10)) }}`,
+		},
+		{
+			"With newline",
+			"Before @<aWrap(to(10)) after",
+			`{{- $.NEWLINE }}{{ join "\n" (formatList "Before %v after" (to 10)) }}`,
+		},
+		{
+			"With space eater",
+			"Before @--awrap(to(10)) after",
+			`{{- join "" (formatList "Before %v after" (to 10)) -}}`,
+		},
+		{
+			"With error",
+			"Before @--awrap(to(10) after",
+			"Before {{- awrap to(10 -}} after",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSpaceEater(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		razor string
+		want  string
+	}{
+		{
+			"Base",
+			"@value",
+			`{{ $.value }}`,
+		},
+		{
+			"Before",
+			"@-value",
+			`{{- $.value }}`,
+		},
+		{
+			"After",
+			"@_-value",
+			`{{ $.value -}}`,
+		},
+		{
+			"Both",
+			"@--value",
+			`{{- $.value -}}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
 			}
 		})
 	}

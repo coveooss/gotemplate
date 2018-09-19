@@ -23,12 +23,19 @@ func (l hclList) Create(args ...int) hclIList { return hclListHelper.CreateList(
 func (l hclList) CreateDict(args ...int) hclIDict {
 	return hclListHelper.CreateDictionary(args...)
 }
-func (l hclList) Get(index int) interface{}        { return hclListHelper.GetIndex(l, index) }
+func (l hclList) First() interface{} { return hclListHelper.GetIndexes(l, 0) }
+func (l hclList) Get(indexes ...int) interface{} {
+	return hclListHelper.GetIndexes(l, indexes...)
+}
+func (l hclList) Has(values ...interface{}) bool   { return l.Contains(values...) }
+func (l hclList) Last() interface{}                { return hclListHelper.GetIndexes(l, len(l)-1) }
 func (l hclList) Len() int                         { return len(l) }
 func (l hclList) New(args ...interface{}) hclIList { return hclListHelper.NewList(args...) }
 func (l hclList) Reverse() hclIList                { return hclListHelper.Reverse(l) }
 func (l hclList) Strings() []string                { return hclListHelper.GetStrings(l) }
-func (l hclList) TypeName() string                 { return "Hcl" }
+func (l hclList) StringArray() strArray            { return hclListHelper.GetStringArray(l) }
+func (l hclList) TypeName() str                    { return "Hcl" }
+func (l hclList) Join(sep interface{}) str         { return l.StringArray().Join(sep) }
 func (l hclList) Unique() hclIList                 { return hclListHelper.Unique(l) }
 
 func (l hclList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -43,8 +50,19 @@ func (l hclList) Intersect(values ...interface{}) hclIList {
 	return hclListHelper.Intersect(l, values...)
 }
 
+func (l hclList) Pop(indexes ...int) (interface{}, hclIList) {
+	if len(indexes) == 0 {
+		indexes = []int{len(l) - 1}
+	}
+	return l.Get(indexes...), l.Remove(indexes...)
+}
+
 func (l hclList) Prepend(values ...interface{}) hclIList {
 	return hclListHelper.Add(l, true, values...)
+}
+
+func (l hclList) Remove(indexes ...int) hclIList {
+	return hclListHelper.Remove(l, indexes...)
 }
 
 func (l hclList) Set(i int, v interface{}) (hclIList, error) {
@@ -64,23 +82,24 @@ type Dictionary = hclDict
 type hclIDict = collections.IDictionary
 type hclDict map[string]interface{}
 
-func (d hclDict) Add(key, v interface{}) hclIDict    { return hclDictHelper.Add(d, key, v) }
-func (d hclDict) AsMap() map[string]interface{}      { return (map[string]interface{})(d) }
-func (d hclDict) Native() interface{}                { return collections.ToNativeRepresentation(d) }
-func (d hclDict) Count() int                         { return len(d) }
-func (d hclDict) Len() int                           { return len(d) }
-func (d hclDict) Clone(keys ...interface{}) hclIDict { return hclDictHelper.Clone(d, keys) }
-func (d hclDict) Create(args ...int) hclIDict        { return hclListHelper.CreateDictionary(args...) }
-func (d hclDict) CreateList(args ...int) hclIList    { return hclHelper.CreateList(args...) }
-func (d hclDict) Flush(keys ...interface{}) hclIDict { return hclDictHelper.Flush(d, keys) }
-func (d hclDict) Get(key interface{}) interface{}    { return hclDictHelper.Get(d, key) }
-func (d hclDict) Has(key interface{}) bool           { return hclDictHelper.Has(d, key) }
-func (d hclDict) GetKeys() hclIList                  { return hclDictHelper.GetKeys(d) }
-func (d hclDict) KeysAsString() []string             { return hclDictHelper.KeysAsString(d) }
-func (d hclDict) GetValues() hclIList                { return hclDictHelper.GetValues(d) }
-func (d hclDict) Set(key, v interface{}) hclIDict    { return hclDictHelper.Set(d, key, v) }
-func (d hclDict) Transpose() hclIDict                { return hclDictHelper.Transpose(d) }
-func (d hclDict) TypeName() string                   { return "Hcl" }
+func (d hclDict) Add(key, v interface{}) hclIDict     { return hclDictHelper.Add(d, key, v) }
+func (d hclDict) AsMap() map[string]interface{}       { return (map[string]interface{})(d) }
+func (d hclDict) Native() interface{}                 { return collections.ToNativeRepresentation(d) }
+func (d hclDict) Count() int                          { return len(d) }
+func (d hclDict) Len() int                            { return len(d) }
+func (d hclDict) Clone(keys ...interface{}) hclIDict  { return hclDictHelper.Clone(d, keys) }
+func (d hclDict) Create(args ...int) hclIDict         { return hclListHelper.CreateDictionary(args...) }
+func (d hclDict) CreateList(args ...int) hclIList     { return hclHelper.CreateList(args...) }
+func (d hclDict) Flush(keys ...interface{}) hclIDict  { return hclDictHelper.Flush(d, keys) }
+func (d hclDict) Get(keys ...interface{}) interface{} { return hclDictHelper.Get(d, keys) }
+func (d hclDict) Has(keys ...interface{}) bool        { return hclDictHelper.Has(d, keys) }
+func (d hclDict) GetKeys() hclIList                   { return hclDictHelper.GetKeys(d) }
+func (d hclDict) KeysAsString() strArray              { return hclDictHelper.KeysAsString(d) }
+func (d hclDict) Pop(keys ...interface{}) interface{} { return hclDictHelper.Pop(d, keys) }
+func (d hclDict) GetValues() hclIList                 { return hclDictHelper.GetValues(d) }
+func (d hclDict) Set(key, v interface{}) hclIDict     { return hclDictHelper.Set(d, key, v) }
+func (d hclDict) Transpose() hclIDict                 { return hclDictHelper.Transpose(d) }
+func (d hclDict) TypeName() str                       { return "Hcl" }
 
 func (d hclDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return hclDictHelper, hclListHelper
@@ -118,3 +137,10 @@ var DictionaryHelper collections.IDictionaryHelper = hclDictHelper
 
 // GenericListHelper gives public access to the basic list functions
 var GenericListHelper collections.IListHelper = hclListHelper
+
+type (
+	str      = collections.String
+	strArray = collections.StringArray
+)
+
+var iif = collections.IIf

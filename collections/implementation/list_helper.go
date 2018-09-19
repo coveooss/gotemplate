@@ -31,19 +31,39 @@ func (lh ListHelper) Clone(list baseIList) baseIList {
 	return lh.NewList(list.AsArray()...)
 }
 
-// GetIndex returns the element at position index in the list. If index is out of bound, nil is returned.
-func (lh ListHelper) GetIndex(list baseIList, index int) interface{} {
-	if index < 0 || index >= list.Len() {
+// GetIndexes returns the element at position index in the list. If index is out of bound, nil is returned.
+func (lh ListHelper) GetIndexes(list baseIList, indexes ...int) interface{} {
+	switch len(indexes) {
+	case 0:
 		return nil
+	case 1:
+		index := indexes[0]
+		if index < 0 {
+			// If index is negative, we try to get from the end
+			index += list.Len()
+		}
+		if index < 0 || index >= list.Len() {
+			return nil
+		}
+		return (list.AsArray())[index]
 	}
-	return (list.AsArray())[index]
+	result := list.Create(len(indexes))
+	for i := range indexes {
+		result.Set(i, lh.GetIndexes(list, indexes[i]))
+	}
+	return result
 }
 
-// GetStrings returns a string array representation of the array.
+// GetStrings returns a string array representation of the list.
 func (lh ListHelper) GetStrings(list baseIList) []string {
-	result := make([]string, list.Len())
+	return collections.ToStrings(list.AsArray())
+}
+
+// GetStringArray returns a StringArray representation of the list.
+func (lh ListHelper) GetStringArray(list baseIList) strArray {
+	result := make(strArray, list.Len())
 	for i := 0; i < list.Len(); i++ {
-		result[i] = fmt.Sprint(list.Get(i))
+		result[i] = str(fmt.Sprint(list.Get(i)))
 	}
 	return result
 }
@@ -125,6 +145,23 @@ func (lh ListHelper) Intersect(list baseIList, values ...interface{}) baseIList 
 	for i := range source {
 		if include.Contains(source[i]) {
 			target = target.Append(source[i])
+		}
+	}
+	return target
+}
+
+// Remove returns a new list without the element specified.
+func (lh ListHelper) Remove(list baseIList, indexes ...int) baseIList {
+	for i, index := range indexes {
+		if index < 0 {
+			indexes[i] += list.Len()
+		}
+	}
+	discard := collections.AsList(indexes)
+	target := list.Create(0, list.Len())
+	for i := range list.AsArray() {
+		if !discard.Contains(i) {
+			target = target.Append(list.Get(i))
 		}
 	}
 	return target

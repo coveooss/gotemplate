@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/coveo/gotemplate/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 var strFixture = hclList(hclListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
@@ -150,19 +151,23 @@ func Test_list_Get(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name  string
-		l     hclList
-		index int
-		want  interface{}
+		name    string
+		l       hclList
+		indexes []int
+		want    interface{}
 	}{
-		{"Empty List", hclList{}, 0, nil},
-		{"Negative index", hclList{}, -1, nil},
-		{"List of int", hclList{1, 2, 3}, 0, 1},
-		{"List of string", strFixture, 1, "World,"},
+		{"Empty List", hclList{}, []int{0}, nil},
+		{"Negative index", hclList{}, []int{-1}, nil},
+		{"List of int", hclList{1, 2, 3}, []int{0}, 1},
+		{"List of string", strFixture, []int{1}, "World,"},
+		{"Get last", strFixture, []int{-1}, "Bar!"},
+		{"Get before last", strFixture, []int{-2}, "Foo"},
+		{"A way to before last", strFixture, []int{-12}, nil},
+		{"Get nothing", strFixture, nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.index); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.l.Get(tt.indexes...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("HclList.Get() = %v, want %v", got, tt.want)
 			}
 		})
@@ -208,24 +213,19 @@ func Test_CreateList(t *testing.T) {
 		{"Too much args", []int{0, 10, 1}, nil, true},
 	}
 	for _, tt := range tests {
-		var got hclIList
 		var err error
-		func() {
+		t.Run(tt.name, func(t *testing.T) {
 			defer func() { err = errors.Trap(err, recover()) }()
-			got = hclListHelper.CreateList(tt.args...)
-		}()
+			got := hclListHelper.CreateList(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got.Capacity() != tt.want.Cap() {
+				t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
+			}
+		})
 		if (err != nil) != tt.wantErr {
 			t.Errorf("CreateList() error = %v, wantErr %v", err, tt.wantErr)
-			return
-		}
-		if err != nil {
-			return
-		}
-		if !reflect.DeepEqual(got, tt.want) {
-			t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-		}
-		if got.Capacity() != tt.want.Cap() {
-			t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
 		}
 	}
 }
@@ -298,21 +298,18 @@ func Test_list_CreateDict(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got hclIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.l.CreateDict(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.l.CreateDict(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("HclList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("HclList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("HclList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -336,6 +333,69 @@ func Test_list_Contains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("HclList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got := tt.l.Has(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HclList.Has():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_First_Last(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		l         hclList
+		wantFirst interface{}
+		wantLast  interface{}
+	}{
+		{"Nil", nil, nil, nil},
+		{"Empty", hclList{}, nil, nil},
+		{"One element", hclList{1}, 1, 1},
+		{"Many element ", hclList{1, "two", 3.1415, "four"}, 1, "four"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.First(); !reflect.DeepEqual(got, tt.wantFirst) {
+				t.Errorf("HclList.First():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantFirst)
+			}
+			if got := tt.l.Last(); !reflect.DeepEqual(got, tt.wantLast) {
+				t.Errorf("HclList.Last():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantLast)
+			}
+		})
+	}
+}
+
+func Test_list_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		l        hclList
+		args     []int
+		want     interface{}
+		wantList hclList
+	}{
+		{"Nil", nil, nil, nil, hclList{}},
+		{"Empty", hclList{}, nil, nil, hclList{}},
+		{"Non existent", hclList{}, []int{1}, nil, hclList{}},
+		{"Empty with args", hclList{}, []int{1, 3}, hclList{nil, nil}, hclList{}},
+		{"List with bad index", hclList{0, 1, 2, 3, 4, 5}, []int{1, 3, 8}, hclList{1, 3, nil}, hclList{0, 2, 4, 5}},
+		{"Pop last element", hclList{0, 1, 2, 3, 4, 5}, nil, 5, hclList{0, 1, 2, 3, 4}},
+		{"Pop before last", hclList{0, 1, 2, 3, 4, 5}, []int{-2}, 4, hclList{0, 1, 2, 3, 5}},
+		{"Pop first element", hclList{0, 1, 2, 3, 4, 5}, []int{0}, 0, hclList{1, 2, 3, 4, 5}},
+		{"Pop all", hclList{0, 1, 2, 3}, []int{0, 1, 2, 3}, hclList{0, 1, 2, 3}, hclList{}},
+		{"Pop same element many time", hclList{0, 1, 2, 3}, []int{1, 1, 2, 2}, hclList{1, 1, 2, 2}, hclList{0, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotL := tt.l.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HclList.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(gotL, tt.wantList) {
+				t.Errorf("HclList.Pop():\ngotList %[1]v (%[1]T)\n   want %[2]v (%[2]T)", gotL, tt.wantList)
 			}
 		})
 	}
@@ -628,21 +688,18 @@ func Test_dict_Create(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got hclIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.d.Create(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.d.Create(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("HclDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("HclList.Create() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("HclList.Create() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -749,7 +806,7 @@ func Test_dict_Keys(t *testing.T) {
 		want hclIList
 	}{
 		{"Empty", nil, hclList{}},
-		{"Map", dictFixture, hclList{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Map", dictFixture, hclList{str("float"), str("int"), str("list"), str("listInt"), str("map"), str("mapInt"), str("string")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -766,10 +823,10 @@ func Test_dict_KeysAsString(t *testing.T) {
 	tests := []struct {
 		name string
 		d    hclDict
-		want []string
+		want strArray
 	}{
-		{"Empty", nil, []string{}},
-		{"Map", dictFixture, []string{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Empty", nil, strArray{}},
+		{"Map", dictFixture, strArray{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -847,6 +904,35 @@ func Test_dict_Values(t *testing.T) {
 	}
 }
 
+func Test_dict_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		d          hclDict
+		args       []interface{}
+		want       interface{}
+		wantObject hclIDict
+	}{
+		{"Nil", dictFixture, nil, nil, dictFixture},
+		{"Pop one element", dictFixture, []interface{}{"float"}, 1.23, dictFixture.Omit("float")},
+		{"Pop missing element", dictFixture, []interface{}{"undefined"}, nil, dictFixture},
+		{"Pop element twice", dictFixture, []interface{}{"int", "int", "string"}, hclList{123, 123, "Foo bar"}, dictFixture.Omit("int", "string")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.d.Clone()
+			got := d.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HclDict.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(d, tt.wantObject) {
+				t.Errorf("HclDict.Pop() object:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", d, tt.wantObject)
+			}
+		})
+	}
+}
+
 func Test_dict_Add(t *testing.T) {
 	t.Parallel()
 
@@ -909,10 +995,10 @@ func Test_dict_Transpose(t *testing.T) {
 		want hclIDict
 	}{
 		{"Empty", nil, hclDict{}},
-		{"Base", hclDict{"A": 1}, hclDict{"1": "A"}},
-		{"Multiple", hclDict{"A": 1, "B": 2, "C": 1}, hclDict{"1": hclList{"A", "C"}, "2": "B"}},
-		{"List", hclDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, hclDict{"1": "A", "2": hclList{"A", "B"}, "3": hclList{"A", "C"}}},
-		{"Complex", hclDict{"A": hclDict{"1": 1, "2": 2}, "B": 2, "C": 3}, hclDict{"2": "B", "3": "C", fmt.Sprint(hclDict{"1": 1, "2": 2}): "A"}},
+		{"Base", hclDict{"A": 1}, hclDict{"1": str("A")}},
+		{"Multiple", hclDict{"A": 1, "B": 2, "C": 1}, hclDict{"1": hclList{str("A"), str("C")}, "2": str("B")}},
+		{"List", hclDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, hclDict{"1": str("A"), "2": hclList{str("A"), str("B")}, "3": hclList{str("A"), str("C")}}},
+		{"Complex", hclDict{"A": hclDict{"1": 1, "2": 2}, "B": 2, "C": 3}, hclDict{"2": str("B"), "3": str("C"), fmt.Sprint(hclDict{"1": 1, "2": 2}): str("A")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -921,4 +1007,60 @@ func Test_dict_Transpose(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_HclList_Get(t *testing.T) {
+	type args struct {
+		indexes []int
+	}
+	tests := []struct {
+		name string
+		l    hclList
+		args args
+		want interface{}
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HclList.Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_HclList_TypeName(t *testing.T) {
+	tests := []struct {
+		name string
+		l    hclList
+		want str
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HclList.TypeName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_Hcl_TypeName(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, hclList{}.TypeName(), str("Hcl")) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, hclDict{}.TypeName(), str("Hcl")) })
+}
+
+func Test_Hcl_GetHelper(t *testing.T) {
+	t.Run("list", func(t *testing.T) {
+		gotD, gotL := hclList{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), hclDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), hclListHelper.CreateList().TypeName())
+	})
+	t.Run("dict", func(t *testing.T) {
+		gotD, gotL := hclDict{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), hclDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), hclListHelper.CreateList().TypeName())
+	})
 }

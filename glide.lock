@@ -1,5 +1,5 @@
 hash: 078d5ec26cabd74670acbed392807abfba66bd64b9a630197399567522be3e94
-updated: 2018-09-17T16:52:32.151926-04:00
+updated: 2018-09-18T22:41:24.45873-04:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -63,7 +63,7 @@ imports:
   - html
   - html/atom
 - name: golang.org/x/sys
-  version: d0be0721c37eeb5299f245a996a483160fc36940
+  version: ee1b12c67af419cf5a9be3bdbeea7fc1c5f32f11
   subpackages:
   - unix
   - windows
@@ -71,4 +71,16 @@ imports:
   version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/yaml.v2
   version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
-testImports: []
+testImports:
+- name: github.com/davecgh/go-spew
+  version: d8f796af33cc11cb798c1aaeb27a4ebc5099927d
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
+  subpackages:
+  - assert

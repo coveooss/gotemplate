@@ -23,12 +23,19 @@ func (l yamlList) Create(args ...int) yamlIList { return yamlListHelper.CreateLi
 func (l yamlList) CreateDict(args ...int) yamlIDict {
 	return yamlListHelper.CreateDictionary(args...)
 }
-func (l yamlList) Get(index int) interface{}         { return yamlListHelper.GetIndex(l, index) }
+func (l yamlList) First() interface{} { return yamlListHelper.GetIndexes(l, 0) }
+func (l yamlList) Get(indexes ...int) interface{} {
+	return yamlListHelper.GetIndexes(l, indexes...)
+}
+func (l yamlList) Has(values ...interface{}) bool    { return l.Contains(values...) }
+func (l yamlList) Last() interface{}                 { return yamlListHelper.GetIndexes(l, len(l)-1) }
 func (l yamlList) Len() int                          { return len(l) }
 func (l yamlList) New(args ...interface{}) yamlIList { return yamlListHelper.NewList(args...) }
 func (l yamlList) Reverse() yamlIList                { return yamlListHelper.Reverse(l) }
 func (l yamlList) Strings() []string                 { return yamlListHelper.GetStrings(l) }
-func (l yamlList) TypeName() string                  { return "Yaml" }
+func (l yamlList) StringArray() strArray             { return yamlListHelper.GetStringArray(l) }
+func (l yamlList) TypeName() str                     { return "Yaml" }
+func (l yamlList) Join(sep interface{}) str          { return l.StringArray().Join(sep) }
 func (l yamlList) Unique() yamlIList                 { return yamlListHelper.Unique(l) }
 
 func (l yamlList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -43,8 +50,19 @@ func (l yamlList) Intersect(values ...interface{}) yamlIList {
 	return yamlListHelper.Intersect(l, values...)
 }
 
+func (l yamlList) Pop(indexes ...int) (interface{}, yamlIList) {
+	if len(indexes) == 0 {
+		indexes = []int{len(l) - 1}
+	}
+	return l.Get(indexes...), l.Remove(indexes...)
+}
+
 func (l yamlList) Prepend(values ...interface{}) yamlIList {
 	return yamlListHelper.Add(l, true, values...)
+}
+
+func (l yamlList) Remove(indexes ...int) yamlIList {
+	return yamlListHelper.Remove(l, indexes...)
 }
 
 func (l yamlList) Set(i int, v interface{}) (yamlIList, error) {
@@ -73,14 +91,15 @@ func (d yamlDict) Clone(keys ...interface{}) yamlIDict { return yamlDictHelper.C
 func (d yamlDict) Create(args ...int) yamlIDict        { return yamlListHelper.CreateDictionary(args...) }
 func (d yamlDict) CreateList(args ...int) yamlIList    { return yamlHelper.CreateList(args...) }
 func (d yamlDict) Flush(keys ...interface{}) yamlIDict { return yamlDictHelper.Flush(d, keys) }
-func (d yamlDict) Get(key interface{}) interface{}     { return yamlDictHelper.Get(d, key) }
-func (d yamlDict) Has(key interface{}) bool            { return yamlDictHelper.Has(d, key) }
+func (d yamlDict) Get(keys ...interface{}) interface{} { return yamlDictHelper.Get(d, keys) }
+func (d yamlDict) Has(keys ...interface{}) bool        { return yamlDictHelper.Has(d, keys) }
 func (d yamlDict) GetKeys() yamlIList                  { return yamlDictHelper.GetKeys(d) }
-func (d yamlDict) KeysAsString() []string              { return yamlDictHelper.KeysAsString(d) }
+func (d yamlDict) KeysAsString() strArray              { return yamlDictHelper.KeysAsString(d) }
+func (d yamlDict) Pop(keys ...interface{}) interface{} { return yamlDictHelper.Pop(d, keys) }
 func (d yamlDict) GetValues() yamlIList                { return yamlDictHelper.GetValues(d) }
 func (d yamlDict) Set(key, v interface{}) yamlIDict    { return yamlDictHelper.Set(d, key, v) }
 func (d yamlDict) Transpose() yamlIDict                { return yamlDictHelper.Transpose(d) }
-func (d yamlDict) TypeName() string                    { return "Yaml" }
+func (d yamlDict) TypeName() str                       { return "Yaml" }
 
 func (d yamlDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return yamlDictHelper, yamlListHelper
@@ -118,3 +137,10 @@ var DictionaryHelper collections.IDictionaryHelper = yamlDictHelper
 
 // GenericListHelper gives public access to the basic list functions
 var GenericListHelper collections.IListHelper = yamlListHelper
+
+type (
+	str      = collections.String
+	strArray = collections.StringArray
+)
+
+var iif = collections.IIf

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/coveo/gotemplate/errors"
 )
 
@@ -146,19 +148,23 @@ func Test_list_Get(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name  string
-		l     baseList
-		index int
-		want  interface{}
+		name    string
+		l       baseList
+		indexes []int
+		want    interface{}
 	}{
-		{"Empty List", baseList{}, 0, nil},
-		{"Negative index", baseList{}, -1, nil},
-		{"List of int", baseList{1, 2, 3}, 0, 1},
-		{"List of string", strFixture, 1, "World,"},
+		{"Empty List", baseList{}, []int{0}, nil},
+		{"Negative index", baseList{}, []int{-1}, nil},
+		{"List of int", baseList{1, 2, 3}, []int{0}, 1},
+		{"List of string", strFixture, []int{1}, "World,"},
+		{"Get last", strFixture, []int{-1}, "Bar!"},
+		{"Get before last", strFixture, []int{-2}, "Foo"},
+		{"A way to before last", strFixture, []int{-12}, nil},
+		{"Get nothing", strFixture, nil, nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.index); !reflect.DeepEqual(got, tt.want) {
+			if got := tt.l.Get(tt.indexes...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("baseList.Get() = %v, want %v", got, tt.want)
 			}
 		})
@@ -204,24 +210,19 @@ func Test_CreateList(t *testing.T) {
 		{"Too much args", []int{0, 10, 1}, nil, true},
 	}
 	for _, tt := range tests {
-		var got baseIList
 		var err error
-		func() {
+		t.Run(tt.name, func(t *testing.T) {
 			defer func() { err = errors.Trap(err, recover()) }()
-			got = baseListHelper.CreateList(tt.args...)
-		}()
+			got := baseListHelper.CreateList(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got.Capacity() != tt.want.Cap() {
+				t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
+			}
+		})
 		if (err != nil) != tt.wantErr {
 			t.Errorf("CreateList() error = %v, wantErr %v", err, tt.wantErr)
-			return
-		}
-		if err != nil {
-			return
-		}
-		if !reflect.DeepEqual(got, tt.want) {
-			t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-		}
-		if got.Capacity() != tt.want.Cap() {
-			t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
 		}
 	}
 }
@@ -294,21 +295,18 @@ func Test_list_CreateDict(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got baseIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.l.CreateDict(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.l.CreateDict(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("baseList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("baseList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("baseList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -332,6 +330,69 @@ func Test_list_Contains(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("baseList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if got := tt.l.Has(tt.args...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Has():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_list_First_Last(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		l         baseList
+		wantFirst interface{}
+		wantLast  interface{}
+	}{
+		{"Nil", nil, nil, nil},
+		{"Empty", baseList{}, nil, nil},
+		{"One element", baseList{1}, 1, 1},
+		{"Many element ", baseList{1, "two", 3.1415, "four"}, 1, "four"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.First(); !reflect.DeepEqual(got, tt.wantFirst) {
+				t.Errorf("baseList.First():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantFirst)
+			}
+			if got := tt.l.Last(); !reflect.DeepEqual(got, tt.wantLast) {
+				t.Errorf("baseList.Last():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantLast)
+			}
+		})
+	}
+}
+
+func Test_list_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		l        baseList
+		args     []int
+		want     interface{}
+		wantList baseList
+	}{
+		{"Nil", nil, nil, nil, baseList{}},
+		{"Empty", baseList{}, nil, nil, baseList{}},
+		{"Non existent", baseList{}, []int{1}, nil, baseList{}},
+		{"Empty with args", baseList{}, []int{1, 3}, baseList{nil, nil}, baseList{}},
+		{"List with bad index", baseList{0, 1, 2, 3, 4, 5}, []int{1, 3, 8}, baseList{1, 3, nil}, baseList{0, 2, 4, 5}},
+		{"Pop last element", baseList{0, 1, 2, 3, 4, 5}, nil, 5, baseList{0, 1, 2, 3, 4}},
+		{"Pop before last", baseList{0, 1, 2, 3, 4, 5}, []int{-2}, 4, baseList{0, 1, 2, 3, 5}},
+		{"Pop first element", baseList{0, 1, 2, 3, 4, 5}, []int{0}, 0, baseList{1, 2, 3, 4, 5}},
+		{"Pop all", baseList{0, 1, 2, 3}, []int{0, 1, 2, 3}, baseList{0, 1, 2, 3}, baseList{}},
+		{"Pop same element many time", baseList{0, 1, 2, 3}, []int{1, 1, 2, 2}, baseList{1, 1, 2, 2}, baseList{0, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, gotL := tt.l.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(gotL, tt.wantList) {
+				t.Errorf("baseList.Pop():\ngotList %[1]v (%[1]T)\n   want %[2]v (%[2]T)", gotL, tt.wantList)
 			}
 		})
 	}
@@ -624,21 +685,18 @@ func Test_dict_Create(t *testing.T) {
 		{"With too much parameter", nil, []int{10, 1}, nil, true},
 	}
 	for _, tt := range tests {
+		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			var got baseIDict
-			var err error
-			func() {
-				defer func() { err = errors.Trap(err, recover()) }()
-				got = tt.d.Create(tt.args...)
-			}()
+			defer func() { err = errors.Trap(err, recover()) }()
+			got := tt.d.Create(tt.args...)
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("baseDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
 			}
-			if (err != nil) != tt.wantErr {
-				t.Errorf("baseList.Create() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
 		})
+		if (err != nil) != tt.wantErr {
+			t.Errorf("baseList.Create() error = %v, wantErr %v", err, tt.wantErr)
+			return
+		}
 	}
 }
 
@@ -745,7 +803,7 @@ func Test_dict_Keys(t *testing.T) {
 		want baseIList
 	}{
 		{"Empty", nil, baseList{}},
-		{"Map", dictFixture, baseList{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Map", dictFixture, baseList{str("float"), str("int"), str("list"), str("listInt"), str("map"), str("mapInt"), str("string")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -762,10 +820,10 @@ func Test_dict_KeysAsString(t *testing.T) {
 	tests := []struct {
 		name string
 		d    baseDict
-		want []string
+		want strArray
 	}{
-		{"Empty", nil, []string{}},
-		{"Map", dictFixture, []string{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
+		{"Empty", nil, strArray{}},
+		{"Map", dictFixture, strArray{"float", "int", "list", "listInt", "map", "mapInt", "string"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -843,6 +901,35 @@ func Test_dict_Values(t *testing.T) {
 	}
 }
 
+func Test_dict_Pop(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		d          baseDict
+		args       []interface{}
+		want       interface{}
+		wantObject baseIDict
+	}{
+		{"Nil", dictFixture, nil, nil, dictFixture},
+		{"Pop one element", dictFixture, []interface{}{"float"}, 1.23, dictFixture.Omit("float")},
+		{"Pop missing element", dictFixture, []interface{}{"undefined"}, nil, dictFixture},
+		{"Pop element twice", dictFixture, []interface{}{"int", "int", "string"}, baseList{123, 123, "Foo bar"}, dictFixture.Omit("int", "string")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := tt.d.Clone()
+			got := d.Pop(tt.args...)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseDict.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			}
+			if !reflect.DeepEqual(d, tt.wantObject) {
+				t.Errorf("baseDict.Pop() object:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", d, tt.wantObject)
+			}
+		})
+	}
+}
+
 func Test_dict_Add(t *testing.T) {
 	t.Parallel()
 
@@ -905,10 +992,10 @@ func Test_dict_Transpose(t *testing.T) {
 		want baseIDict
 	}{
 		{"Empty", nil, baseDict{}},
-		{"Base", baseDict{"A": 1}, baseDict{"1": "A"}},
-		{"Multiple", baseDict{"A": 1, "B": 2, "C": 1}, baseDict{"1": baseList{"A", "C"}, "2": "B"}},
-		{"List", baseDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, baseDict{"1": "A", "2": baseList{"A", "B"}, "3": baseList{"A", "C"}}},
-		{"Complex", baseDict{"A": baseDict{"1": 1, "2": 2}, "B": 2, "C": 3}, baseDict{"2": "B", "3": "C", fmt.Sprint(baseDict{"1": 1, "2": 2}): "A"}},
+		{"Base", baseDict{"A": 1}, baseDict{"1": str("A")}},
+		{"Multiple", baseDict{"A": 1, "B": 2, "C": 1}, baseDict{"1": baseList{str("A"), str("C")}, "2": str("B")}},
+		{"List", baseDict{"A": []int{1, 2, 3}, "B": 2, "C": 3}, baseDict{"1": str("A"), "2": baseList{str("A"), str("B")}, "3": baseList{str("A"), str("C")}}},
+		{"Complex", baseDict{"A": baseDict{"1": 1, "2": 2}, "B": 2, "C": 3}, baseDict{"2": str("B"), "3": str("C"), fmt.Sprint(baseDict{"1": 1, "2": 2}): str("A")}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -917,4 +1004,60 @@ func Test_dict_Transpose(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_baseList_Get(t *testing.T) {
+	type args struct {
+		indexes []int
+	}
+	tests := []struct {
+		name string
+		l    baseList
+		args args
+		want interface{}
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_baseList_TypeName(t *testing.T) {
+	tests := []struct {
+		name string
+		l    baseList
+		want str
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.TypeName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_base_TypeName(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, baseList{}.TypeName(), str("base")) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, baseDict{}.TypeName(), str("base")) })
+}
+
+func Test_base_GetHelper(t *testing.T) {
+	t.Run("list", func(t *testing.T) {
+		gotD, gotL := baseList{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), baseDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), baseListHelper.CreateList().TypeName())
+	})
+	t.Run("dict", func(t *testing.T) {
+		gotD, gotL := baseDict{}.GetHelpers()
+		assert.Equal(t, gotD.CreateDictionary().TypeName(), baseDictHelper.CreateDictionary().TypeName())
+		assert.Equal(t, gotL.CreateList().TypeName(), baseListHelper.CreateList().TypeName())
+	})
 }

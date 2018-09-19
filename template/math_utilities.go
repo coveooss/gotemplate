@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/utils"
 )
 
 func toInt(value interface{}) int {
@@ -128,7 +127,7 @@ func convertArgs(arg1 interface{}, args ...interface{}) (result collections.IGen
 }
 
 func simplify(value float64) interface{} {
-	return utils.IIf(math.Floor(value) == value, int64(value), value)
+	return iif(math.Floor(value) == value, int64(value), value)
 }
 
 func compareNumerics(values []interface{}, useMinFunc bool) interface{} {

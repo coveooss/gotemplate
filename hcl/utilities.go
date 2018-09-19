@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/utils"
 )
 
 // flatten converts array of map to single map if there is only one element in the array.
@@ -71,7 +70,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 		return
 	}
 
-	ifIndent := func(vTrue, vFalse interface{}) interface{} { return utils.IIf(indent, vTrue, vFalse) }
+	ifIndent := func(vTrue, vFalse interface{}) interface{} { return collections.IIf(indent, vTrue, vFalse) }
 	const specialFormat = "#HCL_ARRAY_MAP#!"
 
 	switch value := value.(type) {

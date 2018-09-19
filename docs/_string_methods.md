@@ -23,7 +23,7 @@ IndexAny(string) int
 IndexByte(uint8) int
 IndexFunc(func(int32) bool) int
 IndexRune(int32) int
-Join(...string) String
+Join(...interface{}) String
 LastIndex(string) int
 LastIndexAny(string) int
 LastIndexByte(uint8) int
@@ -33,6 +33,7 @@ Lines() StringArray
 Map(func(int32) int32) String
 ParseBool() bool
 Protect() String, StringArray
+Quote() String
 Repeat(int) String
 Replace(string, string) String
 ReplaceN(string, string, int) String

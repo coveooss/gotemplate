@@ -23,12 +23,19 @@ func (l jsonList) Create(args ...int) jsonIList { return jsonListHelper.CreateLi
 func (l jsonList) CreateDict(args ...int) jsonIDict {
 	return jsonListHelper.CreateDictionary(args...)
 }
-func (l jsonList) Get(index int) interface{}         { return jsonListHelper.GetIndex(l, index) }
+func (l jsonList) First() interface{} { return jsonListHelper.GetIndexes(l, 0) }
+func (l jsonList) Get(indexes ...int) interface{} {
+	return jsonListHelper.GetIndexes(l, indexes...)
+}
+func (l jsonList) Has(values ...interface{}) bool    { return l.Contains(values...) }
+func (l jsonList) Last() interface{}                 { return jsonListHelper.GetIndexes(l, len(l)-1) }
 func (l jsonList) Len() int                          { return len(l) }
 func (l jsonList) New(args ...interface{}) jsonIList { return jsonListHelper.NewList(args...) }
 func (l jsonList) Reverse() jsonIList                { return jsonListHelper.Reverse(l) }
 func (l jsonList) Strings() []string                 { return jsonListHelper.GetStrings(l) }
-func (l jsonList) TypeName() string                  { return "Json" }
+func (l jsonList) StringArray() strArray             { return jsonListHelper.GetStringArray(l) }
+func (l jsonList) TypeName() str                     { return "Json" }
+func (l jsonList) Join(sep interface{}) str          { return l.StringArray().Join(sep) }
 func (l jsonList) Unique() jsonIList                 { return jsonListHelper.Unique(l) }
 
 func (l jsonList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -43,8 +50,19 @@ func (l jsonList) Intersect(values ...interface{}) jsonIList {
 	return jsonListHelper.Intersect(l, values...)
 }
 
+func (l jsonList) Pop(indexes ...int) (interface{}, jsonIList) {
+	if len(indexes) == 0 {
+		indexes = []int{len(l) - 1}
+	}
+	return l.Get(indexes...), l.Remove(indexes...)
+}
+
 func (l jsonList) Prepend(values ...interface{}) jsonIList {
 	return jsonListHelper.Add(l, true, values...)
+}
+
+func (l jsonList) Remove(indexes ...int) jsonIList {
+	return jsonListHelper.Remove(l, indexes...)
 }
 
 func (l jsonList) Set(i int, v interface{}) (jsonIList, error) {
@@ -73,14 +91,15 @@ func (d jsonDict) Clone(keys ...interface{}) jsonIDict { return jsonDictHelper.C
 func (d jsonDict) Create(args ...int) jsonIDict        { return jsonListHelper.CreateDictionary(args...) }
 func (d jsonDict) CreateList(args ...int) jsonIList    { return jsonHelper.CreateList(args...) }
 func (d jsonDict) Flush(keys ...interface{}) jsonIDict { return jsonDictHelper.Flush(d, keys) }
-func (d jsonDict) Get(key interface{}) interface{}     { return jsonDictHelper.Get(d, key) }
-func (d jsonDict) Has(key interface{}) bool            { return jsonDictHelper.Has(d, key) }
+func (d jsonDict) Get(keys ...interface{}) interface{} { return jsonDictHelper.Get(d, keys) }
+func (d jsonDict) Has(keys ...interface{}) bool        { return jsonDictHelper.Has(d, keys) }
 func (d jsonDict) GetKeys() jsonIList                  { return jsonDictHelper.GetKeys(d) }
-func (d jsonDict) KeysAsString() []string              { return jsonDictHelper.KeysAsString(d) }
+func (d jsonDict) KeysAsString() strArray              { return jsonDictHelper.KeysAsString(d) }
+func (d jsonDict) Pop(keys ...interface{}) interface{} { return jsonDictHelper.Pop(d, keys) }
 func (d jsonDict) GetValues() jsonIList                { return jsonDictHelper.GetValues(d) }
 func (d jsonDict) Set(key, v interface{}) jsonIDict    { return jsonDictHelper.Set(d, key, v) }
 func (d jsonDict) Transpose() jsonIDict                { return jsonDictHelper.Transpose(d) }
-func (d jsonDict) TypeName() string                    { return "Json" }
+func (d jsonDict) TypeName() str                       { return "Json" }
 
 func (d jsonDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return jsonDictHelper, jsonListHelper
@@ -118,3 +137,10 @@ var DictionaryHelper collections.IDictionaryHelper = jsonDictHelper
 
 // GenericListHelper gives public access to the basic list functions
 var GenericListHelper collections.IListHelper = jsonListHelper
+
+type (
+	str      = collections.String
+	strArray = collections.StringArray
+)
+
+var iif = collections.IIf
