@@ -84,6 +84,7 @@ var expressions = [][]interface{}{
 	{"various ends", `@reduce;(?P<command>end[sp](if|range|define|block|with|for[sp]each|for|))endexpr;`, "{{${reduce1} end ${reduce2}}}"},
 
 	// Assignations
+	{"Assign - @$var := value", `(?P<type>@\$)(?P<id>[id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 	{"Assign - @var := value", `(?P<type>@[\$\.]?)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 	{"Assign - @{var} := value", `(?P<type>@{)(?P<id>[id])}[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
 	{"Assign - @{var := expr}", `(?P<type>@{)(?P<id>[id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+?)}endexpr;`, ``, replacementFunc(assignExpressionAcceptError)},
