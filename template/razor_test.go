@@ -203,6 +203,11 @@ func TestAssign(t *testing.T) {
 			"{{- $a := 2 }}",
 		},
 		{
+			"Local assign 3",
+			"@$a := 2",
+			`{{- $a := 2 }}`,
+		},
+		{
 			"Global assign",
 			`@a := "test"`,
 			`{{- assertWarning (isNil $.a) "$.a has already been declared, use = to overwrite existing value" }}{{- set $ "a" "test" }}`,

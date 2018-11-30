@@ -44,7 +44,7 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 		return match
 	}
 
-	local := (tp == "$" || tp == "@{") && idRegex.MatchString(id)
+	local := (tp == "$" || tp == "@{" || tp == "@$") && idRegex.MatchString(id)
 	var err error
 	if expr, err = expressionParserInternal(exprRepl, expr, true, !local); err != nil && !acceptError {
 		return match
