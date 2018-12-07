@@ -4,6 +4,8 @@ owners:
   homepage: http://www.coveo.com
 import:
 - package: github.com/Masterminds/sprig
+  repo: https://github.com/coveord/sprig
+  version: v2.16.0-coveo.0
 - package: github.com/drhodes/goLorem
-- package: "github.com/op/go-logging"
+- package: github.com/op/go-logging
   repo: https://github.com/shenwei356/go-logging.git

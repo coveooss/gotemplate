@@ -1,5 +1,5 @@
-hash: 078d5ec26cabd74670acbed392807abfba66bd64b9a630197399567522be3e94
-updated: 2018-09-18T22:41:24.45873-04:00
+hash: 0857256c95e80dde9ac7d5f5d21e426276c06a73c5d8d5212ba72edae8f22dd4
+updated: 2018-12-07T08:12:19.061422486-05:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -33,11 +33,12 @@ imports:
 - name: github.com/huandu/xstrings
   version: 8bbcf2f9ccb55755e748b7644164cd4bdce94c1d
 - name: github.com/imdario/mergo
-  version: 7fe0c75c13abdee74b09fcacef5ea1c6bba6a874
+  version: 9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4
 - name: github.com/Masterminds/semver
   version: 59c29afe1a994eacb71c833025ca7acf874bb1da
 - name: github.com/Masterminds/sprig
-  version: 15f9564e7e9cf0da02a48e0d25f12a7b83559aa6
+  version: 6f47c5a313118e47c93c062ac4ed24eb141d0243
+  repo: https://github.com/coveord/sprig
 - name: github.com/mattn/go-colorable
   version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
 - name: github.com/mattn/go-isatty
@@ -52,7 +53,7 @@ imports:
   subpackages:
   - diffmatchpatch
 - name: golang.org/x/crypto
-  version: 0e37d006457bf46f9e6692014ba72ef82c33022c
+  version: 4d3f4d9ffa16a13f451c3b2999e9c49e9750bf06
   subpackages:
   - pbkdf2
   - scrypt
@@ -81,6 +82,6 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
+  version: 04af85275a5c7ac09d16bb3b9b2e751ed45154e5
   subpackages:
   - assert
