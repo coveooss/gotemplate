@@ -17,6 +17,8 @@
       url: /doc_test/collections
     - title: Comments
       url: /doc_test/comments
+    - title: Conditionals
+      url: /doc_test/conditionals
     - title: Data
       url: /doc_test/data
     - title: Functions
