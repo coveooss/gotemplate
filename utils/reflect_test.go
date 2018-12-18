@@ -12,17 +12,22 @@ func TestMergeDictionaries(t *testing.T) {
 	collections.DictionaryHelper = implementation.DictionaryHelper
 	collections.ListHelper = implementation.GenericListHelper
 	map1 := map[string]interface{}{
-		"int":        1000,
-		"Add1Int":    1,
-		"Add1String": "string",
+		"int":         1000,
+		"Add1Int":     1,
+		"Add1String":  "string",
+		"Add1Boolean": true,
+		"Boolean":     true,
 	}
 	map2 := map[string]interface{}{
-		"int":        2000,
-		"Add2Int":    2,
-		"Add2String": "string",
+		"int":         2000,
+		"Add2Int":     2,
+		"Add2String":  "string",
+		"Add2Boolean": true,
+		"Boolean":     false,
 		"map": map[string]interface{}{
-			"sub1":   2,
-			"newVal": "NewValue",
+			"Boolean": true,
+			"sub1":    2,
+			"newVal":  "NewValue",
 		},
 	}
 	tests := []struct {
@@ -36,25 +41,33 @@ func TestMergeDictionaries(t *testing.T) {
 		{"Add empty to 1", []map[string]interface{}{map1, map[string]interface{}{}}, map1, false},
 		{"Add nil to 1", []map[string]interface{}{map1, nil}, map1, false},
 		{"Add 2 to 1", []map[string]interface{}{map1, map2}, map[string]interface{}{
-			"int":        1000,
-			"Add1Int":    1,
-			"Add2Int":    2,
-			"Add1String": "string",
-			"Add2String": "string",
+			"int":         1000,
+			"Add1Int":     1,
+			"Add2Int":     2,
+			"Add1String":  "string",
+			"Add2String":  "string",
+			"Add1Boolean": true,
+			"Add2Boolean": true,
+			"Boolean":     true,
 			"map": map[string]interface{}{
-				"sub1":   2,
-				"newVal": "NewValue",
+				"Boolean": true,
+				"sub1":    2,
+				"newVal":  "NewValue",
 			},
 		}, false},
 		{"Add 1 to 2", []map[string]interface{}{map2, map1}, map[string]interface{}{
-			"int":        2000,
-			"Add1Int":    1,
-			"Add2Int":    2,
-			"Add1String": "string",
-			"Add2String": "string",
+			"int":         2000,
+			"Add1Int":     1,
+			"Add2Int":     2,
+			"Add1String":  "string",
+			"Add2String":  "string",
+			"Add1Boolean": true,
+			"Add2Boolean": true,
+			"Boolean":     false,
 			"map": map[string]interface{}{
-				"sub1":   2,
-				"newVal": "NewValue",
+				"Boolean": true,
+				"sub1":    2,
+				"newVal":  "NewValue",
 			},
 		}, false},
 	}

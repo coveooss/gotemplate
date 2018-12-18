@@ -1,5 +1,5 @@
-hash: 0857256c95e80dde9ac7d5f5d21e426276c06a73c5d8d5212ba72edae8f22dd4
-updated: 2018-12-07T08:12:19.061422486-05:00
+hash: 22a92de5cf9915812cc1e27982de6ac8f803e524464e22f52ea9f8125b7fbb4b
+updated: 2018-12-18T11:53:06.211810855-05:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -33,11 +33,11 @@ imports:
 - name: github.com/huandu/xstrings
   version: 8bbcf2f9ccb55755e748b7644164cd4bdce94c1d
 - name: github.com/imdario/mergo
-  version: 9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4
+  version: 7fe0c75c13abdee74b09fcacef5ea1c6bba6a874
 - name: github.com/Masterminds/semver
   version: 59c29afe1a994eacb71c833025ca7acf874bb1da
 - name: github.com/Masterminds/sprig
-  version: 6f47c5a313118e47c93c062ac4ed24eb141d0243
+  version: f104215ba20b876bd6dd859eca8935783cf6b140
   repo: https://github.com/coveord/sprig
 - name: github.com/mattn/go-colorable
   version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
@@ -82,6 +82,6 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: 04af85275a5c7ac09d16bb3b9b2e751ed45154e5
+  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
   subpackages:
   - assert
