@@ -1923,11 +1923,6 @@ func initials(str string) string
 ```
 
 ```go
-// Convert string from camelCase to kebab-case.
-func kebabcase(str string) string
-```
-
-```go
 // Converts the entire string to lowercase.
 func lower(str string) string
 ```

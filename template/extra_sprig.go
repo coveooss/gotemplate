@@ -82,7 +82,6 @@ var sprigFuncRef = map[string]struct {
 	"hasSuffix":     {group: sprigString, description: "Tests whether a string has a given suffix.", arguments: []string{"suffix", "str"}},
 	"indentSprig":   {group: sprigString, description: "Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.", arguments: []string{"spaces", "str"}, aliases: []string{"indent"}},
 	"initials":      {group: sprigString, description: "Given multiple words, takes the first letter of each word and combine.", arguments: []string{"str"}},
-	"kebabcase":     {group: sprigString, description: "Convert string from camelCase to kebab-case.", arguments: []string{"str"}},
 	"lower":         {group: sprigString, description: "Converts the entire string to lowercase.", arguments: []string{"str"}},
 	"nindentSprig":  {group: sprigString, description: "Same as the indent function, but prepends a new line to the beginning of the string.", arguments: []string{"spaces", "str"}, aliases: []string{"nindent"}},
 	"nospace":       {group: sprigString, description: "Removes all whitespace from a string.", arguments: []string{"str"}},
