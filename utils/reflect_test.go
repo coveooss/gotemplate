@@ -17,6 +17,11 @@ func TestMergeDictionaries(t *testing.T) {
 		"Add1String":  "string",
 		"Add1Boolean": true,
 		"Boolean":     true,
+		"map": map[string]interface{}{
+			"AddBoolean1": false,
+			"Boolean":     true,
+			"Boolean2":    false,
+		},
 	}
 	map2 := map[string]interface{}{
 		"int":         2000,
@@ -25,9 +30,19 @@ func TestMergeDictionaries(t *testing.T) {
 		"Add2Boolean": true,
 		"Boolean":     false,
 		"map": map[string]interface{}{
-			"Boolean": true,
-			"sub1":    2,
-			"newVal":  "NewValue",
+			"AddBoolean2": true,
+			"Boolean":     false,
+			"Boolean2":    true,
+			"sub1":        2,
+			"newVal":      "NewValue",
+		},
+	}
+	map3 := map[string]interface{}{
+		"Add3Int": 2,
+		"Boolean": false,
+		"map": map[string]interface{}{
+			"AddBoolean3": true,
+			"Boolean":     false,
 		},
 	}
 	tests := []struct {
@@ -50,9 +65,12 @@ func TestMergeDictionaries(t *testing.T) {
 			"Add2Boolean": true,
 			"Boolean":     true,
 			"map": map[string]interface{}{
-				"Boolean": true,
-				"sub1":    2,
-				"newVal":  "NewValue",
+				"AddBoolean1": false,
+				"AddBoolean2": true,
+				"Boolean":     true,
+				"Boolean2":    false,
+				"sub1":        2,
+				"newVal":      "NewValue",
 			},
 		}, false},
 		{"Add 1 to 2", []map[string]interface{}{map2, map1}, map[string]interface{}{
@@ -65,9 +83,32 @@ func TestMergeDictionaries(t *testing.T) {
 			"Add2Boolean": true,
 			"Boolean":     false,
 			"map": map[string]interface{}{
-				"Boolean": true,
-				"sub1":    2,
-				"newVal":  "NewValue",
+				"AddBoolean1": false,
+				"AddBoolean2": true,
+				"Boolean":     false,
+				"Boolean2":    true,
+				"sub1":        2,
+				"newVal":      "NewValue",
+			},
+		}, false},
+		{"Add 1 to 2 to 3", []map[string]interface{}{map3, map2, map1}, map[string]interface{}{
+			"int":         2000,
+			"Boolean":     false,
+			"Add1Boolean": true,
+			"Add1Int":     1,
+			"Add1String":  "string",
+			"Add2Boolean": true,
+			"Add2Int":     2,
+			"Add2String":  "string",
+			"Add3Int":     2,
+			"map": map[string]interface{}{
+				"AddBoolean1": false,
+				"AddBoolean2": true,
+				"AddBoolean3": true,
+				"Boolean":     false,
+				"Boolean2":    true,
+				"sub1":        2,
+				"newVal":      "NewValue",
 			},
 		}, false},
 	}
