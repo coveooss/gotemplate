@@ -60,7 +60,7 @@ func runGotemplate() (exitCode int) {
 		recursive           = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
 		recursionDepth      = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
 		sourceFolder        = run.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").String()
-		sourceIgnoreMissing = run.Flag("ignore-missing-source", "Exit with code 0 even if source does not exist (--ims)").PlaceHolder("ims").Bool()
+		sourceIgnoreMissing = run.Flag("ignore-missing-source", "Exit with code 0 even if source does not exist").Bool()
 		targetFolder        = run.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
 		forceStdin          = run.Flag("stdin", "Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)").Short('I').Bool()
 		followSymLinks      = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
