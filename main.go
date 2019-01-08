@@ -266,7 +266,11 @@ func main() {
 			}
 		}
 	}
-	*templates = exclude(*templates, *excludedPatterns)
+	*templates, err = exclude(*templates, *excludedPatterns)
+	if err != nil {
+		errors.Print(err)
+		exitCode = 1
+	}
 
 	resultFiles, err := t.ProcessTemplates(*sourceFolder, *targetFolder, *templates...)
 	if err != nil {

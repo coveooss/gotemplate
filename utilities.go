@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/bmatcuk/doublestar"
 	"github.com/coveo/gotemplate/collections"
 	"github.com/coveo/gotemplate/errors"
 	"github.com/coveo/gotemplate/template"
@@ -40,18 +41,28 @@ func readStdin() string {
 
 var stdinContent string
 
-func exclude(files []string, patterns []string) []string {
+func exclude(files []string, patterns []string) (result []string, err error) {
 	if patterns = extend(patterns); len(patterns) == 0 {
 		// There is no exclusion pattern, so we return the list of files as is
-		return files
+		result = files
+		return
 	}
+	result = make([]string, 0, len(files))
 
-	result := make([]string, 0, len(files))
 	for i, file := range files {
+		file, err = filepath.Abs(file)
+		if err != nil {
+			return
+		}
 		var excluded bool
 		for _, pattern := range patterns {
-			file = iif(strings.ContainsAny(pattern, `/\`), file, filepath.Base(file)).(string)
-			if excluded = must(filepath.Match(pattern, file)).(bool); excluded {
+			pattern, err = filepath.Abs(pattern)
+			if err != nil {
+				return
+			}
+			if excluded, err = doublestar.Match(pattern, file); err != nil {
+				return
+			} else if excluded {
 				template.Log.Debugf("%s ignored", files[i])
 				break
 			}
@@ -60,7 +71,7 @@ func exclude(files []string, patterns []string) []string {
 			result = append(result, files[i])
 		}
 	}
-	return result
+	return
 }
 
 func extend(values []string) []string {

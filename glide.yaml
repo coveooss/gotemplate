@@ -8,3 +8,5 @@ import:
 - package: github.com/drhodes/goLorem
 - package: github.com/op/go-logging
   repo: https://github.com/shenwei356/go-logging.git
+- package: github.com/bmatcuk/doublestar
+  version: ^1.1.1
