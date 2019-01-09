@@ -40,49 +40,38 @@ var (
 	errPrintf = utils.ColorErrorPrintf
 )
 
-func main() {
-	var exitCode int
-
-	defer func() {
-		if rec := recover(); rec != nil {
-			errPrintf(color.RedString("Recovered %v\n"), rec)
-			debug.PrintStack()
-			exitCode = -1
-		}
-		cleanup()
-		os.Exit(exitCode)
-	}()
-
+func runGotemplate() (exitCode int) {
 	var (
 		app          = kingpin.New(os.Args[0], description)
 		forceColor   = app.Flag("color", "Force rendering of colors event if output is redirected").Bool()
 		forceNoColor = app.Flag("no-color", "Force rendering of colors event if output is redirected").Bool()
 		getVersion   = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
 
-		run              = app.Command("run", "")
-		delimiters       = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
-		varFiles         = run.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
-		namedVars        = run.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
-		typeMode         = run.Flag("type", "Force the type used for the main context (Json, Yaml, Hcl)").Short('t').Enum("Hcl", "h", "hcl", "H", "HCL", "Json", "j", "json", "J", "JSON", "Yaml", "Yml", "y", "yml", "yaml", "Y", "YML", "YAML")
-		includePatterns  = run.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
-		excludedPatterns = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
-		overwrite        = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
-		substitutes      = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp) or specify that value through "+template.EnvSubstitutes+" where each substitute is separated by a newline").PlaceHolder("exp").Short('s').Strings()
-		removeEmptyLines = run.Flag("remove-empty-lines", "Remove empty lines from the result (--re)").Short('E').Bool()
-		recursive        = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
-		recursionDepth   = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
-		sourceFolder     = run.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").ExistingDir()
-		targetFolder     = run.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
-		forceStdin       = run.Flag("stdin", "Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)").Short('I').Bool()
-		followSymLinks   = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
-		print            = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
-		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
-		acceptNoValue    = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error (--nv) or env: "+template.EnvAcceptNoValue).Bool()
-		strictError      = run.Flag("strict-error-validation", "Consider error encountered in any file as real error (--strict) or env: "+template.EnvStrictErrorCheck).Short('S').Bool()
-		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl) or env: "+template.EnvDebug).Default("2").PlaceHolder("level").Int8()
-		logLevel         = run.Flag("log-level", "Set the logging level 0-9 (--ll)").Short('L').PlaceHolder("level").Int8()
-		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
-		templates        = run.Arg("templates", "Template files or commands to process").Strings()
+		run                 = app.Command("run", "")
+		delimiters          = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) (--del)").PlaceHolder("{{,}},@").String()
+		varFiles            = run.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').ExistingFiles()
+		namedVars           = run.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
+		typeMode            = run.Flag("type", "Force the type used for the main context (Json, Yaml, Hcl)").Short('t').Enum("Hcl", "h", "hcl", "H", "HCL", "Json", "j", "json", "J", "JSON", "Yaml", "Yml", "y", "yml", "yaml", "Y", "YML", "YAML")
+		includePatterns     = run.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
+		excludedPatterns    = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
+		overwrite           = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
+		substitutes         = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp) or specify that value through "+template.EnvSubstitutes+" where each substitute is separated by a newline").PlaceHolder("exp").Short('s').Strings()
+		removeEmptyLines    = run.Flag("remove-empty-lines", "Remove empty lines from the result (--re)").Short('E').Bool()
+		recursive           = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
+		recursionDepth      = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
+		sourceFolder        = run.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").String()
+		sourceIgnoreMissing = run.Flag("ignore-missing-source", "Exit with code 0 even if source does not exist").Bool()
+		targetFolder        = run.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
+		forceStdin          = run.Flag("stdin", "Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)").Short('I').Bool()
+		followSymLinks      = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
+		print               = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
+		disableRender       = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
+		acceptNoValue       = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error (--nv) or env: "+template.EnvAcceptNoValue).Bool()
+		strictError         = run.Flag("strict-error-validation", "Consider error encountered in any file as real error (--strict) or env: "+template.EnvStrictErrorCheck).Short('S').Bool()
+		debugLogLevel       = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl) or env: "+template.EnvDebug).Default("2").PlaceHolder("level").Int8()
+		logLevel            = run.Flag("log-level", "Set the logging level 0-9 (--ll)").Short('L').PlaceHolder("level").Int8()
+		logSimple           = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
+		templates           = run.Arg("templates", "Template files or commands to process").Strings()
 
 		list          = app.Command("list", "Get detailed help on gotemplate functions")
 		listFunctions = list.Flag("functions", "Get detailed help on function").Short('f').Bool()
@@ -206,7 +195,7 @@ func main() {
 
 	if *getVersion {
 		println(version)
-		os.Exit(0)
+		return 0
 	}
 
 	template.ConfigureLogging(logging.Level(*logLevel), logging.Level(*debugLogLevel), *logSimple)
@@ -216,6 +205,15 @@ func main() {
 		*targetFolder = *sourceFolder
 	}
 	*sourceFolder = errors.Must(filepath.Abs(*sourceFolder)).(string)
+	if _, err := os.Stat(*sourceFolder); os.IsNotExist(err) {
+		if !*sourceIgnoreMissing {
+			errors.Printf("Source folder: %s does not exist", *sourceFolder)
+			return 1
+		}
+		template.Log.Infof("Source folder: %s does not exist, skipping gotemplate", *sourceFolder)
+		return 0
+	}
+
 	*targetFolder = errors.Must(filepath.Abs(*targetFolder)).(string)
 
 	// If target folder is not equal to source folder, we run in overwrite mode by default
@@ -233,7 +231,7 @@ func main() {
 	t, err := template.NewTemplate("", createContext(*varFiles, *namedVars, *typeMode), *delimiters, optionsSet, *substitutes...)
 	if err != nil {
 		errors.Print(err)
-		os.Exit(3)
+		return 3
 	}
 	t.TempFolder = tempFolder
 
@@ -249,7 +247,7 @@ func main() {
 		if *listTemplates {
 			t.PrintTemplates(*listAll, *listLong)
 		}
-		os.Exit(0)
+		return 0
 	}
 
 	errors.Must(os.Chdir(*sourceFolder))
@@ -293,4 +291,19 @@ func main() {
 	if !*print {
 		utils.TerraformFormat(resultFiles...)
 	}
+	return
+}
+
+func main() {
+	exitCode := runGotemplate()
+	defer func() {
+		if rec := recover(); rec != nil {
+			errPrintf(color.RedString("Recovered %v\n"), rec)
+			debug.PrintStack()
+			exitCode = -1
+		}
+		cleanup()
+		os.Exit(exitCode)
+	}()
+
 }

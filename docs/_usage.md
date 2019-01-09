@@ -34,6 +34,7 @@ Flags:
   -r, --recursive                Process all template files recursively
   -R, --recursion-depth=depth    Process template files recursively specifying depth
       --source=folder            Specify a source folder (default to the current folder)
+      --ignore-missing-source    Exit with code 0 even if source does not exist
       --target=folder            Specify a target folder (default to source folder)
   -I, --stdin                    Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)
   -f, --follow-symlinks          Follow the symbolic links while using the recursive option
@@ -68,6 +69,7 @@ Commands:
     -r, --recursive                Process all template files recursively
     -R, --recursion-depth=depth    Process template files recursively specifying depth
         --source=folder            Specify a source folder (default to the current folder)
+        --ignore-missing-source    Exit with code 0 even if source does not exist
         --target=folder            Specify a target folder (default to source folder)
     -I, --stdin                    Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)
     -f, --follow-symlinks          Follow the symbolic links while using the recursive option
