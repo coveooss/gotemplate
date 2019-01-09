@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/coveo/gotemplate/collections"
-	"github.com/imdario/mergo"
 )
 
 func (d baseDict) String() string {
@@ -115,13 +114,35 @@ func (dh DictHelper) KeysAsString(dict baseIDict) collections.StringArray {
 
 // Merge merges the other dictionaries into the current dictionary.
 func (dh DictHelper) Merge(target baseIDict, sources []baseIDict) baseIDict {
-	m := target.AsMap()
 	for i := range sources {
 		if sources[i] == nil {
 			continue
 		}
-		must(mergo.Merge(&m, dh.ConvertDict(sources[i]).AsMap()))
+		target = dh.deepMerge(target, dh.ConvertDict(sources[i]))
 	}
+	return target
+}
+
+func (dh DictHelper) deepMerge(target baseIDict, source baseIDict) baseIDict {
+	targetMap := target.AsMap()
+	sourceMap := source.AsMap()
+	for key := range sourceMap {
+		sourceValue, sourceHasKey := sourceMap[key]
+		targetValue, targetHasKey := targetMap[key]
+
+		if sourceHasKey && !targetHasKey {
+			targetMap[key] = sourceValue
+			continue
+		}
+
+		targetValueDict, targetValueIsDict := targetValue.(baseIDict)
+		sourceValueDict, sourceValueIsDict := sourceValue.(baseIDict)
+
+		if sourceValueIsDict && targetValueIsDict {
+			targetMap[key] = dh.deepMerge(targetValueDict, sourceValueDict)
+		}
+	}
+
 	return target
 }
 

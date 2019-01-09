@@ -1451,6 +1451,11 @@ func templates() []*template.Template
 ### Sprig Cryptographic & Security, http://masterminds.github.io/sprig/crypto.html
 
 ```go
+// Computes Adler-32 checksum.
+func adler32sum(input string) string
+```
+
+```go
 func buildCustomCert(arg1 string, arg2 string) sprig.certificate, error
 ```
 
@@ -1920,6 +1925,11 @@ func indentSprig(spaces int, str string) string
 ```go
 // Given multiple words, takes the first letter of each word and combine.
 func initials(str string) string
+```
+
+```go
+// Convert string from camelCase to kebab-case.
+func kebabcase(str string) string
 ```
 
 ```go
