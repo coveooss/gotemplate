@@ -29,6 +29,21 @@ func TestCli(t *testing.T) {
 	assert.Equal(t, []byte("5"), readGeneratedFileContent)
 }
 
+func TestErrorRecovery(t *testing.T) {
+	oldArgs := os.Args
+	defer func() { os.Args = oldArgs }()
+
+	tempDir := must(ioutil.TempDir("", "gotemplate-test")).(string)
+	templateFile := path.Join(tempDir, "test.template")
+	templateFileContent := []byte("{{ panic `test string` }}")
+	must(ioutil.WriteFile(templateFile, templateFileContent, 0644))
+
+	os.Args = []string{"gotemplate", "--source", tempDir}
+	exitCode := runGotemplate()
+
+	assert.Equal(t, -1, exitCode)
+}
+
 func TestCliNonExistingSource(t *testing.T) {
 	oldArgs := os.Args
 	defer func() { os.Args = oldArgs }()
