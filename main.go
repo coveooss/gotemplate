@@ -210,6 +210,7 @@ func runGotemplate() (exitCode int) {
 			errors.Printf("Source folder: %s does not exist", *sourceFolder)
 			return 1
 		}
+		template.Log.Infof("Source folder: %s does not exist, skipping gotemplate", *sourceFolder)
 		return 0
 	}
 
