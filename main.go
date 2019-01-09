@@ -41,6 +41,15 @@ var (
 )
 
 func runGotemplate() (exitCode int) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			errPrintf(color.RedString("Recovered %v\n"), rec)
+			debug.PrintStack()
+			exitCode = -1
+		}
+		cleanup()
+	}()
+
 	var (
 		app          = kingpin.New(os.Args[0], description)
 		forceColor   = app.Flag("color", "Force rendering of colors event if output is redirected").Bool()
@@ -295,15 +304,5 @@ func runGotemplate() (exitCode int) {
 }
 
 func main() {
-	exitCode := runGotemplate()
-	defer func() {
-		if rec := recover(); rec != nil {
-			errPrintf(color.RedString("Recovered %v\n"), rec)
-			debug.PrintStack()
-			exitCode = -1
-		}
-		cleanup()
-		os.Exit(exitCode)
-	}()
-
+	os.Exit(runGotemplate())
 }
