@@ -19,6 +19,7 @@ Len() int
 New(...interface{}) IGenericList
 Pop(...int) interface{}, IGenericList
 Prepend(...interface{}) IGenericList
+PrettyPrint() string
 Remove(...int) IGenericList
 Reverse() IGenericList
 Set(int, interface{}) IGenericList, error
