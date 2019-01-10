@@ -23,6 +23,15 @@ var (
 func (l xmlList) String() string { result, _ := Marshal(l.AsArray()); return string(result) }
 func (d xmlDict) String() string { result, _ := Marshal(d.AsMap()); return string(result) }
 
+func (l xmlList) PrettyPrint() string {
+	result, _ := MarshalIndent(l.AsArray(), "", "  ")
+	return string(result)
+}
+func (d xmlDict) PrettyPrint() string {
+	result, _ := MarshalIndent(d.AsMap(), "", "  ")
+	return string(result)
+}
+
 // TODO activate when Marshall will be enabled on maps
 // var _ = func() int {
 // 	collections.TypeConverters["xml"] = Unmarshal

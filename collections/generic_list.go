@@ -26,6 +26,7 @@ type IGenericList interface {
 	New(...interface{}) IGenericList                        // Creates a new generic list from the supplied arguments.
 	Pop(indexes ...int) (interface{}, IGenericList)         // Removes and returns the elements of the list (if nothing is specified, remove the last element).
 	Prepend(...interface{}) IGenericList                    // Add elements to the beginning of the current list. If list is not large enough, it is enlarged to fit the required size.
+	PrettyPrint() string                                    // Returns the pretty string representation of the list.
 	Remove(indexes ...int) IGenericList                     // Returns a new list without the element specified.
 	Reverse() IGenericList                                  // Returns a copy of the current list in reverse order.
 	Set(index int, value interface{}) (IGenericList, error) // Sets the value at position index into the list. If list is not large enough, it is enlarged to fit the index.

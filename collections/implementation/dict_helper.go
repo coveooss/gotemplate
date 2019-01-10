@@ -15,6 +15,8 @@ func (d baseDict) String() string {
 	return fmt.Sprintf("dict[%s]", keys.Join(" "))
 }
 
+func (d baseDict) PrettyPrint() string { return d.String() }
+
 // DictHelper implements basic functionalities required for IDictionary.
 type DictHelper struct {
 	BaseHelper

@@ -26,6 +26,7 @@ type IDictionary interface {
 	Native() interface{}                                     // Returns the object casted as native go type (applied recursively).
 	Omit(interface{}, ...interface{}) IDictionary            // Returns a distinct copy of the object including all keys except specified ones.
 	Pop(...interface{}) interface{}                          // Returns and remove the objects with the specified keys.
+	PrettyPrint() string                                     // Returns the pretty string representation of the dictionary.
 	Set(key, value interface{}) IDictionary                  // Sets key to value in the dictionary.
 	String() string                                          // Returns the string representation of the dictionary.
 	Transpose() IDictionary                                  // Transpose keys/values and return the resulting dictionary

@@ -36,6 +36,16 @@ func (d hclDict) String() string {
 	return string(result)
 }
 
+func (l hclList) PrettyPrint() string {
+	result, _ := MarshalIndent(l.AsArray(), "", "  ")
+	return string(result)
+}
+
+func (d hclDict) PrettyPrint() string {
+	result, _ := MarshalIndent(d.AsMap(), "", "  ")
+	return string(result)
+}
+
 var _ = func() int {
 	collections.TypeConverters["hcl"] = Unmarshal
 	return 0
