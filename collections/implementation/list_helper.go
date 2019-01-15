@@ -7,7 +7,8 @@ import (
 	"github.com/coveo/gotemplate/collections"
 )
 
-func (l baseList) String() string { return fmt.Sprint(l.AsArray()) }
+func (l baseList) String() string      { return fmt.Sprint(l.AsArray()) }
+func (l baseList) PrettyPrint() string { return l.String() }
 
 // ListHelper implements basic functionalities required for IGenericList.
 type ListHelper struct {

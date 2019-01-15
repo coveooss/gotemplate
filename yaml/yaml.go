@@ -19,8 +19,10 @@ var (
 	NativeUnmarshalStrict = yaml.UnmarshalStrict
 )
 
-func (l yamlList) String() string { result, _ := Marshal(l.AsArray()); return string(result) }
-func (d yamlDict) String() string { result, _ := Marshal(d.AsMap()); return string(result) }
+func (l yamlList) String() string      { result, _ := Marshal(l.AsArray()); return string(result) }
+func (d yamlDict) String() string      { result, _ := Marshal(d.AsMap()); return string(result) }
+func (l yamlList) PrettyPrint() string { return l.String() }
+func (d yamlDict) PrettyPrint() string { return d.String() }
 
 var _ = func() int {
 	collections.TypeConverters["yaml"] = Unmarshal

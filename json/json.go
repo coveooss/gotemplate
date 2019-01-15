@@ -24,6 +24,16 @@ var (
 func (l jsonList) String() string { result, _ := Marshal(l.AsArray()); return string(result) }
 func (d jsonDict) String() string { result, _ := Marshal(d.AsMap()); return string(result) }
 
+func (l jsonList) PrettyPrint() string {
+	result, _ := MarshalIndent(l.AsArray(), "", "  ")
+	return string(result)
+}
+
+func (d jsonDict) PrettyPrint() string {
+	result, _ := MarshalIndent(d.AsMap(), "", "  ")
+	return string(result)
+}
+
 var _ = func() int {
 	collections.TypeConverters["!json"] = Unmarshal
 	return 0

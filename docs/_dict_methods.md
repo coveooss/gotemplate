@@ -19,6 +19,7 @@ Merge(IDictionary, ...IDictionary) IDictionary
 Native() interface{}
 Omit(interface{}, ...interface{}) IDictionary
 Pop(...interface{}) interface{}
+PrettyPrint() string
 Set(interface{}, interface{}) IDictionary
 String() string
 Transpose() IDictionary

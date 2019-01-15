@@ -1,5 +1,5 @@
 hash: 482761cbcbb80923d505ca70ed7bcfdeeb678bafd7062854614e3902241a08a4
-updated: 2019-01-09T11:47:40.738327068-05:00
+updated: 2019-01-10T10:20:31.547572-05:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -48,24 +48,24 @@ imports:
   version: c6b9702d88ba878b81c49272d3fc470593698733
   repo: https://github.com/shenwei356/go-logging.git
 - name: github.com/PuerkitoBio/goquery
-  version: 2d2796f41742ece03e8086188fa4db16a3a0b458
+  version: 3dcf72e6c17f694381a21592651ca1464ded0e10
 - name: github.com/sergi/go-diff
   version: da645544ed44df016359bd4c0e3dc60ee3a0da43
   subpackages:
   - diffmatchpatch
 - name: golang.org/x/crypto
-  version: 505ab145d0a99da450461ae2c1a9f6cd10d1f447
+  version: ff983b9c42bc9fbf91556e191cc8efb585c16908
   subpackages:
   - pbkdf2
   - scrypt
   - ssh/terminal
 - name: golang.org/x/net
-  version: e147a9138326bc0e9d4e179541ffd8af41cff8a9
+  version: be1c187aa6c66b9daa1d9461c228d17e9dd2cab7
   subpackages:
   - html
   - html/atom
 - name: golang.org/x/sys
-  version: 074acd46bca67915925527c07849494d115e7c43
+  version: 48ac38b7c8cbedd50b1613c0fccacfc7d88dfcdf
   subpackages:
   - unix
   - windows
@@ -79,10 +79,10 @@ testImports:
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
-  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  version: 5d4384ee4fb2527b0a1256a821ebfc92f91efefc
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: f35b8ab0b5a2cef36673838d662e249dd9c94686
+  version: 363ebb24d041ccea8068222281c2e963e997b9dc
   subpackages:
   - assert
