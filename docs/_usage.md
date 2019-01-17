@@ -34,7 +34,6 @@ Flags:
   -r, --recursive                Process all template files recursively
   -R, --recursion-depth=depth    Process template files recursively specifying depth
       --source=folder            Specify a source folder (default to the current folder)
-      --ignore-missing-source    Exit with code 0 even if source does not exist
       --target=folder            Specify a target folder (default to source folder)
   -I, --stdin                    Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)
   -f, --follow-symlinks          Follow the symbolic links while using the recursive option
@@ -45,6 +44,9 @@ Flags:
       --debug-log-level=level    Set the debug logging level 0-9 (--dl) or env: GOTEMPLATE_DEBUG
   -L, --log-level=level          Set the logging level 0-9 (--ll)
       --log-simple               Disable the extended logging, i.e. no color, no date (--ls)
+      --ignore-missing-import    Exit with code 0 even if import does not exist
+      --ignore-missing-source    Exit with code 0 even if source does not exist
+      --ignore-missing-paths     Exit with code 0 even if import or source do not exist
 
 Args:
   [<templates>]  Template files or commands to process
@@ -69,7 +71,6 @@ Commands:
     -r, --recursive                Process all template files recursively
     -R, --recursion-depth=depth    Process template files recursively specifying depth
         --source=folder            Specify a source folder (default to the current folder)
-        --ignore-missing-source    Exit with code 0 even if source does not exist
         --target=folder            Specify a target folder (default to source folder)
     -I, --stdin                    Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)
     -f, --follow-symlinks          Follow the symbolic links while using the recursive option
@@ -80,6 +81,9 @@ Commands:
         --debug-log-level=level    Set the debug logging level 0-9 (--dl) or env: GOTEMPLATE_DEBUG
     -L, --log-level=level          Set the logging level 0-9 (--ll)
         --log-simple               Disable the extended logging, i.e. no color, no date (--ls)
+        --ignore-missing-import    Exit with code 0 even if import does not exist
+        --ignore-missing-source    Exit with code 0 even if source does not exist
+        --ignore-missing-paths     Exit with code 0 even if import or source do not exist
 
   list [<flags>] [<filters>...]
     Get detailed help on gotemplate functions

@@ -48,11 +48,52 @@ func TestCliNonExistingSource(t *testing.T) {
 	oldArgs := os.Args
 	defer func() { os.Args = oldArgs }()
 
-	os.Args = []string{"gotemplate", "--source", "/path/that/does/not/exit"}
+	os.Args = []string{"gotemplate", "--source", "/path/that/does/not/exist"}
 	exitCode := runGotemplate()
 	assert.Equal(t, 1, exitCode)
 
-	os.Args = []string{"gotemplate", "--source", "/path/that/does/not/exit", "--ignore-missing-source"}
+	os.Args = []string{"gotemplate", "--source", "/path/that/does/not/exist", "--ignore-missing-source"}
+	exitCode = runGotemplate()
+	assert.Equal(t, 0, exitCode)
+
+	os.Args = []string{"gotemplate", "--source", "/path/that/does/not/exist", "--ignore-missing-paths"}
+	exitCode = runGotemplate()
+	assert.Equal(t, 0, exitCode)
+}
+
+func TestCliNonExistingImport(t *testing.T) {
+	oldArgs := os.Args
+	defer func() { os.Args = oldArgs }()
+
+	tempDir := must(ioutil.TempDir("", "gotemplate-test")).(string)
+	templateFile := path.Join(tempDir, "test.template")
+	templateFileContent := []byte("{{ $var := add 3 2 }}{{ $var }}")
+	must(ioutil.WriteFile(templateFile, templateFileContent, 0644))
+
+	// Regular variables
+	os.Args = []string{"gotemplate", "--var", "test=123", "--var", "test=`/path/that/does/not/exist.json`", "--source", tempDir}
+	exitCode := runGotemplate()
+	assert.Equal(t, 0, exitCode)
+
+	// Missing imports
+	os.Args = []string{"gotemplate", "--import", "/path/that/does/not/exist.json", "--source", tempDir}
+	exitCode = runGotemplate()
+	assert.Equal(t, 1, exitCode)
+
+	os.Args = []string{"gotemplate", "--var", "test=/path/that/does/not/exist.json", "--source", tempDir}
+	exitCode = runGotemplate()
+	assert.Equal(t, 1, exitCode)
+
+	// Ignored missing imports
+	os.Args = []string{"gotemplate", "--import", "/path/that/does/not/exist.json", "--ignore-missing-import", "--source", tempDir}
+	exitCode = runGotemplate()
+	assert.Equal(t, 0, exitCode)
+
+	os.Args = []string{"gotemplate", "--import", "/path/that/does/not/exist.json", "--ignore-missing-paths", "--source", tempDir}
+	exitCode = runGotemplate()
+	assert.Equal(t, 0, exitCode)
+
+	os.Args = []string{"gotemplate", "--var", "test=/path/that/does/not/exist.json", "--ignore-missing-import", "--source", tempDir}
 	exitCode = runGotemplate()
 	assert.Equal(t, 0, exitCode)
 }
