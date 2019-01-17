@@ -1,16 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 
 	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/template"
 )
 
-func createContext(varsFiles []string, namedVars []string, mode string) (context collections.IDictionary) {
+func createContext(varsFiles []string, namedVars []string, mode string, ignoreMissingFiles bool) (collections.IDictionary, error) {
+	var context collections.IDictionary
+
 	type fileDef struct {
 		name    string
 		value   interface{}
@@ -57,7 +60,9 @@ func createContext(varsFiles []string, namedVars []string, mode string) (context
 		if filename != "" {
 			loader = func(filename string) (collections.IDictionary, error) {
 				var content interface{}
-				if err := collections.LoadData(filename, &content); err == nil {
+				loadErr := collections.LoadData(filename, &content)
+				_, isFileErr := loadErr.(*os.PathError)
+				if loadErr == nil {
 					if nv.name == "" && !nv.unnamed {
 						if content, err := collections.TryAsDictionary(content); err == nil {
 							return content, nil
@@ -68,13 +73,15 @@ func createContext(varsFiles []string, namedVars []string, mode string) (context
 					}
 
 					return collections.AsDictionary(map[string]interface{}{nv.name: content}), nil
-				} else if _, isFileErr := err.(*os.PathError); !isFileErr {
-					return nil, err
+				} else if !isFileErr {
+					return nil, loadErr
 				}
 
 				// Finally, we just try to convert the data with the converted value
 				if err := collections.ConvertData(filename, &content); err != nil {
 					content = nv.value
+				} else if isFileErr {
+					return nil, loadErr
 				}
 
 				if nv.name == "" {
@@ -115,7 +122,12 @@ func createContext(varsFiles []string, namedVars []string, mode string) (context
 		}
 		content, err := loader(filename)
 		if err != nil {
-			errors.Raise("Error %v while loading vars file %s", nv.value, err)
+			if _, isFileErr := err.(*os.PathError); isFileErr && ignoreMissingFiles {
+				template.Log.Infof("Import: %s not found. Skipping the import", filename)
+				continue
+			} else {
+				return nil, fmt.Errorf("Error %v while loading vars file %s", nv.value, err)
+			}
 		}
 		if context == nil {
 			// The context is not initialized yet, so we create it with the same type of the
@@ -131,5 +143,5 @@ func createContext(varsFiles []string, namedVars []string, mode string) (context
 	if len(unnamed) > 0 {
 		context.Set("ARGS", unnamed)
 	}
-	return
+	return context, nil
 }
