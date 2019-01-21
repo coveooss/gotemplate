@@ -80,11 +80,11 @@ func createContext(varsFiles []string, namedVars []string, mode string, ignoreMi
 				// Finally, we just try to convert the data with the converted value
 				if err := collections.ConvertData(filename, &content); err != nil {
 					content = nv.value
-				} else if isFileErr {
-					return nil, loadErr
 				}
 
-				if nv.name == "" {
+				if nv.name == "" && isFileErr {
+					return nil, loadErr
+				} else if nv.name == "" {
 					unnamed = append(unnamed, content)
 					return nil, nil
 				}
