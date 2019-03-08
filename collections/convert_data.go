@@ -165,12 +165,17 @@ func ToNativeRepresentation(value interface{}) interface{} {
 	case reflect.String:
 		return reflect.ValueOf(value).String()
 
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		return must(strconv.Atoi(fmt.Sprint(value))).(int)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32:
+		return int(val.Int())
 
-	case reflect.Int64, reflect.Uint64:
-		return must(strconv.ParseInt(fmt.Sprint(value), 10, 64)).(int64)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		return uint(val.Uint())
+
+	case reflect.Int64:
+		return val.Int()
+
+	case reflect.Uint64:
+		return val.Uint()
 
 	case reflect.Float32, reflect.Float64:
 		return must(strconv.ParseFloat(fmt.Sprint(value), 64)).(float64)
@@ -237,7 +242,7 @@ func ToNativeRepresentation(value interface{}) interface{} {
 				options[split[i+1]] = true
 			}
 
-			if options["omitempty"] && IsEmptyValue(val.Field(i)) {
+			if !IsExported(name) || options["omitempty"] && IsEmptyValue(val.Field(i)) {
 				continue
 			}
 
