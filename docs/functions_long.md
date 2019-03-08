@@ -1587,6 +1587,11 @@ func listSprig(args ...interface{}) []interface{}
 ```
 
 ```go
+// Merge two or more dictionaries into one, giving precedence from **right to left**, effectively overwriting values in the dest dictionary
+func mergeOverwrite(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
+```
+
+```go
 // Aliases: merge
 func mergeSprig(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
 ```

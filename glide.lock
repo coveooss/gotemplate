@@ -1,5 +1,5 @@
 hash: 482761cbcbb80923d505ca70ed7bcfdeeb678bafd7062854614e3902241a08a4
-updated: 2019-01-10T10:20:31.547572-05:00
+updated: 2019-03-08T08:14:58.8418-05:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -9,8 +9,6 @@ imports:
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/andybalholm/cascadia
   version: 680b6a57bda4f657485ad44bdea42342ead737bc
-- name: github.com/aokoli/goutils
-  version: 41ac8693c5c10a92ea1ff5ac3a7f95646f6123b0
 - name: github.com/bmatcuk/doublestar
   version: 85a78806aa1b4707d1dbace9be592cf1ece91ab3
 - name: github.com/drhodes/goLorem
@@ -35,11 +33,13 @@ imports:
 - name: github.com/huandu/xstrings
   version: f02667b379e2fb5916c3cda2cf31e0eb885d79f8
 - name: github.com/imdario/mergo
-  version: 7fe0c75c13abdee74b09fcacef5ea1c6bba6a874
+  version: 7c29201646fa3de8506f701213473dd407f19646
+- name: github.com/Masterminds/goutils
+  version: 41ac8693c5c10a92ea1ff5ac3a7f95646f6123b0
 - name: github.com/Masterminds/semver
   version: 59c29afe1a994eacb71c833025ca7acf874bb1da
 - name: github.com/Masterminds/sprig
-  version: 544a9b1d90f323f6509491b389714fbbd126bee3
+  version: 9f8fceff796fb9f4e992cd2bece016be0121ab74
 - name: github.com/mattn/go-colorable
   version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
 - name: github.com/mattn/go-isatty
@@ -60,7 +60,7 @@ imports:
   - scrypt
   - ssh/terminal
 - name: golang.org/x/net
-  version: be1c187aa6c66b9daa1d9461c228d17e9dd2cab7
+  version: 16b79f2e4e95ea23b2bf9903c9809ff7b013ce85
   subpackages:
   - html
   - html/atom
@@ -83,6 +83,6 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: 363ebb24d041ccea8068222281c2e963e997b9dc
+  version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
   subpackages:
   - assert
