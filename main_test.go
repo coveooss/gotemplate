@@ -116,7 +116,7 @@ func TestCli(t *testing.T) {
 			name:         "Error recovery",
 			args:         []string{},
 			template:     "{{ panic `test string` }}",
-			expectedCode: -1,
+			expectedCode: 1,
 		},
 	}
 	for _, tt := range tests {
