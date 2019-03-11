@@ -116,10 +116,6 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			faultyColumn := 0
 			key, message, errText, code := matches[tagKey], matches[tagMsg], matches[tagErr], matches[tagCode]
 
-			if strings.Contains(errText, "unclosed action") && faultyLine > 0 {
-				// Unclosed action reports error on the line following the non closed action
-				faultyLine--
-			}
 			if matches[tagCol] != "" {
 				faultyColumn = toInt(matches[tagCol]) - 1
 			}

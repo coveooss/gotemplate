@@ -16,7 +16,6 @@ import (
 	"github.com/coveo/gotemplate/utils"
 	"github.com/coveo/gotemplate/yaml"
 	"github.com/fatih/color"
-	logging "github.com/op/go-logging"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -76,8 +75,8 @@ func runGotemplate() (exitCode int) {
 		disableRender    = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
 		acceptNoValue    = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error (--nv) or env: "+template.EnvAcceptNoValue).Bool()
 		strictError      = run.Flag("strict-error-validation", "Consider error encountered in any file as real error (--strict) or env: "+template.EnvStrictErrorCheck).Short('S').Bool()
-		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl) or env: "+template.EnvDebug).Default("2").PlaceHolder("level").Int8()
-		logLevel         = run.Flag("log-level", "Set the logging level 0-9 (--ll)").Short('L').PlaceHolder("level").Int8()
+		logLevel         = run.Flag("log-level", "Set the logging level CRITICAL (0), ERROR (1), WARNING (2), NOTICE (3), INFO (4), DEBUG (5) (--ll)").Short('L').Default("INFO").PlaceHolder("level").String()
+		debugLogLevel    = run.Flag("debug-log-level", "Set the debug logging level 0-9 (--dl) or env: "+template.EnvDebug).Default("WARNING").PlaceHolder("level").String()
 		logSimple        = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date (--ls)").Bool()
 		templates        = run.Arg("templates", "Template files or commands to process").Strings()
 
@@ -94,8 +93,8 @@ func runGotemplate() (exitCode int) {
 		ignoreMissingPaths  = run.Flag("ignore-missing-paths", "Exit with code 0 even if import or source do not exist").Bool()
 	)
 
-	app.Flag("ll", "short version of --log-level").Hidden().Int8Var(logLevel)
-	app.Flag("dl", "short version of --debug-log-level").Hidden().Int8Var(debugLogLevel)
+	app.Flag("ll", "short version of --log-level").Hidden().StringVar(logLevel)
+	app.Flag("dl", "short version of --debug-log-level").Hidden().StringVar(debugLogLevel)
 	app.Flag("ls", "short version of --log-simple").Hidden().BoolVar(logSimple)
 	app.Flag("del", "short version of --delimiters").Hidden().StringVar(delimiters)
 	app.Flag("nv", "short version of --accept-no-value").Hidden().BoolVar(acceptNoValue)
@@ -143,10 +142,6 @@ func runGotemplate() (exitCode int) {
 	kingpin.CommandLine = app
 	kingpin.CommandLine.HelpFlag.Short('h')
 	command := kingpin.Parse()
-
-	if *logLevel == 0 {
-		*logLevel = 4
-	}
 
 	// We restore back the modified arguments
 	for i := range *templates {
@@ -215,7 +210,11 @@ func runGotemplate() (exitCode int) {
 		*ignoreMissingSource = true
 	}
 
-	template.ConfigureLogging(logging.Level(*logLevel), logging.Level(*debugLogLevel), *logSimple)
+	template.ConfigureLogging(
+		template.GetLoggingLevelFromString(*logLevel),
+		template.GetLoggingLevelFromString(*debugLogLevel),
+		*logSimple,
+	)
 
 	if *targetFolder == "" {
 		// Target folder default to source folder

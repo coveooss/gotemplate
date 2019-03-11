@@ -3,6 +3,7 @@ package template
 import (
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/coveo/gotemplate/utils"
@@ -112,3 +113,23 @@ func InitLogging() int {
 
 // Default package init
 var _ = InitLogging()
+
+// TryGetLoggingLevelFromString converts a string into a logging level
+func TryGetLoggingLevelFromString(level string, defaultLevel logging.Level) (logging.Level, error) {
+	level = strings.TrimSpace(level)
+	if level == "" {
+		return defaultLevel, nil
+	}
+
+	levelNum, err := strconv.Atoi(level)
+	if err == nil {
+		return logging.Level(levelNum), nil
+	}
+
+	return logging.LogLevel(level)
+}
+
+// GetLoggingLevelFromString converts a string into a logging level
+func GetLoggingLevelFromString(level string) logging.Level {
+	return must(TryGetLoggingLevelFromString(level, logging.INFO)).(logging.Level)
+}
