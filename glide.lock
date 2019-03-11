@@ -1,5 +1,5 @@
 hash: 482761cbcbb80923d505ca70ed7bcfdeeb678bafd7062854614e3902241a08a4
-updated: 2019-03-08T08:14:58.8418-05:00
+updated: 2019-03-11T16:57:06.600892-04:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -41,9 +41,9 @@ imports:
 - name: github.com/Masterminds/sprig
   version: 9f8fceff796fb9f4e992cd2bece016be0121ab74
 - name: github.com/mattn/go-colorable
-  version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
+  version: 3a70a971f94a22f2fa562ffcc7a0eb45f5daf045
 - name: github.com/mattn/go-isatty
-  version: 3fb116b820352b7f0c281308a4d6250c22d94e27
+  version: 369ecd8cea9851e459abb67eb171853e3986591e
 - name: github.com/op/go-logging
   version: c6b9702d88ba878b81c49272d3fc470593698733
   repo: https://github.com/shenwei356/go-logging.git
@@ -54,18 +54,18 @@ imports:
   subpackages:
   - diffmatchpatch
 - name: golang.org/x/crypto
-  version: ff983b9c42bc9fbf91556e191cc8efb585c16908
+  version: c2843e01d9a2bc60bb26ad24e09734fdc2d9ec58
   subpackages:
   - pbkdf2
   - scrypt
   - ssh/terminal
 - name: golang.org/x/net
-  version: 16b79f2e4e95ea23b2bf9903c9809ff7b013ce85
+  version: d8887717615a059821345a5c23649351b52a1c0b
   subpackages:
   - html
   - html/atom
 - name: golang.org/x/sys
-  version: 48ac38b7c8cbedd50b1613c0fccacfc7d88dfcdf
+  version: c8c8c57fd1e1a977c10821a559dda983a9a9a3b5
   subpackages:
   - unix
   - windows
@@ -83,6 +83,6 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
+  version: 34c6fa2dc70986bccbbffcc6130f6920a924b075
   subpackages:
   - assert
