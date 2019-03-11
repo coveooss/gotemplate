@@ -45,7 +45,7 @@ func Test_templateWithErrors(t *testing.T) {
 		{"Non opened brace", "}}", nil},
 		{"Undefined value", "@value", fmt.Errorf("Undefined value:1:4: Undefined value value in: @value")},
 		{"2 Undefined values", "@(value1 + value2)", fmt.Errorf("2 Undefined values:1:8: Undefined value value1 in: @(value1 + value2)\n2 Undefined values:1:21: Undefined value value2 in: @(value1 + value2)")},
-		{"Several errors", "@(value1)\n@nonExistingFunc()\n{{\n", fmt.Errorf("Several errors:2: function \"nonExistingFunc\" not defined in: @nonExistingFunc()\nSeveral errors:4: unexpected unclosed action in command in: {{\nSeveral errors:1:4: Undefined value value1 in: @(value1)")},
+		{"Several errors", "@(value1)\n@nonExistingFunc()\n{{\n", fmt.Errorf("Several errors:2: function \"nonExistingFunc\" not defined in: @nonExistingFunc()\nSeveral errors:3: unexpected unclosed action in command in: {{\nSeveral errors:1:4: Undefined value value1 in: @(value1)")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -53,7 +53,7 @@ func Test_templateWithErrors(t *testing.T) {
 				if err != nil && tt.err != nil && err.Error() == tt.err.Error() {
 					return
 				}
-				t.Errorf("ProcessContent()= %v, want %v", err, tt.err)
+				t.Errorf("ProcessContent()=\n%v\n\nWant:\n%v", err, tt.err)
 			}
 		})
 	}
