@@ -242,7 +242,7 @@ func ToNativeRepresentation(value interface{}) interface{} {
 				options[split[i+1]] = true
 			}
 
-			if !IsExported(name) || options["omitempty"] && IsEmptyValue(val.Field(i)) {
+			if !IsExported(sf.Name) || options["omitempty"] && IsEmptyValue(val.Field(i)) {
 				continue
 			}
 
