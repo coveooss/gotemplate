@@ -55,8 +55,9 @@ func TestMarshalHCLVars(t *testing.T) {
 	t.Parallel()
 
 	type test struct {
-		Name  string `hcl:",omitempty"`
-		Value int    `hcl:",omitempty"`
+		Name   string `hcl:",omitempty"`
+		Value  int    `hcl:",omitempty"`
+		Public bool   `hcl:"public"`
 	}
 	const (
 		noIndent = ""
@@ -89,16 +90,16 @@ func TestMarshalHCLVars(t *testing.T) {
 		{"Two level map 2 (pretty)", args{hclDict{"a": hclDict{"b": hclDict{"c": 10, "d": 20}}, "e": 30}, indent}, "e = 30\n\na b {\n  c = 10\n  d = 20\n}"},
 		{"Map", args{hclDict{"a": 0, "bb": 1}, noIndent}, "a=0 bb=1"},
 		{"Map (pretty)", args{hclDict{"a": 0, "bb": 1}, indent}, "a  = 0\nbb = 1"},
-		{"Structure (pretty)", args{test{"name", 1}, indent}, "Name  = \"name\"\nValue = 1"},
-		{"Structure Ptr (pretty)", args{&test{"name", 1}, indent}, "Name  = \"name\"\nValue = 1"},
-		{"Array of 1 structure (pretty)", args{[]test{{"name", 1}}, indent}, "Name  = \"name\"\nValue = 1"},
-		{"Array of 2 structures (pretty)", args{[]test{{"val1", 1}, {"val2", 1}}, indent}, "[\n  {\n    Name  = \"val1\"\n    Value = 1\n  },\n  {\n    Name  = \"val2\"\n    Value = 1\n  },\n]"},
+		{"Structure (pretty)", args{test{"name", 1, true}, indent}, "Name   = \"name\"\nValue  = 1\npublic = true"},
+		{"Structure Ptr (pretty)", args{&test{"name", 1, true}, indent}, "Name   = \"name\"\nValue  = 1\npublic = true"},
+		{"Array of 1 structure (pretty)", args{[]test{{"name", 1, false}}, indent}, "Name   = \"name\"\nValue  = 1\npublic = false"},
+		{"Array of 2 structures (pretty)", args{[]test{{"val1", 1, false}, {"val2", 1, true}}, indent}, "[\n  {\n    Name   = \"val1\"\n    Value  = 1\n    public = false\n  },\n  {\n    Name   = \"val2\"\n    Value  = 1\n    public = true\n  },\n]"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			value := collections.ToNativeRepresentation(tt.args.value)
 			if got, _ := marshalHCL(value, true, true, "", tt.args.indent); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MarshalHCLVars() = %v, want %v", got, tt.want)
+				t.Errorf("MarshalHCLVars() =\n%v\n\nwant:\n%v", got, tt.want)
 			}
 		})
 	}
