@@ -20,8 +20,8 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
-	github.com/op/go-logging v0.0.0-20171012171522-c6b9702d88ba
-	github.com/sergi/go-diff v0.0.0-20180205163309-da645544ed44
+	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
+	github.com/sergi/go-diff v1.0.0
 	github.com/stretchr/testify v1.3.0
 	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a
 	golang.org/x/net v0.0.0-20190320064053-1272bf9dcd53 // indirect
