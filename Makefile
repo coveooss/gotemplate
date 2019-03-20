@@ -3,7 +3,6 @@ pre-commit:
 	go test ./...
 
 install:
-	glide install
 	go install
 
 # IMPORTANT:

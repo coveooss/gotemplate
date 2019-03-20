@@ -1,11 +1,14 @@
+sudo: false
+
 language: go
+
 go:
   - 1.12.x
 
-sudo: false
+env:
+- GO111MODULE=on
 
 before_install:
-  - go get github.com/Masterminds/glide
   - go get github.com/mattn/goveralls
 
 install:
