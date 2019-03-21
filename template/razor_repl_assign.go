@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/v3/utils"
 	"github.com/fatih/color"
 )
 

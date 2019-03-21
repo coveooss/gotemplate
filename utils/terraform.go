@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/v3/errors"
 )
 
 // IsTerraformFile check if the file extension matches on of the terraform file extension

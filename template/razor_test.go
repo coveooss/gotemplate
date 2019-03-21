@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/json"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/json"
 	logging "github.com/op/go-logging"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )

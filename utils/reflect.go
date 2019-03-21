@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/v3/collections"
 )
 
 // String is simply an alias of collections.String

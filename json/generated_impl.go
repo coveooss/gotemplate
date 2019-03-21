@@ -4,7 +4,7 @@
 
 package json
 
-import "github.com/coveo/gotemplate/collections"
+import "github.com/coveo/gotemplate/v3/collections"
 
 // List implementation of IGenericList for jsonList
 type List = jsonList

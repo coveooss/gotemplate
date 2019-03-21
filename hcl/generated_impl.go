@@ -4,7 +4,7 @@
 
 package hcl
 
-import "github.com/coveo/gotemplate/collections"
+import "github.com/coveo/gotemplate/v3/collections"
 
 // List implementation of IGenericList for hclList
 type List = hclList

@@ -4,7 +4,7 @@
 
 package xml
 
-import "github.com/coveo/gotemplate/collections"
+import "github.com/coveo/gotemplate/v3/collections"
 
 // List implementation of IGenericList for xmlList
 type List = xmlList

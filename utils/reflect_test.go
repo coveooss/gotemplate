@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/collections/implementation"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/collections/implementation"
 )
 
 func TestMergeDictionaries(t *testing.T) {
