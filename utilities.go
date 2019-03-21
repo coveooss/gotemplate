@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/template"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveo/gotemplate/v3/template"
 	goerrors "github.com/go-errors/errors"
 )
 

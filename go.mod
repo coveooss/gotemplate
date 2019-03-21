@@ -1,4 +1,4 @@
-module github.com/coveo/gotemplate
+module github.com/coveo/gotemplate/v3
 
 go 1.12
 
@@ -22,7 +22,7 @@ require (
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/sergi/go-diff v1.0.0
 	github.com/stretchr/testify v1.3.0
-	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a
+	golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.2.2
 )

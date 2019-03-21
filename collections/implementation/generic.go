@@ -1,7 +1,7 @@
 package implementation
 
 import (
-	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/v3/collections"
 )
 
 // ListTypeName implementation of IGenericList for baseList

@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coveo/gotemplate/collections"
+	"github.com/coveo/gotemplate/v3/collections"
 )
 
 func Test_list_String(t *testing.T) {

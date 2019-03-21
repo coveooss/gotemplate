@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/errors"
 )
 
 func safeIndex(value interface{}, index int, def interface{}) (result interface{}, err error) {

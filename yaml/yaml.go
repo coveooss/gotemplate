@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/collections/implementation"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/collections/implementation"
 	"gopkg.in/yaml.v2"
 )
 

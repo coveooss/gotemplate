@@ -7,12 +7,12 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/hcl"
-	"github.com/coveo/gotemplate/json"
-	"github.com/coveo/gotemplate/utils"
-	"github.com/coveo/gotemplate/xml"
-	"github.com/coveo/gotemplate/yaml"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/hcl"
+	"github.com/coveo/gotemplate/v3/json"
+	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveo/gotemplate/v3/xml"
+	"github.com/coveo/gotemplate/v3/yaml"
 )
 
 const (

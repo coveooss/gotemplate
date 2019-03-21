@@ -8,8 +8,8 @@ import (
 	"os/user"
 	"time"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/utils"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 

@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/collections/implementation"
-	"github.com/coveo/gotemplate/json"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/collections/implementation"
+	"github.com/coveo/gotemplate/v3/json"
 )
 
 type a = []interface{}

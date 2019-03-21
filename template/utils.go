@@ -3,9 +3,9 @@ package template
 import (
 	"path/filepath"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveo/gotemplate/v3/utils"
 )
 
 var must = errors.Must

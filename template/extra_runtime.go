@@ -10,9 +10,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/hcl"
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/hcl"
+	"github.com/coveo/gotemplate/v3/utils"
 	"github.com/fatih/color"
 )
 

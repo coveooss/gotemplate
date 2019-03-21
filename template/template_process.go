@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/coveo/gotemplate/collections"
-	"github.com/coveo/gotemplate/errors"
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveo/gotemplate/v3/utils"
 	"github.com/fatih/color"
 	"golang.org/x/crypto/ssh/terminal"
 )

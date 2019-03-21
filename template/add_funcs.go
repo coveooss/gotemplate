@@ -4,7 +4,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/coveo/gotemplate/utils"
+	"github.com/coveo/gotemplate/v3/utils"
 )
 
 const (

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/errors"
+	"github.com/coveo/gotemplate/v3/errors"
 )
 
 type helperBase = BaseHelper
