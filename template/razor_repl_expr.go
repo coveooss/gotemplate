@@ -15,14 +15,16 @@ const (
 	protectString = "_=LONG_STRING="
 	literalAt     = "_=!AT!=_"
 	literalStart  = `{{ "{{" }}`
-	stringRep     = "_STRING_"
-	rangeExpr     = "_range_"
-	defaultExpr   = "_default_"
-	funcExpr      = "_func_"
-	funcCall      = "__FUNCCALL__"
-	dotRep        = "_DOT_PREFIX_"
-	ellipsisRep   = "_ELLIPSIS_"
-	globalRep     = "_GLOBAL_"
+	stringRep     = "__StRiNg__"
+	rangeExpr     = "__RaNgE__"
+	defaultExpr   = "__DeFaUlT__"
+	funcExpr      = "__FuNc__"
+	funcCall      = "__FuNcAlL__"
+	typeExpr      = "__TyPe__"
+	mapExpr       = "__MaP__"
+	dotRep        = "__DoT_PrEfIx__"
+	ellipsisRep   = "__ElLiPsIs__"
+	globalRep     = "__GlObAl__"
 )
 
 var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*)?`)
@@ -54,7 +56,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		protected, includedStrings := String(expression).Protect()
 
 		// We transform the expression into a valid go statement
-		for k, v := range map[string]string{"$": stringRep, "range": rangeExpr, "default": defaultExpr, "func": funcExpr, "...": ellipsisRep} {
+		for k, v := range map[string]string{"$": stringRep, "range": rangeExpr, "default": defaultExpr, "func": funcExpr, "...": ellipsisRep, "type": typeExpr, "map": mapExpr} {
 			protected = protected.Replace(k, v)
 		}
 		protected = String(dotPrefix.ReplaceAllString(protected.Str(), fmt.Sprintf("${prefix}%s${value}", dotRep)))
@@ -114,6 +116,8 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 				result = strings.Replace(result, rangeExpr, "range", -1)
 				result = strings.Replace(result, defaultExpr, "default", -1)
 				result = strings.Replace(result, funcExpr, "func", -1)
+				result = strings.Replace(result, typeExpr, "type", -1)
+				result = strings.Replace(result, mapExpr, "map", -1)
 				result = strings.Replace(result, dotRep, ".", -1)
 				result = strings.Replace(result, globalRep, "$$.", -1)
 				repl.replace = strings.Replace(repl.replace, "${expr}", result, -1)
