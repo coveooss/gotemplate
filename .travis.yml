@@ -23,9 +23,7 @@ before_script:
   - go test ./...
 
 script:
-  - if [ "${TRAVIS_TAG::1}" = "v" ]; then
-      curl -sL https://git.io/goreleaser | bash;
-    fi
+  - "[[ $TRAVIS_TAG == v* && ! $TRAVIS_TAG =~ test ]] && curl -sL https://git.io/goreleaser | bash"
 
 after_success:
   - make coveralls
