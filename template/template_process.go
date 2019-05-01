@@ -155,7 +155,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 					// There is an sub-context, so we replace it first
 					context = subContext
 				}
-				current := String(currentLine).SelectWord(faultyColumn, ".")
+				current := String(currentLine).SelectWord(faultyColumn, ".", "_")
 				newContext := context.Replace(current.Str(), undefError).Str()
 				newLine := currentLine.Replace(context.Str(), newContext)
 
