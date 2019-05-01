@@ -93,7 +93,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				extension := filepath.Ext(source)
 				strictMode = strictMode || (extension != "" && strings.Contains(".gt,.gte,.template", extension))
 				if !(strictMode) {
-					Log.Noticef("Ignored gotemplate error in %s (file left unchanged):\n%s", color.CyanString(source), err.Error())
+					Log.Errorf("Ignored gotemplate error in %s (file left unchanged):\n%s", color.CyanString(source), err.Error())
 					result, err = originalContent, nil
 				}
 			}
