@@ -16,7 +16,7 @@ install:
 
 before_script:
   - make doc
-  - if [[ `git status --porcelain` ]]
+  - if [[ `git status --porcelain` ]];
     then
       echo "'make doc' was not run before commiting";
       exit 1;
@@ -24,7 +24,7 @@ before_script:
   - go test ./...
 
 script:
-  - if [[ $TRAVIS_TAG == v* && ! $TRAVIS_TAG =~ test ]]
+  - if [[ $TRAVIS_TAG == v* && ! $TRAVIS_TAG =~ test ]];
     then
       curl -sL https://git.io/goreleaser | bash;
     fi
