@@ -65,7 +65,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 			content := load(tt.path)
 			if tt.razor != "" {
 				result := load(tt.razor)
-				got := template.applyRazor(content)
+				got, _ := template.applyRazor(content)
 				if !reflect.DeepEqual(got, result) {
 					diffs := dmp.DiffMain(string(result), string(got), true)
 					t.Errorf("Differences on Razor result for %s\n%s", tt.razor, dmp.DiffPrettyText(diffs))
@@ -133,7 +133,7 @@ func TestBase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
 				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
 			}
 		})
@@ -178,7 +178,7 @@ func TestInvocation(t *testing.T) {
 			logging.SetLevel(logging.Level(tt.debugLevel), loggerInternal)
 			defer func() { logging.SetLevel(logging.Level(2), loggerInternal) }()
 			template := MustNewTemplate(".", nil, "", nil)
-			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
 				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
 			}
 		})
@@ -226,7 +226,7 @@ func TestAssign(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
 				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
 			}
 		})
@@ -264,7 +264,7 @@ func TestAutoWrap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
 				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
 			}
 		})
@@ -302,7 +302,7 @@ func TestSpaceEater(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
 				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
 			}
 		})

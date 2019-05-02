@@ -10,9 +10,9 @@ import (
 )
 
 // Add additional functions to the go template context
-func (t *Template) applyRazor(content []byte) []byte {
+func (t *Template) applyRazor(content []byte) (result []byte, changed bool) {
 	if !t.options[Razor] || !t.IsRazor(string(content)) {
-		return content
+		return content, false
 	}
 	t.ensureInit()
 
@@ -28,7 +28,7 @@ func (t *Template) applyRazor(content []byte) []byte {
 	}
 	content = []byte(strings.Replace(string(content), funcCall, "", -1))
 	log.Noticef("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
-	return content
+	return content, true
 }
 
 var highlight = color.New(color.BgHiBlack, color.FgBlack).SprintFunc()
