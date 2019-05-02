@@ -16,11 +16,11 @@ install:
 
 before_script:
   - make doc
-  - "[[ `git status --porcelain` ]] && echo \"'make doc' was not run before commiting\" && exit 1"
+  - git status --porcelain && echo "'make doc' was not run before commiting" && exit 1 || exit 0
   - go test ./...
 
 script:
-  - "[[ $TRAVIS_TAG == v* && ! $TRAVIS_TAG =~ test ]] || exit 0 && curl -sL https://git.io/goreleaser | bash" 
+  - '[[ $TRAVIS_TAG == v* && ! $TRAVIS_TAG =~ test ]] || exit 0 && curl -sL https://git.io/goreleaser | bash'
 
 after_success:
   - make coveralls
