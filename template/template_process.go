@@ -19,8 +19,9 @@ import (
 
 var (
 	templateExt    = []string{".gt", ".template"}
-	linePrefix     = `^template: ` + p(tagLocation, p(tagFile, `.*?`)+`:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
-	execPrefix     = linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
+	linePrefix     = `template: ` + p(tagLocation, p(tagFile, `.*?`)+`:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
+	reError        = regexp.MustCompile(linePrefix)
+	execPrefix     = "^" + linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
 	templateErrors = []string{
 		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"`,
 		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
@@ -107,9 +108,16 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			originalSourceLines = strings.Split(originalContent, "\n")
 		}
 
+		// We try to identify the exact position of the error. If the error occurred in a sub template, the
+		// error will be the last one found in the error string
 		regexGroup := must(utils.GetRegexGroup("Parse", templateErrors)).([]*regexp.Regexp)
+		errorsPosition := reError.FindAllStringIndex(err.Error(), -1)
+		lastErrorBegin := 0
+		if errorsPosition != nil {
+			lastErrorBegin = errorsPosition[len(errorsPosition)-1][0]
+		}
 
-		if matches, _ := utils.MultiMatch(err.Error(), regexGroup...); len(matches) > 0 {
+		if matches, _ := utils.MultiMatch(err.Error()[lastErrorBegin:], regexGroup...); len(matches) > 0 {
 			// We remove the faulty line and continue the processing to get all errors at once
 			lines := strings.Split(content, "\n")
 			faultyLine := toInt(matches[tagLine]) - 1
