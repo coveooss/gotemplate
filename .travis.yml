@@ -20,7 +20,7 @@ before_script:
   - go test ./...
 
 script:
-  - '[[ $TRAVIS_TAG == v* && ! $TRAVIS_TAG =~ test ]] || return 0 && curl -sL https://git.io/goreleaser | bash'
+  - '[[ $TRAVIS_TAG == v* && ! $TRAVIS_TAG =~ test ]] || return 0 && (curl -sL https://git.io/goreleaser | bash)'
 
 after_success:
   - make coveralls
