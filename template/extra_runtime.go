@@ -390,7 +390,8 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 					return
 				}
 			} else {
-				source = string(t.applyRazor(fileContent))
+				razor, _ := t.applyRazor(fileContent)
+				source = string(razor)
 				filename = tryFile
 			}
 		}

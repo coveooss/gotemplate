@@ -112,10 +112,7 @@ func Color(attributes ...string) (*color.Color, error) {
 	if !containsColor {
 		return result, fmt.Errorf("No color specified")
 	}
-	if len(err) > 0 {
-		return result, err
-	}
-	return result, nil
+	return result, err.AsError()
 }
 
 // SprintColor returns a string formated with attributes that are supplied before

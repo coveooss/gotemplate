@@ -61,14 +61,7 @@ func ConvertData(data string, out interface{}) (err error) {
 		errs = append(errs, fmt.Errorf("Trying %s: %v", key, err))
 	}
 
-	switch len(errs) {
-	case 0:
-		return nil
-	case 1:
-		return errs[0]
-	default:
-		return errs
-	}
+	return errs.AsError()
 }
 
 // LoadData returns a go representation of the supplied file name (YAML, JSON or HCL)
