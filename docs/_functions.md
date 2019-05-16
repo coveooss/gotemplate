@@ -102,9 +102,9 @@ compact                 empty                   toJsonSprig
 
 Sprig Dictionnary http://masterminds.github.io/sprig/dicst.html
 
-dictSprig               listSprig               omitSprig               setSprig                
-hasKeySprig             mergeOverwrite          pickSprig               unsetSprig              
-keysSprig               mergeSprig              pluckSprig              valuesSprig             
+dictSprig               listSprig               pickSprig               unsetSprig              
+hasKeySprig             mergeSprig              pluckSprig              valuesSprig             
+keysSprig               omitSprig               setSprig                
 
 Sprig Encoding http://masterminds.github.io/sprig/encoding.html
 
