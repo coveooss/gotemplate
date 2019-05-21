@@ -26,6 +26,7 @@ type Template struct {
 	TempFolder     string
 	substitutes    []utils.RegexReplacer
 	context        interface{}
+	constantKeys   []interface{}
 	delimiters     []string
 	parent         *Template
 	folder         string
@@ -191,6 +192,7 @@ func (t Template) isTemplate(file string) bool {
 
 func (t *Template) initExtension() {
 	ext := t.GetNewContext("", false)
+	t.constantKeys = ext.constantKeys
 	ext.options = DefaultOptions()
 
 	// We temporary set the logging level one grade lower
@@ -257,6 +259,7 @@ func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...str
 	for i := range names {
 		if val, isSet := context[names[i]]; !isSet {
 			context[names[i]] = value
+			t.constantKeys = append(t.constantKeys, names[i])
 			if stopOnFirst {
 				return
 			}

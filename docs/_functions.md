@@ -82,7 +82,7 @@ Runtime
 alias                   categories              func                    getSignature            substitute              
 aliases                 current                 function                include                 templateNames           
 allFunctions            ellipsis                functions               localAlias              templates               
-assert                  exec                    getAttributes           raise                   
+assert                  exec                    getAttributes           raise                   userContext             
 assertWarning           exit                    getMethods              run                     
 
 Sprig Cryptographic & Security http://masterminds.github.io/sprig/crypto.html
@@ -102,9 +102,9 @@ compact                 empty                   toJsonSprig
 
 Sprig Dictionnary http://masterminds.github.io/sprig/dicst.html
 
-dictSprig               listSprig               pickSprig               unsetSprig              
-hasKeySprig             mergeSprig              pluckSprig              valuesSprig             
-keysSprig               omitSprig               setSprig                
+dictSprig               listSprig               omitSprig               setSprig                
+hasKeySprig             mergeOverwrite          pickSprig               unsetSprig              
+keysSprig               mergeSprig              pluckSprig              valuesSprig             
 
 Sprig Encoding http://masterminds.github.io/sprig/encoding.html
 

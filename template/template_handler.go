@@ -190,14 +190,20 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		}()
 	}
 
-	context := t.GetNewContext(filepath.Dir(th.Filename), true)
-	newTemplate := context.New(th.Filename)
+	if cloneContext {
+		th.Template = t.GetNewContext(filepath.Dir(th.Filename), false)
+		th.Template.context = collections.AsDictionary(th.Template.context).Clone()
+	} else {
+		th.Template = t.GetNewContext(filepath.Dir(th.Filename), true)
+	}
+	actualTemplate := th.Template.New(th.Filename)
+	th.Template.Template = actualTemplate
 
 	if topCall {
-		newTemplate.Option("missingkey=default")
+		actualTemplate.Option("missingkey=default")
 	} else if !t.options[AcceptNoValue] {
 		// To help detect errors on second run, we enable the option to raise error on nil values
-		newTemplate.Option("missingkey=error")
+		actualTemplate.Option("missingkey=error")
 	}
 
 	func() {
@@ -205,7 +211,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		// call the parser without locking
 		templateMutex.Lock()
 		defer templateMutex.Unlock()
-		newTemplate, err = newTemplate.Parse(th.Code)
+		actualTemplate, err = actualTemplate.Parse(th.Code)
 	}()
 	if err != nil {
 		log.Infof("%s(%d): Parsing error %v", th.Filename, th.Try, err)
@@ -213,11 +219,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 	}
 
 	var out bytes.Buffer
-	workingContext := t.context
-	if cloneContext {
-		workingContext = collections.AsDictionary(workingContext).Clone()
-	}
-	if err = newTemplate.Execute(&out, workingContext); err != nil {
+	if err = actualTemplate.Execute(&out, th.Template.context); err != nil {
 		log.Infof("%s(%d): Execution error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}

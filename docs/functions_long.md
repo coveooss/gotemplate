@@ -1448,6 +1448,12 @@ func templateNames() []string
 // Returns the list of available templates.
 func templates() []*template.Template
 ```
+
+```go
+// Returns the user context (i.e. all global variables except the injected constant).
+// Aliases: c, context
+func userContext() interface{}
+```
 ### Sprig Cryptographic & Security, http://masterminds.github.io/sprig/crypto.html
 
 ```go
@@ -1584,6 +1590,11 @@ func keysSprig(args ...map[string]interface{}) []string
 ```go
 // Aliases: list, tuple, tupleSprig
 func listSprig(args ...interface{}) []interface{}
+```
+
+```go
+// Merge two or more dictionaries into one, giving precedence from **right to left**, effectively overwriting values in the dest dictionary
+func mergeOverwrite(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
 ```
 
 ```go

@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/hcl"
 	"github.com/coveo/gotemplate/v3/utils"
 	"github.com/fatih/color"
 )
@@ -44,6 +43,7 @@ var runtimeFuncsAliases = aliases{
 	"getMethods":    {"methods"},
 	"getSignature":  {"sign", "signature"},
 	"raise":         {"raiseError"},
+	"userContext":   {"c", "context"},
 }
 
 var runtimeFuncsHelp = descriptions{
@@ -87,44 +87,49 @@ var runtimeFuncsHelp = descriptions{
 	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
 	"templateNames": "Returns the list of available templates names.",
 	"templates":     "Returns the list of available templates.",
+	"userContext":   "Returns the user context (i.e. all global variables except the injected constant).",
 }
 
 func (t *Template) addRuntimeFuncs() {
-	var funcs = dictionary{
+	t.AddFunctions(dictionary{
+		"assert":        assert,
+		"assertWarning": assertWarning,
+		"exit":          exit,
+		"getAttributes": getAttributes,
+		"getMethods":    getMethods,
+		"getSignature":  getSignature,
+		"raise":         raise,
 		"alias":         t.alias,
 		"aliases":       t.getAliases,
 		"allFunctions":  t.getAllFunctions,
-		"assert":        assert,
-		"assertWarning": assertWarning,
 		"categories":    t.getCategories,
 		"current":       t.current,
 		"ellipsis":      t.ellipsis,
 		"exec":          t.execCommand,
-		"exit":          exit,
 		"func":          t.defineFunc,
 		"function":      t.getFunction,
 		"functions":     t.getFunctions,
-		"getAttributes": getAttributes,
-		"getMethods":    getMethods,
-		"getSignature":  getSignature,
 		"include":       t.include,
 		"localAlias":    t.localAlias,
-		"raise":         raise,
 		"run":           t.runCommand,
 		"substitute":    t.substitute,
 		"templateNames": t.getTemplateNames,
 		"templates":     t.Templates,
-	}
-
-	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
-		FuncHelp:    runtimeFuncsHelp,
-		FuncArgs:    runtimeFuncsArgs,
-		FuncAliases: runtimeFuncsAliases,
-	})
+		"userContext":   t.userContext,
+	}, runtimeFunc, FuncOptions{FuncHelp: runtimeFuncsHelp, FuncArgs: runtimeFuncsArgs, FuncAliases: runtimeFuncsAliases})
 }
 
-func exit(exitValue int) int       { os.Exit(exitValue); return exitValue }
+func exit(exitValue int) int { os.Exit(exitValue); return exitValue }
+
 func (t Template) current() string { return t.folder }
+
+func (t *Template) userContext() interface{} {
+	c, err := collections.TryAsDictionary(t.context)
+	if err != nil {
+		return dictionary{}
+	}
+	return c.Flush(t.constantKeys...)
+}
 
 func (t *Template) alias(name, function string, source interface{}, args ...interface{}) (string, error) {
 	return t.addAlias(name, function, source, false, false, args...)
@@ -369,12 +374,27 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 	return
 }
 
-func (t Template) runTemplate(source string, context ...interface{}) (resultContent, filename string, err error) {
+func (t *Template) runTemplate(source string, args ...interface{}) (resultContent, filename string, err error) {
 	var out bytes.Buffer
 
-	if len(context) == 0 {
-		context = []interface{}{t.context}
+	context, err := collections.TryAsDictionary(t.context)
+	if err != nil {
+		context = collections.CreateDictionary()
+		context.Set("CONTEXT", t.context)
+	} else {
+		context = context.Clone()
 	}
+	switch len(args) {
+	case 1:
+		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
+			context.Merge(arguments)
+			break
+		}
+		fallthrough
+	default:
+		context.Set("ARGS", args)
+	}
+
 	// We first try to find a template named <source>
 	internalTemplate := t.Lookup(source)
 	if internalTemplate == nil {
@@ -405,7 +425,7 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 	}
 
 	// We execute the resulting template
-	if err = internalTemplate.Execute(&out, hcl.SingleContext(context...)); err != nil {
+	if err = internalTemplate.Execute(&out, context); err != nil {
 		return
 	}
 
