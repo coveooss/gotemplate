@@ -208,19 +208,44 @@ func TestAssign(t *testing.T) {
 			`{{- $a := 2 }}`,
 		},
 		{
+			"Local replacement",
+			"@$a = 2",
+			`{{- $a = 2 }}`,
+		},
+		{
+			"Local replacement 2",
+			"@{a = 2}",
+			"{{- $a = 2 }}",
+		},
+		{
+			"Local replacement 3",
+			"@$a = 2",
+			`{{- $a = 2 }}`,
+		},
+		{
 			"Global assign",
 			`@a := "test"`,
-			`{{- assertWarning (isNil $.a) "$.a has already been declared, use = to overwrite existing value" }}{{- set $ "a" "test" }}`,
+			`{{- assert (isNil $.a) "$.a has already been declared, use = to overwrite existing value" }}{{- set $ "a" "test" }}`,
 		},
 		{
-			"Deprecated local assign with no other razor",
-			`$a := "test"`,
-			`$a := "test"`,
+			"Replacement of global value",
+			`@a = "test"`,
+			`{{- assert (not (isNil $.a)) "$.a does not exist, use := to declare new variable" }}{{- set $ "a" "test" }}`,
 		},
 		{
-			"Deprecated local assign",
-			`@test; $a := $.test`,
-			`{{ $.test }} {{- $a := $.test }}`,
+			"Global assignation without check",
+			`@a ~= "test"`,
+			`{{- set $ "a" "test" }}`,
+		},
+		{
+			"Global assign with non standard identifier characters",
+			`@12t%!e#st- ~= "test"`,
+			`{{- set $ "12t%!e#st-" "test" }}`,
+		},
+		{
+			"Global assign with sub objects",
+			`@a.b.c.d.e ~= "test"`,
+			`{{- set $.a.b.c.d "e" "test" }}`,
 		},
 	}
 	for _, tt := range tests {
