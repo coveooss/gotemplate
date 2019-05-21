@@ -34,6 +34,8 @@ Commands:
         --delimiters={{,}},@       Define the default delimiters for go template (separate the left, right and razor delimiters by a comma) or set
                                    GOTEMPLATE_DELIMITERS (alias: --d, --del)
     -i, --import=file ...          Import variables files (could be any of YAML, JSON or HCL format) or set GOTEMPLATE_IMPORT
+        --import-if-exist=file ...  
+                                   Import variables files (do not consider missing file as an error) or set GOTEMPLATE_IMPORT_IF_EXIST (alias: --iie)
     -V, --var=values ...           Import named variables (if value is a file, the content is loaded) or set GOTEMPLATE_VAR
     -t, --type=TYPE                Force the type used for the main context (Json, Yaml, Hcl) or set GOTEMPLATE_TYPE
     -p, --patterns=pattern ...     Additional patterns that should be processed by gotemplate or set GOTEMPLATE_PATTERNS
