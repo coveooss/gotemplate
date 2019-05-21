@@ -152,7 +152,11 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		}
 		if lines[faultyLine] != currentLine.Str() || strings.Contains(err.Error(), noValueError) {
 			// If we changed something in the current text, we try to continue the evaluation to get further errors
-			result, changed, err2 := t.processContentInternal(strings.Join(lines, "\n"), t.Filename, t.Lines, t.Try+1, false, nil)
+			newCode := strings.Join(lines, "\n")
+			if err != nil {
+				log.Infof("Retrying %d with:\n%s", t.Try, color.HiBlackString(String(newCode).AddLineNumber(0).Str()))
+			}
+			result, changed, err2 := t.processContentInternal(newCode, t.Filename, t.Lines, t.Try+1, false, nil)
 			if err2 != nil {
 				if err != nil && errText != noValueError {
 					if err.Error() == err2.Error() {

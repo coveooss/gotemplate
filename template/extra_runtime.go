@@ -404,6 +404,9 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 		internalTemplate = inline
 	}
 
+	if !t.options[AcceptNoValue] {
+		internalTemplate.Option("missingkey=error")
+	}
 	// We execute the resulting template
 	if err = internalTemplate.Execute(&out, hcl.SingleContext(context...)); err != nil {
 		return
@@ -452,6 +455,13 @@ func (t Template) ellipsis(function string, args ...interface{}) (interface{}, e
 
 	template := fmt.Sprintf("%s %s %s %s", t.delimiters[0], function, strings.Join(argsStr, " "), t.delimiters[1])
 	result, _, err := t.runTemplate(template, context)
+	if err != nil {
+		split := strings.SplitN(err.Error(), ">: ", 2)
+		if len(split) == 2 {
+			// For internal evaluation, we do not want the file/position details on the error
+			err = fmt.Errorf(split[1])
+		}
+	}
 	return t.tryConvert(result), err
 }
 
