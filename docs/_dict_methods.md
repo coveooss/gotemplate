@@ -11,6 +11,8 @@ Flush(...interface{}) IDictionary
 Get(...interface{}) interface{}
 GetHelpers() IDictionaryHelper, IListHelper
 GetKeys() IGenericList
+GetKinds() IDictionary
+GetTypes() IDictionary
 GetValues() IGenericList
 Has(...interface{}) bool
 KeysAsString() StringArray
@@ -23,5 +25,6 @@ PrettyPrint() string
 Set(interface{}, interface{}) IDictionary
 String() string
 Transpose() IDictionary
+Type() String
 TypeName() String
 ```

@@ -2,6 +2,7 @@ package implementation
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/coveo/gotemplate/v3/collections"
 )
@@ -101,6 +102,16 @@ func (dh DictHelper) GetKeys(dict baseIDict) baseIList {
 
 	for i := range keys {
 		result.Set(i, keys[i])
+	}
+	return result
+}
+
+// GetTypes returns a dictionary with key and type (or kind) for each element.
+func (dh DictHelper) GetTypes(dict baseIDict, kind bool) baseIDict {
+	result := dh.CreateDictionary(dict.Len())
+
+	for key, value := range dict.AsMap() {
+		result.Set(key, iif(kind, reflect.TypeOf(value).Kind().String(), reflect.TypeOf(value).Name()))
 	}
 	return result
 }
@@ -228,6 +239,11 @@ func (dh DictHelper) Transpose(dict baseIDict) baseIDict {
 		}
 	}
 	return result
+}
+
+// Type returns the actual type of object.
+func (dh DictHelper) Type(dict baseIDict) str {
+	return str(reflect.TypeOf(dict).Name())
 }
 
 func (dh DictHelper) delete(dict baseIDict, keys []interface{}, mustExist bool) (baseIDict, error) {

@@ -4,12 +4,18 @@
 
 package xml
 
-import "github.com/coveo/gotemplate/v3/collections"
+import (
+	"strings"
+
+	"github.com/coveo/gotemplate/v3/collections"
+)
 
 // List implementation of IGenericList for xmlList
 type List = xmlList
 type xmlIList = collections.IGenericList
 type xmlList []interface{}
+
+var xmlLower = strings.ToLower("Xml") // This is required because genny capitalize the type name in strings
 
 func (l xmlList) AsArray() []interface{} { return []interface{}(l) }
 func (l xmlList) Cap() int               { return cap(l) }
@@ -27,6 +33,8 @@ func (l xmlList) First() interface{} { return xmlListHelper.GetIndexes(l, 0) }
 func (l xmlList) Get(indexes ...int) interface{} {
 	return xmlListHelper.GetIndexes(l, indexes...)
 }
+func (l xmlList) GetKinds() xmlIList               { return xmlListHelper.GetTypes(l, true) }
+func (l xmlList) GetTypes() xmlIList               { return xmlListHelper.GetTypes(l, false) }
 func (l xmlList) Has(values ...interface{}) bool   { return l.Contains(values...) }
 func (l xmlList) Join(sep interface{}) str         { return l.StringArray().Join(sep) }
 func (l xmlList) Last() interface{}                { return xmlListHelper.GetIndexes(l, len(l)-1) }
@@ -35,7 +43,8 @@ func (l xmlList) New(args ...interface{}) xmlIList { return xmlListHelper.NewLis
 func (l xmlList) Reverse() xmlIList                { return xmlListHelper.Reverse(l) }
 func (l xmlList) StringArray() strArray            { return xmlListHelper.GetStringArray(l) }
 func (l xmlList) Strings() []string                { return xmlListHelper.GetStrings(l) }
-func (l xmlList) TypeName() str                    { return "Xml" }
+func (l xmlList) Type() str                        { return xmlListHelper.Type(l) }
+func (l xmlList) TypeName() str                    { return str(xmlLower) }
 func (l xmlList) Unique() xmlIList                 { return xmlListHelper.Unique(l) }
 
 func (l xmlList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -91,6 +100,8 @@ func (d xmlDict) CreateList(args ...int) xmlIList     { return xmlHelper.CreateL
 func (d xmlDict) Flush(keys ...interface{}) xmlIDict  { return xmlDictHelper.Flush(d, keys) }
 func (d xmlDict) Get(keys ...interface{}) interface{} { return xmlDictHelper.Get(d, keys) }
 func (d xmlDict) GetKeys() xmlIList                   { return xmlDictHelper.GetKeys(d) }
+func (d xmlDict) GetKinds() xmlIDict                  { return xmlDictHelper.GetTypes(d, true) }
+func (d xmlDict) GetTypes() xmlIDict                  { return xmlDictHelper.GetTypes(d, false) }
 func (d xmlDict) GetValues() xmlIList                 { return xmlDictHelper.GetValues(d) }
 func (d xmlDict) Has(keys ...interface{}) bool        { return xmlDictHelper.Has(d, keys) }
 func (d xmlDict) KeysAsString() strArray              { return xmlDictHelper.KeysAsString(d) }
@@ -99,7 +110,8 @@ func (d xmlDict) Native() interface{}                 { return collections.ToNat
 func (d xmlDict) Pop(keys ...interface{}) interface{} { return xmlDictHelper.Pop(d, keys) }
 func (d xmlDict) Set(key, v interface{}) xmlIDict     { return xmlDictHelper.Set(d, key, v) }
 func (d xmlDict) Transpose() xmlIDict                 { return xmlDictHelper.Transpose(d) }
-func (d xmlDict) TypeName() str                       { return "Xml" }
+func (d xmlDict) Type() str                           { return xmlDictHelper.Type(d) }
+func (d xmlDict) TypeName() str                       { return str(xmlLower) }
 
 func (d xmlDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return xmlDictHelper, xmlListHelper

@@ -174,6 +174,33 @@ func Test_list_Get(t *testing.T) {
 	}
 }
 
+func Test_list_GetTypes(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		kind bool
+		l    jsonList
+		want interface{}
+	}{
+		{"Empty", false, nil, jsonList{}},
+		{"Fixture", false, strFixture, jsonList{"string", "string", "string", "string", "string"}},
+		{"Mixed Types", false, jsonList{1, 1.2, true, "Hello", jsonList{}, jsonDict{}}, jsonList{"int", "float64", "bool", "string", jsonLower + "List", jsonLower + "Dict"}},
+		{"Mixed Kinds", true, jsonList{1, 1.2, true, "Hello", jsonList{}, jsonDict{}}, jsonList{"int", "float64", "bool", "string", "slice", "map"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testFunc := tt.l.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.l.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("JsonList.Get%s() = %v, want %v", name, got, tt.want)
+			}
+		})
+	}
+}
 func Test_list_Len(t *testing.T) {
 	t.Parallel()
 
@@ -1009,58 +1036,68 @@ func Test_dict_Transpose(t *testing.T) {
 	}
 }
 
-func Test_JsonList_Get(t *testing.T) {
-	type args struct {
-		indexes []int
-	}
+func Test_dict_GetTypes(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
-		l    jsonList
-		args args
+		kind bool
+		d    jsonDict
 		want interface{}
 	}{
-		// TODO: Add test cases.
+		{"Empty", false, nil, jsonDict{}},
+		{"Fixture Types", false, dictFixture, jsonDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    jsonLower + "List",
+			"listInt": jsonLower + "List",
+			"map":     jsonLower + "Dict",
+			"mapInt":  jsonLower + "Dict",
+			"string":  "string",
+		}},
+		{"Fixture Kinds", true, dictFixture, jsonDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    "slice",
+			"listInt": "slice",
+			"map":     "map",
+			"mapInt":  "map",
+			"string":  "string",
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("JsonList.Get() = %v, want %v", got, tt.want)
+			testFunc := tt.d.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.d.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("JsonDict.Get%s() = %v, want %v", name, got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_JsonList_TypeName(t *testing.T) {
-	tests := []struct {
-		name string
-		l    jsonList
-		want str
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("JsonList.TypeName() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func Test_Json_Type(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(jsonLower+"List"), jsonList{}.Type()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(jsonLower+"Dict"), jsonDict{}.Type()) })
 }
 
 func Test_Json_TypeName(t *testing.T) {
-	t.Run("list", func(t *testing.T) { assert.Equal(t, jsonList{}.TypeName(), str("Json")) })
-	t.Run("dict", func(t *testing.T) { assert.Equal(t, jsonDict{}.TypeName(), str("Json")) })
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(jsonLower), jsonList{}.TypeName()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(jsonLower), jsonDict{}.TypeName()) })
 }
 
 func Test_Json_GetHelper(t *testing.T) {
 	t.Run("list", func(t *testing.T) {
 		gotD, gotL := jsonList{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), jsonDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), jsonListHelper.CreateList().TypeName())
+		assert.Equal(t, jsonDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, jsonListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 	t.Run("dict", func(t *testing.T) {
 		gotD, gotL := jsonDict{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), jsonDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), jsonListHelper.CreateList().TypeName())
+		assert.Equal(t, jsonDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, jsonListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 }

@@ -41,8 +41,8 @@ Flags:
   -d, --disable                  Disable go template rendering (used to view razor conversion)
       --accept-no-value          Do not consider rendering <no value> as an error (--nv) or env: GOTEMPLATE_NO_VALUE
   -S, --strict-error-validation  Consider error encountered in any file as real error (--strict) or env: GOTEMPLATE_STRICT_ERROR
+  -L, --log-level=level          Set the logging level CRITICAL (0), ERROR (1), WARNING (2), NOTICE (3), INFO (4), DEBUG (5) (--ll)
       --debug-log-level=level    Set the debug logging level 0-9 (--dl) or env: GOTEMPLATE_DEBUG
-  -L, --log-level=level          Set the logging level 0-9 (--ll)
       --log-simple               Disable the extended logging, i.e. no color, no date (--ls)
       --ignore-missing-import    Exit with code 0 even if import does not exist
       --ignore-missing-source    Exit with code 0 even if source does not exist
@@ -78,8 +78,8 @@ Commands:
     -d, --disable                  Disable go template rendering (used to view razor conversion)
         --accept-no-value          Do not consider rendering <no value> as an error (--nv) or env: GOTEMPLATE_NO_VALUE
     -S, --strict-error-validation  Consider error encountered in any file as real error (--strict) or env: GOTEMPLATE_STRICT_ERROR
+    -L, --log-level=level          Set the logging level CRITICAL (0), ERROR (1), WARNING (2), NOTICE (3), INFO (4), DEBUG (5) (--ll)
         --debug-log-level=level    Set the debug logging level 0-9 (--dl) or env: GOTEMPLATE_DEBUG
-    -L, --log-level=level          Set the logging level 0-9 (--ll)
         --log-simple               Disable the extended logging, i.e. no color, no date (--ls)
         --ignore-missing-import    Exit with code 0 even if import does not exist
         --ignore-missing-source    Exit with code 0 even if source does not exist

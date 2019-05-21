@@ -11,6 +11,8 @@ CreateDict(...int) IDictionary
 First() interface{}
 Get(...int) interface{}
 GetHelpers() IDictionaryHelper, IListHelper
+GetKinds() IGenericList
+GetTypes() IGenericList
 Has(...interface{}) bool
 Intersect(...interface{}) IGenericList
 Join(interface{}) String
@@ -26,6 +28,7 @@ Set(int, interface{}) IGenericList, error
 String() string
 StringArray() StringArray
 Strings() []string
+Type() String
 TypeName() String
 Union(...interface{}) IGenericList
 Unique() IGenericList

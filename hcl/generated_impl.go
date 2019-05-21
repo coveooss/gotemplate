@@ -4,12 +4,18 @@
 
 package hcl
 
-import "github.com/coveo/gotemplate/v3/collections"
+import (
+	"strings"
+
+	"github.com/coveo/gotemplate/v3/collections"
+)
 
 // List implementation of IGenericList for hclList
 type List = hclList
 type hclIList = collections.IGenericList
 type hclList []interface{}
+
+var hclLower = strings.ToLower("Hcl") // This is required because genny capitalize the type name in strings
 
 func (l hclList) AsArray() []interface{} { return []interface{}(l) }
 func (l hclList) Cap() int               { return cap(l) }
@@ -27,6 +33,8 @@ func (l hclList) First() interface{} { return hclListHelper.GetIndexes(l, 0) }
 func (l hclList) Get(indexes ...int) interface{} {
 	return hclListHelper.GetIndexes(l, indexes...)
 }
+func (l hclList) GetKinds() hclIList               { return hclListHelper.GetTypes(l, true) }
+func (l hclList) GetTypes() hclIList               { return hclListHelper.GetTypes(l, false) }
 func (l hclList) Has(values ...interface{}) bool   { return l.Contains(values...) }
 func (l hclList) Join(sep interface{}) str         { return l.StringArray().Join(sep) }
 func (l hclList) Last() interface{}                { return hclListHelper.GetIndexes(l, len(l)-1) }
@@ -35,7 +43,8 @@ func (l hclList) New(args ...interface{}) hclIList { return hclListHelper.NewLis
 func (l hclList) Reverse() hclIList                { return hclListHelper.Reverse(l) }
 func (l hclList) StringArray() strArray            { return hclListHelper.GetStringArray(l) }
 func (l hclList) Strings() []string                { return hclListHelper.GetStrings(l) }
-func (l hclList) TypeName() str                    { return "Hcl" }
+func (l hclList) Type() str                        { return hclListHelper.Type(l) }
+func (l hclList) TypeName() str                    { return str(hclLower) }
 func (l hclList) Unique() hclIList                 { return hclListHelper.Unique(l) }
 
 func (l hclList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -91,6 +100,8 @@ func (d hclDict) CreateList(args ...int) hclIList     { return hclHelper.CreateL
 func (d hclDict) Flush(keys ...interface{}) hclIDict  { return hclDictHelper.Flush(d, keys) }
 func (d hclDict) Get(keys ...interface{}) interface{} { return hclDictHelper.Get(d, keys) }
 func (d hclDict) GetKeys() hclIList                   { return hclDictHelper.GetKeys(d) }
+func (d hclDict) GetKinds() hclIDict                  { return hclDictHelper.GetTypes(d, true) }
+func (d hclDict) GetTypes() hclIDict                  { return hclDictHelper.GetTypes(d, false) }
 func (d hclDict) GetValues() hclIList                 { return hclDictHelper.GetValues(d) }
 func (d hclDict) Has(keys ...interface{}) bool        { return hclDictHelper.Has(d, keys) }
 func (d hclDict) KeysAsString() strArray              { return hclDictHelper.KeysAsString(d) }
@@ -99,7 +110,8 @@ func (d hclDict) Native() interface{}                 { return collections.ToNat
 func (d hclDict) Pop(keys ...interface{}) interface{} { return hclDictHelper.Pop(d, keys) }
 func (d hclDict) Set(key, v interface{}) hclIDict     { return hclDictHelper.Set(d, key, v) }
 func (d hclDict) Transpose() hclIDict                 { return hclDictHelper.Transpose(d) }
-func (d hclDict) TypeName() str                       { return "Hcl" }
+func (d hclDict) Type() str                           { return hclDictHelper.Type(d) }
+func (d hclDict) TypeName() str                       { return str(hclLower) }
 
 func (d hclDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return hclDictHelper, hclListHelper
