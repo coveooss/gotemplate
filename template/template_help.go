@@ -12,7 +12,7 @@ import (
 )
 
 // PrintTemplates output the list of templates available.
-func (t Template) PrintTemplates(all, long bool) {
+func (t *Template) PrintTemplates(all, long bool) {
 	templates := t.getTemplateNames()
 	var maxLen int
 	for _, template := range templates {
@@ -41,7 +41,7 @@ func (t Template) PrintTemplates(all, long bool) {
 }
 
 // PrintFunctions outputs the list of functions available.
-func (t Template) PrintFunctions(all, long, groupByCategory bool, filters ...string) {
+func (t *Template) PrintFunctions(all, long, groupByCategory bool, filters ...string) {
 	functions := t.filterFunctions(all, groupByCategory, long, filters...)
 
 	maxLength := 0
@@ -84,7 +84,7 @@ func (t Template) PrintFunctions(all, long, groupByCategory bool, filters ...str
 	}
 }
 
-func (t Template) filterFunctions(all, category, detailed bool, filters ...string) []string {
+func (t *Template) filterFunctions(all, category, detailed bool, filters ...string) []string {
 	functions := t.getAllFunctions()
 	if all && len(filters) == 0 {
 		return functions
@@ -127,7 +127,7 @@ func (t Template) filterFunctions(all, category, detailed bool, filters ...strin
 	return filtered
 }
 
-func (t Template) printFunctionsShort(functions []string, maxLength int, alias bool) {
+func (t *Template) printFunctionsShort(functions []string, maxLength int, alias bool) {
 	const nbColumn = 5
 	l := len(functions)
 	colLength := int(math.Ceil(float64(l) / float64(nbColumn)))
@@ -150,7 +150,7 @@ func (t Template) printFunctionsShort(functions []string, maxLength int, alias b
 	}
 }
 
-func (t Template) printFunctionsDetailed(functions []string, maxLength int, alias bool) {
+func (t *Template) printFunctionsDetailed(functions []string, maxLength int, alias bool) {
 	// We only print entries that are not alias
 	allFunc := make(map[string]int)
 	for i := range functions {

@@ -115,7 +115,6 @@ func (t *Template) addRuntimeFuncs() {
 		"templateNames": t.getTemplateNames,
 		"templates":     t.Templates,
 	}
-
 	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
 		FuncHelp:    runtimeFuncsHelp,
 		FuncArgs:    runtimeFuncsArgs,
@@ -123,8 +122,9 @@ func (t *Template) addRuntimeFuncs() {
 	})
 }
 
-func exit(exitValue int) int       { os.Exit(exitValue); return exitValue }
-func (t Template) current() string { return t.folder }
+func exit(exitValue int) int { os.Exit(exitValue); return exitValue }
+
+func (t *Template) current() string { return t.folder }
 
 func (t *Template) alias(name, function string, source interface{}, args ...interface{}) (string, error) {
 	return t.addAlias(name, function, source, false, false, args...)
@@ -369,7 +369,7 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 	return
 }
 
-func (t Template) runTemplate(source string, context ...interface{}) (resultContent, filename string, err error) {
+func (t *Template) runTemplate(source string, context ...interface{}) (resultContent, filename string, err error) {
 	var out bytes.Buffer
 
 	if len(context) == 0 {
@@ -418,13 +418,13 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 	return
 }
 
-func (t Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
+func (t *Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
 	content, _, err := t.runTemplate(source, context...)
 	return content, err
 }
 
 // This function is used to call a function that requires its last argument to be expanded ...
-func (t Template) ellipsis(function string, args ...interface{}) (interface{}, error) {
+func (t *Template) ellipsis(function string, args ...interface{}) (interface{}, error) {
 	last := len(args) - 1
 	if last >= 0 && args[last] == nil {
 		args[last] = []interface{}{}

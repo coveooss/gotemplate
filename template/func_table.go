@@ -202,7 +202,7 @@ func (t *Template) addFunctions(funcMap funcTableMap) *Template {
 }
 
 // List the available functions in the template
-func (t Template) getFunctionsInternal(original, alias bool) (result []string) {
+func (t *Template) getFunctionsInternal(original, alias bool) (result []string) {
 	for name := range t.functions {
 		fi := t.functions[name]
 		if original && fi.alias == nil {
@@ -216,11 +216,11 @@ func (t Template) getFunctionsInternal(original, alias bool) (result []string) {
 	return
 }
 
-func (t Template) getAliases() []string      { return t.getFunctionsInternal(false, true) }
-func (t Template) getAllFunctions() []string { return t.getFunctionsInternal(true, true) }
-func (t Template) getFunctions() []string    { return t.getFunctionsInternal(true, false) }
+func (t *Template) getAliases() []string      { return t.getFunctionsInternal(false, true) }
+func (t *Template) getAllFunctions() []string { return t.getFunctionsInternal(true, true) }
+func (t *Template) getFunctions() []string    { return t.getFunctionsInternal(true, false) }
 
 // List the available functions in the template
-func (t Template) getFunction(name string) FuncInfo {
+func (t *Template) getFunction(name string) FuncInfo {
 	return t.functions[name]
 }

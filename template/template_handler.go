@@ -19,7 +19,7 @@ import (
 type CustomHandler func(name, original string, result *string, changed bool, status error) (bool, error)
 
 // ProcessTemplatesWithHandler loads and runs the file template or execute the content if it is not a file and call the custom handler between after each template.
-func (t Template) ProcessTemplatesWithHandler(sourceFolder, targetFolder string, handler CustomHandler, templates ...string) (resultFiles []string, err error) {
+func (t *Template) ProcessTemplatesWithHandler(sourceFolder, targetFolder string, handler CustomHandler, templates ...string) (resultFiles []string, err error) {
 	sourceFolder = iif(sourceFolder == "", t.folder, sourceFolder).(string)
 	targetFolder = iif(targetFolder == "", t.folder, targetFolder).(string)
 	resultFiles = make([]string, 0, len(templates))
@@ -41,7 +41,7 @@ func (t Template) ProcessTemplatesWithHandler(sourceFolder, targetFolder string,
 	return resultFiles, errors.AsError()
 }
 
-func (t Template) processTemplate(template, sourceFolder, targetFolder string, handler CustomHandler) (resultFile string, err error) {
+func (t *Template) processTemplate(template, sourceFolder, targetFolder string, handler CustomHandler) (resultFile string, err error) {
 	isCode := t.IsCode(template)
 	var content string
 
@@ -125,9 +125,9 @@ func (t Template) processTemplate(template, sourceFolder, targetFolder string, h
 	return
 }
 
-func (t Template) processContentInternal(originalContent, source string, originalSourceLines []string, retryCount int, cloneContext bool, handler CustomHandler) (result string, changed bool, err error) {
+func (t *Template) processContentInternal(originalContent, source string, originalSourceLines []string, retryCount int, cloneContext bool, handler CustomHandler) (result string, changed bool, err error) {
 	th := errorHandler{
-		Template: &t,
+		Template: t,
 		Filename: source,
 		Source:   originalContent,
 		Code:     originalContent,

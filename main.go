@@ -256,7 +256,7 @@ func runGotemplate() (exitCode int) {
 		errors.Print(err)
 		return 3
 	}
-	t.TempFolder = tempFolder
+	t.TempFolder(tempFolder)
 
 	if command == list.FullCommand() {
 		if !(*listFunctions || *listTemplates) {

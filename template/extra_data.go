@@ -399,7 +399,7 @@ type marshaler func(interface{}) ([]byte, error)
 type unMarshaler func([]byte, interface{}) error
 
 // Internal function used to actually convert the supplied string and apply a conversion function over it to get a go map
-func (t Template) converter(from unMarshaler, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
+func converter(from unMarshaler, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
 	if err = from([]byte(content), &result); err != nil && sourceWithError {
 		source := "\n"
 		for i, line := range collections.SplitLines(content) {
@@ -411,7 +411,7 @@ func (t Template) converter(from unMarshaler, content string, sourceWithError bo
 }
 
 // Apply a converter to the result of the template execution of the supplied string
-func (t Template) templateConverter(to marshaler, from unMarshaler, source interface{}, context ...interface{}) (result interface{}, err error) {
+func (t *Template) templateConverter(to marshaler, from unMarshaler, source interface{}, context ...interface{}) (result interface{}, err error) {
 	if source == nil {
 		return nil, nil
 	}
@@ -424,28 +424,28 @@ func (t Template) templateConverter(to marshaler, from unMarshaler, source inter
 
 	var content string
 	if content, _, err = t.runTemplate(fmt.Sprint(source), context...); err == nil {
-		result, err = t.converter(from, content, true, context...)
+		result, err = converter(from, content, true, context...)
 	}
 	return
 }
 
-func (t Template) xmlConverter(source interface{}, context ...interface{}) (interface{}, error) {
+func (t *Template) xmlConverter(source interface{}, context ...interface{}) (interface{}, error) {
 	return t.templateConverter(xml.Marshal, xml.Unmarshal, source, context...)
 }
 
-func (t Template) yamlConverter(source interface{}, context ...interface{}) (interface{}, error) {
+func (t *Template) yamlConverter(source interface{}, context ...interface{}) (interface{}, error) {
 	return t.templateConverter(yaml.Marshal, yaml.Unmarshal, source, context...)
 }
 
-func (t Template) jsonConverter(source interface{}, context ...interface{}) (interface{}, error) {
+func (t *Template) jsonConverter(source interface{}, context ...interface{}) (interface{}, error) {
 	return t.templateConverter(json.Marshal, json.Unmarshal, source, context...)
 }
 
-func (t Template) hclConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
+func (t *Template) hclConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
 	return t.templateConverter(hcl.Marshal, hcl.Unmarshal, source, context...)
 }
 
-func (t Template) dataConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
+func (t *Template) dataConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
 	return t.templateConverter(
 		func(in interface{}) ([]byte, error) { return []byte(fmt.Sprint(in)), nil },
 		func(bs []byte, out interface{}) error { return collections.ConvertData(string(bs), out) },
