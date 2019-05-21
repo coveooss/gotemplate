@@ -1,6 +1,7 @@
 pre-commit:
 	go fmt ./...
 	go test ./...
+	./render-doc
 
 install:
 	go install
