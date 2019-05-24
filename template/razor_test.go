@@ -14,6 +14,7 @@ import (
 	"github.com/coveo/gotemplate/v3/json"
 	logging "github.com/op/go-logging"
 	"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTemplate_applyRazor(t *testing.T) {
@@ -304,6 +305,40 @@ func TestSpaceEater(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
 			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
 				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestData(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		code string
+		want string
+		err  error
+	}{
+		{"Empty", `@data("")`, "", nil},
+		{"Integer", `@data("1")`, "1", nil},
+		{"Hcl", `@data("a = 1 b = 2")`, "a=1 b=2", nil},
+		{"Hcl type", `@typeOf(data("a = 1 b = 2"))`, "hcl.hclDict", nil},
+		{"Hcl kind", `@kindOf(data("a = 1 b = 2"))`, "map", nil},
+		{"Invalid", "@typeOf(data(`\"a\": 1, \"b\": 2`))", `"<RUN_ERROR>"`, fmt.Errorf("")},
+		{"Json", "@typeOf(data(`{\"a\": 1, \"b\": 2}`))", "json.jsonDict", nil},
+		{"Yaml", "@typeOf(data(`a: 1\nb: 2`))", "yaml.yamlDict", nil},
+		{"Flexible Hcl", "@typeOf(data(`a = 1 b = hello`))", "yaml.yamlDict", nil}, // TODO: Change that to hcl
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", DefaultOptions().Set(StrictErrorCheck))
+			got, err := template.ProcessContent(tt.code, "")
+			assert.Equal(t, tt.want, got)
+			if tt.err == nil {
+				assert.NoError(t, err)
+			} else if tt.err.Error() == "" {
+				assert.Error(t, err)
+			} else {
+				assert.EqualError(t, err, tt.err.Error())
 			}
 		})
 	}

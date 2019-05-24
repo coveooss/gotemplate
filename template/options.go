@@ -26,6 +26,19 @@ const (
 	StrictErrorCheck
 )
 
+// Set options to true
+func (os OptionsSet) Set(options ...Options) OptionsSet { return os.set(true, options) }
+
+// Unset options
+func (os OptionsSet) Unset(options ...Options) OptionsSet { return os.set(false, options) }
+
+func (os OptionsSet) set(value bool, options []Options) OptionsSet {
+	for i := range options {
+		os[options[i]] = value
+	}
+	return os
+}
+
 // DefaultOptions returns a OptionsSet with the first options turned on by default
 func DefaultOptions() OptionsSet {
 	os := make(OptionsSet)

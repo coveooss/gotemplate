@@ -16,7 +16,7 @@ var (
 	templateExt    = []string{".gt", ".template"}
 	linePrefix     = `template: ` + p(tagLocation, p(tagFile, `.*?`)+`:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
 	reError        = regexp.MustCompile(linePrefix)
-	execPrefix     = "^" + linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
+	execPrefix     = "(?s)^" + linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
 	templateErrors = []string{
 		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"`,
 		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),

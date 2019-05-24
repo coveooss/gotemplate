@@ -94,7 +94,7 @@ func (t *Template) addRuntimeFuncs() {
 		"alias":         t.alias,
 		"aliases":       t.getAliases,
 		"allFunctions":  t.getAllFunctions,
-		"assert":        assert,
+		"assert":        assertError,
 		"assertWarning": assertWarning,
 		"categories":    t.getCategories,
 		"current":       t.current,
@@ -370,6 +370,9 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 }
 
 func (t Template) runTemplate(source string, context ...interface{}) (resultContent, filename string, err error) {
+	if source == "" {
+		return
+	}
 	var out bytes.Buffer
 
 	if len(context) == 0 {
@@ -520,7 +523,7 @@ func raise(args ...interface{}) (string, error) {
 	return "", fmt.Errorf(utils.FormatMessage(args...))
 }
 
-func assert(test interface{}, args ...interface{}) (string, error) {
+func assertError(test interface{}, args ...interface{}) (string, error) {
 	if isZero(test) {
 		if len(args) == 0 {
 			args = []interface{}{"Assertion failed"}

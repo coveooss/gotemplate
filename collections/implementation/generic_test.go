@@ -6,9 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 var strFixture = baseList(baseListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())
