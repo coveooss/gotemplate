@@ -239,12 +239,10 @@ func ToNativeRepresentation(value interface{}) interface{} {
 				continue
 			}
 
-			if options["inline"] {
+			if options["inline"] || options["squash"] {
 				for key, value := range ToNativeRepresentation(val.Field(i).Interface()).(map[string]interface{}) {
 					result[key] = value
 				}
-			} else if options["squash"] {
-				continue
 			} else {
 				result[name] = ToNativeRepresentation(val.Field(i).Interface())
 			}
