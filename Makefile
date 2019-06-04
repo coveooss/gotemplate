@@ -1,5 +1,6 @@
 pre-commit:
 	go fmt ./...
+	go clean -testcache
 	go test ./...
 	./render-doc
 
