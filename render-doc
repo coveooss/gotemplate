@@ -12,10 +12,10 @@ export COLUMNS=1024
 mkdir -p $DOC_FOLDER
 
 # Generate function info
-gotemplate '```text@<exec("gotemplate  list --no-extension -c")```' > $DOC_FOLDER/_functions.md
+gotemplate '```text@<exec("gotemplate list --no-extension -c")```' > $DOC_FOLDER/_functions.md
 
 # Generate usage info
-COLUMNS=255 gotemplate '```text@<trim(exec("gotemplate --help-long"))@<;```' --nv > $DOC_FOLDER/_usage.md
+COLUMNS=150 gotemplate '```text@<trim(exec("gotemplate -h"))@<;```' --nv > $DOC_FOLDER/_usage.md
 
 # Generate methods on String objects
 gotemplate '```go@<getMethods(String(""))@<;```' > $DOC_FOLDER/_string_methods.md

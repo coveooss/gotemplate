@@ -7,9 +7,8 @@ require (
 	github.com/Masterminds/semver v1.4.2 // indirect
 	github.com/Masterminds/sprig v0.0.0-20190301161902-9f8fceff796f
 	github.com/PuerkitoBio/goquery v1.5.0
-	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
-	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/bmatcuk/doublestar v1.1.1
+	github.com/coveo/kingpin/v2 v2.3.0
 	github.com/drhodes/goLorem v0.0.0-20160418191928-ecccc744c2d9
 	github.com/fatih/color v1.7.0
 	github.com/go-errors/errors v1.0.1
