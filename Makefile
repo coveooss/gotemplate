@@ -1,6 +1,6 @@
 pre-commit:
 	go fmt ./...
-	go test ./...
+	go test ./...-count 1
 	./render-doc
 
 install:
