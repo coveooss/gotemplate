@@ -6,7 +6,6 @@ import (
 	"os"
 	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -156,7 +155,7 @@ func ToNativeRepresentation(value interface{}) interface{} {
 	}
 	switch typ.Kind() {
 	case reflect.String:
-		return reflect.ValueOf(value).String()
+		return val.String()
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32:
 		return int(val.Int())
@@ -171,10 +170,10 @@ func ToNativeRepresentation(value interface{}) interface{} {
 		return val.Uint()
 
 	case reflect.Float32, reflect.Float64:
-		return must(strconv.ParseFloat(fmt.Sprint(value), 64)).(float64)
+		return val.Float()
 
 	case reflect.Bool:
-		return must(strconv.ParseBool(fmt.Sprint(value))).(bool)
+		return val.Bool()
 
 	case reflect.Slice, reflect.Array:
 		result := make([]interface{}, val.Len())
@@ -239,7 +238,7 @@ func ToNativeRepresentation(value interface{}) interface{} {
 				continue
 			}
 
-			if options["inline"] {
+			if options["inline"] || options["squash"] {
 				for key, value := range ToNativeRepresentation(val.Field(i).Interface()).(map[string]interface{}) {
 					result[key] = value
 				}
