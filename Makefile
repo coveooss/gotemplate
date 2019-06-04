@@ -1,7 +1,6 @@
 pre-commit:
 	go fmt ./...
-	go clean -testcache
-	go test ./...
+	go test ./...-count 1
 	./render-doc
 
 install:
