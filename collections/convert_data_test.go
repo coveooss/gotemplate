@@ -1,6 +1,7 @@
 package collections
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -88,4 +89,34 @@ func Test_quote(t *testing.T) {
 			}
 		})
 	}
+}
+
+func ExampleToNativeRepresentation() {
+	type Y struct {
+		S string `hcl:"string,omitempty"`
+	}
+	type X struct {
+		Y  `hcl:",squash"`
+		A  int     `hcl:"a,omitempty"`
+		PS *string `hcl:"string_pointer,omitempty"`
+		PB *bool   `hcl:"bool_pointer,omitempty"`
+	}
+
+	var a X
+	fmt.Println(ToNativeRepresentation(a))
+	a.A = 10
+	fmt.Println(ToNativeRepresentation(a))
+	a.S = "Hello"
+	fmt.Println(ToNativeRepresentation(a))
+	x := "World"
+	a.PS = &x
+	b := false
+	a.PB = &b
+	fmt.Println(ToNativeRepresentation(a))
+
+	// Output:
+	// map[]
+	// map[a:10]
+	// map[a:10 string:Hello]
+	// map[a:10 bool_pointer:false string:Hello string_pointer:World]
 }
