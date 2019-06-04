@@ -18,6 +18,7 @@ before_script:
   - make doc
   - if [[ `git status --porcelain` ]];
     then
+      git diff;
       echo "'make doc' was not run before commiting";
       exit 1;
     fi
