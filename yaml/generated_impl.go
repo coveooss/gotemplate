@@ -4,7 +4,10 @@
 
 package yaml
 
-import "github.com/coveo/gotemplate/v3/collections"
+import (
+	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveo/gotemplate/v3/errors"
+)
 
 // List implementation of IGenericList for yamlList
 type List = yamlList
@@ -95,7 +98,7 @@ func (d yamlDict) GetValues() yamlIList                { return yamlDictHelper.G
 func (d yamlDict) Has(keys ...interface{}) bool        { return yamlDictHelper.Has(d, keys) }
 func (d yamlDict) KeysAsString() strArray              { return yamlDictHelper.KeysAsString(d) }
 func (d yamlDict) Len() int                            { return len(d) }
-func (d yamlDict) Native() interface{}                 { return collections.ToNativeRepresentation(d) }
+func (d yamlDict) Native() interface{}                 { return must(collections.MarshalGo(d)) }
 func (d yamlDict) Pop(keys ...interface{}) interface{} { return yamlDictHelper.Pop(d, keys) }
 func (d yamlDict) Set(key, v interface{}) yamlIDict    { return yamlDictHelper.Set(d, key, v) }
 func (d yamlDict) Transpose() yamlIDict                { return yamlDictHelper.Transpose(d) }
@@ -143,4 +146,7 @@ type (
 	strArray = collections.StringArray
 )
 
-var iif = collections.IIf
+var (
+	iif  = collections.IIf
+	must = errors.Must
+)

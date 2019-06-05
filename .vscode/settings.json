@@ -1,6 +1,5 @@
 {
-    "cSpell.words": [
-        "UUIDs",
+    "cSpell.ignoreWords": [
         "adipiscing",
         "amet",
         "awrap",
@@ -20,6 +19,8 @@
         "typeis",
         "unsplit",
         "uuid",
-        "uuidv"
+        "UUIDs",
+        "uuidv",
+        "warnf"
     ]
 }
