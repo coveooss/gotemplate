@@ -110,6 +110,11 @@ func TestCli(t *testing.T) {
 			args:         []string{"--import", "/path/that/does/not/exist", "--ignore-missing-paths"},
 			expectedCode: 0,
 		},
+		{
+			name:         "Non-existing import",
+			args:         []string{"--import-if-exist", "/path/that/does/not/exist"},
+			expectedCode: 0,
+		},
 
 		// Errors
 		{

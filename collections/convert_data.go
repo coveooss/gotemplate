@@ -6,7 +6,6 @@ import (
 	"os"
 	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -75,7 +74,7 @@ func LoadData(filename string, out interface{}) (err error) {
 
 // ToBash returns the bash 4 variable representation of value
 func ToBash(value interface{}) string {
-	return toBash(ToNativeRepresentation(value), 0)
+	return toBash(must(MarshalGo(value)), 0)
 }
 
 func toBash(value interface{}, level int) (result string) {
@@ -140,62 +139,84 @@ func toBash(value interface{}, level int) (result string) {
 	return fmt.Sprint(value)
 }
 
-// ToNativeRepresentation converts any object to native (literals, maps, slices)
-func ToNativeRepresentation(value interface{}) interface{} {
+// GoMarshaler is the interface that could be implemented on object that want to customize
+// the marshaling to a native go representation.
+type GoMarshaler interface {
+	MarshalGo(interface{}) (interface{}, error)
+}
+
+// MarshalGo converts any object to native go type (literals, maps, slices).
+func MarshalGo(value interface{}) (result interface{}, err error) {
 	if value == nil {
-		return nil
+		return
 	}
 
 	typ, val := reflect.TypeOf(value), reflect.ValueOf(value)
 	if typ.Kind() == reflect.Ptr {
 		if val.IsNil() {
-			return nil
+			return
 		}
 		val = val.Elem()
 		typ = val.Type()
 	}
+
+	if val.CanInterface() && val.Type().Implements(reflect.TypeOf((*GoMarshaler)(nil)).Elem()) {
+		// The object implement a custom marshaller, so we let it generate its stuff
+		return val.Interface().(GoMarshaler).MarshalGo(value)
+	}
+
 	switch typ.Kind() {
 	case reflect.String:
-		return reflect.ValueOf(value).String()
+		result = val.String()
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32:
-		return int(val.Int())
+		result = int(val.Int())
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32:
-		return uint(val.Uint())
+		result = uint(val.Uint())
 
 	case reflect.Int64:
-		return val.Int()
+		result = val.Int()
 
 	case reflect.Uint64:
-		return val.Uint()
+		result = val.Uint()
 
 	case reflect.Float32, reflect.Float64:
-		return must(strconv.ParseFloat(fmt.Sprint(value), 64)).(float64)
+		result = val.Float()
 
 	case reflect.Bool:
-		return must(strconv.ParseBool(fmt.Sprint(value))).(bool)
+		result = val.Bool()
 
 	case reflect.Slice, reflect.Array:
-		result := make([]interface{}, val.Len())
-		for i := range result {
-			result[i] = ToNativeRepresentation(val.Index(i).Interface())
+		array := make([]interface{}, val.Len())
+		for i := range array {
+			if array[i], err = MarshalGo(val.Index(i).Interface()); err != nil {
+				return
+			}
 		}
-		if len(result) == 1 && reflect.TypeOf(result[0]).Kind() == reflect.Map {
+		if len(array) == 1 && reflect.TypeOf(array[0]).Kind() == reflect.Map {
 			// If the result is an array of one map, we just return the inner element
-			return result[0]
+			result = array[0]
+		} else {
+			result = array
 		}
-		return result
 
 	case reflect.Map:
-		result := make(map[string]interface{}, val.Len())
+		m := make(map[string]interface{}, val.Len())
 		for _, key := range val.MapKeys() {
-			result[fmt.Sprintf("%v", key)] = ToNativeRepresentation(val.MapIndex(key).Interface())
+			if m[fmt.Sprint(key)], err = MarshalGo(val.MapIndex(key).Interface()); err != nil {
+				return
+			}
 		}
-		return result
+		result = m
 
 	case reflect.Struct:
-		result := make(map[string]interface{}, typ.NumField())
+		m := make(map[string]interface{}, typ.NumField())
+
+		info, key, err := getTags(typ)
+		if err != nil {
+			return nil, err
+		}
 		for i := 0; i < typ.NumField(); i++ {
 			sf := typ.Field(i)
 			if sf.Anonymous {
@@ -216,42 +237,78 @@ func ToNativeRepresentation(value interface{}) interface{} {
 				// Ignore unexported non-embedded fields.
 				continue
 			}
-			tag := sf.Tag.Get("hcl")
-			if tag == "" {
-				// If there is no hcl specific tag, we rely on json tag if there is
-				tag = sf.Tag.Get("json")
-			}
-			if tag == "-" {
+
+			tag := info[i]
+			if tag.name == "-" || !IsExported(sf.Name) || tag.options["omitempty"] && IsEmptyValue(val.Field(i)) {
 				continue
+			} else if tag.name == "" {
+				tag.name = sf.Name
 			}
 
-			split := strings.Split(tag, ",")
-			name := split[0]
-			if name == "" {
-				name = sf.Name
-			}
-			options := make(map[string]bool, len(split[1:]))
-			for i := range split[1:] {
-				options[split[i+1]] = true
-			}
-
-			if !IsExported(sf.Name) || options["omitempty"] && IsEmptyValue(val.Field(i)) {
-				continue
-			}
-
-			if options["inline"] {
-				for key, value := range ToNativeRepresentation(val.Field(i).Interface()).(map[string]interface{}) {
-					result[key] = value
+			if tag.options["inline"] || tag.options["squash"] {
+				if subMap, err := MarshalGo(val.Field(i).Interface()); err != nil {
+					return nil, err
+				} else if subMap, ok := subMap.(map[string]interface{}); ok {
+					for key, value := range subMap {
+						m[key] = value
+					}
+				} else {
+					return nil, fmt.Errorf("Cannot apply inline or squash to non struct on field '%s'", sf.Name)
 				}
 			} else {
-				result[name] = ToNativeRepresentation(val.Field(i).Interface())
+				if value, err = MarshalGo(val.Field(i).Interface()); err != nil {
+					return nil, err
+				}
+				v := reflect.ValueOf(value)
+				if IsEmptyValue(v) && (v.Kind() == reflect.Struct || v.Kind() == reflect.Map) && tag.options["omitempty"] {
+					continue
+				}
+				if key >= 0 {
+					m[val.Field(key).String()] = map[string]interface{}{tag.name: v.Interface()}
+				} else {
+					m[tag.name] = v.Interface()
+				}
 			}
 		}
-		return result
+		result = m
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown type %T %v : %v\n", value, typ.Kind(), value)
-		return fmt.Sprintf("%v", value)
+		result = fmt.Sprint(value)
 	}
+	return
+}
+
+type tagInfo struct {
+	name    string
+	options map[string]bool
+}
+
+func getTags(t reflect.Type) (result []tagInfo, key int, err error) {
+	key = -1
+	for i := 0; i < t.NumField(); i++ {
+		sf := t.Field(i)
+		var tag string
+		for _, category := range []string{"hcl", "json", "yaml", "xml", "toml"} {
+			if value := sf.Tag.Get(category); value != "" {
+				tag = value
+				break
+			}
+		}
+
+		split := strings.Split(tag, ",")
+		options := make(map[string]bool, len(split[1:]))
+		for _, key := range split[1:] {
+			options[key] = true
+		}
+		if options["key"] {
+			if key != -1 {
+				err = fmt.Errorf("Multiple keys defined on struct '%s' ('%s' and '%s')", t.Name(), t.Field(key).Name, sf.Name)
+			}
+			key = i
+		}
+		result = append(result, tagInfo{split[0], options})
+	}
+	return
 }
 
 // IsExported reports whether the identifier is exported.

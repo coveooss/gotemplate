@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"reflect"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -10,6 +10,7 @@ import (
 	"github.com/coveo/gotemplate/v3/hcl"
 	"github.com/coveo/gotemplate/v3/json"
 	"github.com/coveo/gotemplate/v3/yaml"
+	"github.com/stretchr/testify/assert"
 )
 
 type dictionary = map[string]interface{}
@@ -20,29 +21,29 @@ var jsonHelper = json.DictionaryHelper
 var genHelper = impl.DictionaryHelper
 
 func TestConvertData(t *testing.T) {
-	var out1 interface{}
-	type args struct {
-		data string
-		out  interface{}
-	}
 	tests := []struct {
 		name    string
-		args    args
+		data    string
 		want    interface{}
-		wantErr bool
+		wantErr error
 	}{
-		{"Simple value", args{"a = 10", &out1}, map[string]interface{}{"a": 10}, false},
-		{"YAML", args{"a: 10", &out1}, dictionary{"a": 10}, false},
-		{"HCL", args{`a = 10 b = "Foo"`, &out1}, dictionary{"a": 10, "b": "Foo"}, false},
-		{"JSON", args{`{ "a": 10, "b": "Foo" }`, &out1}, dictionary{"a": 10, "b": "Foo"}, false},
-		{"Flexible", args{`a = 10 b = Foo`, &out1}, dictionary{"a": 10, "b": "Foo"}, false},
-		{"No change", args{"NoChange", &out1}, nil, false},
-		{"Invalid", args{"a = 'value", &out1}, nil, true},
+		{"Simple value", "a = 10", map[string]interface{}{"a": 10}, nil},
+		{"YAML", "a: 10", dictionary{"a": 10}, nil},
+		{"HCL", `a = 10 b = "Foo"`, dictionary{"a": 10, "b": "Foo"}, nil},
+		{"JSON", `{ "a": 10, "b": "Foo" }`, dictionary{"a": 10, "b": "Foo"}, nil},
+		{"Flexible", `a = 10 b = Foo`, dictionary{"a": 10, "b": "Foo"}, nil},
+		{"No change", "NoChange", "NoChange", nil},
+		{"Invalid", "a = 'value", nil, fmt.Errorf("Trying !json: invalid character 'a' looking for beginning of value\nTrying hcl: At 1:5: illegal char")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := collections.ConvertData(tt.args.data, tt.args.out); (err != nil) != tt.wantErr {
-				t.Errorf("ConvertData() error = %v, wantErr %v\n%v", err, tt.wantErr, reflect.ValueOf(tt.args.out).Elem())
+			var out interface{}
+			err := collections.ConvertData(tt.data, &out)
+			assert.EqualValues(t, tt.want, out)
+			if tt.wantErr == nil {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr.Error())
 			}
 		})
 	}
@@ -92,9 +93,7 @@ func TestToBash(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := collections.ToBash(tt.args); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ToNativeRepresentation()\ngot : %q\nwant: %q", got, tt.want)
-			}
+			assert.Equal(t, tt.want, collections.ToBash(tt.args))
 		})
 	}
 }
