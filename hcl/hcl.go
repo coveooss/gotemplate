@@ -54,7 +54,7 @@ var _ = func() int {
 // Unmarshal adds support to single array and struct representation
 func Unmarshal(bs []byte, out interface{}) (err error) {
 	defer func() { err = errors.Trap(err, recover()) }()
-	bs = bytes.TrimSpace(bs)
+	bs = append(bytes.TrimSpace(bs), byte('\n'))
 
 	if err = hcl.Unmarshal(bs, out); err != nil {
 		bs = append([]byte("_="), bs...)
