@@ -85,17 +85,17 @@ func Test_quote(t *testing.T) {
 
 // This object has only private attributes.
 type customMarshallStruct struct {
-	privateInteger int
-	privateString string
+	privateInteger     int
+	privateString      string
 	privateBoolPointer *bool
 }
 
 // MarshalGo implements a custom marshaler that allows the object to convert its private attributes.
 func (s customMarshallStruct) MarshalGo(v interface{}) (interface{}, error) {
 	return map[string]interface{}{
-		"int": s.privateInteger,
+		"int":    s.privateInteger,
 		"string": s.privateString,
-		"bool": *s.privateBoolPointer,
+		"bool":   *s.privateBoolPointer,
 	}, nil
 }
 

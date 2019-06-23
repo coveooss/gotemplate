@@ -154,3 +154,14 @@ func TestUnmarshalStrict(t *testing.T) {
 		})
 	}
 }
+
+func TestUnmarshalHereDoc(t *testing.T) {
+	test := `
+	string = <<-EOF
+	Hello world!
+	EOF`
+	var out interface{}
+	err := Unmarshal([]byte(test), &out)
+	assert.NoError(t, err)
+	assert.Equal(t, hclDict{"string": "Hello world!\n"}, out)
+}
