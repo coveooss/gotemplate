@@ -10,8 +10,8 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/utils"
 	logging "github.com/op/go-logging"
 )
 

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/gotemplate/v3/errors"
 	"github.com/stretchr/testify/assert"
 )
 

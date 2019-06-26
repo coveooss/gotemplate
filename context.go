@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/template"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/template"
 )
 
 func createContext(varsFiles, varsFilesIfExist, namedVars []string, mode string, ignoreMissingFiles bool) (collections.IDictionary, error) {

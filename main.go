@@ -10,14 +10,14 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/errors"
-	"github.com/coveo/gotemplate/v3/hcl"
-	"github.com/coveo/gotemplate/v3/json"
-	"github.com/coveo/gotemplate/v3/template"
-	"github.com/coveo/gotemplate/v3/utils"
-	"github.com/coveo/gotemplate/v3/yaml"
-	"github.com/coveo/kingpin/v2"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/errors"
+	"github.com/coveooss/gotemplate/v3/hcl"
+	"github.com/coveooss/gotemplate/v3/json"
+	"github.com/coveooss/gotemplate/v3/template"
+	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/yaml"
+	"github.com/coveord/kingpin/v2"
 	"github.com/fatih/color"
 )
 

@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"reflect"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/collections/implementation"
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections/implementation"
+	"github.com/coveooss/gotemplate/v3/errors"
 	"github.com/hashicorp/hcl"
 )
 

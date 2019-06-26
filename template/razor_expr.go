@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/fatih/color"
 )
 

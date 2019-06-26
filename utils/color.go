@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/gotemplate/v3/errors"
 	"github.com/fatih/color"
 )
 

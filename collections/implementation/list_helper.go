@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 func (l baseList) String() string      { return fmt.Sprint(l.AsArray()) }

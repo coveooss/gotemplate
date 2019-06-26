@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 // flatten converts array of map to single map if there is only one element in the array.

@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/errors"
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/errors"
+	"github.com/coveooss/gotemplate/v3/utils"
 	"github.com/fatih/color"
 )
 
