@@ -114,6 +114,12 @@ func TestUnmarshal(t *testing.T) {
 		{"Empty list", "[]", hclList{}},
 		{"List of int", "[1,2,3]", hclList{1, 2, 3}},
 		{"Array of map", "a { b { c { d = 1 e = 2 }}}", hclDict{"a": hclDict{"b": hclDict{"c": hclDict{"d": 1, "e": 2}}}}},
+		{"Indented map", `test = { 
+				b "c" { 
+					d = 1 
+					e = 2 
+				}
+			}`, hclDict{"test": hclDict{"b": hclDict{"c": hclDict{"d": 1, "e": 2}}}}},
 		{"Map", fmt.Sprint(dictFixture), dictFixture},
 	}
 	for _, tt := range tests {
