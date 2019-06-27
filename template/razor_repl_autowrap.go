@@ -3,7 +3,7 @@ package template
 import (
 	"fmt"
 
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/utils"
 )
 
 func autoWrap(repl replacement, match string) string {

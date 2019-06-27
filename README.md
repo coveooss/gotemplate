@@ -1,7 +1,7 @@
 # gotemplate
 
-[![Build Status](https://travis-ci.org/coveo/gotemplate.svg?branch=master)](https://travis-ci.org/coveo/gotemplate)
-[![Coverage Status](https://coveralls.io/repos/github/coveo/gotemplate/badge.svg?branch=master)](https://coveralls.io/github/coveo/gotemplate?branch=master)
+[![Build Status](https://travis-ci.org/coveooss/gotemplate.svg?branch=master)](https://travis-ci.org/coveooss/gotemplate)
+[![Coverage Status](https://coveralls.io/repos/github/coveooss/gotemplate/badge.svg?branch=master)](https://coveralls.io/github/coveooss/gotemplate?branch=master)
 
 ## Description
 

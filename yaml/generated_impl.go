@@ -5,8 +5,8 @@
 package yaml
 
 import (
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/errors"
 )
 
 // List implementation of IGenericList for yamlList

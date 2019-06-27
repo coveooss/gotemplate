@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 // MergeLists return a single list from all supplied lists

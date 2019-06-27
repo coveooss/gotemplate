@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	impl "github.com/coveo/gotemplate/v3/collections/implementation"
-	"github.com/coveo/gotemplate/v3/hcl"
-	"github.com/coveo/gotemplate/v3/json"
-	"github.com/coveo/gotemplate/v3/yaml"
+	"github.com/coveooss/gotemplate/v3/collections"
+	impl "github.com/coveooss/gotemplate/v3/collections/implementation"
+	"github.com/coveooss/gotemplate/v3/hcl"
+	"github.com/coveooss/gotemplate/v3/json"
+	"github.com/coveooss/gotemplate/v3/yaml"
 	"github.com/stretchr/testify/assert"
 )
 
