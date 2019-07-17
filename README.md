@@ -13,4 +13,4 @@ This little utility just scan the current folder for `*.template` files and appl
 
 Every matching `*.ext.template` file will render a file named `*.generated.ext`. Other matched file (if --pattern is supplied) will replace the file with the rendered content and rename the original file `*.ext.original`.
 
-[Documentation](https://coveo.github.io/gotemplate/)
+[Documentation](https://coveooss.github.io/gotemplate/)
