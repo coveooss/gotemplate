@@ -18,6 +18,8 @@ github.com/bmatcuk/doublestar v1.1.2 h1:p0ybUUk/Dh+yetkg3v0Yhi/ujMiet/gztYQnxNXf
 github.com/bmatcuk/doublestar v1.1.2/go.mod h1:UD6OnuiIn0yFxxA2le/rnRU1G4RaI4UvFv1sNto9p6w=
 github.com/bmatcuk/doublestar v1.1.3 h1:S4Ka/fLvUtm+5TqKuByWyuGenBjTP8w+Z/GpQIWB9Yg=
 github.com/bmatcuk/doublestar v1.1.3/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
+github.com/bmatcuk/doublestar v1.1.4 h1:OiC5vFUceSTlgPeJdxVJGNIXTLxCBVPO7ozqJjXbE9M=
+github.com/bmatcuk/doublestar v1.1.4/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
 github.com/coveord/kingpin/v2 v2.3.1 h1:GWdfhOpRbIE+5Bt/hGgDbfWkntsCC5484xFWXaor+sg=
 github.com/coveord/kingpin/v2 v2.3.1/go.mod h1:G7snIuRD09h58XUezPxWrLPuZplFdreCh6cmJZMtNUU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
