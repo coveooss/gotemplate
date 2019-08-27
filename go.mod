@@ -19,7 +19,7 @@ require (
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/sergi/go-diff v1.0.0
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734
 	gopkg.in/yaml.v2 v2.2.2
 )
