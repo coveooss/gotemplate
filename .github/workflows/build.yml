@@ -30,7 +30,7 @@ jobs:
         run: |
           GO111MODULE=off go get github.com/mattn/goveralls
           go test ./...
-          make coveralls
+          ./coverage.sh
 
       - name: Build Tag
         if: github.ref != 'refs/heads/master'

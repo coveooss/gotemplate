@@ -20,4 +20,4 @@ jobs:
         run: |
           GO111MODULE=off go get github.com/mattn/goveralls
           go test ./...
-          make coveralls
+          ./coverage.sh
