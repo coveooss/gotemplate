@@ -1,7 +1,8 @@
 # gotemplate
 
-[![Build Status](https://travis-ci.org/coveooss/gotemplate.svg?branch=master)](https://travis-ci.org/coveooss/gotemplate)
-[![Coverage Status](https://coveralls.io/repos/github/coveooss/gotemplate/badge.svg?branch=master)](https://coveralls.io/github/coveooss/gotemplate?branch=master)
+[![Build Status](https://github.com/coveooss/gotemplate/workflows/Build/badge.svg)](https://github.com/coveooss/gotemplate/actions)
+[![codecov](https://codecov.io/gh/coveooss/gotemplate/branch/master/graph/badge.svg)](https://codecov.io/gh/coveooss/gotemplate)
+[![Go Report Card](https://goreportcard.com/badge/github.com/coveooss/gotemplate)](https://goreportcard.com/report/github.com/coveooss/gotemplate)
 
 ## Description
 
