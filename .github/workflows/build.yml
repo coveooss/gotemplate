@@ -28,9 +28,8 @@ jobs:
         env:
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         run: |
-          GO111MODULE=off go get github.com/mattn/goveralls
-          go test ./...
-          ./coverage.sh
+          bash ./test.sh
+          bash <(curl -s https://codecov.io/bash)
 
       - name: Build Tag
         if: github.ref != 'refs/heads/master'
