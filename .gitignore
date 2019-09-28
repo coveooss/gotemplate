@@ -3,6 +3,7 @@ dist
 vendor
 launch.json
 tasks.json
+coverage.txt
 
 # Jekyll files
 docs/.bundle

@@ -16,7 +16,7 @@ jobs:
 
       - name: Run Tests
         env:
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
           bash ./test.sh
           bash <(curl -s https://codecov.io/bash)
