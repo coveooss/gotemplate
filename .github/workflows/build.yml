@@ -19,11 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Build
-        env:
-          CGO_ENABLED: 0
-        run: go build -v
-
       - name: Run Tests
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
