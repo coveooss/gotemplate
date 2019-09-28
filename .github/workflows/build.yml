@@ -1,0 +1,38 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.12
+        id: go
+
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Build
+        env:
+          CGO_ENABLED: 0
+        run: go build -v
+
+      - name: Run Tests
+        env:
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        run: |
+          GO111MODULE=off go get github.com/mattn/goveralls
+          go test ./...
+          make coveralls
+
+      - name: Build Tag
+        if: github.ref != 'refs/heads/master'
+        run: |
+          curl -sL https://git.io/goreleaser | bash;
