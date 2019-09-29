@@ -1,42 +1,37 @@
 #! /usr/bin/env bash 
 
-for file in docs/doc_test/*.md
-do
-    gotemplate -dP $file > ${file%.*}.razor
-    gotemplate -P $file > ${file%.*}.rendered --accept-no-value
-done
+go build -o gotemplate
 
-DOC_FOLDER="docs"
+CONTENT_FOLDER="docs/content"
+DOC_FOLDER="$CONTENT_FOLDER/docs"
 export COLUMNS=1024
 
-mkdir -p $DOC_FOLDER
+rm -rf $DOC_FOLDER
 
-# Generate function info
-gotemplate '```text@<exec("gotemplate list --no-extension -c")```' > $DOC_FOLDER/_functions.md
+# Add basics section
+mkdir -p $DOC_FOLDER/Basics
+
+echo '---
+bookFlatSection: true
+weight: 4
+---' > $DOC_FOLDER/Basics/_index.md
 
 # Generate usage info
-COLUMNS=150 gotemplate '```text@<trim(exec("gotemplate -h"))@<;```' --nv > $DOC_FOLDER/_usage.md
+echo '---
+title: CLI Usage
+weight: 1
+---' > $DOC_FOLDER/Basics/CLI_Usage.md
+COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> $DOC_FOLDER/Basics/CLI_Usage.md
 
-# Generate methods on String objects
-gotemplate '```go@<getMethods(String(""))@<;```' > $DOC_FOLDER/_string_methods.md
-
-# Generate methods on StringArray objects
-gotemplate '```go@<getMethods(String("").Split(""))@<;```' > $DOC_FOLDER/_string_array_methods.md
-
-# Generate methods on List objects
-gotemplate '```go@<@getMethods(list())@<;```' > $DOC_FOLDER/_list_methods.md
-
-# Generate methods on Dictionary objects
-gotemplate '```go@<@getMethods(dict())@<;```' > $DOC_FOLDER/_dict_methods.md
+# Generate function info
+./gotemplate '```text@<exec("./gotemplate list --no-extension -c")```' > $DOC_FOLDER/Basics/functions.md
 
 # Generate detailed function info
-gotemplate --no-extension '{% include navigation.html %}
-
+./gotemplate --no-extension '
+---
+bookToc: false
+---
 ## Functions@<;
-
-| @foreach ($category := categories())
-    @<;[@(String($category.Name).Split(",")[0])](#@(String($category.Name).Replace(" ", "-").ToLower());) |
-@-end foreach
 
 @foreach ($category := categories())
 @-// We have to make a trick here by adding {{ "" }} otherwise, the entire line will be considered as a comment
@@ -56,4 +51,44 @@ gotemplate --no-extension '{% include navigation.html %}
         @-endif
     @-end foreach
 @-end foreach
-' > $DOC_FOLDER/functions_long.md
+' > $DOC_FOLDER/Basics/functions_long.md
+
+# Add test documentation
+mkdir -p $DOC_FOLDER/Features
+echo '---
+bookFlatSection: true
+weight: 5
+---' > $DOC_FOLDER/Features/_index.md
+for file in docs_tests/*.md
+do
+    ./gotemplate -dP $file > ${file%.*}.razor
+    ./gotemplate -P $file > ${file%.*}.rendered --accept-no-value
+done
+cp docs_tests/*.md $DOC_FOLDER/Features
+
+# Add structs documentation
+mkdir -p $DOC_FOLDER/Structs
+echo '---
+bookFlatSection: true
+weight: 6
+---' > $DOC_FOLDER/Structs/_index.md
+
+# Generate methods on String objects
+./gotemplate '```go@<getMethods(String(""))@<;```' > $DOC_FOLDER/Structs/string_methods.md
+
+# Generate methods on StringArray objects
+./gotemplate '```go@<getMethods(String("").Split(""))@<;```' > $DOC_FOLDER/Structs/string_array_methods.md
+
+# Generate methods on List objects
+./gotemplate '```go@<@getMethods(list())@<;```' > $DOC_FOLDER/Structs/list_methods.md
+
+# Generate methods on Dictionary objects
+./gotemplate '```go@<@getMethods(dict())@<;```' > $DOC_FOLDER/Structs/dict_methods.md
+
+
+# Copy README as the main page
+echo '---
+type: docs
+bookToc: false
+---' > $CONTENT_FOLDER/_index.md
+cat README.md >> $CONTENT_FOLDER/_index.md
