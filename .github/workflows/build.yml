@@ -39,6 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./render-doc
+          git diff -w  # Check if the repository is dirty after generating the doc
           git submodule update --init
           hugo --minify --source docs
 

@@ -28,9 +28,6 @@ COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> 
 
 # Generate detailed function info
 ./gotemplate --no-extension '
----
-bookToc: false
----
 ## Functions@<;
 
 @foreach ($category := categories())
@@ -89,6 +86,5 @@ weight: 6
 # Copy README as the main page
 echo '---
 type: docs
-bookToc: false
 ---' > $CONTENT_FOLDER/_index.md
 cat README.md >> $CONTENT_FOLDER/_index.md

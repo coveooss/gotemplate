@@ -2,3 +2,7 @@ baseURL = "https://coveooss.github.io/gotemplate/"
 languageCode = "en-us"
 title = "Gotemplate"
 theme = "book"
+
+[params]
+BookToC = false
+BookSearch = false
