@@ -1,8 +1,9 @@
 baseURL = "https://coveooss.github.io/gotemplate/"
 languageCode = "en-us"
-title = "Gotemplate"
+title = "gotemplate"
 theme = "book"
 
 [params]
 BookToC = false
 BookSearch = false
+BookLogo = "gopher.png"

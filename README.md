@@ -3,15 +3,64 @@
 [![Build Status](https://github.com/coveooss/gotemplate/workflows/Build/badge.svg)](https://github.com/coveooss/gotemplate/actions)
 [![codecov](https://codecov.io/gh/coveooss/gotemplate/branch/master/graph/badge.svg)](https://codecov.io/gh/coveooss/gotemplate)
 [![Go Report Card](https://goreportcard.com/badge/github.com/coveooss/gotemplate)](https://goreportcard.com/report/github.com/coveooss/gotemplate)
+[![Documentation](https://img.shields.io/static/v1?label=doc&message=hugo&color=blue&logo=github)](https://coveooss.github.io/gotemplate/)
 
 ## Description
+Apply template over files ending with `.template` in the current directory. Every matching `*.ext.template` file will render a file named `*.generated.ext`. It is also possible to overwrite the original files.
 
-Apply go template over files ending with .template in the current directory.
 
-For more information on Go Template functionality, check this [link](https://golang.org/pkg/text/template).
+### Functions
+Supports over a hundred functions:  
 
-This little utility just scan the current folder for `*.template` files and apply the [go template](https://golang.org/pkg/text/template) over them.
+- [Go template](https://golang.org/pkg/text/template)
+- [Sprig](https://github.com/Masterminds/sprig)
+- Advanced serialization and deserialization in JSON, YAML, XML and HCL
+- Looping and flow control functions of all kinds
+- Plus a whole bunch implemented in this repository
 
-Every matching `*.ext.template` file will render a file named `*.generated.ext`. Other matched file (if --pattern is supplied) will replace the file with the rendered content and rename the original file `*.ext.original`.
 
-[Documentation](https://coveooss.github.io/gotemplate/)
+### Syntax
+Supports two distinct syntaxes (usable at the same time or individually)
+
+Here are the statements to generate the following output:  
+```text
+Hello
+World
+```
+
+Note: The `-` character trims whitespace. Otherwise, all lines are printed out as blank lines
+
+#### Regular gotemplate
+```go
+{{- $test := list "Hello" "World" }} 
+{{- range $word := $test }}
+{{ $word }} 
+{{- end }}
+```
+
+#### Razor
+```csharp
+@{test} := list("Hello", "World")
+@-foreach($word := $test)
+@{word}
+@-end foreach
+```
+
+
+### Using variables
+Variables can be imported from various formats (YAML, JSON and HCL) and set as CLI arguments and then used in templates. Here's an example:
+
+`vars.json`
+```json
+{
+  "my_var": "value"
+}
+```
+
+Script:
+```bash
+gotemplate --var my_var2=value2 --import vars.json '{{ .my_var }} {{ .my_var2 }}'
+  >>> value value2
+```
+
+More examples and statement in the [documentation](https://coveooss.github.io/gotemplate/)

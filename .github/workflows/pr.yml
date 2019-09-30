@@ -24,4 +24,4 @@ jobs:
       - name: Test Documentation
         run: |
           ./render-doc
-          git diff --quiet || exit 1 # Check if the repository is dirty after generating the doc
+          git diff -b -w --ignore-blank-lines || exit 1   # Check if the repository is dirty after generating the doc
