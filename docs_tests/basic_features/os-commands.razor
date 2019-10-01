@@ -1,4 +1,3 @@
-
 # OS commands
 
 It is possible to run OS commands using the following go template functions:

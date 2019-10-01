@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/bmatcuk/doublestar"
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/json"
 	logging "github.com/op/go-logging"
@@ -21,7 +22,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 	dmp := diffmatchpatch.New()
 	SetLogLevel(logging.WARNING)
 	template := MustNewTemplate("../docs_tests", nil, "", nil)
-	files, err := filepath.Glob(filepath.Join(template.folder, "*.md"))
+	files, err := doublestar.Glob(filepath.Join(template.folder, "**/*.md"))
 	if err != nil {
 		t.Fatalf("Unable to read test files (documentation in %s)", template.folder)
 		t.Fail()

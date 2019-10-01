@@ -1,13 +1,4 @@
-# Basic mathematic operations
-
-## Operators mixin
-
-Note that you cannot combine razor extended expression (+, -,  /, *, etc.) with go template expression such as in:
-
-| Razor expression                | Go Template                          | Result | Note
-| ------------------------------- | ------------------------------------ | -----: | ----
-| &#64;(2 + (2 &#124; mul(4)));   | &#123;{ add 2 (bor 2 (mul 4)) }}     | 8      | In this statement, &#124; is interpreted as bitwise or between 2 and 4
-| &#64;(sum 2 (2 &#124; mul 4));  | &#123;{ sum 2 (2 &#124; mul 4) }}    | 10     | While in this statement (no binary operator), &#124; is interpreted as go template piping operator
+# Arithmetic
 
 ## Addition
 
@@ -114,5 +105,3 @@ There are special behavior for certain operators depending of the arguments:
 **************************************************************************************************** will result in **************************************************************************************************** which result in:
 
 ****************************************************************************************************
-
-#### Math operation on array

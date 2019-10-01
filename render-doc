@@ -7,24 +7,14 @@ DOC_FOLDER="$CONTENT_FOLDER/docs"
 export COLUMNS=1024
 
 rm -rf $DOC_FOLDER
-
-# Add basics section
-mkdir -p $DOC_FOLDER/Basics
-
-echo '---
-bookFlatSection: true
-weight: 4
----' > $DOC_FOLDER/Basics/_index.md
+mkdir -p $DOC_FOLDER
 
 # Generate usage info
 echo '---
 title: CLI Usage
 weight: 1
----' > $DOC_FOLDER/Basics/CLI_Usage.md
-COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> $DOC_FOLDER/Basics/CLI_Usage.md
-
-# Generate function info
-./gotemplate '```text@<exec("./gotemplate list --no-extension -c")```' > $DOC_FOLDER/Basics/functions.md
+---' > $DOC_FOLDER/CLI_Usage.md
+COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> $DOC_FOLDER/CLI_Usage.md
 
 # Generate detailed function info
 ./gotemplate --no-extension '
@@ -48,26 +38,36 @@ COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> 
         @-endif
     @-end foreach
 @-end foreach
-' > $DOC_FOLDER/Basics/functions_long.md
+' > $DOC_FOLDER/function_reference.md
 
-# Add test documentation
-mkdir -p $DOC_FOLDER/Features
+# Add basics section
+mkdir -p $DOC_FOLDER/basic_features
+
 echo '---
 bookFlatSection: true
-weight: 5
----' > $DOC_FOLDER/Features/_index.md
-for file in docs_tests/*.md
+weight: 2
+---' > $DOC_FOLDER/basic_features/_index.md
+
+# Add advanced section
+mkdir -p $DOC_FOLDER/advanced_features
+
+echo '---
+bookFlatSection: true
+weight: 3
+---' > $DOC_FOLDER/advanced_features/_index.md
+
+for file in docs_tests/**/*.md
 do
     ./gotemplate -dP $file > ${file%.*}.razor
     ./gotemplate -P $file > ${file%.*}.rendered --accept-no-value
 done
-cp docs_tests/*.md $DOC_FOLDER/Features
+rsync -av docs_tests/ $DOC_FOLDER -r
 
 # Add structs documentation
 mkdir -p $DOC_FOLDER/Structs
 echo '---
 bookFlatSection: true
-weight: 6
+weight: 3
 ---' > $DOC_FOLDER/Structs/_index.md
 
 # Generate methods on String objects
