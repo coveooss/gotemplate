@@ -1,0 +1,1018 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Function Reference | gotemplate</title><link rel=stylesheet href=/gotemplate/book.min.89885fa0429ec73067282f26fc0c6d38cfc617a443ec4e835d47b821c52c6e92.css integrity="sha256-iYhfoEKexzBnKC8m/AxtOM/GF6RD7E6DXUe4IcUsbpI="><link rel=icon href=/gotemplate/favicon.png type=image/x-icon></head><body><input type=checkbox class=hidden id=menu-control><main class="flex container"><aside class="book-menu fixed"><nav><h2 class=book-brand><a href=https://coveooss.github.io/gotemplate/><img src=/gotemplate/gopher.png alt=Logo><span>gotemplate</span></a></h2><ul><li><a href=/gotemplate/docs/cli_usage/>CLI Usage</a></li><li class=book-section-flat><span>Basic Features</span><ul><li><a href=/gotemplate/docs/basic_features/arithmetic/>Arithmetic</a></li><li><a href=/gotemplate/docs/basic_features/assignation/>Assignation</a></li><li><a href=/gotemplate/docs/basic_features/collections/>Collections</a></li><li><a href=/gotemplate/docs/basic_features/comments/>Comments</a></li><li><a href=/gotemplate/docs/basic_features/conditionals/>Conditionals</a></li><li><a href=/gotemplate/docs/basic_features/data/>Data</a></li><li><a href=/gotemplate/docs/basic_features/literals/>Literals</a></li><li><a href=/gotemplate/docs/basic_features/os-commands/>Os Commands</a></li></ul></li><li class=book-section-flat><span>Advanced Features</span><ul><li><a href=/gotemplate/docs/advanced_features/functions/>Functions</a></li><li><a href=/gotemplate/docs/advanced_features/mixing_razor_and_gotemplate/>Mixing Razor and Gotemplate</a></li><li><a href=/gotemplate/docs/advanced_features/sub_templates/>Sub Templates</a></li></ul></li><li class=book-section-flat><span>Structs</span><ul><li><a href=/gotemplate/docs/structs/dict_methods/>Dict Methods</a></li><li><a href=/gotemplate/docs/structs/list_methods/>List Methods</a></li><li><a href=/gotemplate/docs/structs/string_array_methods/>String Array Methods</a></li><li><a href=/gotemplate/docs/structs/string_methods/>String Methods</a></li></ul></li><li><a href=/gotemplate/docs/function_reference/ class=active>Function Reference</a></li></ul></nav><script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script></aside><div class=book-page><header class="flex align-center justify-between book-header"><label for=menu-control><img src=/gotemplate/svg/menu.svg alt=Menu></label>
+<strong>Function Reference</strong></header><article class=markdown><h2 id=functions>Functions</h2><h3 id=base-go-template-functions>Base go template functions</h3><pre><code class=language-go>// Returns the boolean AND of its arguments by returning the first empty argument or the last argument, that is, &quot;and x y&quot; behaves as &quot;if x then y else x&quot;. All the arguments are evaluated.
+func and(arg0 reflect.Value, args ...reflect.Value) reflect.Value
+</code></pre><pre><code class=language-go>// Returns the result of calling the first argument, which must be a function, with the remaining arguments as parameters. Thus &quot;call .X.Y 1 2&quot; is, in Go notation, dot.X.Y(1, 2) where Y is a func-valued field, map entry, or the like. The first argument must be the result of an evaluation that yields a value of function type (as distinct from a predefined function such as print). The function must return either one or two result values, the second of which is of type error. If the arguments don't match the function or the returned error value is non-nil, execution stops.
+func call(fn reflect.Value, args ...reflect.Value) reflect.Value, error)
+</code></pre><pre><code class=language-go>// Returns the boolean truth of arg1 == arg2
+func eq(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
+</code></pre><pre><code class=language-go>// Returns the boolean truth of arg1 &gt;= arg2
+func ge(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
+</code></pre><pre><code class=language-go>// Returns the boolean truth of arg1 &gt; arg2
+func gt(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
+</code></pre><pre><code class=language-go>// Returns the escaped HTML equivalent of the textual representation of its arguments. This function is unavailable in html/template, with a few exceptions.
+func html(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Returns the result of indexing its first argument by the following arguments. Thus &quot;index x 1 2 3&quot; is, in Go syntax, x[1][2][3]. Each indexed item must be a map, slice, or array.
+func index(item reflect.Value, indices ...reflect.Value) (reflect.Value, error)
+</code></pre><pre><code class=language-go>// Returns the escaped JavaScript equivalent of the textual representation of its arguments.
+func js(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Returns the boolean truth of arg1 &lt;= arg2
+func le(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
+</code></pre><pre><code class=language-go>// Returns the integer length of its argument.
+func len(item interface{}) (int, error)
+</code></pre><pre><code class=language-go>// Returns the boolean truth of arg1 &lt; arg2
+func lt(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
+</code></pre><pre><code class=language-go>// Returns the boolean truth of arg1 != arg2
+func ne(arg1 reflect.Value, arg2 ...reflect.Value) (bool, error)
+</code></pre><pre><code class=language-go>// Returns the boolean negation of its single argument.
+func not(not(arg reflect.Value) bool
+</code></pre><pre><code class=language-go>// Returns the boolean OR of its arguments by returning the first non-empty argument or the last argument, that is, &quot;or x y&quot; behaves as &quot;if x then x else y&quot;. All the arguments are evaluated.
+func or(or(arg0 reflect.Value, args ...reflect.Value) reflect.Value
+</code></pre><pre><code class=language-go>// An alias for fmt.Sprint
+func print(args ...interface{}) string
+</code></pre><pre><code class=language-go>// An alias for fmt.Sprintf
+func printf(format string, args ...interface{}) string
+</code></pre><pre><code class=language-go>// An alias for fmt.Sprintln
+func println(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Returns the escaped value of the textual representation of its arguments in a form suitable for embedding in a URL query. This function is unavailable in html/template, with a few exceptions.
+func urlquery(args ...interface{}) string
+</code></pre><h3 id=data-conversion>Data Conversion</h3><pre><code class=language-go>// Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.
+// Aliases: DATA, fromData, fromDATA
+func data(data interface{}, context ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.
+// Aliases: HCL, fromHcl, fromHCL, tfvars, fromTFVars, TFVARS, fromTFVARS
+func hcl(hcl interface{}, context ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.
+// Aliases: JSON, fromJson, fromJSON
+func json(json interface{}, context ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to bash compatible representation.
+func toBash(value interface{}) string
+</code></pre><pre><code class=language-go>// Converts the supplied value to compact HCL representation.
+// Aliases: toHCL
+func toHcl(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to compact HCL representation used inside outer HCL definition.
+// Aliases: toInternalHCL, toIHCL, toIHcl
+func toInternalHcl(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to compact JSON representation.
+// Aliases: toJSON
+func toJson(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to pretty HCL representation.
+// Aliases: toPrettyHCL
+func toPrettyHcl(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to pretty JSON representation.
+// Aliases: toPrettyJSON
+func toPrettyJson(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to pretty HCL representation (without multiple map declarations).
+func toPrettyTFVars(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to compact quoted HCL representation.
+// Aliases: toQuotedHCL
+func toQuotedHcl(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to compact quoted JSON representation.
+// Aliases: toQuotedJSON
+func toQuotedJson(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to compact HCL representation (without multiple map declarations).
+func toQuotedTFVars(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to compact HCL representation (without multiple map declarations).
+func toTFVars(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied value to YAML representation.
+// Aliases: toYAML
+func toYaml(value interface{}) string, error
+</code></pre><pre><code class=language-go>// Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.
+// Aliases: YAML, fromYaml, fromYAML
+func yaml(yaml interface{}, context ...interface{}) interface{}, error
+</code></pre><h3 id=data-manipulation>Data Manipulation</h3><pre><code class=language-go>// Returns a String class object that allows invoking standard string operations as method.
+func String(value interface{}) String
+</code></pre><pre><code class=language-go>// Append new items to an existing list, creating a new list.
+// Aliases: push
+func append(list interface{}, elements ...interface{}) IGenericList, error
+</code></pre><pre><code class=language-go>// Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value).
+func array(value interface{}) interface{}
+</code></pre><pre><code class=language-go>// Converts the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)
+func bool(str string) bool, error
+</code></pre><pre><code class=language-go>// Returns the character corresponging to the supplied integer value
+func char(value interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Test to see if a list has a particular elements.
+// Aliases: has
+func contains(list interface{}, elements ...interface{}) bool, error
+</code></pre><pre><code class=language-go>// Returns the content of a single element map (used to retrieve content in a declaration like `value &quot;name&quot; { a = 1 b = 3}`)
+func content(keymap interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns a new dictionary from a list of pairs (key, value).
+// Aliases: dictionary
+func dict(args ...interface{}) IDictionary, error
+</code></pre><pre><code class=language-go>// Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps
+func extract(source interface{}, indexes ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)
+func get(map interface{}, key interface{}, default ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns true if the dictionary contains the specified key.
+func hasKey(dictionary interface{}, key interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns but the last element. 
+func initial(list interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns a list that is the intersection of the list and all arguments (removing duplicates).
+func intersect(list interface{}, elements ...interface{}) IGenericList, error
+</code></pre><pre><code class=language-go>// Returns true if the supplied value is nil.
+// Aliases: isNull
+func isNil(arg1 interface{}) bool
+</code></pre><pre><code class=language-go>// Returns true if the supplied value is not nil.
+func isSet(arg1 interface{}) bool
+</code></pre><pre><code class=language-go>// Returns true if the supplied value is false, 0, nil or empty.
+// Aliases: isEmpty
+func isZero(arg1 interface{}) bool
+</code></pre><pre><code class=language-go>// Returns the key name of a single element map (used to retrieve name in a declaration like `value &quot;name&quot; { a = 1 b = 3}`)
+func key(value interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns a list of all of the keys in a dict (in alphabetical order).
+func keys(dictionary IDictionary) IGenericList
+</code></pre><pre><code class=language-go>// Returns the number of actual character in a string.
+// Aliases: nbChars
+func lenc(str string) int
+</code></pre><pre><code class=language-go>// Returns a generic list from the supplied arguments.
+// Aliases: tuple
+func list(args ...interface{}) IGenericList
+</code></pre><pre><code class=language-go>// Merges two or more dictionaries into one, giving precedence to the dest dictionary.
+func merge(destination IDictionary, sources IDictionary, args ...IDictionary) IDictionary
+</code></pre><pre><code class=language-go>// Returns a new dict with all the keys that do not match the given keys.
+func omit(dict IDictionary, keys interface{}, args ...interface{}) IDictionary
+</code></pre><pre><code class=language-go>// Selects just the given keys out of a dictionary, creating a new dict.
+func pick(dict IDictionary, keys ...interface{}) IDictionary
+</code></pre><pre><code class=language-go>// Same as pick, but returns an error message if there are intruders in supplied dictionary.
+func pickv(dict IDictionary, message string, keys interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Extracts a list of values matching the supplied key from a list of dictionary.
+func pluck(key interface{}, dictionaries ...IDictionary) IGenericList
+</code></pre><pre><code class=language-go>// Push elements onto the front of a list, creating a new list.
+func prepend(list interface{}, elements ...interface{}) IGenericList, error
+</code></pre><pre><code class=language-go>// Gets the tail of the list (everything but the first item)
+func rest(list interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Produces a new list with the reversed elements of the given list.
+func reverse(list interface{}) IGenericList, error
+</code></pre><pre><code class=language-go>// Returns the element at index position or default if index is outside bounds.
+func safeIndex(value interface{}, index int, default interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Adds the value to the supplied map using key as identifier.
+func set(dict interface{}, key interface{}, value interface{}) string, error
+</code></pre><pre><code class=language-go>// Returns a slice of the supplied object (equivalent to object[from:to]).
+func slice(value interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Converts the supplied value into its string representation.
+func string(value interface{}) string
+</code></pre><pre><code class=language-go>// Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, &quot;&quot; are not considered as unset).
+// Aliases: ifUndef
+func undef(default interface{}, values ...interface{}) interface{}
+</code></pre><pre><code class=language-go>// Returns a list that is the union of the list and all arguments (removing duplicates).
+func union(list interface{}, elements ...interface{}) IGenericList, error
+</code></pre><pre><code class=language-go>// Generates a list with all of the duplicates removed.
+// Aliases: uniq
+func unique(list interface{}) IGenericList, error
+</code></pre><pre><code class=language-go>// Removes an element from a dictionary.
+// Aliases: delete, remove
+func unset(dictionary interface{}, key interface{}) string, error
+</code></pre><pre><code class=language-go>func values(arg1 IDictionary) IGenericList
+</code></pre><pre><code class=language-go>// Filters items out of a list.
+func without(list interface{}, elements ...interface{}) IGenericList, error
+</code></pre><h3 id=logging>Logging</h3><pre><code class=language-go>// Logs a message using CRITICAL as log level (0).
+// Aliases: criticalf
+func critical(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Logs a message using DEBUG as log level (5).
+// Aliases: debugf
+func debug(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Logs a message using ERROR as log level (1).
+// Aliases: errorf
+func error(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Equivalents to critical followed by a call to os.Exit(1).
+// Aliases: fatalf
+func fatal(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Logs a message using INFO as log level (4).
+// Aliases: infof
+func info(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Logs a message using NOTICE as log level (3).
+// Aliases: noticef
+func notice(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Equivalents to critical followed by a call to panic.
+// Aliases: panicf
+func panic(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Logs a message using WARNING as log level (2).
+// Aliases: warn, warnf, warningf
+func warning(args ...interface{}) string
+</code></pre><h3 id=mathematic-bit-operations>Mathematic Bit Operations</h3><pre><code class=language-go>// Aliases: bitwiseAND
+func band(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: bitwiseClear
+func bclear(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: bitwiseOR
+func bor(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: bitwiseXOR
+func bxor(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: leftShift
+func lshift(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: rightShift
+func rshift(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><h3 id=mathematic-fundamental>Mathematic Fundamental</h3><pre><code class=language-go>// Aliases: sum
+func add(arg1 interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the cube root of x.
+// Special cases are:
+//     cbrt(±0) = ±0
+//     cbrt(±Inf) = ±Inf
+//     cbrt(NaN) = NaN
+func cbrt(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the least integer value greater than or equal to x.
+// Special cases are:
+//     ceil(±0) = ±0
+//     ceil(±Inf) = ±Inf
+//     ceil(NaN) = NaN
+// Aliases: roundUp, roundup
+func ceil(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the maximum of x-y or 0.
+// Special cases are:
+//     dim(+Inf, +Inf) = NaN
+//     dim(-Inf, -Inf) = NaN
+//     dim(x, NaN) = dim(NaN, x) = NaN
+func dim(x interface{}, y interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: divide, quotient
+func div(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns e**x, the base-e exponential of x.
+// Special cases are:
+//     exp(+Inf) = +Inf
+//     exp(NaN) = NaN
+// Very large values overflow to 0 or +Inf. Very small values underflow to 1.
+// Aliases: exponent
+func exp(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns 2**x, the base-2 exponential of x.
+// Special cases are the same as exp.
+// Aliases: exponent2
+func exp2(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns e**x - 1, the base-e exponential of x minus 1. It is more
+// accurate than exp(x) - 1 when x is near zero.
+// Special cases are:
+//     expm1(+Inf) = +Inf
+//     expm1(-Inf) = -1
+//     expm1(NaN) = NaN
+// Very large values overflow to -1 or +Inf
+func expm1(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the greatest integer value less than or equal to x.
+// Special cases are:
+//     floor(±0) = ±0
+//     floor(±Inf) = ±Inf
+//     floor(NaN) = NaN
+// Aliases: roundDown, rounddown, int, integer
+func floor(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the floating-point remainder of x/y. The magnitude of the result is less than y and its sign agrees with that of x.
+// Special cases are:
+//     mod(±Inf, y) = NaN
+//     mod(NaN, y) = NaN
+//     mod(x, 0) = NaN
+//     mod(x, ±Inf) = x
+//     mod(x, NaN) = NaN
+// Aliases: modulo
+func mod(x interface{}, y interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns integer and fractional floating-point numbers that sum to f. Both values have the same sign as f.
+// Special cases are:
+//     modf(±Inf) = ±Inf, NaN
+//     modf(NaN) = NaN, NaN
+func modf(f interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: multiply, prod, product
+func mul(arg1 interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns x**y, the base-x exponential of y.
+// Special cases are (in order):
+//     pow(x, ±0) = 1 for any x
+//     pow(1, y) = 1 for any y
+//     pow(x, 1) = x for any x
+//     pow(NaN, y) = NaN
+//     pow(x, NaN) = NaN
+//     pow(±0, y) = ±Inf for y an odd integer &lt; 0
+//     pow(±0, -Inf) = +Inf
+//     pow(±0, +Inf) = +0
+//     pow(±0, y) = +Inf for finite y &lt; 0 and not an odd integer
+//     pow(±0, y) = ±0 for y an odd integer &gt; 0
+//     pow(±0, y) = +0 for finite y &gt; 0 and not an odd integer
+//     pow(-1, ±Inf) = 1
+//     pow(x, +Inf) = +Inf for |x| &gt; 1
+//     pow(x, -Inf) = +0 for |x| &gt; 1
+//     pow(x, +Inf) = +0 for |x| &lt; 1
+//     pow(x, -Inf) = +Inf for |x| &lt; 1
+//     pow(+Inf, y) = +Inf for y &gt; 0
+//     pow(+Inf, y) = +0 for y &lt; 0
+//     pow(-Inf, y) = Pow(-0, -y)
+//     pow(x, y) = NaN for finite x &lt; 0 and finite non-integer y
+// Aliases: power
+func pow(x interface{}, y interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns 10**n, the base-10 exponential of n.
+// Special cases are:
+//     pow10(n) =0 for n &lt; -323
+//     pow10(n) = +Inf for n &gt; 308
+// Aliases: power10
+func pow10(n interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the IEEE 754 floating-point remainder of x/y.
+// Special cases are:
+//     rem(±Inf, y) = NaN
+//     rem(NaN, y) = NaN
+//     rem(x, 0) = NaN
+//     rem(x, ±Inf) = x
+//     rem(x, NaN) = NaN
+// Aliases: remainder
+func rem(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: subtract
+func sub(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the integer value of x.
+// Special cases are:
+//     trunc(±0) = ±0
+//     trunc(±Inf) = ±Inf
+//     trunc(NaN) = NaN
+// Aliases: truncate
+func trunc(x interface{}) interface{}, error
+</code></pre><h3 id=mathematic-stats>Mathematic Stats</h3><pre><code class=language-go>// Aliases: average
+func avg(arg1 interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the larger of x or y.
+// Special cases are:
+//     max(x, +Inf) = max(+Inf, x) = +Inf
+//     max(x, NaN) = max(NaN, x) = NaN
+//     max(+0, ±0) = max(±0, +0) = +0
+//     max(-0, -0) = -0
+// Aliases: maximum, biggest
+func max(x ...interface{}) interface{}
+</code></pre><pre><code class=language-go>// Returns the smaller of x or y.
+// Special cases are:
+//     min(x, -Inf) = min(-Inf, x) = -Inf
+//     min(x, NaN) = min(NaN, x) = NaN
+//     min(-0, ±0) = min(±0, -0) = -0
+// Aliases: minimum, smallest
+func min(x ...interface{}) interface{}
+</code></pre><h3 id=mathematic-trigonometry>Mathematic Trigonometry</h3><pre><code class=language-go>// Returns the arccosine, in radians, of x.
+// Special case is:
+//     acos(x) = NaN if x &lt; -1 or x &gt; 1
+// Aliases: arcCosine, arcCosinus
+func acos(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the inverse hyperbolic cosine of x.
+// Special cases are:
+//     acosh(+Inf) = +Inf
+//     acosh(x) = NaN if x &lt; 1
+//     acosh(NaN) = NaN
+// Aliases: arcHyperbolicCosine, arcHyperbolicCosinus
+func acosh(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the arcsine, in radians, of x.
+// Special cases are:
+//     asin(±0) = ±0
+//     asin(x) = NaN if x &lt; -1 or x &gt; 1
+// Aliases: arcSine, arcSinus
+func asin(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the inverse hyperbolic sine of x.
+// Special cases are:
+//     asinh(±0) = ±0
+//     asinh(±Inf) = ±Inf
+//     asinh(NaN) = NaN
+// Aliases: arcHyperbolicSine, arcHyperbolicSinus
+func asinh(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the arctangent, in radians, of x.
+// Special cases are:
+//     atan(±0) = ±0
+//     atan(±Inf) = ±Pi/2
+// Aliases: arcTangent
+func atan(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the arc tangent of y/x, using the signs of the two to determine the quadrant of the return value.
+// Special cases are (in order):
+//     atan2(y, NaN) = NaN
+//     atan2(NaN, x) = NaN
+//     atan2(+0, x&gt;=0) = +0
+//     atan2(-0, x&gt;=0) = -0
+//     atan2(+0, x&lt;=-0) = +Pi
+//     atan2(-0, x&lt;=-0) = -Pi
+//     atan2(y&gt;0, 0) = +Pi/2
+//     atan2(y&lt;0, 0) = -Pi/2
+//     atan2(+Inf, +Inf) = +Pi/4
+//     atan2(-Inf, +Inf) = -Pi/4
+//     atan2(+Inf, -Inf) = 3Pi/4
+//     atan2(-Inf, -Inf) = -3Pi/4
+//     atan2(y, +Inf) = 0
+//     atan2(y&gt;0, -Inf) = +Pi
+//     atan2(y&lt;0, -Inf) = -Pi
+//     atan2(+Inf, x) = +Pi/2
+//     atan2(-Inf, x) = -Pi/2
+// Aliases: arcTangent2
+func atan2(x interface{}, y interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the inverse hyperbolic tangent of x.
+// Special cases are:
+//     atanh(1) = +Inf
+//     atanh(±0) = ±0
+//     atanh(-1) = -Inf
+//     atanh(x) = NaN if x &lt; -1 or x &gt; 1
+//     atanh(NaN) = NaN
+// Aliases: arcHyperbolicTangent
+func atanh(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the cosine of the radian argument x.
+// Special cases are:
+//     cos(±Inf) = NaN
+//     cos(NaN) = NaN
+// Aliases: cosine, cosinus
+func cos(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the hyperbolic cosine of x.
+// Special cases are:
+//     cosh(±0) = 1
+//     cosh(±Inf) = +Inf
+//     cosh(NaN) = NaN
+// Aliases: hyperbolicCosine, hyperbolicCosinus
+func cosh(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: degree
+func deg(arg1 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the binary exponent of x as an integer.
+// Special cases are:
+//     ilogb(±Inf) = MaxInt32
+//     ilogb(0) = MinInt32
+//     ilogb(NaN) = MaxInt32
+func ilogb(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the order-zero Bessel function of the first kind.
+// Special cases are:
+//     j0(±Inf) = 0
+//     j0(0) = 1
+//     j0(NaN) = NaN
+// Aliases: firstBessel0
+func j0(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the order-one Bessel function of the first kind.
+// Special cases are:
+//     j1(±Inf) = 0
+//     j1(NaN) = NaN
+// Aliases: firstBessel1
+func j1(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the order-n Bessel function of the first kind.
+// Special cases are:
+//     jn(n, ±Inf) = 0
+//     jn(n, NaN) = NaN
+// Aliases: firstBesselN
+func jn(n interface{}, x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the natural logarithm of x.
+// Special cases are:
+//     log(+Inf) = +Inf
+//     log(0) = -Inf
+//     log(x &lt; 0) = NaN
+//     log(NaN) = NaN
+func log(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the decimal logarithm of x. The special cases are the same as for log.
+func log10(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the natural logarithm of 1 plus its argument x. It is more accurate than log(1 + x) when x is near zero.
+// Special cases are:
+//     log1p(+Inf) = +Inf
+//     log1p(±0) = ±0
+//     log1p(-1) = -Inf
+//     log1p(x &lt; -1) = NaN
+//     log1p(NaN) = NaN
+func log1p(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the binary logarithm of x. The special cases are the same as for log.
+func log2(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the binary exponent of x.
+// Special cases are:
+//     logb(±Inf) = +Inf
+//     logb(0) = -Inf
+//     logb(NaN) = NaN
+func logb(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: radian
+func rad(arg1 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the sine of the radian argument x.
+// Special cases are:
+//     sin(±0) = ±0
+//     sin(±Inf) = NaN
+//     sin(NaN) = NaN
+// Aliases: sine, sinus
+func sin(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns Sin(x), Cos(x).
+// Special cases are:
+//     sincos(±0) = ±0, 1
+//     sincos(±Inf) = NaN, NaN
+//     sincos(NaN) = NaN, NaN
+// Aliases: sineCosine, sinusCosinus
+func sincos(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the hyperbolic sine of x.
+// Special cases are:
+//     sinh(±0) = ±0
+//     sinh(±Inf) = ±Inf
+//     sinh(NaN) = NaN
+// Aliases: hyperbolicSine, hyperbolicSinus
+func sinh(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the tangent of the radian argument x.
+// Special cases are:
+//     tan(±0) = ±0
+//     tan(±Inf) = NaN
+//     tan(NaN) = NaN
+// Aliases: tangent
+func tan(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the hyperbolic tangent of x.
+// Special cases are:
+//     tanh(±0) = ±0
+//     tanh(±Inf) = ±1
+//     tanh(NaN) = NaN
+// Aliases: hyperbolicTangent
+func tanh(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the order-zero Bessel function of the second kind.
+// Special cases are:
+//     y0(+Inf) = 0
+//     y0(0) = -Inf
+//     y0(x &lt; 0) = NaN
+//     y0(NaN) = NaN
+// Aliases: secondBessel0
+func y0(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the order-one Bessel function of the second kind.
+// Special cases are:
+//     y1(+Inf) = 0
+//     y1(0) = -Inf
+//     y1(x &lt; 0) = NaN
+//     y1(NaN) = NaN
+// Aliases: secondBessel1
+func y1(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the order-n Bessel function of the second kind.
+// Special cases are:
+//     yn(n, +Inf) = 0
+//     yn(n ≥ 0, 0) = -Inf
+//     yn(n &lt; 0, 0) = +Inf if n is odd, -Inf if n is even
+//     yn(n, x &lt; 0) = NaN
+//     yn(n, NaN) = NaN
+// Aliases: secondBesselN
+func yn(n interface{}, x interface{}) interface{}, error
+</code></pre><h3 id=mathematic-utilities>Mathematic Utilities</h3><pre><code class=language-go>// Returns the absolute value of x.
+// Special cases are:
+//     abs(±Inf) = +Inf
+//     abs(NaN) = NaN
+// Aliases: absolute
+func abs(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: decimal
+func dec(arg1 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Breaks f into a normalized fraction and an integral power of two. Returns frac and exp satisfying f == frac × 2**exp, with the absolute value of frac in the interval [½, 1).
+// Special cases are:
+//     frexp(±0) = ±0, 0
+//     frexp(±Inf) = ±Inf, 0
+//     frexp(NaN) = NaN, 0
+func frexp(f interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the Gamma function of x.
+// Special cases are:
+//     gamma(+Inf) = +Inf
+//     gamma(+0) = +Inf
+//     gamma(-0) = -Inf
+//     gamma(x) = NaN for integer x &lt; 0
+//     gamma(-Inf) = NaN
+//     gamma(NaN) = NaN
+func gamma(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Aliases: hexa, hexaDecimal
+func hex(arg1 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns Sqrt(p*p + q*q), taking care to avoid unnecessary overflow and underflow.
+// Special cases are:
+//     hypot(±Inf, q) = +Inf
+//     hypot(p, ±Inf) = +Inf
+//     hypot(NaN, q) = NaN
+//     hypot(p, NaN) = NaN
+// Aliases: hypotenuse
+func hypot(p interface{}, q interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Reports whether f is an infinity, according to sign. If sign &gt; 0, isInf reports whether f is positive infinity. If sign &lt; 0, IsInf reports whether f is negative infinity. If sign == 0, IsInf reports whether f is either infinity
+// Aliases: isInfinity
+func isInf(f interface{}, arg2 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Reports whether f is an IEEE 754 'not-a-number' value
+func isNaN(f interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Ldexp is the inverse of Frexp. Returns frac × 2**exp.
+// Special cases are:
+//     ldexp(±0, exp) = ±0
+//     ldexp(±Inf, exp) = ±Inf
+//     ldexp(NaN, exp) = NaN
+func ldexp(frac interface{}, exp interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the natural logarithm and sign (-1 or +1) of Gamma(x).
+// Special cases are:
+//     lgamma(+Inf) = +Inf
+//     lgamma(0) = +Inf
+//     lgamma(-integer) = +Inf
+//     lgamma(-Inf) = -Inf
+//     lgamma(NaN) = NaN
+func lgamma(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the next representable float64 value after x towards y.
+// Special cases are:
+//     Nextafter(x, x)   = x
+// Nextafter(NaN, y) = NaN
+// Nextafter(x, NaN) = NaN
+func nextAfter(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>func signBit(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the square root of x.
+// Special cases are:
+//     sqrt(+Inf) = +Inf
+//     sqrt(±0) = ±0
+//     sqrt(x &lt; 0) = NaN
+//     sqrt(NaN) = NaN
+// Aliases: squareRoot
+func sqrt(x interface{}) interface{}, error
+</code></pre><pre><code class=language-go>func to(args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>func until(args ...interface{}) interface{}, error
+</code></pre><h3 id=net>Net</h3><pre><code class=language-go>// Returns http document returned by supplied URL.
+// Aliases: httpDocument, curl
+func httpDoc(url interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns http get response from supplied URL.
+func httpGet(url interface{}) *http.Response, error
+</code></pre><h3 id=operating-systems-functions>Operating systems functions</h3><pre><code class=language-go>// Returns a colored string that highlight differences between supplied texts.
+// Aliases: difference
+func diff(text1 interface{}, text2 interface{}) interface{}
+</code></pre><pre><code class=language-go>// Determines if a file exists or not.
+// Aliases: fileExists, isExist
+func exists(filename interface{}) bool, error
+</code></pre><pre><code class=language-go>// Returns the expanded list of supplied arguments (expand *[]? on filename).
+// Aliases: expand
+func glob(args ...interface{}) IGenericList
+</code></pre><pre><code class=language-go>// Returns the current user group information (user.Group object).
+// Aliases: userGroup
+func group() *user.Group, error
+</code></pre><pre><code class=language-go>// Returns the home directory of the current user.
+// Aliases: homeDir, homeFolder
+func home() string
+</code></pre><pre><code class=language-go>// Determines if the file is a directory.
+// Aliases: isDirectory, isFolder
+func isDir(filename interface{}) bool, error
+</code></pre><pre><code class=language-go>// Determines if the file is executable by the current user.
+func isExecutable(filename interface{}) bool, error
+</code></pre><pre><code class=language-go>// Determines if the file is a file (i.e. not a directory).
+func isFile(filename interface{}) bool, error
+</code></pre><pre><code class=language-go>// Determines if the file is readable by the current user.
+func isReadable(filename interface{}) bool, error
+</code></pre><pre><code class=language-go>// Determines if the file is writeable by the current user.
+func isWriteable(filename interface{}) bool, error
+</code></pre><pre><code class=language-go>// Returns the last modification time of the file.
+// Aliases: lastModification, lastModificationTime
+func lastMod(filename interface{}) time.Time, error
+</code></pre><pre><code class=language-go>// Returns the location of the specified executable (returns empty string if not found).
+// Aliases: whereIs, look, which, type
+func lookPath(arg1 interface{}) string
+</code></pre><pre><code class=language-go>// Returns the file mode.
+// Aliases: fileMode
+func mode(filename interface{}) os.FileMode, error
+</code></pre><pre><code class=language-go>// Returns the current working directory.
+// Aliases: currentDir
+func pwd() string
+</code></pre><pre><code class=language-go>// Save object to file.
+// Aliases: write, writeTo
+func save(filename string, object interface{}) string, error
+</code></pre><pre><code class=language-go>// Returns the file size.
+// Aliases: fileSize
+func size(filename interface{}) int64, error
+</code></pre><pre><code class=language-go>// Returns the file Stat information (os.Stat object).
+// Aliases: fileStat
+func stat(arg1 string) os.FileInfo, error
+</code></pre><pre><code class=language-go>// Returns the current user information (user.User object).
+// Aliases: currentUser
+func user() *user.User, error
+</code></pre><pre><code class=language-go>// Returns the current user name.
+func username() string
+</code></pre><h3 id=other-utilities>Other utilities</h3><pre><code class=language-go>// Returns the concatenation of supplied arguments centered within width.
+// Aliases: centered
+func center(width interface{}, args ...interface{}) string, error
+</code></pre><pre><code class=language-go>// Colors the rendered string.
+// 
+// The first arguments are interpretated as color attributes until the first non color attribute. Attributes are case insensitive.
+// 
+// Valid attributes are:
+//     Reset, Bold, Faint, Italic, Underline, BlinkSlow, BlinkRapid, ReverseVideo, Concealed, CrossedOut
+// 
+// Valid color are:
+//     Black, Red, Green, Yellow, Blue, Magenta, Cyan, White
+// 
+// Color can be prefixed by:
+//     Fg:   Meaning foreground (Fg is assumed if not specified)
+//     FgHi: Meaning high intensity forground
+//     Bg:   Meaning background&quot;
+//     BgHi: Meaning high intensity background
+// Aliases: colored, enhanced
+func color(args ...interface{}) string, error
+</code></pre><pre><code class=language-go>// Returns the concatenation (without separator) of the string representation of objects.
+func concat(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Return a list of strings by applying the format to each element of the supplied list.
+// 
+// You can also use autoWrap as Razor expression if you don't want to specify the format.
+// The format is then automatically induced by the context around the declaration).
+// Valid aliases for autoWrap are: aWrap, awrap.
+// 
+// Ex:
+//     Hello @&lt;autoWrap(to(10)) World!
+// Aliases: autoWrap, aWrap, awrap
+func formatList(format string, list ...interface{}) IGenericList
+</code></pre><pre><code class=language-go>// Returns a valid go identifier from the supplied string (replacing any non compliant character by replacement, default _ ).
+// Aliases: identifier
+func id(identifier string, replaceChar ...interface{}) string
+</code></pre><pre><code class=language-go>// If testValue is empty, returns falseValue, otherwise returns trueValue.
+//     WARNING: All arguments are evaluated and must by valid.
+// Aliases: ternary
+func iif(testValue interface{}, valueTrue interface{}, valueFalse interface{}) interface{}
+</code></pre><pre><code class=language-go>// Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.
+func indent(nbSpace int, args ...interface{}) string
+</code></pre><pre><code class=language-go>// Merge the supplied objects into a newline separated string.
+func joinLines(format ...interface{}) string
+</code></pre><pre><code class=language-go>// Returns a random string. Valid types are be word, words, sentence, para, paragraph, host, email, url.
+// Aliases: loremIpsum
+func lorem(loremType interface{}, params ...int) string, error
+</code></pre><pre><code class=language-go>// Return a single list containing all elements from the lists supplied.
+func mergeList(lists ...IGenericList) IGenericList
+</code></pre><pre><code class=language-go>// Aliases: nindent
+func nIndent(nbSpace int, args ...interface{}) string
+</code></pre><pre><code class=language-go>// Returns an array with the item repeated n times.
+func repeat(n int, element interface{}) IGenericList, error
+</code></pre><pre><code class=language-go>// Indents the elements using the provided spacer.
+// 
+// You can also use autoIndent as Razor expression if you don't want to specify the spacer.
+// Spacer will then be auto determined by the spaces that precede the expression.
+// Valid aliases for autoIndent are: aIndent, aindent.
+// Aliases: sindent, spaceIndent, autoIndent, aindent, aIndent
+func sIndent(spacer string, args ...interface{}) string
+</code></pre><pre><code class=language-go>// Returns a list of strings from the supplied object with newline as the separator.
+func splitLines(content interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Wraps the rendered arguments within width.
+// Aliases: wrapped
+func wrap(width interface{}, args ...interface{}) string, error
+</code></pre><h3 id=runtime>Runtime</h3><pre><code class=language-go>// Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.
+func alias(name string, function string, source interface{}, args ...interface{}) string, error
+</code></pre><pre><code class=language-go>// Returns the list of all functions that are simply an alias of another function.
+func aliases() []string
+</code></pre><pre><code class=language-go>// Returns the list of all available functions.
+func allFunctions() []string
+</code></pre><pre><code class=language-go>// Raises a formated error if the test condition is false.
+// Aliases: assertion
+func assert(test interface{}, message ...interface{}) string, error
+</code></pre><pre><code class=language-go>// Issues a formated warning if the test condition is false.
+// Aliases: assertw
+func assertWarning(test interface{}, message ...interface{}) string
+</code></pre><pre><code class=language-go>// Returns all functions group by categories.
+// 
+// The returned value has the following properties:
+//     Name        string
+//     Functions    []string
+func categories() []template.FuncCategory
+</code></pre><pre><code class=language-go>// Returns the current folder (like pwd, but returns the folder of the currently running folder).
+func current() string
+</code></pre><pre><code class=language-go>// Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).
+func ellipsis(function string, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Returns the result of the shell command as structured data (as string if no other conversion is possible).
+// Aliases: execute
+func exec(command interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Exits the current program execution.
+func exit(exitValue int) int
+</code></pre><pre><code class=language-go>// Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.
+func func(name string, function string, source interface{}, config interface{}) string, error
+</code></pre><pre><code class=language-go>// Returns the information relative to a specific function.
+// 
+// The returned value has the following properties:
+//     Name        string
+//     Description string
+//     Signature   string
+//     Group       string
+//     Aliases     []string
+//     Arguments   string
+//     Result      string
+func function(name string) template.FuncInfo
+</code></pre><pre><code class=language-go>// Returns the list of all available functions (excluding aliases).
+func functions() []string
+</code></pre><pre><code class=language-go>// List all attributes accessible from the supplied object.
+// Aliases: attr, attributes
+func getAttributes(arg1 interface{}) string
+</code></pre><pre><code class=language-go>// List all methods signatures accessible from the supplied object.
+// Aliases: methods
+func getMethods(arg1 interface{}) string
+</code></pre><pre><code class=language-go>// List all attributes and methods signatures accessible from the supplied object.
+// Aliases: sign, signature
+func getSignature(arg1 interface{}) string
+</code></pre><pre><code class=language-go>// Returns the result of the named template rendering (like template but it is possible to capture the output).
+func include(source interface{}, context ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.
+func localAlias(name string, function string, source interface{}, args ...interface{}) string, error
+</code></pre><pre><code class=language-go>// Raise a formated error.
+// Aliases: raiseError
+func raise(args ...interface{}) string, error
+</code></pre><pre><code class=language-go>// Returns the result of the shell command as string.
+func run(command interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).
+func substitute(content string) string
+</code></pre><pre><code class=language-go>// Returns the list of available templates names.
+func templateNames() []string
+</code></pre><pre><code class=language-go>// Returns the list of available templates.
+func templates() []*template.Template
+</code></pre><h3 id=sprig-cryptographic-security-http-masterminds-github-io-sprig-crypto-html>Sprig Cryptographic &amp; Security, <a href=http://masterminds.github.io/sprig/crypto.html>http://masterminds.github.io/sprig/crypto.html</a></h3><pre><code class=language-go>// Computes Adler-32 checksum.
+func adler32sum(input string) string
+</code></pre><pre><code class=language-go>func buildCustomCert(arg1 string, arg2 string) sprig.certificate, error
+</code></pre><pre><code class=language-go>func derivePassword(arg1 uint32, arg2 string, arg3 string, arg4 string, arg5 string) string
+</code></pre><pre><code class=language-go>func genCA(arg1 string, arg2 int) sprig.certificate, error
+</code></pre><pre><code class=language-go>// Generates a new private key encoded into a PEM block. Type should be: ecdsa, dsa or rsa
+func genPrivateKey(type string) string
+</code></pre><pre><code class=language-go>func genSelfSignedCert(arg1 string, arg2 []interface{}, arg3 []interface{}, arg4 int) sprig.certificate, error
+</code></pre><pre><code class=language-go>func genSignedCert(arg1 string, arg2 []interface{}, arg3 []interface{}, arg4 int, arg5 sprig.certificate) sprig.certificate, error
+</code></pre><pre><code class=language-go>// Computes SHA1 digest.
+func sha1sum(input string) string
+</code></pre><pre><code class=language-go>// Computes SHA256 digest.
+func sha256sum(input string) string
+</code></pre><h3 id=sprig-date-http-masterminds-github-io-sprig-date-html>Sprig Date, <a href=http://masterminds.github.io/sprig/date.html>http://masterminds.github.io/sprig/date.html</a></h3><pre><code class=language-go>// The ago function returns duration from time.Now in seconds resolution.
+func ago(date interface{}) string
+</code></pre><pre><code class=language-go>// The date function formats a dat (https://golang.org/pkg/time/#Time.Format).
+func date(fmt string, date interface{}) string
+</code></pre><pre><code class=language-go>// Same as date, but with a timezone.
+// Aliases: date_in_zone
+func dateInZone(fmt string, date interface{}, zone string) string
+</code></pre><pre><code class=language-go>// The dateModify takes a modification and a date and returns the timestamp.
+// Aliases: date_modify
+func dateModify(fmt string, date time.Time) time.Time
+</code></pre><pre><code class=language-go>// The htmlDate function formates a date for inserting into an HTML date picker input field.
+func htmlDate(date interface{}) string
+</code></pre><pre><code class=language-go>// Same as htmlDate, but with a timezone.
+func htmlDateInZone(date interface{}, zone string) string
+</code></pre><pre><code class=language-go>// The current date/time. Use this in conjunction with other date functions.
+func now() time.Time
+</code></pre><pre><code class=language-go>// Converts a string to a date. The first argument is the date layout and the second the date string. If the string can’t be convert it returns the zero value.
+func toDate(fmt string, str string) time.Time
+</code></pre><h3 id=sprig-default-http-masterminds-github-io-sprig-defaults-html>Sprig Default, <a href=http://masterminds.github.io/sprig/defaults.html>http://masterminds.github.io/sprig/defaults.html</a></h3><pre><code class=language-go>func coalesce(args ...interface{}) interface{}
+</code></pre><pre><code class=language-go>func compact(arg1 interface{}) []interface{}
+</code></pre><pre><code class=language-go>func default(arg1 interface{}, args ...interface{}) interface{}
+</code></pre><pre><code class=language-go>func empty(arg1 interface{}) bool
+</code></pre><pre><code class=language-go>// Aliases: ternary
+func ternarySprig(arg1 interface{}, arg2 interface{}, arg3 bool) interface{}
+</code></pre><pre><code class=language-go>// Aliases: toJson
+func toJsonSprig(arg1 interface{}) string
+</code></pre><pre><code class=language-go>// Aliases: toPrettyJson
+func toPrettyJsonSprig(arg1 interface{}) string
+</code></pre><h3 id=sprig-dictionnary-http-masterminds-github-io-sprig-dicst-html>Sprig Dictionnary, <a href=http://masterminds.github.io/sprig/dicst.html>http://masterminds.github.io/sprig/dicst.html</a></h3><pre><code class=language-go>// Aliases: dict
+func dictSprig(args ...interface{}) map[string]interface{}
+</code></pre><pre><code class=language-go>// Aliases: hasKey
+func hasKeySprig(arg1 map[string]interface{}, arg2 string) bool
+</code></pre><pre><code class=language-go>// Aliases: keys
+func keysSprig(args ...map[string]interface{}) []string
+</code></pre><pre><code class=language-go>// Aliases: list, tuple, tupleSprig
+func listSprig(args ...interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Merge two or more dictionaries into one, giving precedence from **right to left**, effectively overwriting values in the dest dictionary
+func mergeOverwrite(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
+</code></pre><pre><code class=language-go>// Aliases: merge
+func mergeSprig(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
+</code></pre><pre><code class=language-go>// Aliases: omit
+func omitSprig(arg1 map[string]interface{}, args ...string) map[string]interface{}
+</code></pre><pre><code class=language-go>// Aliases: pick
+func pickSprig(arg1 map[string]interface{}, args ...string) map[string]interface{}
+</code></pre><pre><code class=language-go>// Aliases: pluck
+func pluckSprig(arg1 string, args ...map[string]interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Aliases: set
+func setSprig(arg1 map[string]interface{}, arg2 string, arg3 interface{}) map[string]interface{}
+</code></pre><pre><code class=language-go>// Aliases: unset
+func unsetSprig(arg1 map[string]interface{}, arg2 string) map[string]interface{}
+</code></pre><pre><code class=language-go>// Aliases: values
+func valuesSprig(arg1 map[string]interface{}) []interface{}
+</code></pre><h3 id=sprig-encoding-http-masterminds-github-io-sprig-encoding-html>Sprig Encoding, <a href=http://masterminds.github.io/sprig/encoding.html>http://masterminds.github.io/sprig/encoding.html</a></h3><pre><code class=language-go>func b32dec(arg1 string) string
+</code></pre><pre><code class=language-go>func b32enc(arg1 string) string
+</code></pre><pre><code class=language-go>func b64dec(arg1 string) string
+</code></pre><pre><code class=language-go>func b64enc(arg1 string) string
+</code></pre><h3 id=sprig-file-path-http-masterminds-github-io-sprig-paths-html>Sprig File Path, <a href=http://masterminds.github.io/sprig/paths.html>http://masterminds.github.io/sprig/paths.html</a></h3><pre><code class=language-go>func base(arg1 string) string
+</code></pre><pre><code class=language-go>func clean(arg1 string) string
+</code></pre><pre><code class=language-go>func dir(arg1 string) string
+</code></pre><pre><code class=language-go>func ext(arg1 string) string
+</code></pre><pre><code class=language-go>func isAbs(arg1 string) bool
+</code></pre><h3 id=sprig-flow-control-http-masterminds-github-io-sprig-flow-control-html>Sprig Flow Control, <a href=http://masterminds.github.io/sprig/flow_control.html>http://masterminds.github.io/sprig/flow_control.html</a></h3><pre><code class=language-go>// Unconditionally returns an empty string and an error with the specified text. This is useful in scenarios where other conditionals have determined that template rendering should fail.
+func fail(arg1 string) string, error
+</code></pre><h3 id=sprig-general-http-masterminds-github-io-sprig>Sprig General, <a href=http://masterminds.github.io/sprig/>http://masterminds.github.io/sprig/</a></h3><pre><code class=language-go>// Simple hello by Sprig
+func hello() string
+</code></pre><pre><code class=language-go>// Aliases: uuid, guid, GUID
+func uuidv4() string
+</code></pre><h3 id=sprig-list-http-masterminds-github-io-sprig-lists-html>Sprig List, <a href=http://masterminds.github.io/sprig/lists.html>http://masterminds.github.io/sprig/lists.html</a></h3><pre><code class=language-go>// Aliases: append, push, pushSprig
+func appendSprig(arg1 interface{}, arg2 interface{}) []interface{}
+</code></pre><pre><code class=language-go>func first(arg1 interface{}) interface{}
+</code></pre><pre><code class=language-go>// Aliases: has
+func hasSprig(arg1 interface{}, arg2 interface{}) bool
+</code></pre><pre><code class=language-go>// Aliases: initial
+func initialSprig(arg1 interface{}) []interface{}
+</code></pre><pre><code class=language-go>func last(arg1 interface{}) interface{}
+</code></pre><pre><code class=language-go>// Aliases: prepend
+func prependSprig(arg1 interface{}, arg2 interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Aliases: rest
+func restSprig(arg1 interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Aliases: reverse
+func reverseSprig(arg1 interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Aliases: slice
+func sliceSprig(arg1 interface{}, args ...interface{}) interface{}
+</code></pre><pre><code class=language-go>// Aliases: uniq
+func uniqSprig(arg1 interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Aliases: without
+func withoutSprig(arg1 interface{}, args ...interface{}) []interface{}
+</code></pre><h3 id=sprig-mathematics-http-masterminds-github-io-sprig-math-html>Sprig Mathematics, <a href=http://masterminds.github.io/sprig/math.html>http://masterminds.github.io/sprig/math.html</a></h3><pre><code class=language-go>func add1(arg1 interface{}) int64
+</code></pre><pre><code class=language-go>// Aliases: add
+func addSprig(args ...interface{}) int64
+</code></pre><pre><code class=language-go>// Aliases: ceil
+func ceilSprig(arg1 interface{}) float64
+</code></pre><pre><code class=language-go>// Aliases: div
+func divSprig(arg1 interface{}, arg2 interface{}) int64
+</code></pre><pre><code class=language-go>// Aliases: floor
+func floorSprig(arg1 interface{}) float64
+</code></pre><pre><code class=language-go>// Aliases: max, biggest, biggestSprig
+func maxSprig(arg1 interface{}, args ...interface{}) int64
+</code></pre><pre><code class=language-go>// Aliases: min
+func minSprig(arg1 interface{}, args ...interface{}) int64
+</code></pre><pre><code class=language-go>// Aliases: mod
+func modSprig(arg1 interface{}, arg2 interface{}) int64
+</code></pre><pre><code class=language-go>// Aliases: mul
+func mulSprig(arg1 interface{}, args ...interface{}) int64
+</code></pre><pre><code class=language-go>func round(arg1 interface{}, arg2 int, args ...float64) float64
+</code></pre><pre><code class=language-go>// Aliases: sub
+func subSprig(arg1 interface{}, arg2 interface{}) int64
+</code></pre><pre><code class=language-go>func untilStep(arg1 int, arg2 int, arg3 int) []int
+</code></pre><h3 id=sprig-os-http-masterminds-github-io-sprig-defaults-html>Sprig OS, <a href=http://masterminds.github.io/sprig/defaults.html>http://masterminds.github.io/sprig/defaults.html</a></h3><pre><code class=language-go>func env(arg1 string) string
+</code></pre><pre><code class=language-go>func expandenv(arg1 string) string
+</code></pre><h3 id=sprig-reflection-http-masterminds-github-io-sprig-reflection-html>Sprig Reflection, <a href=http://masterminds.github.io/sprig/reflection.html>http://masterminds.github.io/sprig/reflection.html</a></h3><pre><code class=language-go>// Aliases: kindis
+func kindIs(arg1 string, arg2 interface{}) bool
+</code></pre><pre><code class=language-go>// Aliases: kindof
+func kindOf(arg1 interface{}) string
+</code></pre><pre><code class=language-go>// Aliases: typeis
+func typeIs(arg1 string, arg2 interface{}) bool
+</code></pre><pre><code class=language-go>// Aliases: typeisLike
+func typeIsLike(arg1 string, arg2 interface{}) bool
+</code></pre><pre><code class=language-go>// Aliases: typeof
+func typeOf(arg1 interface{}) string
+</code></pre><h3 id=sprig-regex-http-masterminds-github-io-sprig-strings-html>Sprig Regex, <a href=http://masterminds.github.io/sprig/strings.html>http://masterminds.github.io/sprig/strings.html</a></h3><pre><code class=language-go>// Returns the first (left most) match of the regular expression in the input string.
+func regexFind(regex string, str string) string
+</code></pre><pre><code class=language-go>// Returns a slice of all matches of the regular expression in the input string.
+func regexFindAll(regex string, str string, n int) []string
+</code></pre><pre><code class=language-go>// Returns true if the input string matches the regular expression.
+func regexMatch(regex string, str string) bool
+</code></pre><pre><code class=language-go>// Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement. Inside string replacement, $ signs are interpreted as in Expand, so for instance $1 represents the text of the first submatch.
+func regexReplaceAll(regex string, str string, repl string) string
+</code></pre><pre><code class=language-go>// Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement The replacement string is substituted directly, without using Expand.
+func regexReplaceAllLiteral(regex string, str string, repl string) string
+</code></pre><pre><code class=language-go>// Slices the input string into substrings separated by the expression and returns a slice of the substrings between those expression matches. The last parameter n determines the number of substrings to return, where -1 means return all matches.
+func regexSplit(regex string, str string, n int) []string
+</code></pre><h3 id=sprig-string-slice-http-masterminds-github-io-sprig-string-slice-html>Sprig String Slice, <a href=http://masterminds.github.io/sprig/string_slice.html>http://masterminds.github.io/sprig/string_slice.html</a></h3><pre><code class=language-go>func join(arg1 string, arg2 interface{}) string
+</code></pre><pre><code class=language-go>func sortAlpha(arg1 interface{}) []string
+</code></pre><pre><code class=language-go>func split(arg1 string, arg2 string) map[string]string
+</code></pre><pre><code class=language-go>func splitList(arg1 string, arg2 string) []string
+</code></pre><pre><code class=language-go>func splitn(arg1 string, arg2 int, arg3 string) map[string]string
+</code></pre><pre><code class=language-go>func toStrings(arg1 interface{}) []string
+</code></pre><h3 id=sprig-strings-http-masterminds-github-io-sprig-strings-html>Sprig Strings, <a href=http://masterminds.github.io/sprig/strings.html>http://masterminds.github.io/sprig/strings.html</a></h3><pre><code class=language-go>// Truncates a string with ellipses (...).
+func abbrev(width int, str string) string
+</code></pre><pre><code class=language-go>// Abbreviates both sides with ellipses (...).
+func abbrevboth(left int, right int, str string) string
+</code></pre><pre><code class=language-go>// Converts string from snake_case to CamelCase.
+func camelcase(str string) string
+</code></pre><pre><code class=language-go>// Concatenates multiple strings together into one, separating them with spaces.
+func cat(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Tests to see if one string is contained inside of another.
+// Aliases: contains
+func containsSprig(substr string, str string) bool
+</code></pre><pre><code class=language-go>// Tests whether a string has a given prefix.
+func hasPrefix(prefix string, str string) bool
+</code></pre><pre><code class=language-go>// Tests whether a string has a given suffix.
+func hasSuffix(suffix string, str string) bool
+</code></pre><pre><code class=language-go>// Indents every line in a given string to the specified indent width. This is useful when aligning multi-line strings.
+// Aliases: indent
+func indentSprig(spaces int, str string) string
+</code></pre><pre><code class=language-go>// Given multiple words, takes the first letter of each word and combine.
+func initials(str string) string
+</code></pre><pre><code class=language-go>// Convert string from camelCase to kebab-case.
+func kebabcase(str string) string
+</code></pre><pre><code class=language-go>// Converts the entire string to lowercase.
+func lower(str string) string
+</code></pre><pre><code class=language-go>// Same as the indent function, but prepends a new line to the beginning of the string.
+// Aliases: nindent
+func nindentSprig(spaces int, str string) string
+</code></pre><pre><code class=language-go>// Removes all whitespace from a string.
+func nospace(str string) string
+</code></pre><pre><code class=language-go>// Pluralizes a string.
+func plural(one string, many string, count int) string
+</code></pre><pre><code class=language-go>// Wraps each argument with double quotes.
+func quote(str ...interface{}) string
+</code></pre><pre><code class=language-go>// Generates random string with letters.
+func randAlpha(count int) string
+</code></pre><pre><code class=language-go>// Generates random string with letters and digits.
+func randAlphaNum(count int) string
+</code></pre><pre><code class=language-go>// Generates random string with ASCII printable characters.
+func randAscii(count int) string
+</code></pre><pre><code class=language-go>// Generates random string with digits.
+func randNumeric(count int) string
+</code></pre><pre><code class=language-go>// Repeats a string multiple times.
+// Aliases: repeat
+func repeatSprig(count int, str string) string
+</code></pre><pre><code class=language-go>// Performs simple string replacement.
+func replace(old string, new string, src string) string
+</code></pre><pre><code class=language-go>// Shuffle a string.
+func shuffle(str string) string
+</code></pre><pre><code class=language-go>// Converts string from camelCase to snake_case.
+func snakecase(str string) string
+</code></pre><pre><code class=language-go>// Wraps each argument with single quotes.
+func squote(args ...interface{}) string
+</code></pre><pre><code class=language-go>// Get a substring from a string.
+func substr(start int, length int, str string) string
+</code></pre><pre><code class=language-go>// Swaps the uppercase to lowercase and lowercase to uppercase.
+func swapcase(str string) string
+</code></pre><pre><code class=language-go>// Converts to title case.
+func title(str string) string
+</code></pre><pre><code class=language-go>// Converts any value to string.
+func toString(value interface{}) string
+</code></pre><pre><code class=language-go>// Removes space from either side of a string.
+func trim(str string) string
+</code></pre><pre><code class=language-go>// Removes given characters from the front or back of a string.
+// Aliases: trimall
+func trimAll(chars string, str string) string
+</code></pre><pre><code class=language-go>// Trims just the prefix from a string if present.
+func trimPrefix(prefix string, str string) string
+</code></pre><pre><code class=language-go>// Trims just the suffix from a string if present.
+func trimSuffix(suffix string, str string) string
+</code></pre><pre><code class=language-go>// Truncates a string (and add no suffix).
+// Aliases: trunc
+func truncSprig(length int, str string) string
+</code></pre><pre><code class=language-go>// Removes title casing.
+func untitle(str string) string
+</code></pre><pre><code class=language-go>// Converts the entire string to uppercase.
+func upper(str string) string
+</code></pre><pre><code class=language-go>// Wraps text at a given column count.
+// Aliases: wrap
+func wrapSprig(length int, str string) string
+</code></pre><pre><code class=language-go>// Works as wrap, but lets you specify the string to wrap with (wrap uses \n).
+func wrapWith(length int, spe string, str string) string
+</code></pre><h3 id=sprig-type-conversion-http-masterminds-github-io-sprig-conversion-html>Sprig Type Conversion, <a href=http://masterminds.github.io/sprig/conversion.html>http://masterminds.github.io/sprig/conversion.html</a></h3><pre><code class=language-go>func atoi(arg1 string) int
+</code></pre><pre><code class=language-go>func float64(arg1 interface{}) float64
+</code></pre><pre><code class=language-go>func int64(arg1 interface{}) int64
+</code></pre><pre><code class=language-go>// Aliases: int
+func intSprig(arg1 interface{}) int
+</code></pre><h3 id=sprig-version-comparison-http-masterminds-github-io-sprig-semver-html>Sprig Version comparison, <a href=http://masterminds.github.io/sprig/semver.html>http://masterminds.github.io/sprig/semver.html</a></h3><pre><code class=language-go>// Parses a string into a Semantic Version.
+func semver(version string) *semver.Version, error
+</code></pre><pre><code class=language-go>// A more robust comparison function is provided as semverCompare. This version supports version ranges.
+func semverCompare(constraints string, version string) bool, error
+</code></pre></article></div></main></body></html>

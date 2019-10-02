@@ -1,0 +1,63 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Data | gotemplate</title><link rel=stylesheet href=/gotemplate/book.min.89885fa0429ec73067282f26fc0c6d38cfc617a443ec4e835d47b821c52c6e92.css integrity="sha256-iYhfoEKexzBnKC8m/AxtOM/GF6RD7E6DXUe4IcUsbpI="><link rel=icon href=/gotemplate/favicon.png type=image/x-icon></head><body><input type=checkbox class=hidden id=menu-control><main class="flex container"><aside class="book-menu fixed"><nav><h2 class=book-brand><a href=https://coveooss.github.io/gotemplate/><img src=/gotemplate/gopher.png alt=Logo><span>gotemplate</span></a></h2><ul><li><a href=/gotemplate/docs/cli_usage/>CLI Usage</a></li><li class=book-section-flat><span>Basic Features</span><ul><li><a href=/gotemplate/docs/basic_features/arithmetic/>Arithmetic</a></li><li><a href=/gotemplate/docs/basic_features/assignation/>Assignation</a></li><li><a href=/gotemplate/docs/basic_features/collections/>Collections</a></li><li><a href=/gotemplate/docs/basic_features/comments/>Comments</a></li><li><a href=/gotemplate/docs/basic_features/conditionals/>Conditionals</a></li><li><a href=/gotemplate/docs/basic_features/data/ class=active>Data</a></li><li><a href=/gotemplate/docs/basic_features/literals/>Literals</a></li><li><a href=/gotemplate/docs/basic_features/os-commands/>Os Commands</a></li></ul></li><li class=book-section-flat><span>Advanced Features</span><ul><li><a href=/gotemplate/docs/advanced_features/functions/>Functions</a></li><li><a href=/gotemplate/docs/advanced_features/mixing_razor_and_gotemplate/>Mixing Razor and Gotemplate</a></li><li><a href=/gotemplate/docs/advanced_features/sub_templates/>Sub Templates</a></li></ul></li><li class=book-section-flat><span>Structs</span><ul><li><a href=/gotemplate/docs/structs/dict_methods/>Dict Methods</a></li><li><a href=/gotemplate/docs/structs/list_methods/>List Methods</a></li><li><a href=/gotemplate/docs/structs/string_array_methods/>String Array Methods</a></li><li><a href=/gotemplate/docs/structs/string_methods/>String Methods</a></li></ul></li><li><a href=/gotemplate/docs/function_reference/>Function Reference</a></li></ul></nav><script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script></aside><div class=book-page><header class="flex align-center justify-between book-header"><label for=menu-control><img src=/gotemplate/svg/menu.svg alt=Menu></label>
+<strong>Data</strong></header><article class=markdown><h1 id=data-manipulation>Data manipulation</h1><p>Using a data file with the following content in a format that doesn&rsquo;t follow a standard.</p><pre><code class=language-!Data>IntegerValue = 1
+FloatValue = 1.23
+StringValue = &quot;Foo bar&quot;
+EquationResult = @(2 + 2 * 3 ** 6)
+ListValue = [&quot;value1&quot;, &quot;value2&quot;]
+DictValue = {&quot;key1&quot;: &quot;value1&quot;, &quot;key2&quot;: &quot;value2&quot;}
+</code></pre><h2 id=toyaml>toYaml</h2><table><thead><tr><th>Razor</th><th>Gotemplate</th></tr></thead><tbody><tr><td><code>@toYaml(data(&quot;!Data&quot;))</code></td><td><code>{{ toYaml (data &quot;!Data&quot;) }}</code></td></tr></tbody></table><pre><code>DictValue:
+  key1: value1
+  key2: value2
+EquationResult: 46658
+FloatValue: 1.23
+IntegerValue: 1
+ListValue:
+- value1
+- value2
+StringValue: Foo bar
+</code></pre><h2 id=tojson>toJson</h2><table><thead><tr><th>Razor</th><th>Gotemplate</th></tr></thead><tbody><tr><td><code>@toPrettyJson(data(&quot;!Data&quot;))</code></td><td><code>{{ toPrettyJson (data &quot;!Data&quot;) }}</code></td></tr></tbody></table><pre><code>{
+  &quot;DictValue&quot;: {
+    &quot;key1&quot;: &quot;value1&quot;,
+    &quot;key2&quot;: &quot;value2&quot;
+  },
+  &quot;EquationResult&quot;: 46658,
+  &quot;FloatValue&quot;: 1.23,
+  &quot;IntegerValue&quot;: 1,
+  &quot;ListValue&quot;: [
+    &quot;value1&quot;,
+    &quot;value2&quot;
+  ],
+  &quot;StringValue&quot;: &quot;Foo bar&quot;
+}
+</code></pre><h2 id=tohcl>toHcl</h2><table><thead><tr><th>Razor</th><th>Gotemplate</th></tr></thead><tbody><tr><td><code>@toPrettyHcl(data(&quot;!Data&quot;))</code></td><td><code>{{ toPrettyHcl (data &quot;!Data&quot;) }}</code></td></tr></tbody></table><pre><code>EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = [&quot;value1&quot;, &quot;value2&quot;]
+StringValue    = &quot;Foo bar&quot;
+
+DictValue {
+  key1 = &quot;value1&quot;
+  key2 = &quot;value2&quot;
+}
+</code></pre><h2 id=nested-conversions>Nested conversions</h2><p>This test shows how you can convert from and to other formats.</p><table><thead><tr><th>Razor</th><th>Gotemplate</th></tr></thead><tbody><tr><td><code>@toPrettyTFVars(data(toTFVars(fromHcl(toHcl(fromJson(toJson(data(&quot;!Data&quot;))))))))</code></td><td><code>{{ toPrettyTFVars (data (toTFVars (fromHcl (toHcl (fromJson (toJson (data &quot;!Data&quot;))))))) }}</code></td></tr></tbody></table><pre><code>EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = [&quot;value1&quot;, &quot;value2&quot;]
+StringValue    = &quot;Foo bar&quot;
+
+DictValue {
+  key1 = &quot;value1&quot;
+  key2 = &quot;value2&quot;
+}
+</code></pre><h2 id=merging-data-structures>Merging data structures</h2><p>This test shows how you can merge data structures</p><pre><code>{{- $dict_1 := data `{&quot;dict&quot;: {&quot;string1&quot;: &quot;value1&quot;, &quot;string2&quot;: &quot;value2&quot;}, &quot;bool1&quot;: true, &quot;bool2&quot;: false}` }}
+{{- $dict_2 := data `{&quot;dict&quot;: {&quot;string1&quot;: &quot;value2&quot;, &quot;string3&quot;: &quot;value3&quot;}, &quot;bool1&quot;: false, &quot;bool3&quot;: true}` }}
+
+# Gives precedence to the first dictionary
+@{dict_3} := merge($dict_1, $dict_2)
+@{dict_3.dict.string1} @typeOf($dict_3.dict.string1) == value1 string
+@{dict_3.dict.string2} @typeOf($dict_3.dict.string2) == value2 string
+@{dict_3.dict.string3} @typeOf($dict_3.dict.string3) == value3 string
+@{dict_3.bool1} @typeOf($dict_3.bool1) == true bool
+@{dict_3.bool2} @typeOf($dict_3.bool2) == false bool
+@{dict_3.bool3} @typeOf($dict_3.bool3) == true bool
+</code></pre></article></div></main></body></html>

@@ -1,0 +1,18 @@
+# Conditionals in gotemplate
+
+```go
+    TestTrue
+    TestTrueAndTrue
+    TestTrueOrFalse
+    FalseStringIsTrue
+```
+
+will give:
+
+```go
+    TestTrue
+    TestTrueAndTrue
+    TestTrueOrFalse
+    FalseStringIsTrue
+```
+

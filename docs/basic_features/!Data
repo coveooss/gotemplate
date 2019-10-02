@@ -1,0 +1,6 @@
+IntegerValue = 1
+FloatValue = 1.23
+StringValue = "Foo bar"
+EquationResult = @(2 + 2 * 3 ** 6)
+ListValue = ["value1", "value2"]
+DictValue = {"key1": "value1", "key2": "value2"}

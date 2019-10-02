@@ -1,0 +1,38 @@
+GoTemplate Extension can contains plain text at the root level.
+
+Template to define algorithm to draw a fir.
+@define("draw_fir")
+  @{colors := printf("Fg%s,Bg%s", fg, bg)}
+  @{len := size * 2 * lenc(char) + len(color($colors))}
+  @{r := to(1, size*2, 2)}
+  @-if (reverse) @{r = $r[-1:0]};
+  @-foreach ($n := $r)
+    @center($len, color($colors, char * $n))
+  @-end foreach
+@-end define
+
+Default configuration for regular fir.
+@{firConfig} := data(`
+  default {
+    size    = 15
+    bg      = "Green"
+    fg      = "White"
+    char    = " "
+    reverse = false
+  }
+  arguments   = ["size int" , "bg string", "fg string", "char string", "reverse bool"]
+  description = "Draw a plain regular fir."
+  group       = "Funny demo functions"
+  aliases     = ["fir"]
+`)
+
+Default configuration for christmas tree.
+@{ctConfig} := data(`
+  default { size = 20 fg = "Red" char = "✾" }
+  description = "Draw a christmas tree."
+  aliases     = ["ct"]
+`).Merge($firConfig)
+
+Register the functions.
+@func("Fir", "template", "draw_fir", $firConfig)
+@func("ChristmasTree", "template", "draw_fir", $ctConfig)
