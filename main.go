@@ -17,8 +17,10 @@ import (
 	"github.com/coveooss/gotemplate/v3/template"
 	"github.com/coveooss/gotemplate/v3/utils"
 	"github.com/coveooss/gotemplate/v3/yaml"
+	"github.com/coveooss/multilogger"
 	"github.com/coveord/kingpin/v2"
 	"github.com/fatih/color"
+	"github.com/sirupsen/logrus"
 )
 
 // Version is initialized at build time through -ldflags "-X main.Version=<version number>"
@@ -56,34 +58,35 @@ func runGotemplate() (exitCode int) {
 		colorEnabled = app.Flag("color", "Force rendering of colors event if output is redirected").IsSetByUser(&colorIsSet).Bool()
 		getVersion   = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
 
-		run                 = app.Command("run", "").Default()
-		delimiters          = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma)").Alias("del").PlaceHolder("{{,}},@").String()
-		varFiles            = run.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').Strings()
-		varFilesIfExist     = run.Flag("import-if-exist", "Import variables files (do not consider missing file as an error)").PlaceHolder("file").Strings()
-		namedVars           = run.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
-		typeMode            = run.Flag("type", "Force the type used for the main context (Json, Yaml, Hcl)").Short('t').Enum("Hcl", "h", "hcl", "H", "HCL", "Json", "j", "json", "J", "JSON", "Yaml", "Yml", "y", "yml", "yaml", "Y", "YML", "YAML")
-		includePatterns     = run.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
-		excludedPatterns    = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
-		overwrite           = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
-		substitutes         = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
-		removeEmptyLines    = run.Flag("remove-empty-lines", "Remove empty lines from the result").Alias("remove-empty").Short('E').Bool()
-		recursive           = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
-		recursionDepth      = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
-		sourceFolder        = run.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").String()
-		targetFolder        = run.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
-		forceStdin          = run.Flag("stdin", "Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)").Short('I').Bool()
-		followSymLinks      = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
-		print               = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
-		disableRender       = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
-		acceptNoValue       = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error").Alias("no-value").Envar(template.EnvAcceptNoValue).Bool()
-		strictError         = run.Flag("strict-error-validation", "Consider error encountered in any file as real error").Alias("strict").Envar(template.EnvStrictErrorCheck).Short('S').Bool()
-		logLevel            = run.Flag("log-level", "Set the logging level CRITICAL (0), ERROR (1), WARNING (2), NOTICE (3), INFO (4), DEBUG (5)").Short('L').Default("INFO").PlaceHolder("level").String()
-		debugLogLevel       = run.Flag("debug-log-level", "Set the debug logging level 0-9").Alias("debug-level").Default("WARNING").PlaceHolder("level").String()
-		logSimple           = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date").Bool()
-		ignoreMissingImport = run.Flag("ignore-missing-import", "Exit with code 0 even if import does not exist").Bool()
-		ignoreMissingSource = run.Flag("ignore-missing-source", "Exit with code 0 even if source does not exist").Bool()
-		ignoreMissingPaths  = run.Flag("ignore-missing-paths", "Exit with code 0 even if import or source do not exist").Bool()
-		templates           = run.Arg("templates", "Template files or commands to process").Strings()
+		run                  = app.Command("run", "").Default()
+		delimiters           = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma)").Alias("del").PlaceHolder("{{,}},@").String()
+		varFiles             = run.Flag("import", "Import variables files (could be any of YAML, JSON or HCL format)").PlaceHolder("file").Short('i').Strings()
+		varFilesIfExist      = run.Flag("import-if-exist", "Import variables files (do not consider missing file as an error)").PlaceHolder("file").Strings()
+		namedVars            = run.Flag("var", "Import named variables (if value is a file, the content is loaded)").PlaceHolder("values").Short('V').Strings()
+		typeMode             = run.Flag("type", "Force the type used for the main context (Json, Yaml, Hcl)").Short('t').Enum("Hcl", "h", "hcl", "H", "HCL", "Json", "j", "json", "J", "JSON", "Yaml", "Yml", "y", "yml", "yaml", "Y", "YML", "YAML")
+		includePatterns      = run.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
+		excludedPatterns     = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
+		overwrite            = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
+		substitutes          = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
+		removeEmptyLines     = run.Flag("remove-empty-lines", "Remove empty lines from the result").Alias("remove-empty").Short('E').Bool()
+		recursive            = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
+		recursionDepth       = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
+		sourceFolder         = run.Flag("source", "Specify a source folder (default to the current folder)").PlaceHolder("folder").String()
+		targetFolder         = run.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
+		forceStdin           = run.Flag("stdin", "Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)").Short('I').Bool()
+		followSymLinks       = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
+		print                = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
+		disableRender        = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
+		acceptNoValue        = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error").Alias("no-value").Envar(template.EnvAcceptNoValue).Bool()
+		strictError          = run.Flag("strict-error-validation", "Consider error encountered in any file as real error").Alias("strict").Envar(template.EnvStrictErrorCheck).Short('S').Bool()
+		templateLogLevel     = run.Flag("template-log-level", "Set the template logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Default(logrus.InfoLevel.String()).PlaceHolder("level").String()
+		internalLogLevel     = run.Flag("internal-log-level", "Set the internal logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Short('L').Alias("log-level").Default(logrus.WarnLevel.String()).PlaceHolder("level").String()
+		internalLogFilePath  = run.Flag("internal-log-file-path", "Set a file where verbose logs should be written").PlaceHolder("path").String()
+		internalLogFileLevel = run.Flag("internal-log-file-level", "Set the log level for the verbose logs file").Default(multilogger.DisabledLevelName).PlaceHolder("level").String()
+		ignoreMissingImport  = run.Flag("ignore-missing-import", "Exit with code 0 even if import does not exist").Bool()
+		ignoreMissingSource  = run.Flag("ignore-missing-source", "Exit with code 0 even if source does not exist").Bool()
+		ignoreMissingPaths   = run.Flag("ignore-missing-paths", "Exit with code 0 even if import or source do not exist").Bool()
+		templates            = run.Arg("templates", "Template files or commands to process").Strings()
 
 		list          = app.Command("list", "Get detailed help on gotemplate functions").NoAutoShortcut()
 		listFunctions = list.Flag("functions", "Get detailed help on function").Short('f').NoEnvar().Bool()
@@ -188,9 +191,10 @@ func runGotemplate() (exitCode int) {
 	}
 
 	template.ConfigureLogging(
-		template.GetLoggingLevelFromString(*logLevel),
-		template.GetLoggingLevelFromString(*debugLogLevel),
-		*logSimple,
+		*templateLogLevel,
+		*internalLogLevel,
+		*internalLogFileLevel,
+		*internalLogFilePath,
 	)
 
 	if *targetFolder == "" {
@@ -203,7 +207,7 @@ func runGotemplate() (exitCode int) {
 			errors.Printf("Source folder: %s does not exist", *sourceFolder)
 			return 1
 		}
-		template.Log.Infof("Source folder: %s does not exist, skipping gotemplate", *sourceFolder)
+		template.InternalLog.Infof("Source folder: %s does not exist, skipping gotemplate", *sourceFolder)
 		return 0
 	}
 

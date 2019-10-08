@@ -102,14 +102,14 @@ func (t Template) processTemplate(template, sourceFolder, targetFolder string, h
 	mode := must(os.Stat(template)).(os.FileInfo).Mode()
 	if !isTemplate && !t.options[Overwrite] {
 		newName := template + ".original"
-		log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
+		InternalLog.Debugf("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
 		must(os.Rename(template, template+".original"))
 	}
 
 	if sourceFolder != targetFolder {
 		must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
-	log.Notice("Writing file", utils.Relative(t.folder, resultFile))
+	InternalLog.Debug("Writing file", utils.Relative(t.folder, resultFile))
 
 	if utils.IsShebangScript(result) {
 		mode = 0755
@@ -165,7 +165,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			return th.Code, false, nil
 		}
 
-		log.Notice("GoTemplate processing of", th.Filename)
+		InternalLog.Debug("GoTemplate processing of ", th.Filename)
 
 		if !t.options[AcceptNoValue] {
 			// We replace any pre-existing no value to avoid false error detection
@@ -183,7 +183,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 				extension := filepath.Ext(th.Filename)
 				strictMode = strictMode || (extension != "" && strings.Contains(".gt,.gte,.template", extension))
 				if !(strictMode) {
-					Log.Errorf("Ignored gotemplate error in %s (file left unchanged):\n%s", color.CyanString(th.Filename), err.Error())
+					InternalLog.Errorf("Ignored gotemplate error in %s (file left unchanged):\n%s", color.CyanString(th.Filename), err.Error())
 					result, err = th.Source, nil
 				}
 			}
@@ -208,7 +208,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		newTemplate, err = newTemplate.Parse(th.Code)
 	}()
 	if err != nil {
-		log.Infof("%s(%d): Parsing error %v", th.Filename, th.Try, err)
+		InternalLog.Infof("%s(%d): Parsing error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}
 
@@ -218,7 +218,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		workingContext = collections.AsDictionary(workingContext).Clone()
 	}
 	if err = newTemplate.Execute(&out, workingContext); err != nil {
-		log.Infof("%s(%d): Execution error %v", th.Filename, th.Try, err)
+		InternalLog.Infof("%s(%d): Execution error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}
 	result = t.substitute(out.String())

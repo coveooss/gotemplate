@@ -45,7 +45,7 @@ func (t *Template) addSprigFuncs() {
 			info := sprigFuncRef[key]
 			if info.group == "" {
 				if aliases[key] == "" {
-					log.Warning(key, "not found")
+					InternalLog.Warning(key, "not found")
 					continue
 				}
 				key = aliases[key]

@@ -125,9 +125,7 @@ func nodeValue(node ast.Node) (result string, err error) {
 	default:
 		err = fmt.Errorf("Unknown: %v", reflect.TypeOf(node))
 	}
-	if !debugMode && getLogLevelInternal() >= 6 {
-		log.Debugf(color.HiBlueString("%T => %s"), node, result)
-	}
+	InternalLog.Tracef(color.HiBlueString("%T => %s"), node, result)
 	return
 }
 

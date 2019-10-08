@@ -40,7 +40,7 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	expr := matches["expr"]
 	assign := matches["assign"]
 	if tp == "" || id == "" || expr == "" || assign == "" {
-		log.Errorf("Invalid assign regex %s: %s, must contains type, id and expr", repl.name, repl.expr)
+		InternalLog.Errorf("Invalid assign regex %s: %s, must contains type, id and expr", repl.name, repl.expr)
 		return match
 	}
 
@@ -53,7 +53,7 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	if local {
 		if strings.HasPrefix(match, "$") {
 			// TODO: Deprecated, to remove in future version
-			Log.Warningf("$var := value assignation is deprecated, use @{var} := value instead. In: %s", color.HiBlackString(match))
+			InternalLog.Warningf("$var := value assignation is deprecated, use @{var} := value instead. In: %s", color.HiBlackString(match))
 		}
 
 		return fmt.Sprintf("%s- $%s %s %s %s", repl.delimiters[0], id, assign, expr, repl.delimiters[1])
@@ -66,7 +66,7 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	if tp == "$" {
 		if len(parts) < 2 {
 			if alreadyIssued[match] == 0 {
-				log.Errorf("Invalid local assignment: %s", match)
+				InternalLog.Errorf("Invalid local assignment: %s", match)
 				alreadyIssued[match]++
 			}
 			return match
