@@ -13,7 +13,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v1
         with:
-          go-version: 1.12
+          go-version: 1.13
         id: go
 
       - name: Checkout
@@ -23,8 +23,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         run: |
-          bash ./test.sh
-          bash <(curl -s https://codecov.io/bash)
+          make codecov
 
       - name: Setup Hugo
         if: github.ref == 'refs/heads/master'
@@ -38,10 +37,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./render-doc
-          git diff -b -w --ignore-blank-lines || exit 1   # Check if the repository is dirty after generating the doc
-          git submodule update --init
-          hugo --minify --source docs
+          make doc-generate
 
       - name: Deploy Documentation
         if: github.ref == 'refs/heads/master'
