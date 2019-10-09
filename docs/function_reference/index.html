@@ -776,13 +776,22 @@ func templateNames() []string
 func templates() []*template.Template
 </code></pre><h3 id=sprig-cryptographic-security-http-masterminds-github-io-sprig-crypto-html>Sprig Cryptographic &amp; Security, <a href=http://masterminds.github.io/sprig/crypto.html>http://masterminds.github.io/sprig/crypto.html</a></h3><pre><code class=language-go>// Computes Adler-32 checksum.
 func adler32sum(input string) string
-</code></pre><pre><code class=language-go>func buildCustomCert(arg1 string, arg2 string) sprig.certificate, error
-</code></pre><pre><code class=language-go>func derivePassword(arg1 uint32, arg2 string, arg3 string, arg4 string, arg5 string) string
-</code></pre><pre><code class=language-go>func genCA(arg1 string, arg2 int) sprig.certificate, error
-</code></pre><pre><code class=language-go>// Generates a new private key encoded into a PEM block. Type should be: ecdsa, dsa or rsa
+</code></pre><pre><code class=language-go>// Allows customizing the certificate.
+func buildCustomCert(base64Cert string, base64PrivateKey string) sprig.certificate, error
+</code></pre><pre><code class=language-go>// Receives a base64 string encoded by the AES-256 CBC algorithm and returns the decoded text.
+func decryptAES(encoded string, key string) string, error
+</code></pre><pre><code class=language-go>// Derive a specific password based on some shared 'master password' constraints.
+func derivePassword(counter uint32, passwordType string, password string, user string, site string) string
+</code></pre><pre><code class=language-go>// Encrypts text with AES-256 CBC and returns a base64 encoded string.
+func encryptAES(secret string, key string) string, error
+</code></pre><pre><code class=language-go>// Generates a new, self-signed x509 certificate authority.
+func genCA(cn string, nbDays int) sprig.certificate, error
+</code></pre><pre><code class=language-go>// Generates a new private key encoded into a PEM block. Type should be: ecdsa, dsa or rsa.
 func genPrivateKey(type string) string
-</code></pre><pre><code class=language-go>func genSelfSignedCert(arg1 string, arg2 []interface{}, arg3 []interface{}, arg4 int) sprig.certificate, error
-</code></pre><pre><code class=language-go>func genSignedCert(arg1 string, arg2 []interface{}, arg3 []interface{}, arg4 int, arg5 sprig.certificate) sprig.certificate, error
+</code></pre><pre><code class=language-go>// Generates a new, self-signed x509 certificate.
+func genSelfSignedCert(cn string, ipList []interface{}, dnsList []interface{}, nbDays int) sprig.certificate, error
+</code></pre><pre><code class=language-go>// Generates a new, x509 certificate signed by the specified CA.
+func genSignedCert(cn string, ipList []interface{}, dnsList []interface{}, nbDays int, ca sprig.certificate) sprig.certificate, error
 </code></pre><pre><code class=language-go>// Computes SHA1 digest.
 func sha1sum(input string) string
 </code></pre><pre><code class=language-go>// Computes SHA256 digest.
@@ -795,119 +804,268 @@ func date(fmt string, date interface{}) string
 // Aliases: date_in_zone
 func dateInZone(fmt string, date interface{}, zone string) string
 </code></pre><pre><code class=language-go>// The dateModify takes a modification and a date and returns the timestamp.
-// Aliases: date_modify
 func dateModify(fmt string, date time.Time) time.Time
+</code></pre><pre><code class=language-go>// The dateModify takes a modification and a date and returns the timestamp.
+func date_modify(fmt string, date time.Time) time.Time
+</code></pre><pre><code class=language-go>// Rounds a given duration to the most significant unit.
+func durationRound(duration interface{}) string
 </code></pre><pre><code class=language-go>// The htmlDate function formates a date for inserting into an HTML date picker input field.
 func htmlDate(date interface{}) string
 </code></pre><pre><code class=language-go>// Same as htmlDate, but with a timezone.
 func htmlDateInZone(date interface{}, zone string) string
+</code></pre><pre><code class=language-go>// The dateModify takes a modification and a date and returns the timestamp.
+func mustDateModify(fmt string, date time.Time) time.Time, error
+</code></pre><pre><code class=language-go>// Converts a string to a date. The first argument is the date layout and the second the date string. If the string can’t be convert it returns the zero value.
+func mustToDate(fmt string, str string) time.Time, error
+</code></pre><pre><code class=language-go>// The dateModify takes a modification and a date and returns the timestamp.
+func must_date_modify(fmt string, date time.Time) time.Time, error
 </code></pre><pre><code class=language-go>// The current date/time. Use this in conjunction with other date functions.
 func now() time.Time
 </code></pre><pre><code class=language-go>// Converts a string to a date. The first argument is the date layout and the second the date string. If the string can’t be convert it returns the zero value.
 func toDate(fmt string, str string) time.Time
-</code></pre><h3 id=sprig-default-http-masterminds-github-io-sprig-defaults-html>Sprig Default, <a href=http://masterminds.github.io/sprig/defaults.html>http://masterminds.github.io/sprig/defaults.html</a></h3><pre><code class=language-go>func coalesce(args ...interface{}) interface{}
-</code></pre><pre><code class=language-go>func compact(arg1 interface{}) []interface{}
-</code></pre><pre><code class=language-go>func default(arg1 interface{}, args ...interface{}) interface{}
-</code></pre><pre><code class=language-go>func empty(arg1 interface{}) bool
-</code></pre><pre><code class=language-go>// Aliases: ternary
+</code></pre><pre><code class=language-go>// Returns the seconds since the unix epoch for a 'time.Time'.
+func unixEpoch(date time.Time) string
+</code></pre><h3 id=sprig-default-http-masterminds-github-io-sprig-defaults-html>Sprig Default, <a href=http://masterminds.github.io/sprig/defaults.html>http://masterminds.github.io/sprig/defaults.html</a></h3><pre><code class=language-go>// Takes a list of values and returns the first non-empty one.
+func coalesce(args ...interface{}) interface{}
+</code></pre><pre><code class=language-go>// Removes entries with empty values.
+func compact(arg1 interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Set a simple default value.
+func default(arg1 interface{}, args ...interface{}) interface{}
+</code></pre><pre><code class=language-go>// Returns true if the given value is considered empty.
+func empty(arg1 interface{}) bool
+</code></pre><pre><code class=language-go>// Removes entries with empty values.
+func mustCompact(arg1 interface{}) []interface{}, error
+</code></pre><pre><code class=language-go>// Encodes an item into a JSON string.
+// Aliases: toJson
+func mustToJson(arg1 interface{}) string, error
+</code></pre><pre><code class=language-go>// Encodes an item into a pretty (indented) JSON string.
+// Aliases: toPrettyJson
+func mustToPrettyJson(arg1 interface{}) string, error
+</code></pre><pre><code class=language-go>// Encodes an item into JSON string with HTML characters unescaped.
+func mustToRawJson(arg1 interface{}) string, error
+</code></pre><pre><code class=language-go>// If the test value is true, the first value will be returned, otherwise, the second is returned.
+// Aliases: ternary
 func ternarySprig(arg1 interface{}, arg2 interface{}, arg3 bool) interface{}
-</code></pre><pre><code class=language-go>// Aliases: toJson
+</code></pre><pre><code class=language-go>// Encodes an item into a JSON string.
+// Aliases: toJson
 func toJsonSprig(arg1 interface{}) string
-</code></pre><pre><code class=language-go>// Aliases: toPrettyJson
+</code></pre><pre><code class=language-go>// Encodes an item into a pretty (indented) JSON string.
+// Aliases: toPrettyJson
 func toPrettyJsonSprig(arg1 interface{}) string
-</code></pre><h3 id=sprig-dictionnary-http-masterminds-github-io-sprig-dicst-html>Sprig Dictionnary, <a href=http://masterminds.github.io/sprig/dicst.html>http://masterminds.github.io/sprig/dicst.html</a></h3><pre><code class=language-go>// Aliases: dict
+</code></pre><pre><code class=language-go>// Encodes an item into JSON string with HTML characters unescaped.
+func toRawJson(arg1 interface{}) string
+</code></pre><h3 id=sprig-dictionnary-http-masterminds-github-io-sprig-dicst-html>Sprig Dictionnary, <a href=http://masterminds.github.io/sprig/dicst.html>http://masterminds.github.io/sprig/dicst.html</a></h3><pre><code class=language-go>// Takes a value and makes a deep copy of the value.
+func deepCopy(arg1 interface{}) interface{}
+</code></pre><pre><code class=language-go>// Create a dictionary.
+// Aliases: dict
 func dictSprig(args ...interface{}) map[string]interface{}
-</code></pre><pre><code class=language-go>// Aliases: hasKey
-func hasKeySprig(arg1 map[string]interface{}, arg2 string) bool
-</code></pre><pre><code class=language-go>// Aliases: keys
+</code></pre><pre><code class=language-go>// Given a map and a key, get the value from the map.
+// Aliases: get
+func getSprig(dict map[string]interface{}, key string) interface{}
+</code></pre><pre><code class=language-go>// Returns 'true' if the given dict contains the given key.
+// Aliases: hasKey
+func hasKeySprig(dict map[string]interface{}, key string) bool
+</code></pre><pre><code class=language-go>// Returns a list of all of the keys in one or more dict types.
+// Aliases: keys
 func keysSprig(args ...map[string]interface{}) []string
-</code></pre><pre><code class=language-go>// Aliases: list, tuple, tupleSprig
+</code></pre><pre><code class=language-go>// Create a list of elements.
+// Aliases: list, tuple, tupleSprig
 func listSprig(args ...interface{}) []interface{}
-</code></pre><pre><code class=language-go>// Merge two or more dictionaries into one, giving precedence from **right to left**, effectively overwriting values in the dest dictionary
+</code></pre><pre><code class=language-go>// Merge two or more dictionaries into one, giving precedence from **right to left**, effectively overwriting values in the dest dictionary.
 func mergeOverwrite(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
-</code></pre><pre><code class=language-go>// Aliases: merge
+</code></pre><pre><code class=language-go>// Merge two or more dictionaries into one, giving precedence to the dest dictionary.
+// Aliases: merge
 func mergeSprig(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
-</code></pre><pre><code class=language-go>// Aliases: omit
+</code></pre><pre><code class=language-go>// Takes a value and makes a deep copy of the value.
+func mustDeepCopy(arg1 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Merge two or more dictionaries into one, giving precedence to the dest dictionary.
+// Aliases: merge
+func mustMerge(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Merge two or more dictionaries into one, giving precedence from **right to left**, effectively overwriting values in the dest dictionary.
+func mustMergeOverwrite(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Is similar to 'pick', except it returns a new `dict` with all the keys that _do not_ match the given keys.
+// Aliases: omit
 func omitSprig(arg1 map[string]interface{}, args ...string) map[string]interface{}
-</code></pre><pre><code class=language-go>// Aliases: pick
+</code></pre><pre><code class=language-go>// Selects just the given keys out of a dictionary, creating a new `dict`.
+// Aliases: pick
 func pickSprig(arg1 map[string]interface{}, args ...string) map[string]interface{}
-</code></pre><pre><code class=language-go>// Aliases: pluck
-func pluckSprig(arg1 string, args ...map[string]interface{}) []interface{}
-</code></pre><pre><code class=language-go>// Aliases: set
-func setSprig(arg1 map[string]interface{}, arg2 string, arg3 interface{}) map[string]interface{}
-</code></pre><pre><code class=language-go>// Aliases: unset
-func unsetSprig(arg1 map[string]interface{}, arg2 string) map[string]interface{}
-</code></pre><pre><code class=language-go>// Aliases: values
+</code></pre><pre><code class=language-go>// Makes it possible to give one key and multiple maps, and get a list of all of the matches.
+// Aliases: pluck
+func pluckSprig(name string, dicts ...map[string]interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Add a new key/value pair to a dictionary.
+// Aliases: set
+func setSprig(dict map[string]interface{}, key string, value interface{}) map[string]interface{}
+</code></pre><pre><code class=language-go>// Given a map and a key, delete the key from the map.
+// Aliases: unset
+func unsetSprig(dict map[string]interface{}, key string) map[string]interface{}
+</code></pre><pre><code class=language-go>// Is similar to 'keys', except it returns a new 'list' with all the values of the source 'dict' (only one dictionary is supported).
+// Aliases: values
 func valuesSprig(arg1 map[string]interface{}) []interface{}
-</code></pre><h3 id=sprig-encoding-http-masterminds-github-io-sprig-encoding-html>Sprig Encoding, <a href=http://masterminds.github.io/sprig/encoding.html>http://masterminds.github.io/sprig/encoding.html</a></h3><pre><code class=language-go>func b32dec(arg1 string) string
-</code></pre><pre><code class=language-go>func b32enc(arg1 string) string
-</code></pre><pre><code class=language-go>func b64dec(arg1 string) string
-</code></pre><pre><code class=language-go>func b64enc(arg1 string) string
-</code></pre><h3 id=sprig-file-path-http-masterminds-github-io-sprig-paths-html>Sprig File Path, <a href=http://masterminds.github.io/sprig/paths.html>http://masterminds.github.io/sprig/paths.html</a></h3><pre><code class=language-go>func base(arg1 string) string
-</code></pre><pre><code class=language-go>func clean(arg1 string) string
-</code></pre><pre><code class=language-go>func dir(arg1 string) string
-</code></pre><pre><code class=language-go>func ext(arg1 string) string
-</code></pre><pre><code class=language-go>func isAbs(arg1 string) bool
+</code></pre><h3 id=sprig-encoding-http-masterminds-github-io-sprig-encoding-html>Sprig Encoding, <a href=http://masterminds.github.io/sprig/encoding.html>http://masterminds.github.io/sprig/encoding.html</a></h3><pre><code class=language-go>// Decode with Base32.
+func b32dec(arg1 string) string
+</code></pre><pre><code class=language-go>// Encode with Base32.
+func b32enc(arg1 string) string
+</code></pre><pre><code class=language-go>// Decode with Base64.
+func b64dec(arg1 string) string
+</code></pre><pre><code class=language-go>// Encode with Base64.
+func b64enc(arg1 string) string
+</code></pre><h3 id=sprig-file-path-http-masterminds-github-io-sprig-paths-html>Sprig File Path, <a href=http://masterminds.github.io/sprig/paths.html>http://masterminds.github.io/sprig/paths.html</a></h3><pre><code class=language-go>// Returns the last element of a path.
+func base(arg1 string) string
+</code></pre><pre><code class=language-go>// Clean up a path.
+func clean(arg1 string) string
+</code></pre><pre><code class=language-go>// Returns the directory, stripping the last part of the path.
+func dir(arg1 string) string
+</code></pre><pre><code class=language-go>// Returns the file extension.
+func ext(arg1 string) string
+</code></pre><pre><code class=language-go>// Check whether a file path is absolute.
+func isAbs(arg1 string) bool
 </code></pre><h3 id=sprig-flow-control-http-masterminds-github-io-sprig-flow-control-html>Sprig Flow Control, <a href=http://masterminds.github.io/sprig/flow_control.html>http://masterminds.github.io/sprig/flow_control.html</a></h3><pre><code class=language-go>// Unconditionally returns an empty string and an error with the specified text. This is useful in scenarios where other conditionals have determined that template rendering should fail.
 func fail(arg1 string) string, error
 </code></pre><h3 id=sprig-general-http-masterminds-github-io-sprig>Sprig General, <a href=http://masterminds.github.io/sprig/>http://masterminds.github.io/sprig/</a></h3><pre><code class=language-go>// Simple hello by Sprig
 func hello() string
-</code></pre><pre><code class=language-go>// Aliases: uuid, guid, GUID
+</code></pre><pre><code class=language-go>// Returns a new UUID of the v4 (randomly generated) type.
+// Aliases: uuid, guid, GUID
 func uuidv4() string
-</code></pre><h3 id=sprig-list-http-masterminds-github-io-sprig-lists-html>Sprig List, <a href=http://masterminds.github.io/sprig/lists.html>http://masterminds.github.io/sprig/lists.html</a></h3><pre><code class=language-go>// Aliases: append, push, pushSprig
+</code></pre><h3 id=sprig-list-http-masterminds-github-io-sprig-lists-html>Sprig List, <a href=http://masterminds.github.io/sprig/lists.html>http://masterminds.github.io/sprig/lists.html</a></h3><pre><code class=language-go>// Append a new item to an existing list, creating a new list.
+// Aliases: append
 func appendSprig(arg1 interface{}, arg2 interface{}) []interface{}
-</code></pre><pre><code class=language-go>func first(arg1 interface{}) interface{}
-</code></pre><pre><code class=language-go>// Aliases: has
+</code></pre><pre><code class=language-go>// Concatenate arbitrary number of lists into one.
+// Aliases: concat
+func concatSprig(args ...interface{}) interface{}
+</code></pre><pre><code class=language-go>// Get the head item on a list.
+func first(arg1 interface{}) interface{}
+</code></pre><pre><code class=language-go>// Test to see if a list has a particular element.
+// Aliases: has
 func hasSprig(arg1 interface{}, arg2 interface{}) bool
-</code></pre><pre><code class=language-go>// Aliases: initial
+</code></pre><pre><code class=language-go>// Compliments last by returning all but the last element.
+// Aliases: initial
 func initialSprig(arg1 interface{}) []interface{}
-</code></pre><pre><code class=language-go>func last(arg1 interface{}) interface{}
-</code></pre><pre><code class=language-go>// Aliases: prepend
+</code></pre><pre><code class=language-go>// Get the last item on a list.
+func last(arg1 interface{}) interface{}
+</code></pre><pre><code class=language-go>// Append a new item to an existing list, creating a new list.
+// Aliases: append
+func mustAppend(arg1 interface{}, arg2 interface{}) []interface{}, error
+</code></pre><pre><code class=language-go>// Get the head item on a list.
+func mustFirst(arg1 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Test to see if a list has a particular element.
+// Aliases: has
+func mustHas(arg1 interface{}, arg2 interface{}) bool, error
+</code></pre><pre><code class=language-go>// Compliments last by returning all but the last element.
+// Aliases: initial
+func mustInitial(arg1 interface{}) []interface{}, error
+</code></pre><pre><code class=language-go>// Get the last item on a list.
+func mustLast(arg1 interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Push an element onto the front of a list, creating a new list.
+// Aliases: prepend
+func mustPrepend(arg1 interface{}, arg2 interface{}) []interface{}, error
+</code></pre><pre><code class=language-go>// Append a new item to an existing list, creating a new list.
+// Aliases: push
+func mustPush(arg1 interface{}, arg2 interface{}) []interface{}, error
+</code></pre><pre><code class=language-go>// Get the tail of the list (everything but the first item).
+// Aliases: rest
+func mustRest(arg1 interface{}) []interface{}, error
+</code></pre><pre><code class=language-go>// Produce a new list with the reversed elements of the given list.
+// Aliases: reverse
+func mustReverse(arg1 interface{}) []interface{}, error
+</code></pre><pre><code class=language-go>// Get partial elements of a list.
+// Aliases: slice
+func mustSlice(arg1 interface{}, args ...interface{}) interface{}, error
+</code></pre><pre><code class=language-go>// Generate a list with all of the duplicates removed.
+// Aliases: uniq
+func mustUniq(arg1 interface{}) []interface{}, error
+</code></pre><pre><code class=language-go>// Filters items out of a list.
+// Aliases: without
+func mustWithout(arg1 interface{}, args ...interface{}) []interface{}, error
+</code></pre><pre><code class=language-go>// Push an element onto the front of a list, creating a new list.
+// Aliases: prepend
 func prependSprig(arg1 interface{}, arg2 interface{}) []interface{}
-</code></pre><pre><code class=language-go>// Aliases: rest
+</code></pre><pre><code class=language-go>// Append a new item to an existing list, creating a new list.
+// Aliases: push
+func pushSprig(arg1 interface{}, arg2 interface{}) []interface{}
+</code></pre><pre><code class=language-go>// Get the tail of the list (everything but the first item).
+// Aliases: rest
 func restSprig(arg1 interface{}) []interface{}
-</code></pre><pre><code class=language-go>// Aliases: reverse
+</code></pre><pre><code class=language-go>// Produce a new list with the reversed elements of the given list.
+// Aliases: reverse
 func reverseSprig(arg1 interface{}) []interface{}
-</code></pre><pre><code class=language-go>// Aliases: slice
+</code></pre><pre><code class=language-go>// Get partial elements of a list.
+// Aliases: slice
 func sliceSprig(arg1 interface{}, args ...interface{}) interface{}
-</code></pre><pre><code class=language-go>// Aliases: uniq
+</code></pre><pre><code class=language-go>// Generate a list with all of the duplicates removed.
+// Aliases: uniq
 func uniqSprig(arg1 interface{}) []interface{}
-</code></pre><pre><code class=language-go>// Aliases: without
+</code></pre><pre><code class=language-go>// Filters items out of a list.
+// Aliases: without
 func withoutSprig(arg1 interface{}, args ...interface{}) []interface{}
-</code></pre><h3 id=sprig-mathematics-http-masterminds-github-io-sprig-math-html>Sprig Mathematics, <a href=http://masterminds.github.io/sprig/math.html>http://masterminds.github.io/sprig/math.html</a></h3><pre><code class=language-go>func add1(arg1 interface{}) int64
-</code></pre><pre><code class=language-go>// Aliases: add
+</code></pre><h3 id=sprig-mathematics-http-masterminds-github-io-sprig-math-html>Sprig Mathematics, <a href=http://masterminds.github.io/sprig/math.html>http://masterminds.github.io/sprig/math.html</a></h3><pre><code class=language-go>// Increments a value by 1
+func add1(arg1 interface{}) int64
+</code></pre><pre><code class=language-go>// Sum numbers with `add`. Accepts two or more inputs.
+// Aliases: add
 func addSprig(args ...interface{}) int64
-</code></pre><pre><code class=language-go>// Aliases: ceil
+</code></pre><pre><code class=language-go>// Returns the greatest float value greater than or equal to input value.
+// Aliases: ceil
 func ceilSprig(arg1 interface{}) float64
-</code></pre><pre><code class=language-go>// Aliases: div
+</code></pre><pre><code class=language-go>// Performs integer division.
+// Aliases: div
 func divSprig(arg1 interface{}, arg2 interface{}) int64
-</code></pre><pre><code class=language-go>// Aliases: floor
+</code></pre><pre><code class=language-go>// Returns the greatest float value less than or equal to input value
+// Aliases: floor
 func floorSprig(arg1 interface{}) float64
-</code></pre><pre><code class=language-go>// Aliases: max, biggest, biggestSprig
+</code></pre><pre><code class=language-go>// Returns the largest of a series of integers.
+// Aliases: max, biggest, biggestSprig
 func maxSprig(arg1 interface{}, args ...interface{}) int64
-</code></pre><pre><code class=language-go>// Aliases: min
+</code></pre><pre><code class=language-go>// Returns the smallest of a series of integers.
+// Aliases: min
 func minSprig(arg1 interface{}, args ...interface{}) int64
-</code></pre><pre><code class=language-go>// Aliases: mod
+</code></pre><pre><code class=language-go>// Performs integer modulo.
+// Aliases: mod
 func modSprig(arg1 interface{}, arg2 interface{}) int64
-</code></pre><pre><code class=language-go>// Aliases: mul
+</code></pre><pre><code class=language-go>// Multiplies numbers. Accepts two or more inputs.
+// Aliases: mul
 func mulSprig(arg1 interface{}, args ...interface{}) int64
-</code></pre><pre><code class=language-go>func round(arg1 interface{}, arg2 int, args ...float64) float64
-</code></pre><pre><code class=language-go>// Aliases: sub
+</code></pre><pre><code class=language-go>// Returns a float value with the remainder rounded to the given number to digits after the decimal point.
+func round(arg1 interface{}, arg2 int, args ...float64) float64
+</code></pre><pre><code class=language-go>// Subtracts a number from another number.`
+// Aliases: sub
 func subSprig(arg1 interface{}, arg2 interface{}) int64
-</code></pre><pre><code class=language-go>func untilStep(arg1 int, arg2 int, arg3 int) []int
-</code></pre><h3 id=sprig-os-http-masterminds-github-io-sprig-defaults-html>Sprig OS, <a href=http://masterminds.github.io/sprig/defaults.html>http://masterminds.github.io/sprig/defaults.html</a></h3><pre><code class=language-go>func env(arg1 string) string
-</code></pre><pre><code class=language-go>func expandenv(arg1 string) string
-</code></pre><h3 id=sprig-reflection-http-masterminds-github-io-sprig-reflection-html>Sprig Reflection, <a href=http://masterminds.github.io/sprig/reflection.html>http://masterminds.github.io/sprig/reflection.html</a></h3><pre><code class=language-go>// Aliases: kindis
+</code></pre><pre><code class=language-go>// Generates a list of counting integers. But it allows you to define a start, stop, and step
+func untilStep(arg1 int, arg2 int, arg3 int) []int
+</code></pre><h3 id=sprig-network-functions-http-masterminds-github-io-sprig-network-html>Sprig Network functions, <a href=http://masterminds.github.io/sprig/network.html>http://masterminds.github.io/sprig/network.html</a></h3><pre><code class=language-go>// Receives a domain name and returns the ip address.
+func getHostByName(name string) string
+</code></pre><h3 id=sprig-os-http-masterminds-github-io-sprig-defaults-html>Sprig OS, <a href=http://masterminds.github.io/sprig/defaults.html>http://masterminds.github.io/sprig/defaults.html</a></h3><pre><code class=language-go>// Reads an environment variable.
+func env(arg1 string) string
+</code></pre><pre><code class=language-go>// Substitute environment variables in a string.
+func expandenv(arg1 string) string
+</code></pre><h3 id=sprig-reflection-http-masterminds-github-io-sprig-reflection-html>Sprig Reflection, <a href=http://masterminds.github.io/sprig/reflection.html>http://masterminds.github.io/sprig/reflection.html</a></h3><pre><code class=language-go>// returns true if two values are deeply equal.
+func deepEqual(arg1 interface{}, arg2 interface{}) bool
+</code></pre><pre><code class=language-go>// Let you verify that a value is a particular kind.
+// Aliases: kindis
 func kindIs(arg1 string, arg2 interface{}) bool
-</code></pre><pre><code class=language-go>// Aliases: kindof
+</code></pre><pre><code class=language-go>// Returns the kind of an object.
+// Aliases: kindof
 func kindOf(arg1 interface{}) string
-</code></pre><pre><code class=language-go>// Aliases: typeis
+</code></pre><pre><code class=language-go>// Like `kindIs`, but for types.
+// Aliases: typeis
 func typeIs(arg1 string, arg2 interface{}) bool
-</code></pre><pre><code class=language-go>// Aliases: typeisLike
+</code></pre><pre><code class=language-go>// Works as `typeIs`, except that it also dereferences pointers.
+// Aliases: typeisLike
 func typeIsLike(arg1 string, arg2 interface{}) bool
-</code></pre><pre><code class=language-go>// Aliases: typeof
+</code></pre><pre><code class=language-go>// Returns the underlying type of a value.
+// Aliases: typeof
 func typeOf(arg1 interface{}) string
 </code></pre><h3 id=sprig-regex-http-masterminds-github-io-sprig-strings-html>Sprig Regex, <a href=http://masterminds.github.io/sprig/strings.html>http://masterminds.github.io/sprig/strings.html</a></h3><pre><code class=language-go>// Returns the first (left most) match of the regular expression in the input string.
+func mustRegexFind(regex string, str string) string, error
+</code></pre><pre><code class=language-go>// Returns a slice of all matches of the regular expression in the input string.
+func mustRegexFindAll(regex string, str string, n int) []string, error
+</code></pre><pre><code class=language-go>// Returns true if the input string matches the regular expression.
+func mustRegexMatch(regex string, str string) bool, error
+</code></pre><pre><code class=language-go>// Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement. Inside string replacement, $ signs are interpreted as in Expand, so for instance $1 represents the text of the first submatch.
+func mustRegexReplaceAll(regex string, str string, repl string) string, error
+</code></pre><pre><code class=language-go>// Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement The replacement string is substituted directly, without using Expand.
+func mustRegexReplaceAllLiteral(regex string, str string, repl string) string, error
+</code></pre><pre><code class=language-go>// Slices the input string into substrings separated by the expression and returns a slice of the substrings between those expression matches. The last parameter n determines the number of substrings to return, where -1 means return all matches.
+func mustRegexSplit(regex string, str string, n int) []string, error
+</code></pre><pre><code class=language-go>// Returns the first (left most) match of the regular expression in the input string.
 func regexFind(regex string, str string) string
 </code></pre><pre><code class=language-go>// Returns a slice of all matches of the regular expression in the input string.
 func regexFindAll(regex string, str string, n int) []string
@@ -919,12 +1077,18 @@ func regexReplaceAll(regex string, str string, repl string) string
 func regexReplaceAllLiteral(regex string, str string, repl string) string
 </code></pre><pre><code class=language-go>// Slices the input string into substrings separated by the expression and returns a slice of the substrings between those expression matches. The last parameter n determines the number of substrings to return, where -1 means return all matches.
 func regexSplit(regex string, str string, n int) []string
-</code></pre><h3 id=sprig-string-slice-http-masterminds-github-io-sprig-string-slice-html>Sprig String Slice, <a href=http://masterminds.github.io/sprig/string_slice.html>http://masterminds.github.io/sprig/string_slice.html</a></h3><pre><code class=language-go>func join(arg1 string, arg2 interface{}) string
-</code></pre><pre><code class=language-go>func sortAlpha(arg1 interface{}) []string
-</code></pre><pre><code class=language-go>func split(arg1 string, arg2 string) map[string]string
-</code></pre><pre><code class=language-go>func splitList(arg1 string, arg2 string) []string
-</code></pre><pre><code class=language-go>func splitn(arg1 string, arg2 int, arg3 string) map[string]string
-</code></pre><pre><code class=language-go>func toStrings(arg1 interface{}) []string
+</code></pre><h3 id=sprig-string-slice-http-masterminds-github-io-sprig-string-slice-html>Sprig String Slice, <a href=http://masterminds.github.io/sprig/string_slice.html>http://masterminds.github.io/sprig/string_slice.html</a></h3><pre><code class=language-go>// Joins a list of strings into a single string, with the given separator.
+func join(arg1 string, arg2 interface{}) string
+</code></pre><pre><code class=language-go>// Sorts a list of strings into alphabetical (lexicographical) order.
+func sortAlpha(arg1 interface{}) []string
+</code></pre><pre><code class=language-go>// Splits a string into a `dict`. It is designed to make it easy to use template dot notation for accessing members
+func split(arg1 string, arg2 string) map[string]string
+</code></pre><pre><code class=language-go>// Splits a string into a list of strings.
+func splitList(arg1 string, arg2 string) []string
+</code></pre><pre><code class=language-go>// Splits a string into a `dict`. It is designed to make it easy to use template dot notation for accessing members.
+func splitn(arg1 string, arg2 int, arg3 string) map[string]string
+</code></pre><pre><code class=language-go>// Given a list-like collection, produce a slice of strings.
+func toStrings(arg1 interface{}) []string
 </code></pre><h3 id=sprig-strings-http-masterminds-github-io-sprig-strings-html>Sprig Strings, <a href=http://masterminds.github.io/sprig/strings.html>http://masterminds.github.io/sprig/strings.html</a></h3><pre><code class=language-go>// Truncates a string with ellipses (...).
 func abbrev(width int, str string) string
 </code></pre><pre><code class=language-go>// Abbreviates both sides with ellipses (...).
@@ -1006,11 +1170,21 @@ func upper(str string) string
 func wrapSprig(length int, str string) string
 </code></pre><pre><code class=language-go>// Works as wrap, but lets you specify the string to wrap with (wrap uses \n).
 func wrapWith(length int, spe string, str string) string
-</code></pre><h3 id=sprig-type-conversion-http-masterminds-github-io-sprig-conversion-html>Sprig Type Conversion, <a href=http://masterminds.github.io/sprig/conversion.html>http://masterminds.github.io/sprig/conversion.html</a></h3><pre><code class=language-go>func atoi(arg1 string) int
-</code></pre><pre><code class=language-go>func float64(arg1 interface{}) float64
-</code></pre><pre><code class=language-go>func int64(arg1 interface{}) int64
-</code></pre><pre><code class=language-go>// Aliases: int
+</code></pre><h3 id=sprig-type-conversion-http-masterminds-github-io-sprig-conversion-html>Sprig Type Conversion, <a href=http://masterminds.github.io/sprig/conversion.html>http://masterminds.github.io/sprig/conversion.html</a></h3><pre><code class=language-go>// Convert a string to an integer.
+func atoi(str string) int
+</code></pre><pre><code class=language-go>// Convert to a `float64`.
+func float64(value interface{}) float64
+</code></pre><pre><code class=language-go>// Convert a numeric to an `int64`.
+func int64(value interface{}) int64
+</code></pre><pre><code class=language-go>// Convert to an `int` at the system's width.
+// Aliases: int
 func intSprig(arg1 interface{}) int
+</code></pre><pre><code class=language-go>// Convert a unix octal to a 'int64'.
+func toDecimal(octalString interface{}) int64
+</code></pre><h3 id=sprig-url-functions-http-masterminds-github-io-sprig-url-html>Sprig URL functions, <a href=http://masterminds.github.io/sprig/url.html>http://masterminds.github.io/sprig/url.html</a></h3><pre><code class=language-go>// Joins map (produced by `urlParse`) to produce URL string.
+func urlJoin(dictionary map[string]interface{}) string
+</code></pre><pre><code class=language-go>// Parses string for URL and produces dict with URL parts.
+func urlParse(uri string) map[string]interface{}
 </code></pre><h3 id=sprig-version-comparison-http-masterminds-github-io-sprig-semver-html>Sprig Version comparison, <a href=http://masterminds.github.io/sprig/semver.html>http://masterminds.github.io/sprig/semver.html</a></h3><pre><code class=language-go>// Parses a string into a Semantic Version.
 func semver(version string) *semver.Version, error
 </code></pre><pre><code class=language-go>// A more robust comparison function is provided as semverCompare. This version supports version ranges.
