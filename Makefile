@@ -1,3 +1,5 @@
+SHELL:=/bin/bash
+
 pre-commit:
 	go fmt ./...
 	go test ./... -count 1
