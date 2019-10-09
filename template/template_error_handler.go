@@ -99,7 +99,7 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			}
 			expressions, errRegex := utils.GetRegexGroup(fmt.Sprintf("Undef%s", t.delimiters), undefRegexDefintions)
 			if errRegex != nil {
-				log.Error(errRegex)
+				InternalLog.Error(errRegex)
 			}
 			undefMatches, n := utils.MultiMatch(newContext, expressions...)
 
@@ -142,9 +142,9 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		if currentLine.Contains(runError) || strings.Contains(code, undefError) {
 			// The erroneous line has already been replaced, we do not report the error again
 			err, errorText = nil, ""
-			log.Debugf("Ignored error %s", logMessage)
+			InternalLog.Debugf("Ignored error %s", logMessage)
 		} else if logMessage != "" {
-			log.Debug(logMessage)
+			InternalLog.Debug(logMessage)
 		}
 
 		if err != nil {

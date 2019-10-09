@@ -12,7 +12,6 @@ import (
 
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/utils"
-	logging "github.com/op/go-logging"
 )
 
 // String is an alias to collections.String
@@ -193,11 +192,6 @@ func (t *Template) initExtension() {
 	ext := t.GetNewContext("", false)
 	ext.options = DefaultOptions()
 
-	// We temporary set the logging level one grade lower
-	logLevel := logging.GetLevel(logger)
-	logging.SetLevel(logLevel-1, logger)
-	defer func() { logging.SetLevel(logLevel, logger) }()
-
 	var extensionfiles []string
 	if extensionFolders := strings.TrimSpace(os.Getenv(EnvExtensionPath)); extensionFolders != "" {
 		for _, path := range strings.Split(extensionFolders, string(os.PathListSeparator)) {
@@ -219,7 +213,7 @@ func (t *Template) initExtension() {
 		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
 		// We also do not ask to clone the context as we wish to let extension to be able to alter the supplied context
 		if _, _, err := ext.processContentInternal(content, file, nil, 0, false, nil); err != nil {
-			log.Error(err)
+			InternalLog.Error(err)
 		}
 	}
 

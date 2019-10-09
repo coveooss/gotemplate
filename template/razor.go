@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/op/go-logging"
 )
 
 // Add additional functions to the go template context
@@ -27,7 +26,7 @@ func (t *Template) applyRazor(content []byte) (result []byte, changed bool) {
 		}
 	}
 	content = []byte(strings.Replace(string(content), funcCall, "", -1))
-	log.Noticef("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
+	InternalLog.Debugf("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
 	return content, true
 }
 
@@ -187,12 +186,9 @@ func (t *Template) ensureInit() {
 }
 
 func printDebugInfo(r replacement, content string) {
-	if r.name == "" || getLogLevelInternal() < logging.INFO {
+	if r.name == "" {
 		return
 	}
-
-	debugMode = true
-	defer func() { debugMode = false }()
 
 	// We only report each match once
 	allUnique := make(map[string]int)
@@ -201,7 +197,7 @@ func printDebugInfo(r replacement, content string) {
 			newContent := r.re.ReplaceAllStringFunc(found, func(match string) string {
 				return r.parser(r, match)
 			})
-			if newContent == found && getLogLevelInternal() < 6 {
+			if newContent == found {
 				// There is no change
 				continue
 			}
@@ -214,7 +210,7 @@ func printDebugInfo(r replacement, content string) {
 		allUnique[found] = allUnique[found] + 1
 	}
 
-	if len(allUnique) == 0 && getLogLevelInternal() < 7 {
+	if len(allUnique) == 0 {
 		return
 	}
 
@@ -228,11 +224,10 @@ func printDebugInfo(r replacement, content string) {
 		}
 		matches = append(matches, key)
 	}
-
-	log.Infof("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
+	logString := fmt.Sprintf("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
 	if len(matches) > 0 {
-		ErrPrintln()
+		logString = logString + " \n"
 	}
-}
+	InternalLog.Trace(logString)
 
-var debugMode bool
+}

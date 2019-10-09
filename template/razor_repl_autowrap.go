@@ -13,7 +13,7 @@ func autoWrap(repl replacement, match string) string {
 	context, strings := context.Protect()
 	args := context.SelectContext(1, "(", ")")
 	if args == "" {
-		log.Warningf("Missing closing parenthesis in %s%s", matches["func"], context.RestoreProtected(strings))
+		InternalLog.Warningf("Missing closing parenthesis in %s%s", matches["func"], context.RestoreProtected(strings))
 		return match
 	}
 	after := context[len(args):]

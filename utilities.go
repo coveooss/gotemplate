@@ -63,7 +63,7 @@ func exclude(files []string, patterns []string) (result []string, err error) {
 			if excluded, err = doublestar.Match(pattern, file); err != nil {
 				return
 			} else if excluded {
-				template.Log.Debugf("%s ignored", files[i])
+				template.InternalLog.Debugf("%s ignored", files[i])
 				break
 			}
 		}

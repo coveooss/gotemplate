@@ -13,14 +13,15 @@ import (
 	"github.com/bmatcuk/doublestar"
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/json"
-	logging "github.com/op/go-logging"
+	"github.com/coveooss/multilogger"
 	"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/sirupsen/logrus"
 )
 
 func TestTemplate_applyRazor(t *testing.T) {
 	t.Parallel()
 	dmp := diffmatchpatch.New()
-	SetLogLevel(logging.WARNING)
+	templateLog = multilogger.New(logrus.WarnLevel, multilogger.DisabledLevel, "", "gotemplate")
 	template := MustNewTemplate("../docs_tests", nil, "", nil)
 	files, err := doublestar.Glob(filepath.Join(template.folder, "**/*.md"))
 	if err != nil {
@@ -143,41 +144,38 @@ func TestBase(t *testing.T) {
 
 func TestInvocation(t *testing.T) {
 	tests := []struct {
-		name       string
-		debugLevel int
-		razor      string
-		want       string
+		name  string
+		razor string
+		want  string
 	}{
 		{
-			"Func call", 2,
+			"Func call",
 			"@func(1,2,3)",
 			"{{ func 1 2 3 }}",
 		},
 		{
-			"Method call", 2,
+			"Method call",
 			"@object.func(1,2,3)",
 			"{{ $.object.func 1 2 3 }}",
 		},
 		{
-			"Method call on result", 2,
+			"Method call on result",
 			"@object.func(1,2).func2(3)",
 			"{{ ($.object.func 1 2).func2 3 }}",
 		},
 		{
-			"Double invocation", 2,
+			"Double invocation",
 			"@func1().func2()",
 			"{{ func1.func2 }}",
 		},
 		{
-			"Double invocation with params", 6,
+			"Double invocation with params",
 			"@func1(1).func2(2)",
 			"{{ (func1 1).func2 2 }}",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logging.SetLevel(logging.Level(tt.debugLevel), loggerInternal)
-			defer func() { logging.SetLevel(logging.Level(2), loggerInternal) }()
 			template := MustNewTemplate(".", nil, "", nil)
 			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
 				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
