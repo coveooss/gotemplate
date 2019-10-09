@@ -11,22 +11,22 @@ const (
 )
 
 var (
-	// Log is the logger used to log message during template processing
-	Log *multilogger.MultiLogger = multilogger.New(logrus.InfoLevel, multilogger.DisabledLevel, "", "gotemplate")
+	// templateLog is the logger used to log message during template processing
+	templateLog *multilogger.MultiLogger = multilogger.New(logrus.InfoLevel, multilogger.DisabledLevel, "", "gotemplate")
 	// InternalLog is application logger used to follow the behaviour of the application
 	InternalLog *multilogger.MultiLogger = multilogger.New(logrus.InfoLevel, multilogger.DisabledLevel, "", "gotemplate")
 )
 
 var loggingFuncs = dictionary{
-	"trace":    func(args ...interface{}) string { return logBase(Log.Trace, args...) },
-	"debug":    func(args ...interface{}) string { return logBase(Log.Debug, args...) },
-	"info":     func(args ...interface{}) string { return logBase(Log.Info, args...) },
-	"notice":   func(args ...interface{}) string { return logBase(Log.Info, args...) },
-	"warning":  func(args ...interface{}) string { return logBase(Log.Warning, args...) },
-	"error":    func(args ...interface{}) string { return logBase(Log.Error, args...) },
-	"critical": func(args ...interface{}) string { return logBase(Log.Fatal, args...) },
-	"fatal":    func(args ...interface{}) string { return logBase(Log.Fatal, args...) },
-	"panic":    func(args ...interface{}) string { return logBase(Log.Panic, args...) },
+	"trace":    func(args ...interface{}) string { return logBase(templateLog.Trace, args...) },
+	"debug":    func(args ...interface{}) string { return logBase(templateLog.Debug, args...) },
+	"info":     func(args ...interface{}) string { return logBase(templateLog.Info, args...) },
+	"notice":   func(args ...interface{}) string { return logBase(templateLog.Info, args...) },
+	"warning":  func(args ...interface{}) string { return logBase(templateLog.Warning, args...) },
+	"error":    func(args ...interface{}) string { return logBase(templateLog.Error, args...) },
+	"critical": func(args ...interface{}) string { return logBase(templateLog.Fatal, args...) },
+	"fatal":    func(args ...interface{}) string { return logBase(templateLog.Fatal, args...) },
+	"panic":    func(args ...interface{}) string { return logBase(templateLog.Panic, args...) },
 }
 
 var loggingFuncsAliases = aliases{
@@ -65,7 +65,7 @@ func logBase(f func(...interface{}), args ...interface{}) string {
 
 // ConfigureLogging allows configuration of the default logging level
 func ConfigureLogging(templateLevel, internalLevel, internalLogFileLevel, internalLogFilePath string) {
-	Log.SetConsoleLevel(templateLevel)
+	templateLog.SetConsoleLevel(templateLevel)
 	InternalLog.SetConsoleLevel(internalLevel)
 	InternalLog.ConfigureFileLogger(internalLogFileLevel, internalLogFilePath)
 }

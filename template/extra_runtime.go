@@ -525,7 +525,7 @@ func assertWarning(test interface{}, args ...interface{}) string {
 		if len(args) == 0 {
 			args = []interface{}{"Assertion failed"}
 		}
-		Log.Warning(utils.FormatMessage(args...))
+		templateLog.Warning(utils.FormatMessage(args...))
 	}
 	return ""
 }
