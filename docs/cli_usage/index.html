@@ -56,10 +56,16 @@ Commands:
     -d, --disable                  Disable go template rendering (used to view razor conversion) or set _GOTEMPLATE_DISABLE
         --accept-no-value          Do not consider rendering &lt;no value&gt; as an error or set GOTEMPLATE_NO_VALUE (alias: --anv, --no-value, --nv)
     -S, --strict-error-validation  Consider error encountered in any file as real error or set GOTEMPLATE_STRICT_ERROR (alias: --sev, --strict)
-    -L, --log-level=level          Set the logging level CRITICAL (0), ERROR (1), WARNING (2), NOTICE (3), INFO (4), DEBUG (5) or set
-                                   _GOTEMPLATE_LOG_LEVEL (alias: --ll)
-        --debug-log-level=level    Set the debug logging level 0-9 or set _GOTEMPLATE_DEBUG_LOG_LEVEL (alias: --debug-level, --dl, --dll)
-        --log-simple               Disable the extended logging, i.e. no color, no date or set _GOTEMPLATE_LOG_SIMPLE (alias: --ls)
+        --template-log-level=level  
+                                   Set the template logging level. Accepted values: disabled, panic, fatal, error, warning, info, debug, trace or set
+                                   _GOTEMPLATE_TEMPLATE_LOG_LEVEL (alias: --tll)
+    -L, --internal-log-level=level  
+                                   Set the internal logging level. Accepted values: disabled, panic, fatal, error, warning, info, debug, trace or set
+                                   _GOTEMPLATE_INTERNAL_LOG_LEVEL (alias: --ill, --ll, --log-level)
+        --internal-log-file-path=path  
+                                   Set a file where verbose logs should be written or set _GOTEMPLATE_INTERNAL_LOG_FILE_PATH (alias: --ilfp)
+        --internal-log-file-level=level  
+                                   Set the log level for the verbose logs file or set _GOTEMPLATE_INTERNAL_LOG_FILE_LEVEL (alias: --ilfl)
         --ignore-missing-import    Exit with code 0 even if import does not exist or set _GOTEMPLATE_IGNORE_MISSING_IMPORT (alias: --imi)
         --ignore-missing-source    Exit with code 0 even if source does not exist or set _GOTEMPLATE_IGNORE_MISSING_SOURCE (alias: --ims)
         --ignore-missing-paths     Exit with code 0 even if import or source do not exist or set _GOTEMPLATE_IGNORE_MISSING_PATHS (alias: --imp)
