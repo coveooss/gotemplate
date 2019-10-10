@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/sirupsen/logrus"
 )
 
 // Add additional functions to the go template context
@@ -186,9 +187,12 @@ func (t *Template) ensureInit() {
 }
 
 func printDebugInfo(r replacement, content string) {
-	if r.name == "" {
+	if r.name == "" || !InternalLog.IsLevelEnabled(logrus.DebugLevel) {
 		return
 	}
+
+	debugMode = true
+	defer func() { debugMode = false }()
 
 	// We only report each match once
 	allUnique := make(map[string]int)
@@ -197,7 +201,7 @@ func printDebugInfo(r replacement, content string) {
 			newContent := r.re.ReplaceAllStringFunc(found, func(match string) string {
 				return r.parser(r, match)
 			})
-			if newContent == found {
+			if newContent == found && !InternalLog.IsLevelEnabled(logrus.TraceLevel) {
 				// There is no change
 				continue
 			}
@@ -210,7 +214,7 @@ func printDebugInfo(r replacement, content string) {
 		allUnique[found] = allUnique[found] + 1
 	}
 
-	if len(allUnique) == 0 {
+	if len(allUnique) == 0 && !InternalLog.IsLevelEnabled(logrus.TraceLevel) {
 		return
 	}
 
@@ -228,5 +232,7 @@ func printDebugInfo(r replacement, content string) {
 	if len(matches) > 0 {
 		logString = logString + " \n"
 	}
-	InternalLog.Trace(logString)
+	InternalLog.Debug(logString)
 }
+
+var debugMode bool

@@ -190,12 +190,7 @@ func runGotemplate() (exitCode int) {
 		*ignoreMissingSource = true
 	}
 
-	template.ConfigureLogging(
-		*templateLogLevel,
-		*internalLogLevel,
-		*internalLogFileLevel,
-		*internalLogFilePath,
-	)
+	template.ConfigureLogging(*templateLogLevel, *internalLogLevel, *internalLogFileLevel, *internalLogFilePath)
 
 	if *targetFolder == "" {
 		// Target folder default to source folder
