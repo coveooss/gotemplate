@@ -26,7 +26,7 @@ func (t *Template) applyRazor(content []byte) (result []byte, changed bool) {
 		}
 	}
 	content = []byte(strings.Replace(string(content), funcCall, "", -1))
-	InternalLog.Debugf("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
+	InternalLog.Infof("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
 	return content, true
 }
 
@@ -229,5 +229,4 @@ func printDebugInfo(r replacement, content string) {
 		logString = logString + " \n"
 	}
 	InternalLog.Trace(logString)
-
 }

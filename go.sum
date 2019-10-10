@@ -24,6 +24,8 @@ github.com/bmatcuk/doublestar v1.1.5 h1:2bNwBOmhyFEFcoB3tGvTD5xanq+4kyOZlB8wFYbM
 github.com/bmatcuk/doublestar v1.1.5/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
 github.com/coveooss/multilogger v0.1.1 h1:R6aSXlguplJOf5LsADTLxoG6/jW7cSsH7BIS7rCw1c0=
 github.com/coveooss/multilogger v0.1.1/go.mod h1:ZCp9QRlkKRRTa8PEvGguptlq9H7cy4im7VDSS2vEvqk=
+github.com/coveooss/multilogger v0.2.0-beta.1 h1:xFceINq19KGyu5TBRGCjrUlodRyHz0xvNXAu9sSmOxQ=
+github.com/coveooss/multilogger v0.2.0-beta.1/go.mod h1:ZCp9QRlkKRRTa8PEvGguptlq9H7cy4im7VDSS2vEvqk=
 github.com/coveord/kingpin/v2 v2.3.1 h1:GWdfhOpRbIE+5Bt/hGgDbfWkntsCC5484xFWXaor+sg=
 github.com/coveord/kingpin/v2 v2.3.1/go.mod h1:G7snIuRD09h58XUezPxWrLPuZplFdreCh6cmJZMtNUU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

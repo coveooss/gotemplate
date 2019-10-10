@@ -12,9 +12,9 @@ const (
 
 var (
 	// templateLog is the logger used to log message during template processing
-	templateLog *multilogger.MultiLogger = multilogger.New(logrus.InfoLevel, multilogger.DisabledLevel, "", "gotemplate")
+	templateLog = multilogger.New(logrus.InfoLevel, multilogger.DisabledLevel, "", "gotemplate")
 	// InternalLog is application logger used to follow the behaviour of the application
-	InternalLog *multilogger.MultiLogger = multilogger.New(logrus.InfoLevel, multilogger.DisabledLevel, "", "gotemplate")
+	InternalLog = multilogger.New(logrus.WarnLevel, multilogger.DisabledLevel, "", "gotemplate")
 )
 
 var loggingFuncs = dictionary{

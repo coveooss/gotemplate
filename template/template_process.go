@@ -84,9 +84,9 @@ func (t Template) printResult(source, target, result string) (err error) {
 		target = relTarget
 	}
 	if source != target {
-		InternalLog.Debugf("%s => %s", source, target)
+		InternalLog.Infof("%s => %s", source, target)
 	} else {
-		InternalLog.Debug(target)
+		InternalLog.Info(target)
 	}
 	Print(result)
 	if result != "" && terminal.IsTerminal(int(os.Stdout.Fd())) {

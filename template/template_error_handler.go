@@ -142,9 +142,9 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		if currentLine.Contains(runError) || strings.Contains(code, undefError) {
 			// The erroneous line has already been replaced, we do not report the error again
 			err, errorText = nil, ""
-			InternalLog.Debugf("Ignored error %s", logMessage)
+			InternalLog.Tracef("Ignored error %s", logMessage)
 		} else if logMessage != "" {
-			InternalLog.Debug(logMessage)
+			InternalLog.Trace(logMessage)
 		}
 
 		if err != nil {
