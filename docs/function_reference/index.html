@@ -340,7 +340,6 @@ Example:
     Razor:     @ceil(acos(0.5) / 3.1416 * 180)
     Template:  {{ ceil (mul (div (acos 0.5) 3.1416) 180) }}
     Result:    60
-
 </code></pre><pre><code class=language-go>// Returns the inverse hyperbolic cosine of x.
 // Special cases are:
 //     acosh(+Inf) = +Inf
@@ -542,7 +541,6 @@ Example:
     Razor:     @abs(-10)
     Template:  {{ abs -10 }}
     Result:    10
-
 </code></pre><pre><code class=language-go>// Aliases: decimal
 func dec(arg1 interface{}) interface{}, error
 </code></pre><pre><code class=language-go>// Breaks f into a normalized fraction and an integral power of two. Returns frac and exp satisfying f == frac × 2**exp, with the absolute value of frac in the interval [½, 1).
