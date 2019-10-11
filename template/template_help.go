@@ -188,6 +188,9 @@ func (t Template) printFunctionsDetailed(functions []string, maxLength int, alia
 				Println(aliasFunc.Signature())
 			}
 		}
-		Println(fi.Examples())
+		if len(fi.examples) > 0 {
+			Println(fi.Examples())
+		}
+		Println()
 	}
 }

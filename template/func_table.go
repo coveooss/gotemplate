@@ -74,9 +74,8 @@ func (fi FuncInfo) Examples() (result string) {
 		return
 	}
 
-	result += color.MagentaString("\nExample:\n")
 	for i, example := range fi.examples {
-		if i != 0 {
+		if i > 0 {
 			result += "\n"
 		}
 		if example.Razor != "" {
@@ -89,7 +88,7 @@ func (fi FuncInfo) Examples() (result string) {
 			result += fmt.Sprintln(color.MagentaString("    Result:   "), example.Result)
 		}
 	}
-	return
+	return color.MagentaString("\nExample:\n") + strings.TrimRight(result, "\n ")
 }
 
 func (fi FuncInfo) getSignature(isMethod bool) string {
