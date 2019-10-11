@@ -21,7 +21,7 @@ func (t Template) getCategories() []FuncCategory {
 	for name := range t.functions {
 		fi := t.functions[name]
 		if fi.alias != nil {
-			fi = *fi.alias
+			fi = fi.alias
 		}
 		categories[fi.group] = append(categories[fi.group], name)
 	}

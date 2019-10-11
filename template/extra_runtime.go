@@ -59,11 +59,12 @@ var runtimeFuncsHelp = descriptions{
 		    Name        string
 		    Functions    []string
 	`)),
-	"current":  "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
-	"ellipsis": "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
-	"exec":     "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
-	"exit":     "Exits the current program execution.",
-	"func":     "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
+	"completeExamples": "Complete the examples that are not fully generated.",
+	"current":          "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
+	"ellipsis":         "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
+	"exec":             "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
+	"exit":             "Exits the current program execution.",
+	"func":             "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
 	"function": strings.TrimSpace(collections.UnIndent(`
 		Returns the information relative to a specific function.
 
@@ -91,29 +92,30 @@ var runtimeFuncsHelp = descriptions{
 
 func (t *Template) addRuntimeFuncs() {
 	var funcs = dictionary{
-		"alias":         t.alias,
-		"aliases":       t.getAliases,
-		"allFunctions":  t.getAllFunctions,
-		"assert":        assert,
-		"assertWarning": assertWarning,
-		"categories":    t.getCategories,
-		"current":       t.current,
-		"ellipsis":      t.ellipsis,
-		"exec":          t.execCommand,
-		"exit":          exit,
-		"func":          t.defineFunc,
-		"function":      t.getFunction,
-		"functions":     t.getFunctions,
-		"getAttributes": getAttributes,
-		"getMethods":    getMethods,
-		"getSignature":  getSignature,
-		"include":       t.include,
-		"localAlias":    t.localAlias,
-		"raise":         raise,
-		"run":           t.runCommand,
-		"substitute":    t.substitute,
-		"templateNames": t.getTemplateNames,
-		"templates":     t.Templates,
+		"alias":            t.alias,
+		"aliases":          t.getAliases,
+		"allFunctions":     t.getAllFunctions,
+		"assert":           assertError,
+		"assertWarning":    assertWarning,
+		"categories":       t.getCategories,
+		"completeExamples": t.completeExamples,
+		"current":          t.current,
+		"ellipsis":         t.ellipsis,
+		"exec":             t.execCommand,
+		"exit":             exit,
+		"func":             t.defineFunc,
+		"function":         t.getFunction,
+		"functions":        t.getFunctions,
+		"getAttributes":    getAttributes,
+		"getMethods":       getMethods,
+		"getSignature":     getSignature,
+		"include":          t.include,
+		"localAlias":       t.localAlias,
+		"raise":            raise,
+		"run":              t.runCommand,
+		"substitute":       t.substitute,
+		"templateNames":    t.getTemplateNames,
+		"templates":        t.Templates,
 	}
 
 	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
@@ -176,7 +178,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	if !context {
-		t.aliases[name] = FuncInfo{
+		t.aliases[name] = &FuncInfo{
 			function: func(args ...interface{}) (result interface{}, err error) {
 				return f(collections.Interface2string(source), append(defaultArgs, args...)...)
 			},
@@ -247,7 +249,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	emptyList := collections.CreateList()
-	fi := FuncInfo{
+	fi := &FuncInfo{
 		name:        name,
 		group:       defval(config.Get("group"), "User defined functions").(string),
 		description: defval(config.Get("description"), "").(string),
@@ -510,7 +512,7 @@ func raise(args ...interface{}) (string, error) {
 	return "", fmt.Errorf(utils.FormatMessage(args...))
 }
 
-func assert(test interface{}, args ...interface{}) (string, error) {
+func assertError(test interface{}, args ...interface{}) (string, error) {
 	if isZero(test) {
 		if len(args) == 0 {
 			args = []interface{}{"Assertion failed"}

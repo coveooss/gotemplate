@@ -279,8 +279,12 @@ var mathFuncsHelp = descriptions{
 }
 
 var mathFuncsExamples = examples{
-	"abs":  []string{"@abs(-10)", "{{ abs -10 }}", "10"},
-	"acos": []string{"@ceil(acos(0.5) / 3.1416 * 180)", "{{ ceil (mul (div (acos 0.5) 3.1416) 180) }}", "60"},
+	"abs": {
+		{Razor: "@abs(0)"},
+		{"@abs(22)", "{{ abs 22 }}", "22"},
+		{"@abs(-10)", "{{ abs -10 }}", "10"},
+	},
+	"acos": {{"@ceil(acos(0.5) / 3.1416 * 180)", "{{ ceil (mul (div (acos 0.5) 3.1416) 180) }}", "60"}},
 }
 
 func (t *Template) addMathFuncs() {
