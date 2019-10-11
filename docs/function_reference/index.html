@@ -104,7 +104,7 @@ func extract(source interface{}, indexes ...interface{}) interface{}, error
 func get(map interface{}, key interface{}, default ...interface{}) interface{}, error
 </code></pre><pre><code class=language-go>// Returns true if the dictionary contains the specified key.
 func hasKey(dictionary interface{}, key interface{}) interface{}, error
-</code></pre><pre><code class=language-go>// Returns but the last element. 
+</code></pre><pre><code class=language-go>// Returns but the last element.
 func initial(list interface{}) interface{}, error
 </code></pre><pre><code class=language-go>// Returns a list that is the intersection of the list and all arguments (removing duplicates).
 func intersect(list interface{}, elements ...interface{}) IGenericList, error
@@ -336,6 +336,11 @@ func min(x ...interface{}) interface{}
 //     acos(x) = NaN if x &lt; -1 or x &gt; 1
 // Aliases: arcCosine, arcCosinus
 func acos(x interface{}) interface{}, error
+Example:
+    Razor:     @ceil(acos(0.5) / 3.1416 * 180)
+    Template:  {{ ceil (mul (div (acos 0.5) 3.1416) 180) }}
+    Result:    60
+
 </code></pre><pre><code class=language-go>// Returns the inverse hyperbolic cosine of x.
 // Special cases are:
 //     acosh(+Inf) = +Inf
@@ -525,6 +530,19 @@ func yn(n interface{}, x interface{}) interface{}, error
 //     abs(NaN) = NaN
 // Aliases: absolute
 func abs(x interface{}) interface{}, error
+Example:
+    Razor:     @abs(0)
+    Template:  {{ abs 0 }}
+    Result:    0
+
+    Razor:     @abs(22)
+    Template:  {{ abs 22 }}
+    Result:    22
+
+    Razor:     @abs(-10)
+    Template:  {{ abs -10 }}
+    Result:    10
+
 </code></pre><pre><code class=language-go>// Aliases: decimal
 func dec(arg1 interface{}) interface{}, error
 </code></pre><pre><code class=language-go>// Breaks f into a normalized fraction and an integral power of two. Returns frac and exp satisfying f == frac × 2**exp, with the absolute value of frac in the interval [½, 1).
@@ -727,6 +745,8 @@ func assertWarning(test interface{}, message ...interface{}) string
 //     Name        string
 //     Functions    []string
 func categories() []template.FuncCategory
+</code></pre><pre><code class=language-go>// Complete the examples that are not fully generated.
+func completeExamples() string
 </code></pre><pre><code class=language-go>// Returns the current folder (like pwd, but returns the folder of the currently running folder).
 func current() string
 </code></pre><pre><code class=language-go>// Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).
@@ -748,7 +768,7 @@ func func(name string, function string, source interface{}, config interface{}) 
 //     Aliases     []string
 //     Arguments   string
 //     Result      string
-func function(name string) template.FuncInfo
+func function(name string) *template.FuncInfo
 </code></pre><pre><code class=language-go>// Returns the list of all available functions (excluding aliases).
 func functions() []string
 </code></pre><pre><code class=language-go>// List all attributes accessible from the supplied object.
