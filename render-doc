@@ -34,6 +34,12 @@ COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> 
                 @<;// Aliases: @join(", ", $func.Aliases)
             @-endif
             @<;func @($func.Signature)
+            @-if ($func.ExampleRazor)
+            @<;Example:
+            @<;    Razor: @{func.ExampleRazor}
+            @<;    Template: @{func.ExampleTemplate}
+            @<;    Result: @{func.ExampleResult}
+            @-endif
             @<;```
         @-endif
     @-end foreach

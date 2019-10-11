@@ -278,12 +278,18 @@ var mathFuncsHelp = descriptions{
 	"yn":              "Returns the order-n Bessel function of the second kind.\nSpecial cases are:\n    yn(n, +Inf) = 0\n    yn(n ≥ 0, 0) = -Inf\n    yn(n < 0, 0) = +Inf if n is odd, -Inf if n is even\n    yn(n, x < 0) = NaN\n    yn(n, NaN) = NaN",
 }
 
+var mathFuncsExamples = examples{
+	"abs":  []string{"@abs(-10)", "{{ abs -10 }}", "10"},
+	"acos": []string{"@ceil(acos(0.5) / 3.1416 * 180)", "{{ ceil (mul (div (acos 0.5) 3.1416) 180) }}", "60"},
+}
+
 func (t *Template) addMathFuncs() {
 	// Enhance mathematic functions
 	options := FuncOptions{
-		FuncHelp:    mathFuncsHelp,
-		FuncArgs:    mathFuncsArgs,
-		FuncAliases: mathFuncsAliases,
+		FuncHelp:     mathFuncsHelp,
+		FuncArgs:     mathFuncsArgs,
+		FuncAliases:  mathFuncsAliases,
+		FuncExamples: mathFuncsExamples,
 	}
 
 	t.AddFunctions(mathBaseFuncs, mathBase, options)

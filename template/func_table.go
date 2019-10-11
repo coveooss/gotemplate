@@ -21,6 +21,11 @@ type FuncInfo struct {
 	description string
 	in, out     string
 	alias       *FuncInfo
+
+	// Examples
+	exampleRazor    string
+	exampleTemplate string
+	exampleResult   string
 }
 
 // Aliases returns the aliases related to the entry.
@@ -40,6 +45,15 @@ func (fi FuncInfo) Name() string { return fi.name }
 
 // Signature returns the function signature
 func (fi FuncInfo) Signature() string { return fi.getSignature(false) }
+
+// ExampleRazor returns an example of the function's usage in Razor
+func (fi FuncInfo) ExampleRazor() string { return fi.exampleRazor }
+
+// ExampleTemplate returns an example of the function's usage in Go Template syntax
+func (fi FuncInfo) ExampleTemplate() string { return fi.exampleTemplate }
+
+// ExampleResult returns the result of the example templates
+func (fi FuncInfo) ExampleResult() string { return fi.exampleResult }
 
 // IsAlias indicates if the current function is an alias.
 func (fi FuncInfo) IsAlias() bool { return fi.alias != nil }
@@ -148,6 +162,8 @@ const (
 	FuncAliases
 	// FuncGroup is used to associate a group to functions added to go templates.
 	FuncGroup
+	// FuncExamples is used to associate examples (from razor to template to result) to functions added to go templates.
+	FuncExamples
 )
 
 // FuncOptions is a map of FuncOptionsSet that is used to associates help, aliases, arguments and groups to functions added to go template.
@@ -157,6 +173,7 @@ type aliases = map[string][]string
 type arguments = map[string][]string
 type descriptions = map[string]string
 type dictionary = map[string]interface{}
+type examples = map[string][]string
 type groups = map[string]string
 
 // AddFunctions add functions to the template, but keep a detailled definition of the function added for helping purpose
@@ -166,14 +183,22 @@ func (t *Template) AddFunctions(funcs dictionary, group string, options FuncOpti
 	aliases := defval(options[FuncAliases], aliases{}).(aliases)
 	arguments := defval(options[FuncArgs], arguments{}).(arguments)
 	groups := defval(options[FuncGroup], groups{}).(groups)
+	examples := defval(options[FuncExamples], examples{}).(examples)
 	for key, val := range funcs {
-		ft[key] = FuncInfo{
+		funcInfo := FuncInfo{
 			function:    val,
 			group:       defval(group, groups[key]).(string),
 			aliases:     aliases[key],
 			arguments:   arguments[key],
 			description: help[key],
 		}
+		funcExamples := examples[key]
+		if len(funcExamples) == 3 {
+			funcInfo.exampleRazor = funcExamples[0]
+			funcInfo.exampleTemplate = funcExamples[1]
+			funcInfo.exampleResult = funcExamples[2]
+		}
+		ft[key] = funcInfo
 	}
 
 	return t.addFunctions(ft)
