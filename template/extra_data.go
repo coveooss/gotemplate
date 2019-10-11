@@ -171,7 +171,7 @@ var dataFuncsHelp = descriptions{
 	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)",
 	"hasKey":         "Returns true if the dictionary contains the specified key.",
 	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
-	"initial":        "Returns but the last element. ",
+	"initial":        "Returns but the last element.",
 	"intersect":      "Returns a list that is the intersection of the list and all arguments (removing duplicates).",
 	"isNil":          "Returns true if the supplied value is nil.",
 	"isSet":          "Returns true if the supplied value is not nil.",

@@ -1,8 +1,10 @@
 {
     "cSpell.ignoreWords": [
+        "UUIDs",
         "adipiscing",
         "amet",
         "awrap",
+        "bmatcuk",
         "consectetur",
         "dolore",
         "eiusmod",
@@ -19,7 +21,6 @@
         "typeis",
         "unsplit",
         "uuid",
-        "UUIDs",
         "uuidv",
         "warnf"
     ]

@@ -17,9 +17,8 @@ weight: 1
 COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> $DOC_FOLDER/CLI_Usage.md
 
 # Generate detailed function info
-./gotemplate --no-extension '
-## Functions@<;
-
+./gotemplate --no-extension '## Functions
+@completeExamples()
 @foreach ($category := categories())
 @-// We have to make a trick here by adding {{ "" }} otherwise, the entire line will be considered as a comment
 ### {{ "" }}@($category.Name)
@@ -33,12 +32,12 @@ COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> 
             @-if ($func.Aliases)
                 @<;// Aliases: @join(", ", $func.Aliases)
             @-endif
-            @<;func @($func.Signature)
+            @<;func @{func.Signature}
+            @--{func.Examples}
             @<;```
         @-endif
     @-end foreach
-@-end foreach
-' > $DOC_FOLDER/function_reference.md
+@end foreach' > $DOC_FOLDER/function_reference.md
 
 # Add basics section
 mkdir -p $DOC_FOLDER/basic_features

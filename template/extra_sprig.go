@@ -70,7 +70,7 @@ func (t *Template) addSprigFuncs() {
 				key = aliases[key]
 				info = sprigFuncRef[key]
 			}
-			sprigFuncs[key] = FuncInfo{function: value, group: info.group, aliases: info.aliases, arguments: info.arguments, description: info.description}
+			sprigFuncs[key] = &FuncInfo{function: value, group: info.group, aliases: info.aliases, arguments: info.arguments, description: info.description}
 		}
 	}
 	t.addFunctions(sprigFuncs)
