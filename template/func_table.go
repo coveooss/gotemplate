@@ -68,6 +68,11 @@ func (fi FuncInfo) String() (result string) {
 	return result + signature
 }
 
+// HasExamples returns true if the function has defined examples
+func (fi FuncInfo) HasExamples() bool {
+	return len(fi.examples) > 0
+}
+
 // Examples returns the string representing the examples.
 func (fi FuncInfo) Examples() (result string) {
 	if len(fi.examples) == 0 {

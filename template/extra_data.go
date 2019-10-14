@@ -216,11 +216,26 @@ var dataFuncsHelp = descriptions{
 	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",
 }
 
+var dataFuncsExamples = examples{
+	"hasKey": {
+		{`@hasKey(dict("key", "value"), "key")`, `{{ hasKey (dict "key" "value") "key" }}`, `true`},
+		{`@hasKey("key", dict("key", "value"))`, ``, `true`},
+		{`@hasKey(dict("key", "value"), "otherkey")`, ``, `false`},
+	},
+	"unset": {
+		{`@{myDict} := dict("key", "value", "key2", "value2", "key3", "value3")
+		@-unset($myDict, "key")
+		@-unset("key2", $myDict)
+		@-toJson($myDict)`, ``, `{"key3":"value3"}`},
+	},
+}
+
 func (t *Template) addDataFuncs() {
 	options := FuncOptions{
-		FuncHelp:    dataFuncsHelp,
-		FuncArgs:    dataFuncsArgs,
-		FuncAliases: dataFuncsAliases,
+		FuncHelp:     dataFuncsHelp,
+		FuncArgs:     dataFuncsArgs,
+		FuncAliases:  dataFuncsAliases,
+		FuncExamples: dataFuncsExamples,
 	}
 	t.AddFunctions(dataFuncsBase, dataBase, options)
 	t.AddFunctions(dataFuncsConversion, dataConversion, options)
