@@ -54,12 +54,14 @@ type IListHelper interface {
 var listHelper IListHelper
 var listHelperMutex sync.Mutex
 
+// GetListHelper fetches the default list manager
 func GetListHelper() IListHelper {
 	listHelperMutex.Lock()
 	defer listHelperMutex.Unlock()
 	return listHelper
 }
 
+// SetListHelper configures the default list manager
 func SetListHelper(newListHelper IListHelper) {
 	listHelperMutex.Lock()
 	defer listHelperMutex.Unlock()

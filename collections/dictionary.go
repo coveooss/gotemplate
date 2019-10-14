@@ -46,12 +46,14 @@ type IDictionaryHelper interface {
 var dictionaryHelper IDictionaryHelper
 var dictionaryHelperMutex sync.Mutex
 
+// GetDictionaryHelper fetches the default dictionary manager
 func GetDictionaryHelper() IDictionaryHelper {
 	dictionaryHelperMutex.Lock()
 	defer dictionaryHelperMutex.Unlock()
 	return dictionaryHelper
 }
 
+// SetDictionaryHelper configures the default dictionary manager
 func SetDictionaryHelper(newDictionaryHelper IDictionaryHelper) {
 	dictionaryHelperMutex.Lock()
 	defer dictionaryHelperMutex.Unlock()
