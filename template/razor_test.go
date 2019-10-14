@@ -43,8 +43,8 @@ func TestTemplate_applyRazor(t *testing.T) {
 		return path
 	}
 
-	collections.ListHelper = json.GenericListHelper
-	collections.DictionaryHelper = json.DictionaryHelper
+	collections.SetListHelper(json.GenericListHelper)
+	collections.SetDictionaryHelper(json.DictionaryHelper)
 	template.options[AcceptNoValue] = true
 
 	load := func(path string) []byte { return must(ioutil.ReadFile(path)).([]byte) }

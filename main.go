@@ -142,18 +142,18 @@ func runGotemplate() (exitCode int) {
 	if mode := *typeMode; mode != "" {
 		switch strings.ToUpper(mode[:1]) {
 		case "Y":
-			collections.ListHelper = yaml.GenericListHelper
-			collections.DictionaryHelper = yaml.DictionaryHelper
+			collections.SetListHelper(yaml.GenericListHelper)
+			collections.SetDictionaryHelper(yaml.DictionaryHelper)
 		case "H":
-			collections.ListHelper = hcl.GenericListHelper
-			collections.DictionaryHelper = hcl.DictionaryHelper
+			collections.SetListHelper(hcl.GenericListHelper)
+			collections.SetDictionaryHelper(hcl.DictionaryHelper)
 		case "J":
-			collections.ListHelper = json.GenericListHelper
-			collections.DictionaryHelper = json.DictionaryHelper
+			collections.SetListHelper(json.GenericListHelper)
+			collections.SetDictionaryHelper(json.DictionaryHelper)
 		}
 	} else {
-		collections.ListHelper = json.GenericListHelper
-		collections.DictionaryHelper = json.DictionaryHelper
+		collections.SetListHelper(json.GenericListHelper)
+		collections.SetDictionaryHelper(json.DictionaryHelper)
 	}
 
 	optionsSet[template.RenderingDisabled] = *disableRender

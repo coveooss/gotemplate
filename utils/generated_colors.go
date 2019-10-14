@@ -4,6 +4,54 @@ package utils
 
 import "strconv"
 
+func _() {
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
+	var x [1]struct{}
+	_ = x[Reset-0]
+	_ = x[Bold-1]
+	_ = x[Faint-2]
+	_ = x[Italic-3]
+	_ = x[Underline-4]
+	_ = x[BlinkSlow-5]
+	_ = x[BlinkRapid-6]
+	_ = x[ReverseVideo-7]
+	_ = x[Concealed-8]
+	_ = x[CrossedOut-9]
+	_ = x[FgBlack-30]
+	_ = x[FgRed-31]
+	_ = x[FgGreen-32]
+	_ = x[FgYellow-33]
+	_ = x[FgBlue-34]
+	_ = x[FgMagenta-35]
+	_ = x[FgCyan-36]
+	_ = x[FgWhite-37]
+	_ = x[FgHiBlack-90]
+	_ = x[FgHiRed-91]
+	_ = x[FgHiGreen-92]
+	_ = x[FgHiYellow-93]
+	_ = x[FgHiBlue-94]
+	_ = x[FgHiMagenta-95]
+	_ = x[FgHiCyan-96]
+	_ = x[FgHiWhite-97]
+	_ = x[BgBlack-40]
+	_ = x[BgRed-41]
+	_ = x[BgGreen-42]
+	_ = x[BgYellow-43]
+	_ = x[BgBlue-44]
+	_ = x[BgMagenta-45]
+	_ = x[BgCyan-46]
+	_ = x[BgWhite-47]
+	_ = x[BgHiBlack-100]
+	_ = x[BgHiRed-101]
+	_ = x[BgHiGreen-102]
+	_ = x[BgHiYellow-103]
+	_ = x[BgHiBlue-104]
+	_ = x[BgHiMagenta-105]
+	_ = x[BgHiCyan-106]
+	_ = x[BgHiWhite-107]
+}
+
 const (
 	_Attribute_name_0 = "ResetBoldFaintItalicUnderlineBlinkSlowBlinkRapidReverseVideoConcealedCrossedOut"
 	_Attribute_name_1 = "FgBlackFgRedFgGreenFgYellowFgBlueFgMagentaFgCyanFgWhite"
