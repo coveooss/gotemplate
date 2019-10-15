@@ -873,7 +873,8 @@ func Test_dict_Merge(t *testing.T) {
 		{"Add new1 & new2 to map", dictFixture, args{adding1, []jsonIDict{adding2}}, dictFixture.Clone().Merge(adding1).Merge(adding2)},
 	}
 	for _, tt := range tests {
-		go t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			d := tt.d.Clone()
 			got := d.Merge(tt.args.jsonDict, tt.args.dicts...)
 			if !reflect.DeepEqual(got, tt.want) {

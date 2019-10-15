@@ -122,7 +122,7 @@ func (lh ListHelper) SetIndex(list baseIList, index int, value interface{}) (bas
 
 // Register the implementation of list functions
 var _ = func() int {
-	collections.ListHelper = baseListHelper
+	collections.SetListHelper(baseListHelper)
 	return 0
 }()
 
