@@ -54,7 +54,7 @@ func runGotemplate() (exitCode int) {
 	var (
 		colorIsSet   bool
 		colorEnabled = app.Flag("color", "Force rendering of colors event if output is redirected").IsSetByUser(&colorIsSet).Bool()
-		getVersion   = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
+		getVersion   = app.Flag("version", "Get the current version of gotemplate").Short('v').NoEnvar().Bool()
 
 		run                 = app.Command("run", "").Default()
 		delimiters          = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma)").Alias("del").PlaceHolder("{{,}},@").String()
