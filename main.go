@@ -56,7 +56,7 @@ func runGotemplate() (exitCode int) {
 	var (
 		colorIsSet           bool
 		colorEnabled         = app.Flag("color", "Force rendering of colors event if output is redirected").IsSetByUser(&colorIsSet).Bool()
-		getVersion           = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
+		getVersion           = app.Flag("version", "Get the current version of gotemplate").Short('v').NoEnvar().Bool()
 		templateLogLevel     = app.Flag("template-log-level", "Set the template logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Default(logrus.InfoLevel.String()).PlaceHolder("level").String()
 		internalLogLevel     = app.Flag("internal-log-level", "Set the internal logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Short('L').Alias("log-level").Default(logrus.WarnLevel.String()).PlaceHolder("level").String()
 		internalLogFilePath  = app.Flag("internal-log-file-path", "Set a file where verbose logs should be written").PlaceHolder("path").String()
