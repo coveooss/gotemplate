@@ -5,15 +5,15 @@ You can pause gotemplate's or razor processing with the following comments:
 {{ add 4 5 }}
 {{ add 4 5 }}
 
-# pause-gotemplate!
+# gotemplate-pause!
 {{ add 4 5 }}
 @(4+5)
-# resume-gotemplate!
+# gotemplate-resume!
 
-# pause-razor!
+# razor-pause!
 {{ add 4 5 }}
 @(4+5)
-# resume-razor!
+# razor-resume!
 
 {{ add 4 5 }}
 {{ add 4 5 }}
@@ -24,15 +24,15 @@ Gives the following output:
 9
 9
 
-# pause-gotemplate!
+# gotemplate-pause!
 {{ add 4 5 }}
 @(4+5)
-# resume-gotemplate!
+# gotemplate-resume!
 
-# pause-razor!
+# razor-pause!
 9
 @(4+5)
-# resume-razor!
+# razor-resume!
 
 9
 9
