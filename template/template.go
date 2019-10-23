@@ -50,8 +50,12 @@ const (
 	noGoTemplate       = "no-gotemplate!"
 	noRazor            = "no-razor!"
 	explicitGoTemplate = "gotemplate!"
-	pauseGoTemplate    = "pause-gotemplate!"
-	resumeGoTemplate   = "resume-gotemplate!"
+
+	pauseGoTemplate  = "pause-gotemplate!"
+	resumeGoTemplate = "resume-gotemplate!"
+
+	pauseRazor  = "pause-razor!"
+	resumeRazor = "resume-razor!"
 )
 
 // Common variables

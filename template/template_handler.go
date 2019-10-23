@@ -137,10 +137,12 @@ func (t Template) processContentInternal(originalContent, source string, origina
 
 	topCall := th.Lines == nil
 
+	pausingIsEnabled := strings.Contains(originalContent, pauseGoTemplate) || strings.Contains(originalContent, pauseRazor)
+
 	// When pausing templating, we replace delimiters with dummy strings and then we revert the replacements when the processing is complete
 	leftDelimReplacement, rightDelimReplacement, razorDelimReplacement := "$&paused-left&$", "$&paused-right&$", "$&paused-razor&$"
 	revertReplacements := func(template string) string {
-		if strings.Contains(template, pauseGoTemplate) {
+		if pausingIsEnabled {
 			template = strings.ReplaceAll(template, leftDelimReplacement, t.LeftDelim())
 			template = strings.ReplaceAll(template, rightDelimReplacement, t.RightDelim())
 			template = strings.ReplaceAll(template, razorDelimReplacement, t.RazorDelim())
@@ -168,13 +170,16 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			}
 		}
 
-		if strings.Contains(th.Code, pauseGoTemplate) {
+		if pausingIsEnabled {
 			splitLines := strings.Split(th.Code, "\n")
-			isPaused := false
+			isGoTemplatePaused, isRazorPaused := false, false
 			for index, line := range splitLines {
-				isPaused = (isPaused || strings.Contains(line, pauseGoTemplate)) && !strings.Contains(line, resumeGoTemplate)
-				if isPaused {
+				isGoTemplatePaused = (isGoTemplatePaused || strings.Contains(line, pauseGoTemplate)) && !strings.Contains(line, resumeGoTemplate)
+				isRazorPaused = (isRazorPaused || strings.Contains(line, pauseRazor)) && !strings.Contains(line, resumeRazor)
+				if isRazorPaused || isGoTemplatePaused {
 					splitLines[index] = strings.ReplaceAll(splitLines[index], t.RazorDelim(), razorDelimReplacement)
+				}
+				if isGoTemplatePaused {
 					splitLines[index] = strings.ReplaceAll(splitLines[index], t.LeftDelim(), leftDelimReplacement)
 					splitLines[index] = strings.ReplaceAll(splitLines[index], t.RightDelim(), rightDelimReplacement)
 				}
