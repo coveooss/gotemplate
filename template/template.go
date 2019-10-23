@@ -50,6 +50,8 @@ const (
 	noGoTemplate       = "no-gotemplate!"
 	noRazor            = "no-razor!"
 	explicitGoTemplate = "gotemplate!"
+	pauseGoTemplate    = "pause-gotemplate!"
+	resumeGoTemplate   = "resume-gotemplate!"
 )
 
 // Common variables
@@ -66,14 +68,6 @@ var (
 	ErrPrintln     = utils.ColorErrorPrintln
 	ErrPrint       = utils.ColorErrorPrint
 )
-
-// IsRazor determines if the supplied code appears to have Razor code (using default delimiters).
-func IsRazor(code string) bool { return strings.Contains(code, "@") }
-
-// IsCode determines if the supplied code appears to have gotemplate code (using default delimiters).
-func IsCode(code string) bool {
-	return IsRazor(code) || strings.Contains(code, "{{") || strings.Contains(code, "}}")
-}
 
 // NewTemplate creates an Template object with default initialization.
 func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) (result *Template, err error) {

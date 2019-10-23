@@ -136,6 +136,18 @@ func (t Template) processContentInternal(originalContent, source string, origina
 	}
 
 	topCall := th.Lines == nil
+
+	// When pausing templating, we replace delimiters with dummy strings and then we revert the replacements when the processing is complete
+	leftDelimReplacement, rightDelimReplacement, razorDelimReplacement := "$&paused-left&$", "$&paused-right&$", "$&paused-razor&$"
+	revertReplacements := func(template string) string {
+		if strings.Contains(template, pauseGoTemplate) {
+			template = strings.ReplaceAll(template, leftDelimReplacement, t.LeftDelim())
+			template = strings.ReplaceAll(template, rightDelimReplacement, t.RightDelim())
+			template = strings.ReplaceAll(template, razorDelimReplacement, t.RazorDelim())
+		}
+		return template
+	}
+
 	if topCall {
 		if handler != nil {
 			defer func() {
@@ -156,13 +168,27 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			}
 		}
 
+		if strings.Contains(th.Code, pauseGoTemplate) {
+			splitLines := strings.Split(th.Code, "\n")
+			isPaused := false
+			for index, line := range splitLines {
+				isPaused = (isPaused || strings.Contains(line, pauseGoTemplate)) && !strings.Contains(line, resumeGoTemplate)
+				if isPaused {
+					splitLines[index] = strings.ReplaceAll(splitLines[index], t.RazorDelim(), razorDelimReplacement)
+					splitLines[index] = strings.ReplaceAll(splitLines[index], t.LeftDelim(), leftDelimReplacement)
+					splitLines[index] = strings.ReplaceAll(splitLines[index], t.RightDelim(), rightDelimReplacement)
+				}
+			}
+			th.Code = strings.Join(splitLines, "\n")
+		}
+
 		var razor []byte
 		razor, _ = t.applyRazor([]byte(th.Code))
 		th.Code = string(razor)
 
 		if t.options[RenderingDisabled] || !t.IsCode(th.Code) {
 			// There is no template element to evaluate or the template rendering is off
-			return th.Code, false, nil
+			return revertReplacements(th.Code), false, nil
 		}
 
 		InternalLog.Debug("GoTemplate processing of ", th.Filename)
@@ -221,7 +247,8 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		InternalLog.Infof("%s(%d): Execution error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}
-	result = t.substitute(out.String())
+	result = revertReplacements(t.substitute(out.String()))
+
 	changed = result != th.Code
 
 	if topCall && !t.options[AcceptNoValue] {

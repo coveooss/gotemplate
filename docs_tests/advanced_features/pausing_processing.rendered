@@ -1,0 +1,29 @@
+# Pausing and resuming
+You can pause gotemplate's processing with the following comments:
+
+```go
+9
+9
+
+# pause-gotemplate!
+{{ add 4 5 }}
+@(4+5)
+# resume-gotemplate!
+
+9
+9
+```
+
+Gives the following output:
+```go
+9
+9
+
+# pause-gotemplate!
+{{ add 4 5 }}
+@(4+5)
+# resume-gotemplate!
+
+9
+9
+```
