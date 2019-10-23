@@ -2,30 +2,30 @@
 <strong>Pausing Processing</strong></header><article class=markdown><h1 id=pausing-and-resuming>Pausing and resuming</h1><p>You can pause gotemplate&rsquo;s or razor processing with the following comments:</p><pre><code class=language-go>{{ add 4 5 }}
 @(4+5)
 
-# pause-gotemplate!
+# gotemplate-pause!
 {{ add 4 5 }}
 @(4+5)
-# resume-gotemplate!
+# gotemplate-resume!
 
-# pause-razor!
+# razor-pause!
 {{ add 4 5 }}
 @(4+5)
-# resume-razor!
+# razor-resume!
 
 {{ add 4 5 }}
 @(4+5)
 </code></pre><p>Gives the following output:</p><pre><code class=language-go>9
 9
 
-# pause-gotemplate!
+# gotemplate-pause!
 {{ add 4 5 }}
 @(4+5)
-# resume-gotemplate!
+# gotemplate-resume!
 
-# pause-razor!
+# razor-pause!
 9
 @(4+5)
-# resume-razor!
+# razor-resume!
 
 9
 9
