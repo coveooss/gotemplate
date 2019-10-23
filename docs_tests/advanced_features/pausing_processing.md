@@ -1,0 +1,39 @@
+# Pausing and resuming
+You can pause gotemplate's or razor processing with the following comments:
+
+```go
+{{ add 4 5 }}
+@(4+5)
+
+# pause-gotemplate!
+{{ add 4 5 }}
+@(4+5)
+# resume-gotemplate!
+
+# pause-razor!
+{{ add 4 5 }}
+@(4+5)
+# resume-razor!
+
+{{ add 4 5 }}
+@(4+5)
+```
+
+Gives the following output:
+```go
+9
+9
+
+# pause-gotemplate!
+{{ add 4 5 }}
+@(4+5)
+# resume-gotemplate!
+
+# pause-razor!
+9
+@(4+5)
+# resume-razor!
+
+9
+9
+```

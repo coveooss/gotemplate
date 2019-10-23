@@ -17,7 +17,6 @@ func TestFunctionTemplating(t *testing.T) {
 		for i, test := range funcInfo.examples {
 			example := test
 			t.Run(fmt.Sprintf("%s_#%d", funcInfo.name, i), func(t *testing.T) {
-				t.Parallel()
 				fmt.Println(example)
 				if example.Razor != "" {
 					appliedRazor, changed := template.applyRazor([]byte(example.Razor))
