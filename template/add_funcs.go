@@ -22,7 +22,7 @@ func (t *Template) addFuncs() {
 	if baseGoTemplateFuncs == nil {
 		baseGoTemplateFuncs = make(funcTableMap, len(baseGoTemplate))
 		for key, val := range baseGoTemplate {
-			baseGoTemplateFuncs[key] = FuncInfo{
+			baseGoTemplateFuncs[key] = &FuncInfo{
 				group:       goTemplateBase,
 				description: val.description,
 				in:          val.args,

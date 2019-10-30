@@ -141,7 +141,9 @@ func createContext(varsFiles, varsFilesIfExist, namedVars []string, mode string,
 				// The context is not initialized yet, so we create it with the same type of the
 				// first file argument
 				context = content.Create()
-				collections.DictionaryHelper, collections.ListHelper = content.GetHelpers()
+				dictHelper, listHelper := content.GetHelpers()
+				collections.SetDictionaryHelper(dictHelper)
+				collections.SetListHelper(listHelper)
 			}
 			for key, value := range content.AsMap() {
 				context.Set(key, value)

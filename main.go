@@ -95,17 +95,7 @@ func runGotemplate() (exitCode int) {
 		listFilters   = list.Arg("filters", "List only functions that contains one of the filter").Strings()
 	)
 
-	// Set the options for the available options (most of them are on by default)
-	optionsOff := app.Flag("base", "Turn off all addons (they could then be enabled explicitly)").NoAutoShortcut().Bool()
-	options := make([]bool, template.OptionOnByDefaultCount)
-	for i := range options {
-		opt := template.Options(i)
-		optName := strings.ToLower(fmt.Sprint(opt))
-		app.Flag(optName, fmt.Sprintf("%v Addon (ON by default)", opt)).NoAutoShortcut().Default(true).BoolVar(&options[i])
-	}
-	app.GetFlag("extension").Alias("ext")
-
-	_ = typeMode
+	loadAllAddins := true
 	var changedArgs []int
 	for i := range os.Args {
 		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
@@ -114,13 +104,21 @@ func runGotemplate() (exitCode int) {
 			changedArgs = append(changedArgs, i)
 		}
 		if os.Args[i] == "--base" {
-			for n := range options {
-				options[n] = false
-			}
+			loadAllAddins = false
 		}
 	}
 
-	// Adjust the help
+	// Set the options for the available options (most of them are on by default)
+	optionsOff := app.Flag("base", "Turn off all addons (they could then be enabled explicitly)").NoAutoShortcut().Bool()
+	options := make([]bool, template.OptionOnByDefaultCount)
+	for i := range options {
+		opt := template.Options(i)
+		optName := strings.ToLower(fmt.Sprint(opt))
+		app.Flag(optName, fmt.Sprintf("%v Addon (ON by default)", opt)).NoAutoShortcut().Default(loadAllAddins).BoolVar(&options[i])
+	}
+	app.GetFlag("extension").Alias("ext")
+
+	// Actually parse the arguments
 	command := kingpin.Parse()
 
 	// We restore back the modified arguments
@@ -142,18 +140,18 @@ func runGotemplate() (exitCode int) {
 	if mode := *typeMode; mode != "" {
 		switch strings.ToUpper(mode[:1]) {
 		case "Y":
-			collections.ListHelper = yaml.GenericListHelper
-			collections.DictionaryHelper = yaml.DictionaryHelper
+			collections.SetListHelper(yaml.GenericListHelper)
+			collections.SetDictionaryHelper(yaml.DictionaryHelper)
 		case "H":
-			collections.ListHelper = hcl.GenericListHelper
-			collections.DictionaryHelper = hcl.DictionaryHelper
+			collections.SetListHelper(hcl.GenericListHelper)
+			collections.SetDictionaryHelper(hcl.DictionaryHelper)
 		case "J":
-			collections.ListHelper = json.GenericListHelper
-			collections.DictionaryHelper = json.DictionaryHelper
+			collections.SetListHelper(json.GenericListHelper)
+			collections.SetDictionaryHelper(json.DictionaryHelper)
 		}
 	} else {
-		collections.ListHelper = json.GenericListHelper
-		collections.DictionaryHelper = json.DictionaryHelper
+		collections.SetListHelper(json.GenericListHelper)
+		collections.SetDictionaryHelper(json.DictionaryHelper)
 	}
 
 	optionsSet[template.RenderingDisabled] = *disableRender

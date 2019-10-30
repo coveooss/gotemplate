@@ -51,7 +51,7 @@ func (t Template) PrintFunctions(all, long, groupByCategory bool, filters ...str
 		if groupByCategory {
 			funcInfo := t.functions[functions[i]]
 			if funcInfo.alias != nil {
-				funcInfo = *funcInfo.alias
+				funcInfo = funcInfo.alias
 			}
 			group = funcInfo.group
 		}
@@ -101,7 +101,7 @@ func (t Template) filterFunctions(all, category, detailed bool, filters ...strin
 			if !all {
 				continue
 			}
-			funcInfo = *funcInfo.alias
+			funcInfo = funcInfo.alias
 		}
 
 		if len(filters) == 0 {
@@ -151,6 +151,9 @@ func (t Template) printFunctionsShort(functions []string, maxLength int, alias b
 }
 
 func (t Template) printFunctionsDetailed(functions []string, maxLength int, alias bool) {
+	t.options[Razor] = true
+	t.completeExamples()
+
 	// We only print entries that are not alias
 	allFunc := make(map[string]int)
 	for i := range functions {
@@ -184,6 +187,9 @@ func (t Template) printFunctionsDetailed(functions []string, maxLength int, alia
 				}
 				Println(aliasFunc.Signature())
 			}
+		}
+		if len(fi.examples) > 0 {
+			Println(fi.Examples())
 		}
 		Println()
 	}

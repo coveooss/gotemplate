@@ -9,7 +9,7 @@ import (
 const (
 	sprigCrypto         = "Sprig Cryptographic & Security, http://masterminds.github.io/sprig/crypto.html"
 	sprigDate           = "Sprig Date, http://masterminds.github.io/sprig/date.html"
-	sprigDict           = "Sprig Dictionnary, http://masterminds.github.io/sprig/dicst.html"
+	sprigDict           = "Sprig Dictionary, http://masterminds.github.io/sprig/dicts.html"
 	sprigEncoding       = "Sprig Encoding, http://masterminds.github.io/sprig/encoding.html"
 	sprigFilePath       = "Sprig File Path, http://masterminds.github.io/sprig/paths.html"
 	sprigFlow           = "Sprig Flow Control, http://masterminds.github.io/sprig/flow_control.html"
@@ -21,7 +21,7 @@ const (
 	sprigString         = "Sprig Strings, http://masterminds.github.io/sprig/strings.html"
 	sprigReflect        = "Sprig Reflection, http://masterminds.github.io/sprig/reflection.html"
 	sprigDefault        = "Sprig Default, http://masterminds.github.io/sprig/defaults.html"
-	sprigOS             = "Sprig OS, http://masterminds.github.io/sprig/defaults.html"
+	sprigOS             = "Sprig OS, http://masterminds.github.io/sprig/os.html"
 	sprigTypeConversion = "Sprig Type Conversion, http://masterminds.github.io/sprig/conversion.html"
 	sprigStringList     = "Sprig String Slice, http://masterminds.github.io/sprig/string_slice.html"
 	sprigURL            = "Sprig URL functions, http://masterminds.github.io/sprig/url.html"
@@ -70,7 +70,7 @@ func (t *Template) addSprigFuncs() {
 				key = aliases[key]
 				info = sprigFuncRef[key]
 			}
-			sprigFuncs[key] = FuncInfo{function: value, group: info.group, aliases: info.aliases, arguments: info.arguments, description: info.description}
+			sprigFuncs[key] = &FuncInfo{function: value, group: info.group, aliases: info.aliases, arguments: info.arguments, description: info.description}
 		}
 	}
 	t.addFunctions(sprigFuncs)

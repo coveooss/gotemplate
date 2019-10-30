@@ -2,6 +2,7 @@ package collections
 
 import (
 	"fmt"
+	"sync"
 )
 
 // IGenericList represents objects that act as []interface{}.
@@ -50,11 +51,25 @@ type IListHelper interface {
 	TryConvert(object interface{}) (interface{}, bool)  // Tries to convert any object to IGenericList or IDictionary object.
 }
 
-// ListHelper configures the default list manager.
-var ListHelper IListHelper
+var listHelper IListHelper
+var listHelperMutex sync.Mutex
+
+// GetListHelper fetches the default list manager
+func GetListHelper() IListHelper {
+	listHelperMutex.Lock()
+	defer listHelperMutex.Unlock()
+	return listHelper
+}
+
+// SetListHelper configures the default list manager
+func SetListHelper(newListHelper IListHelper) {
+	listHelperMutex.Lock()
+	defer listHelperMutex.Unlock()
+	listHelper = newListHelper
+}
 
 func assertListHelper() {
-	if ListHelper == nil {
+	if GetListHelper() == nil {
 		panic(fmt.Errorf("ListHelper not configured"))
 	}
 }
@@ -71,19 +86,19 @@ func AsList(object interface{}) IGenericList {
 // CreateList instantiates a new generic list with optional size and capacity.
 func CreateList(args ...int) IGenericList {
 	assertListHelper()
-	return ListHelper.CreateList(args...)
+	return GetListHelper().CreateList(args...)
 }
 
 // NewList instantiates a new generic list from supplied arguments.
 func NewList(objects ...interface{}) IGenericList {
 	assertListHelper()
-	return ListHelper.NewList(objects...)
+	return GetListHelper().NewList(objects...)
 }
 
 // NewStringList creates a new IGenericList from supplied arguments.
 func NewStringList(objects ...string) IGenericList {
 	assertListHelper()
-	return ListHelper.NewStringList(objects...)
+	return GetListHelper().NewStringList(objects...)
 }
 
 // TryAsList returns the object casted as IGenericList if possible.
@@ -92,5 +107,5 @@ func TryAsList(object interface{}) (IGenericList, error) {
 		return result, nil
 	}
 	assertListHelper()
-	return ListHelper.TryAsList(object)
+	return GetListHelper().TryAsList(object)
 }

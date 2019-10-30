@@ -171,7 +171,7 @@ var dataFuncsHelp = descriptions{
 	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)",
 	"hasKey":         "Returns true if the dictionary contains the specified key.",
 	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
-	"initial":        "Returns but the last element. ",
+	"initial":        "Returns but the last element.",
 	"intersect":      "Returns a list that is the intersection of the list and all arguments (removing duplicates).",
 	"isNil":          "Returns true if the supplied value is nil.",
 	"isSet":          "Returns true if the supplied value is not nil.",
@@ -216,11 +216,26 @@ var dataFuncsHelp = descriptions{
 	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",
 }
 
+var dataFuncsExamples = examples{
+	"hasKey": {
+		{`@hasKey(dict("key", "value"), "key")`, `{{ hasKey (dict "key" "value") "key" }}`, `true`},
+		{`@hasKey("key", dict("key", "value"))`, ``, `true`},
+		{`@hasKey(dict("key", "value"), "otherkey")`, ``, `false`},
+	},
+	"unset": {
+		{`@{myDict} := dict("key", "value", "key2", "value2", "key3", "value3")
+		@-unset($myDict, "key")
+		@-unset("key2", $myDict)
+		@-toJson($myDict)`, ``, `{"key3":"value3"}`},
+	},
+}
+
 func (t *Template) addDataFuncs() {
 	options := FuncOptions{
-		FuncHelp:    dataFuncsHelp,
-		FuncArgs:    dataFuncsArgs,
-		FuncAliases: dataFuncsAliases,
+		FuncHelp:     dataFuncsHelp,
+		FuncArgs:     dataFuncsArgs,
+		FuncAliases:  dataFuncsAliases,
+		FuncExamples: dataFuncsExamples,
 	}
 	t.AddFunctions(dataFuncsBase, dataBase, options)
 	t.AddFunctions(dataFuncsConversion, dataConversion, options)
