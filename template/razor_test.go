@@ -13,6 +13,7 @@ import (
 	"github.com/bmatcuk/doublestar"
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/json"
+	"github.com/coveooss/multilogger"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 

@@ -22,8 +22,8 @@ github.com/andybalholm/cascadia v1.1.0 h1:BuuO6sSfQNFRu1LppgbD25Hr2vLYW25JvxHs5z
 github.com/andybalholm/cascadia v1.1.0/go.mod h1:GsXiBklL0woXo1j/WYWtSYYC4ouU9PqHO0sqidkEA4Y=
 github.com/bmatcuk/doublestar v1.1.5 h1:2bNwBOmhyFEFcoB3tGvTD5xanq+4kyOZlB8wFYbMjkk=
 github.com/bmatcuk/doublestar v1.1.5/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
-github.com/coveooss/multilogger v0.1.2-0.20191030203118-de7e8c55db44 h1:trU9ntg9wY/S91cYUV+lMaSSI8hHi+9VMyGsby2F7QQ=
-github.com/coveooss/multilogger v0.1.2-0.20191030203118-de7e8c55db44/go.mod h1:Kf2a1zNQGUo1IJ/YBsQA0ZHghNAyNw6yYlNRbYEmPQc=
+github.com/coveooss/multilogger v0.2.0 h1:0fLPcKHS7kG5A5pCyumaGR+wAGkt3LgaN2eCujamtL0=
+github.com/coveooss/multilogger v0.2.0/go.mod h1:Kf2a1zNQGUo1IJ/YBsQA0ZHghNAyNw6yYlNRbYEmPQc=
 github.com/coveord/kingpin/v2 v2.3.1 h1:GWdfhOpRbIE+5Bt/hGgDbfWkntsCC5484xFWXaor+sg=
 github.com/coveord/kingpin/v2 v2.3.1/go.mod h1:G7snIuRD09h58XUezPxWrLPuZplFdreCh6cmJZMtNUU=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

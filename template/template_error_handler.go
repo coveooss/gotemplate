@@ -34,7 +34,7 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		lastErrorBegin = errorsPosition[len(errorsPosition)-1][0]
 	}
 
-	if matches, _ := reutils.MultiMatch(err.Error()[lastErrorBegin:], reutils.GetRegexGroup("Parse")...); len(matches) > 0 {
+	if matches, _ := reutils.MultiMatch(err.Error()[lastErrorBegin:], errorParsingExpressions...); len(matches) > 0 {
 		// We remove the faulty line and continue the processing to get all errors at once
 		lines := strings.Split(t.Code, "\n")
 		faultyLine := toInt(matches[tagLine]) - 1
@@ -173,4 +173,25 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		}
 	}
 	return "", true, err
+}
+
+var (
+	errorParsingExpressions []*regexp.Regexp
+	linePrefix              = `template: ` + p(tagLocation, p(tagFile, `.*?`)+`:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
+	reError                 = regexp.MustCompile(linePrefix)
+)
+
+func init() {
+	execPrefix := "^" + linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
+	templateErrors := []string{
+		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"`,
+		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
+		execPrefix + p(tagErr, `.*`),
+		linePrefix + p(tagErr, `.*`),
+	}
+
+	var err error
+	if errorParsingExpressions, err = reutils.NewRegexGroup("errorParsingExpressions", templateErrors...); err != nil {
+		panic(err)
+	}
 }

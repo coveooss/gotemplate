@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 
 	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/multilogger/errors"
 	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/errors"
 )
 
 var must = errors.Must

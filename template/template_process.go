@@ -5,26 +5,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/coveooss/gotemplate/v3/utils"
-	"github.com/coveooss/multilogger/reutils"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-var (
-	templateExt    = []string{".gt", ".template"}
-	linePrefix     = `template: ` + p(tagLocation, p(tagFile, `.*?`)+`:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
-	reError        = regexp.MustCompile(linePrefix)
-	execPrefix     = "^" + linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
-	templateErrors = []string{
-		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"`,
-		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
-		execPrefix + p(tagErr, `.*`),
-		linePrefix + p(tagErr, `.*`),
-	}
-)
+var templateExt = []string{".gt", ".template"}
 
 func p(name, expr string) string { return fmt.Sprintf("(?P<%s>%s)", name, expr) }
 
@@ -95,8 +82,4 @@ func (t Template) printResult(source, target, result string) (err error) {
 	}
 
 	return
-}
-
-func init() {
-	must(reutils.NewRegexGroup("parse", templateErrors...))
 }

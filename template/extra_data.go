@@ -3,7 +3,6 @@ package template
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/coveooss/gotemplate/v3/utils"
 	"github.com/coveooss/gotemplate/v3/xml"
 	"github.com/coveooss/gotemplate/v3/yaml"
+	"github.com/coveooss/multilogger"
 )
 
 const (
@@ -24,7 +24,7 @@ var dataFuncsBase = dictionary{
 	"String":    toStringClass,
 	"append":    addElements,
 	"array":     array,
-	"bool":      strconv.ParseBool,
+	"bool":      multilogger.ParseBool,
 	"char":      toChar,
 	"contains":  contains,
 	"content":   content,

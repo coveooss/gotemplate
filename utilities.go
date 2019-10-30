@@ -9,8 +9,8 @@ import (
 
 	"github.com/bmatcuk/doublestar"
 	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/multilogger/errors"
 	"github.com/coveooss/gotemplate/v3/template"
+	"github.com/coveooss/multilogger/errors"
 	goerrors "github.com/go-errors/errors"
 )
 
