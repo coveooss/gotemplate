@@ -19,6 +19,7 @@ import (
 func TestTemplate_applyRazor(t *testing.T) {
 	t.Parallel()
 	dmp := diffmatchpatch.New()
+	TemplateLog = multilogger.New("test")
 	template := MustNewTemplate("../docs_tests", nil, "", nil)
 	files, err := doublestar.Glob(filepath.Join(template.folder, "**/*.md"))
 	if err != nil {

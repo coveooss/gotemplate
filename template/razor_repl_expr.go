@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/reutils"
 	"github.com/fatih/color"
 	"github.com/sirupsen/logrus"
 )
@@ -41,7 +41,7 @@ func expressionParserSkipError(repl replacement, match string) string {
 }
 
 func expressionParserInternal(repl replacement, match string, skipError, internal bool) (result string, err error) {
-	matches, _ := utils.MultiMatch(match, repl.re)
+	matches, _ := reutils.MultiMatch(match, repl.re)
 	var expr, expression string
 	if expression = matches["expr"]; expression != "" {
 		if InternalLog.IsLevelEnabled(logrus.TraceLevel) {

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/reutils"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -94,4 +95,8 @@ func (t Template) printResult(source, target, result string) (err error) {
 	}
 
 	return
+}
+
+func init() {
+	must(reutils.NewRegexGroup("parse", templateErrors...))
 }

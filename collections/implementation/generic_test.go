@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coveooss/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 )
 
 var strFixture = baseList(baseListHelper.NewStringList(strings.Split("Hello World, I'm Foo Bar!", " ")...).AsArray())

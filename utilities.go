@@ -9,7 +9,7 @@ import (
 
 	"github.com/bmatcuk/doublestar"
 	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 	"github.com/coveooss/gotemplate/v3/template"
 	goerrors "github.com/go-errors/errors"
 )

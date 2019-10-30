@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 	"github.com/coveooss/gotemplate/v3/utils"
 )
 

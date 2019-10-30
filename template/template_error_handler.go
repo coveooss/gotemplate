@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/reutils"
 	"github.com/fatih/color"
 )
 
@@ -28,14 +28,13 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 
 	// We try to identify the exact position of the error. If the error occurred in a sub template, the
 	// error will be the last one found in the error string
-	regexGroup := must(utils.GetRegexGroup("Parse", templateErrors)).([]*regexp.Regexp)
 	errorsPosition := reError.FindAllStringIndex(err.Error(), -1)
 	lastErrorBegin := 0
 	if errorsPosition != nil {
 		lastErrorBegin = errorsPosition[len(errorsPosition)-1][0]
 	}
 
-	if matches, _ := utils.MultiMatch(err.Error()[lastErrorBegin:], regexGroup...); len(matches) > 0 {
+	if matches, _ := reutils.MultiMatch(err.Error()[lastErrorBegin:], reutils.GetRegexGroup("Parse")...); len(matches) > 0 {
 		// We remove the faulty line and continue the processing to get all errors at once
 		lines := strings.Split(t.Code, "\n")
 		faultyLine := toInt(matches[tagLine]) - 1
@@ -92,16 +91,21 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 				isZero  = "isZero"
 				assert  = "assert"
 			)
-			undefRegexDefintions := []string{
-				fmt.Sprintf(`%[1]s(undef|ifUndef|default)\s+(?P<%[3]s>.*?)\s+%[4]s%[2]s`, left, right, ifUndef, undefError),
-				fmt.Sprintf(`%[1]s(?P<%[3]s>%[3]s|isNil|isNull|isEmpty|isSet)\s+%[4]s%[2]s`, left, right, isZero, undefError),
-				fmt.Sprintf(`%[1]s%[3]s\s+(?P<%[3]s>%[4]s).*?%[2]s`, left, right, assert, undefError),
+
+			groupName := fmt.Sprintf("Undef%s", t.delimiters)
+			expressions := reutils.GetRegexGroup(groupName)
+			if expressions == nil {
+				var errRegex error
+				undefRegexDefinitions := []string{
+					fmt.Sprintf(`%[1]s(undef|ifUndef|default)\s+(?P<%[3]s>.*?)\s+%[4]s%[2]s`, left, right, ifUndef, undefError),
+					fmt.Sprintf(`%[1]s(?P<%[3]s>%[3]s|isNil|isNull|isEmpty|isSet)\s+%[4]s%[2]s`, left, right, isZero, undefError),
+					fmt.Sprintf(`%[1]s%[3]s\s+(?P<%[3]s>%[4]s).*?%[2]s`, left, right, assert, undefError),
+				}
+				if expressions, errRegex = reutils.NewRegexGroup(fmt.Sprintf("Undef%s", t.delimiters), undefRegexDefinitions...); errRegex != nil {
+					InternalLog.Error(errRegex)
+				}
 			}
-			expressions, errRegex := utils.GetRegexGroup(fmt.Sprintf("Undef%s", t.delimiters), undefRegexDefintions)
-			if errRegex != nil {
-				InternalLog.Error(errRegex)
-			}
-			undefMatches, n := utils.MultiMatch(newContext, expressions...)
+			undefMatches, n := reutils.MultiMatch(newContext, expressions...)
 
 			if undefMatches[ifUndef] != "" {
 				logMessage = fmt.Sprintf("Managed undefined value %s: %s", key, context)
