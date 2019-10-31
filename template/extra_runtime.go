@@ -13,6 +13,7 @@ import (
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/hcl"
 	"github.com/coveooss/gotemplate/v3/utils"
+	multicolor "github.com/coveooss/multilogger/color"
 	"github.com/fatih/color"
 )
 
@@ -509,7 +510,7 @@ func getSignature(object interface{}) string {
 }
 
 func raise(args ...interface{}) (string, error) {
-	return "", fmt.Errorf(utils.FormatMessage(args...))
+	return "", fmt.Errorf(multicolor.FormatMessage(args...))
 }
 
 func assertError(test interface{}, args ...interface{}) (string, error) {
@@ -527,7 +528,7 @@ func assertWarning(test interface{}, args ...interface{}) string {
 		if len(args) == 0 {
 			args = []interface{}{"Assertion failed"}
 		}
-		TemplateLog.Warning(utils.FormatMessage(args...))
+		TemplateLog.Warning(multicolor.FormatMessage(args...))
 	}
 	return ""
 }

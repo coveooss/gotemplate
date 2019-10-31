@@ -6,8 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/acarl005/stripansi"
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/utils"
+	multicolor "github.com/coveooss/multilogger/color"
 )
 
 const (
@@ -16,7 +18,8 @@ const (
 
 var utilsFuncs = dictionary{
 	"center":     center,
-	"color":      utils.SprintColor,
+	"color":      multicolor.Sprint,
+	"colorln":    multicolor.Sprintln,
 	"concat":     collections.Concat,
 	"formatList": utils.FormatList,
 	"id":         id,
@@ -29,6 +32,7 @@ var utilsFuncs = dictionary{
 	"nIndent":    nIndent,
 	"sIndent":    sIndent,
 	"splitLines": collections.SplitLines,
+	"stripColor": stripansi.Strip,
 	"wrap":       wrap,
 }
 
@@ -57,6 +61,7 @@ var utilsFuncsAliases = aliases{
 	"nIndent":    {"nindent"},
 	"formatList": {"autoWrap", "aWrap", "awrap"},
 	"sIndent":    {"sindent", "spaceIndent", "autoIndent", "aindent", "aIndent"},
+	"stripColor": {"stripansi", "stripANSI", "striptcolor"},
 	"wrap":       {"wrapped"},
 }
 
@@ -79,7 +84,8 @@ var utilsFuncsHelp = descriptions{
 		    Bg:   Meaning background"
 		    BgHi: Meaning high intensity background
 	`)),
-	"concat": "Returns the concatenation (without separator) of the string representation of objects.",
+	"colorln": "Same as color, but using sprintln instead of sprint to format arguments",
+	"concat":  "Returns the concatenation (without separator) of the string representation of objects.",
 	"formatList": strings.TrimSpace(collections.UnIndent(`
 		Return a list of strings by applying the format to each element of the supplied list.
 
@@ -106,6 +112,7 @@ var utilsFuncsHelp = descriptions{
 		Valid aliases for autoIndent are: aIndent, aindent.
 	`)),
 	"splitLines": "Returns a list of strings from the supplied object with newline as the separator.",
+	"stripColor": "Remove all ANSI colors & attributes from a string.",
 	"wrap":       "Wraps the rendered arguments within width.",
 }
 
@@ -130,7 +137,7 @@ func center(width interface{}, args ...interface{}) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("width must be integer")
 	}
-	return collections.CenterString(utils.FormatMessage(args...), w), nil
+	return collections.CenterString(multicolor.FormatMessage(args...), w), nil
 }
 
 func wrap(width interface{}, args ...interface{}) (string, error) {
@@ -138,7 +145,7 @@ func wrap(width interface{}, args ...interface{}) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("width must be integer")
 	}
-	return collections.WrapString(utils.FormatMessage(args...), w), nil
+	return collections.WrapString(multicolor.FormatMessage(args...), w), nil
 }
 
 func indent(space int, args ...interface{}) string {

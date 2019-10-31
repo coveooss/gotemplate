@@ -17,6 +17,7 @@ import (
 	"github.com/coveooss/gotemplate/v3/utils"
 	"github.com/coveooss/gotemplate/v3/yaml"
 	"github.com/coveooss/multilogger"
+	multicolor "github.com/coveooss/multilogger/color"
 	"github.com/coveooss/multilogger/errors"
 	"github.com/coveord/kingpin/v2"
 	"github.com/fatih/color"
@@ -352,8 +353,8 @@ func main() {
 }
 
 var (
-	print     = utils.ColorPrint
-	printf    = utils.ColorPrintf
-	println   = utils.ColorPrintln
-	errPrintf = utils.ColorErrorPrintf
+	print     = multicolor.Print
+	printf    = multicolor.Printf
+	println   = multicolor.Println
+	errPrintf = multicolor.ErrorPrintf
 )
