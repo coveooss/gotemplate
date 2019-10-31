@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/reutils"
 	"github.com/fatih/color"
 )
 
@@ -34,7 +34,7 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 		}
 	}
 
-	matches, _ := utils.MultiMatch(match, repl.re)
+	matches, _ := reutils.MultiMatch(match, repl.re)
 	tp := matches["type"]
 	id := matches["id"]
 	expr := matches["expr"]

@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/gotemplate/v3/errors"
 	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/errors"
 	"github.com/fatih/color"
 )
 
@@ -102,14 +102,14 @@ func (t Template) processTemplate(template, sourceFolder, targetFolder string, h
 	mode := must(os.Stat(template)).(os.FileInfo).Mode()
 	if !isTemplate && !t.options[Overwrite] {
 		newName := template + ".original"
-		InternalLog.Debugf("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
+		InternalLog.Infof("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
 		must(os.Rename(template, template+".original"))
 	}
 
 	if sourceFolder != targetFolder {
 		must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
-	InternalLog.Debug("Writing file", utils.Relative(t.folder, resultFile))
+	InternalLog.Info("Writing file", utils.Relative(t.folder, resultFile))
 
 	if utils.IsShebangScript(result) {
 		mode = 0755
@@ -196,7 +196,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 			return revertReplacements(th.Code), false, nil
 		}
 
-		InternalLog.Debug("GoTemplate processing of ", th.Filename)
+		InternalLog.Info("GoTemplate processing of ", th.Filename)
 
 		if !t.options[AcceptNoValue] {
 			// We replace any pre-existing no value to avoid false error detection
@@ -239,7 +239,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		newTemplate, err = newTemplate.Parse(th.Code)
 	}()
 	if err != nil {
-		InternalLog.Infof("%s(%d): Parsing error %v", th.Filename, th.Try, err)
+		InternalLog.Debugf("%s(%d): Parsing error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}
 
@@ -249,7 +249,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 		workingContext = collections.AsDictionary(workingContext).Clone()
 	}
 	if err = newTemplate.Execute(&out, workingContext); err != nil {
-		InternalLog.Infof("%s(%d): Execution error %v", th.Filename, th.Try, err)
+		InternalLog.Debugf("%s(%d): Execution error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}
 	result = revertReplacements(t.substitute(out.String()))

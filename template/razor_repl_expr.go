@@ -6,8 +6,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/reutils"
 	"github.com/fatih/color"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -40,14 +41,16 @@ func expressionParserSkipError(repl replacement, match string) string {
 }
 
 func expressionParserInternal(repl replacement, match string, skipError, internal bool) (result string, err error) {
-	matches, _ := utils.MultiMatch(match, repl.re)
+	matches, _ := reutils.MultiMatch(match, repl.re)
 	var expr, expression string
 	if expression = matches["expr"]; expression != "" {
-		defer func() {
-			if result != match {
-				InternalLog.Trace("Resulting expression =", result)
-			}
-		}()
+		if InternalLog.IsLevelEnabled(logrus.TraceLevel) {
+			defer func() {
+				if result != match {
+					InternalLog.Trace("Resulting expression =", result)
+				}
+			}()
+		}
 
 		// We first protect strings declared in the expression
 		protected, includedStrings := String(expression).Protect()
@@ -80,7 +83,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 			sep, slicer, limit2 = ":", "slice", true
 		}
 		values := strings.Split(indexExpr, sep)
-		if limit2 && len(values) > 2 {
+		if !debugMode && limit2 && len(values) > 2 {
 			InternalLog.Errorf("Only one : character is allowed in slice expression: %s", match)
 		}
 		for i := range values {
@@ -123,8 +126,8 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 				return result, nil
 			}
 		}
-		if err != nil {
-			InternalLog.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
+		if !debugMode && err != nil {
+			InternalLog.Trace(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
 		}
 		if skipError {
 			return match, err

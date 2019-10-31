@@ -15,13 +15,12 @@ import (
 	"github.com/coveooss/gotemplate/v3/json"
 	"github.com/coveooss/multilogger"
 	"github.com/sergi/go-diff/diffmatchpatch"
-	"github.com/sirupsen/logrus"
 )
 
 func TestTemplate_applyRazor(t *testing.T) {
 	t.Parallel()
 	dmp := diffmatchpatch.New()
-	templateLog = multilogger.New(logrus.WarnLevel, multilogger.DisabledLevel, "", "gotemplate")
+	TemplateLog = multilogger.New("test")
 	template := MustNewTemplate("../docs_tests", nil, "", nil)
 	files, err := doublestar.Glob(filepath.Join(template.folder, "**/*.md"))
 	if err != nil {

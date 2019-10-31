@@ -3,11 +3,11 @@ package template
 import (
 	"fmt"
 
-	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/reutils"
 )
 
 func autoWrap(repl replacement, match string) string {
-	matches, _ := utils.MultiMatch(match, repl.re)
+	matches, _ := reutils.MultiMatch(match, repl.re)
 	before := String(matches["before"])
 	context := String(matches["context"])
 	context, strings := context.Protect()

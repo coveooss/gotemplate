@@ -8,7 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/Masterminds/sprig/v3"
-	"github.com/coveooss/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 )
 
 var must = errors.Must
