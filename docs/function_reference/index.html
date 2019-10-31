@@ -36,7 +36,7 @@
 </code></pre><p>Aliases: YAML, fromYaml, fromYAML</p><p>Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.</p><h2 id=data-manipulation>Data Manipulation</h2><h3 id=string>String</h3><pre><code class=language-go>func String(value interface{}) String
 </code></pre><p>Returns a String class object that allows invoking standard string operations as method.</p><h3 id=append>append</h3><pre><code class=language-go>func append(list interface{}, elements ...interface{}) IGenericList, error
 </code></pre><p>Aliases: push</p><p>Append new items to an existing list, creating a new list.</p><h3 id=array>array</h3><pre><code class=language-go>func array(value interface{}) interface{}
-</code></pre><p>Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value).</p><h3 id=bool>bool</h3><pre><code class=language-go>func bool(str string) bool, error
+</code></pre><p>Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value).</p><h3 id=bool>bool</h3><pre><code class=language-go>func bool(str string) bool
 </code></pre><p>Converts the <code>string</code> into boolean value (<code>string</code> must be <code>True</code>, <code>true</code>, <code>TRUE</code>, <code>1</code> or <code>False</code>, <code>false</code>, <code>FALSE</code>, <code>0</code>)</p><h3 id=char>char</h3><pre><code class=language-go>func char(value interface{}) interface{}, error
 </code></pre><p>Returns the character corresponging to the supplied integer value</p><h3 id=contains>contains</h3><pre><code class=language-go>func contains(list interface{}, elements ...interface{}) bool, error
 </code></pre><p>Aliases: has</p><p>Test to see if a list has a particular elements.</p><h3 id=content>content</h3><pre><code class=language-go>func content(keymap interface{}) interface{}, error
@@ -94,15 +94,15 @@
 </code></pre><h3 id=values>values</h3><pre><code class=language-go>func values(arg1 IDictionary) IGenericList
 </code></pre><h3 id=without>without</h3><pre><code class=language-go>func without(list interface{}, elements ...interface{}) IGenericList, error
 </code></pre><p>Filters items out of a list.</p><h2 id=logging>Logging</h2><h3 id=critical>critical</h3><pre><code class=language-go>func critical(args ...interface{}) string
-</code></pre><p>Aliases: criticalf</p><p>Logs a message using CRITICAL as log level (0).</p><h3 id=debug>debug</h3><pre><code class=language-go>func debug(args ...interface{}) string
+</code></pre><p>Aliases: criticalf</p><p>Deprecated: Use error instead. Logs a message using ERROR log level (2).</p><h3 id=debug>debug</h3><pre><code class=language-go>func debug(args ...interface{}) string
 </code></pre><p>Aliases: debugf</p><p>Logs a message using DEBUG as log level (5).</p><h3 id=error>error</h3><pre><code class=language-go>func error(args ...interface{}) string
-</code></pre><p>Aliases: errorf</p><p>Logs a message using ERROR as log level (1).</p><h3 id=fatal>fatal</h3><pre><code class=language-go>func fatal(args ...interface{}) string
-</code></pre><p>Aliases: fatalf</p><p>Equivalents to critical followed by a call to os.Exit(1).</p><h3 id=info>info</h3><pre><code class=language-go>func info(args ...interface{}) string
+</code></pre><p>Aliases: errorf</p><p>Logs a message using ERROR as log level (2).</p><h3 id=fatal>fatal</h3><pre><code class=language-go>func fatal(args ...interface{}) string
+</code></pre><p>Aliases: fatalf</p><p>Logs a message using FATAL as log level (1) followed by a call to os.Exit(1).</p><h3 id=info>info</h3><pre><code class=language-go>func info(args ...interface{}) string
 </code></pre><p>Aliases: infof</p><p>Logs a message using INFO as log level (4).</p><h3 id=notice>notice</h3><pre><code class=language-go>func notice(args ...interface{}) string
-</code></pre><p>Aliases: noticef</p><p>Logs a message using NOTICE as log level (3).</p><h3 id=panic>panic</h3><pre><code class=language-go>func panic(args ...interface{}) string
-</code></pre><p>Aliases: panicf</p><p>Equivalents to critical followed by a call to panic.</p><h3 id=trace>trace</h3><pre><code class=language-go>func trace(args ...interface{}) string
-</code></pre><h3 id=warning>warning</h3><pre><code class=language-go>func warning(args ...interface{}) string
-</code></pre><p>Aliases: warn, warnf, warningf</p><p>Logs a message using WARNING as log level (2).</p><h2 id=mathematic-bit-operations>Mathematic Bit Operations</h2><h3 id=band>band</h3><pre><code class=language-go>func band(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
+</code></pre><p>Aliases: noticef</p><p>Deprecated: Use info instead. Logs a message using INFO log level (4).</p><h3 id=panic>panic</h3><pre><code class=language-go>func panic(args ...interface{}) string
+</code></pre><p>Aliases: panicf</p><p>Logs a message using PANIC as log level (0) followed by a call to panic.</p><h3 id=trace>trace</h3><pre><code class=language-go>func trace(args ...interface{}) string
+</code></pre><p>Aliases: tracef</p><p>Logs a message using TRACE as log level (6).</p><h3 id=warning>warning</h3><pre><code class=language-go>func warning(args ...interface{}) string
+</code></pre><p>Aliases: warn, warnf, warningf</p><p>Logs a message using WARNING as log level (3).</p><h2 id=mathematic-bit-operations>Mathematic Bit Operations</h2><h3 id=band>band</h3><pre><code class=language-go>func band(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
 </code></pre><p>Aliases: bitwiseAND</p><h3 id=bclear>bclear</h3><pre><code class=language-go>func bclear(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
 </code></pre><p>Aliases: bitwiseClear</p><h3 id=bor>bor</h3><pre><code class=language-go>func bor(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error
 </code></pre><p>Aliases: bitwiseOR</p><h3 id=bxor>bxor</h3><pre><code class=language-go>func bxor(arg1 interface{}, arg2 interface{}, args ...interface{}) interface{}, error

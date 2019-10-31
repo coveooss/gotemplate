@@ -15,10 +15,12 @@ Flags:
   -L, --internal-log-level=level  
                                  Set the internal logging level. Accepted values: disabled, panic, fatal, error, warning, info, debug, trace or set
                                  _GOTEMPLATE_INTERNAL_LOG_LEVEL (alias: --ill, --ll, --log-level)
-      --internal-log-file-path=path  
+  -F, --internal-log-file-path=path  
                                  Set a file where verbose logs should be written or set _GOTEMPLATE_INTERNAL_LOG_FILE_PATH (alias: --ilfp)
+      --template-log-file-level=level  
+                                 Set the template logging level for the verbose logs file or set _GOTEMPLATE_TEMPLATE_LOG_FILE_LEVEL (alias: --tlfl)
       --internal-log-file-level=level  
-                                 Set the log level for the verbose logs file or set _GOTEMPLATE_INTERNAL_LOG_FILE_LEVEL (alias: --ilfl)
+                                 Set the internal logging level for the verbose logs file or set _GOTEMPLATE_INTERNAL_LOG_FILE_LEVEL (alias: --ilfl)
       --base                     Turn off all addons (they could then be enabled explicitly) or set _GOTEMPLATE_BASE
       --razor                    Razor Addon (ON by default) or set _GOTEMPLATE_RAZOR (off: --no-razor)
       --extension                Extension Addon (ON by default) or set _GOTEMPLATE_EXTENSION (alias: --ext) (off: --next, --no-ext, --no-extension)
