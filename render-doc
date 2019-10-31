@@ -17,37 +17,43 @@ weight: 1
 COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> $DOC_FOLDER/CLI_Usage.md
 
 # Generate detailed function info
-echo '---
-bookToC: true
----' > $DOC_FOLDER/function_reference.md
 ./gotemplate --no-extension '
-@completeExamples()
-@foreach ($category := categories())
-@-// We have to make a trick here by adding {{ "" }} otherwise, the entire line will be considered as a comment
-## {{ "" }}@($category.Name)
+@-
+---
+bookToC: true
+---
+# Functions reference
+<!-- markdownlint-disable MD033 --->
+
+@-completeExamples()
+@-foreach ($category := categories())
+    @<-print("\n## ", regexReplaceAll(`(?P<name>.*), (?P<url>http://.*)`, $category.Name, `[${name}](${url})`))
     @-foreach ($func := $category.Functions())
         @{func} := function($func)
         @-if (!$func.IsAlias)
-            @<;@print("### ", $func.Name)
-            @<;```go
-            @<;func @{func.Signature}
-            @<;```
+            @<println("\n###", $func.Name)
+            @<print("```go")
+            @<println("func", $func.Signature)
+            @-print("```")
             @-if ($func.Aliases)
-                @<;Aliases: @join(", ", $func.Aliases)
-                @<;
+                @<print("\nAliases: ", join(", ", $func.Aliases))
             @-endif
             @-if ($func.Description)
-                @<;@(String($func.Description).Lines.Join("\n// "))
+                @<print("\n<pre>")
+                @<String($func.Description).Replace("<", "&lt;")
+                @<;</pre>
+            @-else
+                @-warning($func.Name, "does not have description")
             @-endif
             @-if ($func.HasExamples)
-                @<;```go
-                @--{func.Examples}
-                @<;```
+                @<print("\n```go")
+                @-replace("\t", "    ", $func.Examples)
+                @<print("```")
             @-endif
         @-endif
     @-end foreach
-@-end foreach
-' >> $DOC_FOLDER/function_reference.md
+@--end foreach
+' > $DOC_FOLDER/function_reference.md
 
 # Add basics section
 mkdir -p $DOC_FOLDER/basic_features

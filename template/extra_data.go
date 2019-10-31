@@ -211,6 +211,7 @@ var dataFuncsHelp = descriptions{
 	"union":          "Returns a list that is the union of the list and all arguments (removing duplicates).",
 	"unique":         "Generates a list with all of the duplicates removed.",
 	"unset":          "Removes an element from a dictionary.",
+	"values":         "Returns the list of values contained in a map.",
 	"without":        "Filters items out of a list.",
 	"xml":            "Converts the supplied xml string into data structure (Go spec). If context is omitted, default context is used.",
 	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",

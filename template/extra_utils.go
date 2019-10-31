@@ -75,7 +75,7 @@ var utilsFuncsHelp = descriptions{
 
 		Color can be prefixed by:
 		    Fg:   Meaning foreground (Fg is assumed if not specified)
-		    FgHi: Meaning high intensity forground
+		    FgHi: Meaning high intensity forgeround
 		    Bg:   Meaning background"
 		    BgHi: Meaning high intensity background
 	`)),
@@ -96,7 +96,7 @@ var utilsFuncsHelp = descriptions{
 	"joinLines": "Merge the supplied objects into a newline separated string.",
 	"lorem":     "Returns a random string. Valid types are be word, words, sentence, para, paragraph, host, email, url.",
 	"mergeList": "Return a single list containing all elements from the lists supplied.",
-	"nindent":   "Work as indent but add a newline before.",
+	"nIndent":   "Work as indent but add a newline before.",
 	"repeat":    "Returns an array with the item repeated n times.",
 	"sIndent": strings.TrimSpace(collections.UnIndent(`
 		Indents the elements using the provided spacer.

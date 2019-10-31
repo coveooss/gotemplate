@@ -58,6 +58,7 @@ const expressionKey = "[expr]"
 var expressions = [][]interface{}{
 	// Literals
 	{"Protect email", `(\W|^)[\w.!#$%&'*+/=?^_{|}~-]+@[\w-]{1,61}(?:\.[\w-]{1,61})+`, "", replacementFunc(protectEmail)},
+	{"", `\${`, literalReplacement},
 	{"", `@@`, literalAt},
 	{"", `@{{`, literalStart},
 	{"", "(?s)`+.*?`+", "", replacementFunc(protectMultiLineStrings)},
@@ -124,6 +125,7 @@ var expressions = [][]interface{}{
 	// Restoring literals
 	{"", `}}\\\.`, "}}."},
 	{"", literalAt, "@"},
+	{"", literalReplacement, "${"},
 	{"", fmt.Sprintf(`\x60%s(?P<num>\d+)\x60`, protectString), "", replacementFunc(protectMultiLineStrings)},
 }
 

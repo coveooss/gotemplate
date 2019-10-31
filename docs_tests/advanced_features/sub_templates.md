@@ -3,7 +3,8 @@
 ## Defining templates
 
 ### Razor
-```
+
+```go
 @-define("razorTemplate")
   This is a template with a variable here: @.var1  
   For each item in var2:  
@@ -14,7 +15,8 @@
 ```
 
 ### Gotemplate
-```
+
+```go
 {{- define "goTemplate" }}
   This is a template with a variable here: {{ get . "var1" }}
   For each item in var2:
@@ -26,7 +28,7 @@
 
 ## Using templates
 
-```
+```go
   @values := data(`{"var1": "Test", "var2": ["Test1", "Test2"]}`)
 ```
 
@@ -36,7 +38,7 @@
 
 ### Result
 
-```
+```go
   This is a template with a variable here: Test
   For each item in var2:
     Print it: Test1

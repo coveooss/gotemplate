@@ -22,6 +22,27 @@
         "unsplit",
         "uuid",
         "uuidv",
-        "warnf"
+        "warnf",
+        "symlinks",
+        "Sprintf",
+        "butexpression",
+        "cbrt",
+        "codecov",
+        "logb",
+        "lshift",
+        "nnet",
+        "prepend",
+        "rshift",
+        "sincos",
+        "camelcase",
+        "trunc",
+        "atoi",
+        "modf",
+        "lgamma",
+        "nospace",
+        "snakecase"
+    ],
+    "cSpell.words": [
+        "markdownlint"
     ]
 }
