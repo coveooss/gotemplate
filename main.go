@@ -54,11 +54,14 @@ func runGotemplate() (exitCode int) {
 	kingpin.CommandLine = app
 
 	var (
-		colorIsSet       bool
-		colorEnabled     = app.Flag("color", "Force rendering of colors event if output is redirected").IsSetByUser(&colorIsSet).Bool()
-		getVersion       = app.Flag("version", "Get the current version of gotemplate").Short('v').NoEnvar().Bool()
-		templateLogLevel = app.Flag("template-log-level", "Set the template logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Default(logrus.InfoLevel).PlaceHolder("level").String()
-		internalLogLevel = app.Flag("internal-log-level", "Set the internal logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Default(logrus.WarnLevel).PlaceHolder("level").Short('L').Alias("log-level").String()
+		colorIsSet           bool
+		colorEnabled         = app.Flag("color", "Force rendering of colors event if output is redirected").IsSetByUser(&colorIsSet).Bool()
+		getVersion           = app.Flag("version", "Get the current version of gotemplate").Short('v').NoEnvar().Bool()
+		templateLogLevel     = app.Flag("template-log-level", "Set the template logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Default(logrus.InfoLevel).PlaceHolder("level").String()
+		internalLogLevel     = app.Flag("internal-log-level", "Set the internal logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Default(logrus.WarnLevel).PlaceHolder("level").Short('L').Alias("log-level").String()
+		logFilePath          = app.Flag("internal-log-file-path", "Set a file where verbose logs should be written").PlaceHolder("path").Short('F').String()
+		templateLogFileLevel = app.Flag("template-log-file-level", "Set the template logging level for the verbose logs file").Default(logrus.TraceLevel).PlaceHolder("level").String()
+		internalLogFileLevel = app.Flag("internal-log-file-level", "Set the internal logging level for the verbose logs file").Default(logrus.DebugLevel).PlaceHolder("level").String()
 
 		run                 = app.Command("run", "").Default()
 		delimiters          = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma)").Alias("del").PlaceHolder("{{,}},@").String()
@@ -191,6 +194,10 @@ func runGotemplate() (exitCode int) {
 	}
 	if err := template.InternalLog.SetHookLevel("", *internalLogLevel); err != nil {
 		errors.Printf("Unable to set logging level for internal logs: %v", err)
+	}
+	if path := *logFilePath; path != "" {
+		template.TemplateLog.AddFile(path, *templateLogFileLevel)
+		template.InternalLog.AddFile(path, *internalLogFileLevel)
 	}
 
 	if *targetFolder == "" {

@@ -36,9 +36,9 @@ var loggingFuncs = dictionary{
 	},
 	"critical": func(args ...interface{}) string {
 		criticalWarning.Do(func() {
-			InternalLog.Warning("Please note that critical is deprecated, use panic instead.")
+			InternalLog.Warning("Please note that critical is deprecated, use error instead.")
 		})
-		return logBase(TemplateLog.Fatal, args...)
+		return logBase(TemplateLog.Error, args...)
 	},
 }
 
@@ -68,7 +68,7 @@ var loggingFuncsHelp = descriptions{
 	"trace":   "Logs a message using TRACE as log level (6).",
 
 	// Deprecated
-	"critical": "Deprecated: Use panic instead. Logs a message using PANIC log level (0).",
+	"critical": "Deprecated: Use error instead. Logs a message using ERROR log level (2).",
 	"notice":   "Deprecated: Use info instead. Logs a message using INFO log level (4).",
 }
 
