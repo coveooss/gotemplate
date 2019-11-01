@@ -12,6 +12,7 @@ import (
 
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/utils"
+	multicolor "github.com/coveooss/multilogger/color"
 )
 
 // String is an alias to collections.String
@@ -65,12 +66,12 @@ var (
 	toStrings      = collections.ToStrings
 	acceptNoValue  = String(os.Getenv(EnvAcceptNoValue)).ParseBool()
 	strictError    = String(os.Getenv(EnvStrictErrorCheck)).ParseBool()
-	Print          = utils.ColorPrint
-	Printf         = utils.ColorPrintf
-	Println        = utils.ColorPrintln
-	ErrPrintf      = utils.ColorErrorPrintf
-	ErrPrintln     = utils.ColorErrorPrintln
-	ErrPrint       = utils.ColorErrorPrint
+	Print          = multicolor.Print
+	Printf         = multicolor.Printf
+	Println        = multicolor.Println
+	ErrPrintf      = multicolor.ErrorPrintf
+	ErrPrintln     = multicolor.ErrorPrintln
+	ErrPrint       = multicolor.ErrorPrint
 )
 
 // IsRazor determines if the supplied code appears to have Razor code (using default delimiters).

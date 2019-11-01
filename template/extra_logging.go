@@ -3,8 +3,8 @@ package template
 import (
 	"sync"
 
-	"github.com/coveooss/gotemplate/v3/utils"
 	"github.com/coveooss/multilogger"
+	multicolor "github.com/coveooss/multilogger/color"
 )
 
 const (
@@ -80,6 +80,6 @@ func (t *Template) addLoggingFuncs() {
 }
 
 func logBase(f func(...interface{}), args ...interface{}) string {
-	f(utils.FormatMessage(args...))
+	f(multicolor.FormatMessage(args...))
 	return ""
 }

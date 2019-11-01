@@ -83,7 +83,7 @@ var sprigFuncRef = map[string]struct {
 	"hello": {group: sprigGen, description: "Simple hello by Sprig"},
 
 	// Date functions
-	"date":           {group: sprigDate, description: "The date function formats a dat (https://golang.org/pkg/time/#Time.Format).", arguments: []string{"fmt", "date"}},
+	"date":           {group: sprigDate, description: "The date function formats a date [format](https://golang.org/pkg/time/#Time.Format).", arguments: []string{"fmt", "date"}},
 	"now":            {group: sprigDate, description: "The current date/time. Use this in conjunction with other date functions."},
 	"htmlDate":       {group: sprigDate, description: "The htmlDate function formates a date for inserting into an HTML date picker input field.", arguments: []string{"date"}},
 	"htmlDateInZone": {group: sprigDate, description: "Same as htmlDate, but with a timezone.", arguments: []string{"date", "zone"}},

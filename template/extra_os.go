@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path"
 	"time"
 
 	"github.com/coveooss/gotemplate/v3/collections"
@@ -28,6 +29,7 @@ var osFuncs = dictionary{
 	"isFile":       isFile,
 	"isReadable":   isReadable,
 	"isWriteable":  isWriteable,
+	"joinPath":     path.Join,
 	"lastMod":      lastMod,
 	"lookPath":     lookPath,
 	"mode":         fileMode,
@@ -81,6 +83,7 @@ var osFuncsHelp = descriptions{
 	"isFile":       "Determines if the file is a file (i.e. not a directory).",
 	"isReadable":   "Determines if the file is readable by the current user.",
 	"isWriteable":  "Determines if the file is writeable by the current user.",
+	"joinPath":     "Joins any number of path elements into a single path, adding a separating slash if necessary. The result is Cleaned; in particular all empty strings are ignored.",
 	"lastMod":      "Returns the last modification time of the file.",
 	"lookPath":     "Returns the location of the specified executable (returns empty string if not found).",
 	"mode":         "Returns the file mode.",
@@ -185,6 +188,12 @@ func diff(text1, text2 interface{}) interface{} {
 }
 
 func saveToFile(filename string, object interface{}) (string, error) {
+	folder := path.Dir(filename)
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		if err = os.Mkdir(folder, 0777); err != nil {
+			return "", err
+		}
+	}
 	return "", ioutil.WriteFile(filename, []byte(fmt.Sprint(object)), 0644)
 }
 
