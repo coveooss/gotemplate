@@ -74,7 +74,7 @@ func TestMarshalHCLVars(t *testing.T) {
 		{"Boolean", args{true, noIndent}, "true"},
 		{"String", args{"Hello world", noIndent}, `"Hello world"`},
 		{"String with newline", args{"Hello\nworld\n", noIndent}, `"Hello\nworld\n"`},
-		{"String with newline (pretty)", args{"Hello\n\"world\"\n", indent}, "<<-EOF\nHello\n\"world\"\nEOF"},
+		{"String with newline (pretty)", args{"Hello\n\"world\"\n", indent}, "<<HCLVALUE\nHello\n\"world\"\nHCLVALUE"},
 		{"Null value", args{nil, noIndent}, "null"},
 		{"Null struct", args{testNilPtr, noIndent}, "null"},
 		{"List of integer", args{[]int{0, 1, 2, 3}, noIndent}, "[0,1,2,3]"},
@@ -153,6 +153,22 @@ func TestUnmarshalStrict(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMultilineString(t *testing.T) {
+	multilineString := hclDict{"variable": `Hello
+World
+Other value = <<EOF
+test
+EOF
+`}
+	marshalled, err := MarshalIndent(multilineString, "", "  ")
+	assert.Nil(t, err)
+
+	var out interface{}
+	err = Unmarshal(marshalled, &out)
+	assert.Nil(t, err)
+	assert.Equal(t, multilineString, out)
 }
 
 func TestUnmarshalHereDoc(t *testing.T) {
