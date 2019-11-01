@@ -1,0 +1,53 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Sprig Dictionary | gotemplate</title><link rel=stylesheet href=/gotemplate/book.min.89885fa0429ec73067282f26fc0c6d38cfc617a443ec4e835d47b821c52c6e92.css integrity="sha256-iYhfoEKexzBnKC8m/AxtOM/GF6RD7E6DXUe4IcUsbpI="><link rel=icon href=/gotemplate/favicon.png type=image/x-icon></head><body><input type=checkbox class=hidden id=menu-control><main class="flex container"><aside class="book-menu fixed"><nav><h2 class=book-brand><a href=https://coveooss.github.io/gotemplate/><img src=/gotemplate/gopher.png alt=Logo><span>gotemplate</span></a></h2><ul><li><a href=/gotemplate/docs/cli_usage/>CLI Usage</a></li><li class=book-section-flat><span>Basic Features</span><ul><li><a href=/gotemplate/docs/basic_features/arithmetic/>Arithmetic</a></li><li><a href=/gotemplate/docs/basic_features/assignation/>Assignation</a></li><li><a href=/gotemplate/docs/basic_features/collections/>Collections</a></li><li><a href=/gotemplate/docs/basic_features/comments/>Comments</a></li><li><a href=/gotemplate/docs/basic_features/conditionals/>Conditionals</a></li><li><a href=/gotemplate/docs/basic_features/data/>Data</a></li><li><a href=/gotemplate/docs/basic_features/literals/>Literals</a></li><li><a href=/gotemplate/docs/basic_features/os-commands/>Os Commands</a></li></ul></li><li class=book-section-flat><span>Advanced Features</span><ul><li><a href=/gotemplate/docs/advanced_features/disabling_processing/>Disabling Processing</a></li><li><a href=/gotemplate/docs/advanced_features/functions/>Functions</a></li><li><a href=/gotemplate/docs/advanced_features/mixing_razor_and_gotemplate/>Mixing Razor and Gotemplate</a></li><li><a href=/gotemplate/docs/advanced_features/pausing_processing/>Pausing Processing</a></li><li><a href=/gotemplate/docs/advanced_features/sub_templates/>Sub Templates</a></li></ul></li><li class=book-section-flat><span>Functions Reference</span><ul><li><a href=/gotemplate/docs/functions_reference/base-go-template-functions/>Base Go Template Functions</a></li><li><a href=/gotemplate/docs/functions_reference/data-conversion/>Data Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/data-manipulation/>Data Manipulation</a></li><li><a href=/gotemplate/docs/functions_reference/logging/>Logging</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-bit-operations/>Mathematic Bit Operations</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-fundamental/>Mathematic Fundamental</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-stats/>Mathematic Stats</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-trigonometry/>Mathematic Trigonometry</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-utilities/>Mathematic Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/net/>Net</a></li><li><a href=/gotemplate/docs/functions_reference/operating-systems-functions/>Operating Systems Functions</a></li><li><a href=/gotemplate/docs/functions_reference/other-utilities/>Other Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/runtime/>Runtime</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-cryptographic-security/>Sprig Cryptographic &amp; Security</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-date/>Sprig Date</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-default/>Sprig Default</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-dictionary/ class=active>Sprig Dictionary</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-encoding/>Sprig Encoding</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-file-path/>Sprig File Path</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-flow-control/>Sprig Flow Control</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-general/>Sprig General</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-list/>Sprig List</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-mathematics/>Sprig Mathematics</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-network-functions/>Sprig Network Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-os/>Sprig Os</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-reflection/>Sprig Reflection</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-regex/>Sprig Regex</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-string-slice/>Sprig String Slice</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-strings/>Sprig Strings</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-type-conversion/>Sprig Type Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-url-functions/>Sprig Url Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-version-comparison/>Sprig Version Comparison</a></li></ul></li><li class=book-section-flat><span>Objects</span><ul><li><a href=/gotemplate/docs/objects/dict_methods/>Dict Methods</a></li><li><a href=/gotemplate/docs/objects/list_methods/>List Methods</a></li><li><a href=/gotemplate/docs/objects/string_array_methods/>String Array Methods</a></li><li><a href=/gotemplate/docs/objects/string_methods/>String Methods</a></li></ul></li></ul></nav><script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script></aside><div class=book-page><header class="flex align-center justify-between book-header"><label for=menu-control><img src=/gotemplate/svg/menu.svg alt=Menu></label>
+<strong>Sprig Dictionary</strong></header><article class=markdown><h1 id=sprig-dictionary-http-masterminds-github-io-sprig-dicts-html><a href=http://masterminds.github.io/sprig/dicts.html>Sprig Dictionary</a></h1><h2 id=deepcopy>deepCopy</h2><pre><code class=language-go>func deepCopy(arg1 interface{}) interface{}
+</code></pre><pre>
+Takes a value and makes a deep copy of the value.
+</pre><h2 id=dictsprig>dictSprig</h2><pre><code class=language-go>func dictSprig(args ...interface{}) map[string]interface{}
+</code></pre><p>Aliases: dict</p><pre>
+Create a dictionary.
+</pre><h2 id=getsprig>getSprig</h2><pre><code class=language-go>func getSprig(dict map[string]interface{}, key string) interface{}
+</code></pre><p>Aliases: get</p><pre>
+Given a map and a key, get the value from the map.
+</pre><h2 id=haskeysprig>hasKeySprig</h2><pre><code class=language-go>func hasKeySprig(dict map[string]interface{}, key string) bool
+</code></pre><p>Aliases: hasKey</p><pre>
+Returns 'true' if the given dict contains the given key.
+</pre><h2 id=keyssprig>keysSprig</h2><pre><code class=language-go>func keysSprig(args ...map[string]interface{}) []string
+</code></pre><p>Aliases: keys</p><pre>
+Returns a list of all of the keys in one or more dict types.
+</pre><h2 id=listsprig>listSprig</h2><pre><code class=language-go>func listSprig(args ...interface{}) []interface{}
+</code></pre><p>Aliases: list, tuple, tupleSprig</p><pre>
+Create a list of elements.
+</pre><h2 id=mergeoverwrite>mergeOverwrite</h2><pre><code class=language-go>func mergeOverwrite(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
+</code></pre><pre>
+Merge two or more dictionaries into one, giving precedence from **right to left**, effectively overwriting values in the dest dictionary.
+</pre><h2 id=mergesprig>mergeSprig</h2><pre><code class=language-go>func mergeSprig(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}
+</code></pre><p>Aliases: merge</p><pre>
+Merge two or more dictionaries into one, giving precedence to the dest dictionary.
+</pre><h2 id=mustdeepcopy>mustDeepCopy</h2><pre><code class=language-go>func mustDeepCopy(arg1 interface{}) interface{}, error
+</code></pre><pre>
+Takes a value and makes a deep copy of the value.
+</pre><h2 id=mustmerge>mustMerge</h2><pre><code class=language-go>func mustMerge(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}, error
+</code></pre><p>Aliases: merge</p><pre>
+Merge two or more dictionaries into one, giving precedence to the dest dictionary.
+</pre><h2 id=mustmergeoverwrite>mustMergeOverwrite</h2><pre><code class=language-go>func mustMergeOverwrite(arg1 map[string]interface{}, args ...map[string]interface{}) interface{}, error
+</code></pre><pre>
+Merge two or more dictionaries into one, giving precedence from **right to left**, effectively overwriting values in the dest dictionary.
+</pre><h2 id=omitsprig>omitSprig</h2><pre><code class=language-go>func omitSprig(arg1 map[string]interface{}, args ...string) map[string]interface{}
+</code></pre><p>Aliases: omit</p><pre>
+Is similar to 'pick', except it returns a new `dict` with all the keys that _do not_ match the given keys.
+</pre><h2 id=picksprig>pickSprig</h2><pre><code class=language-go>func pickSprig(arg1 map[string]interface{}, args ...string) map[string]interface{}
+</code></pre><p>Aliases: pick</p><pre>
+Selects just the given keys out of a dictionary, creating a new `dict`.
+</pre><h2 id=plucksprig>pluckSprig</h2><pre><code class=language-go>func pluckSprig(name string, dicts ...map[string]interface{}) []interface{}
+</code></pre><p>Aliases: pluck</p><pre>
+Makes it possible to give one key and multiple maps, and get a list of all of the matches.
+</pre><h2 id=setsprig>setSprig</h2><pre><code class=language-go>func setSprig(dict map[string]interface{}, key string, value interface{}) map[string]interface{}
+</code></pre><p>Aliases: set</p><pre>
+Add a new key/value pair to a dictionary.
+</pre><h2 id=unsetsprig>unsetSprig</h2><pre><code class=language-go>func unsetSprig(dict map[string]interface{}, key string) map[string]interface{}
+</code></pre><p>Aliases: unset</p><pre>
+Given a map and a key, delete the key from the map.
+</pre><h2 id=valuessprig>valuesSprig</h2><pre><code class=language-go>func valuesSprig(arg1 map[string]interface{}) []interface{}
+</code></pre><p>Aliases: values</p><pre>
+Is similar to 'keys', except it returns a new 'list' with all the values of the source 'dict' (only one dictionary is supported).
+</pre></article></div></main></body></html>

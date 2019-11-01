@@ -1,0 +1,123 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Mathematic Fundamental | gotemplate</title><link rel=stylesheet href=/gotemplate/book.min.89885fa0429ec73067282f26fc0c6d38cfc617a443ec4e835d47b821c52c6e92.css integrity="sha256-iYhfoEKexzBnKC8m/AxtOM/GF6RD7E6DXUe4IcUsbpI="><link rel=icon href=/gotemplate/favicon.png type=image/x-icon></head><body><input type=checkbox class=hidden id=menu-control><main class="flex container"><aside class="book-menu fixed"><nav><h2 class=book-brand><a href=https://coveooss.github.io/gotemplate/><img src=/gotemplate/gopher.png alt=Logo><span>gotemplate</span></a></h2><ul><li><a href=/gotemplate/docs/cli_usage/>CLI Usage</a></li><li class=book-section-flat><span>Basic Features</span><ul><li><a href=/gotemplate/docs/basic_features/arithmetic/>Arithmetic</a></li><li><a href=/gotemplate/docs/basic_features/assignation/>Assignation</a></li><li><a href=/gotemplate/docs/basic_features/collections/>Collections</a></li><li><a href=/gotemplate/docs/basic_features/comments/>Comments</a></li><li><a href=/gotemplate/docs/basic_features/conditionals/>Conditionals</a></li><li><a href=/gotemplate/docs/basic_features/data/>Data</a></li><li><a href=/gotemplate/docs/basic_features/literals/>Literals</a></li><li><a href=/gotemplate/docs/basic_features/os-commands/>Os Commands</a></li></ul></li><li class=book-section-flat><span>Advanced Features</span><ul><li><a href=/gotemplate/docs/advanced_features/disabling_processing/>Disabling Processing</a></li><li><a href=/gotemplate/docs/advanced_features/functions/>Functions</a></li><li><a href=/gotemplate/docs/advanced_features/mixing_razor_and_gotemplate/>Mixing Razor and Gotemplate</a></li><li><a href=/gotemplate/docs/advanced_features/pausing_processing/>Pausing Processing</a></li><li><a href=/gotemplate/docs/advanced_features/sub_templates/>Sub Templates</a></li></ul></li><li class=book-section-flat><span>Functions Reference</span><ul><li><a href=/gotemplate/docs/functions_reference/base-go-template-functions/>Base Go Template Functions</a></li><li><a href=/gotemplate/docs/functions_reference/data-conversion/>Data Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/data-manipulation/>Data Manipulation</a></li><li><a href=/gotemplate/docs/functions_reference/logging/>Logging</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-bit-operations/>Mathematic Bit Operations</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-fundamental/ class=active>Mathematic Fundamental</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-stats/>Mathematic Stats</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-trigonometry/>Mathematic Trigonometry</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-utilities/>Mathematic Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/net/>Net</a></li><li><a href=/gotemplate/docs/functions_reference/operating-systems-functions/>Operating Systems Functions</a></li><li><a href=/gotemplate/docs/functions_reference/other-utilities/>Other Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/runtime/>Runtime</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-cryptographic-security/>Sprig Cryptographic &amp; Security</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-date/>Sprig Date</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-default/>Sprig Default</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-dictionary/>Sprig Dictionary</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-encoding/>Sprig Encoding</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-file-path/>Sprig File Path</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-flow-control/>Sprig Flow Control</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-general/>Sprig General</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-list/>Sprig List</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-mathematics/>Sprig Mathematics</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-network-functions/>Sprig Network Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-os/>Sprig Os</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-reflection/>Sprig Reflection</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-regex/>Sprig Regex</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-string-slice/>Sprig String Slice</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-strings/>Sprig Strings</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-type-conversion/>Sprig Type Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-url-functions/>Sprig Url Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-version-comparison/>Sprig Version Comparison</a></li></ul></li><li class=book-section-flat><span>Objects</span><ul><li><a href=/gotemplate/docs/objects/dict_methods/>Dict Methods</a></li><li><a href=/gotemplate/docs/objects/list_methods/>List Methods</a></li><li><a href=/gotemplate/docs/objects/string_array_methods/>String Array Methods</a></li><li><a href=/gotemplate/docs/objects/string_methods/>String Methods</a></li></ul></li></ul></nav><script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script></aside><div class=book-page><header class="flex align-center justify-between book-header"><label for=menu-control><img src=/gotemplate/svg/menu.svg alt=Menu></label>
+<strong>Mathematic Fundamental</strong></header><article class=markdown><h1 id=mathematic-fundamental>Mathematic Fundamental</h1><h2 id=add>add</h2><pre><code class=language-go>func add(arg1 interface{}, args ...interface{}) interface{}, error
+</code></pre><p>Aliases: sum</p><pre>
+Returns the result of the addition of all arguments.
+</pre><h2 id=cbrt>cbrt</h2><pre><code class=language-go>func cbrt(x interface{}) interface{}, error
+</code></pre><pre>
+Returns the cube root of x.
+Special cases are:
+    cbrt(±0) = ±0
+    cbrt(±Inf) = ±Inf
+    cbrt(NaN) = NaN
+</pre><h2 id=ceil>ceil</h2><pre><code class=language-go>func ceil(x interface{}) interface{}, error
+</code></pre><p>Aliases: roundUp, roundup</p><pre>
+Returns the least integer value greater than or equal to x.
+Special cases are:
+    ceil(±0) = ±0
+    ceil(±Inf) = ±Inf
+    ceil(NaN) = NaN
+</pre><h2 id=dim>dim</h2><pre><code class=language-go>func dim(x interface{}, y interface{}) interface{}, error
+</code></pre><pre>
+Returns the maximum of x-y or 0.
+Special cases are:
+    dim(+Inf, +Inf) = NaN
+    dim(-Inf, -Inf) = NaN
+    dim(x, NaN) = dim(NaN, x) = NaN
+</pre><h2 id=div>div</h2><pre><code class=language-go>func div(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><p>Aliases: divide, quotient</p><pre>
+Returns the result of the division of the two arguments.
+</pre><h2 id=exp>exp</h2><pre><code class=language-go>func exp(x interface{}) interface{}, error
+</code></pre><p>Aliases: exponent</p><pre>
+Returns e**x, the base-e exponential of x.
+Special cases are:
+    exp(+Inf) = +Inf
+    exp(NaN) = NaN
+Very large values overflow to 0 or +Inf. Very small values underflow to 1.
+</pre><h2 id=exp2>exp2</h2><pre><code class=language-go>func exp2(x interface{}) interface{}, error
+</code></pre><p>Aliases: exponent2</p><pre>
+Returns 2**x, the base-2 exponential of x.
+Special cases are the same as exp.
+</pre><h2 id=expm1>expm1</h2><pre><code class=language-go>func expm1(x interface{}) interface{}, error
+</code></pre><pre>
+Returns e**x - 1, the base-e exponential of x minus 1. It is more
+accurate than exp(x) - 1 when x is near zero.
+Special cases are:
+    expm1(+Inf) = +Inf
+    expm1(-Inf) = -1
+    expm1(NaN) = NaN
+Very large values overflow to -1 or +Inf
+</pre><h2 id=floor>floor</h2><pre><code class=language-go>func floor(x interface{}) interface{}, error
+</code></pre><p>Aliases: roundDown, rounddown, int, integer</p><pre>
+Returns the greatest integer value less than or equal to x.
+Special cases are:
+    floor(±0) = ±0
+    floor(±Inf) = ±Inf
+    floor(NaN) = NaN
+</pre><h2 id=mod>mod</h2><pre><code class=language-go>func mod(x interface{}, y interface{}) interface{}, error
+</code></pre><p>Aliases: modulo</p><pre>
+Returns the floating-point remainder of x/y. The magnitude of the result is less than y and its sign agrees with that of x.
+Special cases are:
+    mod(±Inf, y) = NaN
+    mod(NaN, y) = NaN
+    mod(x, 0) = NaN
+    mod(x, ±Inf) = x
+    mod(x, NaN) = NaN
+</pre><h2 id=modf>modf</h2><pre><code class=language-go>func modf(f interface{}) interface{}, error
+</code></pre><pre>
+Returns integer and fractional floating-point numbers that sum to f. Both values have the same sign as f.
+Special cases are:
+    modf(±Inf) = ±Inf, NaN
+    modf(NaN) = NaN, NaN
+</pre><h2 id=mul>mul</h2><pre><code class=language-go>func mul(arg1 interface{}, args ...interface{}) interface{}, error
+</code></pre><p>Aliases: multiply, prod, product</p><pre>
+Returns the result of the multiplication of all arguments.
+</pre><h2 id=pow>pow</h2><pre><code class=language-go>func pow(x interface{}, y interface{}) interface{}, error
+</code></pre><p>Aliases: power</p><pre>
+Returns x**y, the base-x exponential of y.
+Special cases are (in order):
+    pow(x, ±0) = 1 for any x
+    pow(1, y) = 1 for any y
+    pow(x, 1) = x for any x
+    pow(NaN, y) = NaN
+    pow(x, NaN) = NaN
+    pow(±0, y) = ±Inf for y an odd integer &lt; 0
+    pow(±0, -Inf) = +Inf
+    pow(±0, +Inf) = +0
+    pow(±0, y) = +Inf for finite y &lt; 0 and not an odd integer
+    pow(±0, y) = ±0 for y an odd integer > 0
+    pow(±0, y) = +0 for finite y > 0 and not an odd integer
+    pow(-1, ±Inf) = 1
+    pow(x, +Inf) = +Inf for |x| > 1
+    pow(x, -Inf) = +0 for |x| > 1
+    pow(x, +Inf) = +0 for |x| &lt; 1
+    pow(x, -Inf) = +Inf for |x| &lt; 1
+    pow(+Inf, y) = +Inf for y > 0
+    pow(+Inf, y) = +0 for y &lt; 0
+    pow(-Inf, y) = Pow(-0, -y)
+    pow(x, y) = NaN for finite x &lt; 0 and finite non-integer y
+</pre><h2 id=pow10>pow10</h2><pre><code class=language-go>func pow10(n interface{}) interface{}, error
+</code></pre><p>Aliases: power10</p><pre>
+Returns 10**n, the base-10 exponential of n.
+Special cases are:
+    pow10(n) =0 for n &lt; -323
+    pow10(n) = +Inf for n > 308
+</pre><h2 id=rem>rem</h2><pre><code class=language-go>func rem(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><p>Aliases: remainder</p><pre>
+Returns the IEEE 754 floating-point remainder of x/y.
+Special cases are:
+    rem(±Inf, y) = NaN
+    rem(NaN, y) = NaN
+    rem(x, 0) = NaN
+    rem(x, ±Inf) = x
+    rem(x, NaN) = NaN
+</pre><h2 id=sub>sub</h2><pre><code class=language-go>func sub(arg1 interface{}, arg2 interface{}) interface{}, error
+</code></pre><p>Aliases: subtract</p><pre>
+Returns the result of the substraction of the two arguments.
+</pre><h2 id=trunc>trunc</h2><pre><code class=language-go>func trunc(x interface{}) interface{}, error
+</code></pre><p>Aliases: truncate</p><pre>
+Returns the integer value of x.
+Special cases are:
+    trunc(±0) = ±0
+    trunc(±Inf) = ±Inf
+    trunc(NaN) = NaN
+</pre></article></div></main></body></html>

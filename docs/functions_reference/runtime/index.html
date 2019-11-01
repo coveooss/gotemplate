@@ -1,0 +1,87 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Runtime | gotemplate</title><link rel=stylesheet href=/gotemplate/book.min.89885fa0429ec73067282f26fc0c6d38cfc617a443ec4e835d47b821c52c6e92.css integrity="sha256-iYhfoEKexzBnKC8m/AxtOM/GF6RD7E6DXUe4IcUsbpI="><link rel=icon href=/gotemplate/favicon.png type=image/x-icon></head><body><input type=checkbox class=hidden id=menu-control><main class="flex container"><aside class="book-menu fixed"><nav><h2 class=book-brand><a href=https://coveooss.github.io/gotemplate/><img src=/gotemplate/gopher.png alt=Logo><span>gotemplate</span></a></h2><ul><li><a href=/gotemplate/docs/cli_usage/>CLI Usage</a></li><li class=book-section-flat><span>Basic Features</span><ul><li><a href=/gotemplate/docs/basic_features/arithmetic/>Arithmetic</a></li><li><a href=/gotemplate/docs/basic_features/assignation/>Assignation</a></li><li><a href=/gotemplate/docs/basic_features/collections/>Collections</a></li><li><a href=/gotemplate/docs/basic_features/comments/>Comments</a></li><li><a href=/gotemplate/docs/basic_features/conditionals/>Conditionals</a></li><li><a href=/gotemplate/docs/basic_features/data/>Data</a></li><li><a href=/gotemplate/docs/basic_features/literals/>Literals</a></li><li><a href=/gotemplate/docs/basic_features/os-commands/>Os Commands</a></li></ul></li><li class=book-section-flat><span>Advanced Features</span><ul><li><a href=/gotemplate/docs/advanced_features/disabling_processing/>Disabling Processing</a></li><li><a href=/gotemplate/docs/advanced_features/functions/>Functions</a></li><li><a href=/gotemplate/docs/advanced_features/mixing_razor_and_gotemplate/>Mixing Razor and Gotemplate</a></li><li><a href=/gotemplate/docs/advanced_features/pausing_processing/>Pausing Processing</a></li><li><a href=/gotemplate/docs/advanced_features/sub_templates/>Sub Templates</a></li></ul></li><li class=book-section-flat><span>Functions Reference</span><ul><li><a href=/gotemplate/docs/functions_reference/base-go-template-functions/>Base Go Template Functions</a></li><li><a href=/gotemplate/docs/functions_reference/data-conversion/>Data Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/data-manipulation/>Data Manipulation</a></li><li><a href=/gotemplate/docs/functions_reference/logging/>Logging</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-bit-operations/>Mathematic Bit Operations</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-fundamental/>Mathematic Fundamental</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-stats/>Mathematic Stats</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-trigonometry/>Mathematic Trigonometry</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-utilities/>Mathematic Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/net/>Net</a></li><li><a href=/gotemplate/docs/functions_reference/operating-systems-functions/>Operating Systems Functions</a></li><li><a href=/gotemplate/docs/functions_reference/other-utilities/>Other Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/runtime/ class=active>Runtime</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-cryptographic-security/>Sprig Cryptographic &amp; Security</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-date/>Sprig Date</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-default/>Sprig Default</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-dictionary/>Sprig Dictionary</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-encoding/>Sprig Encoding</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-file-path/>Sprig File Path</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-flow-control/>Sprig Flow Control</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-general/>Sprig General</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-list/>Sprig List</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-mathematics/>Sprig Mathematics</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-network-functions/>Sprig Network Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-os/>Sprig Os</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-reflection/>Sprig Reflection</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-regex/>Sprig Regex</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-string-slice/>Sprig String Slice</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-strings/>Sprig Strings</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-type-conversion/>Sprig Type Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-url-functions/>Sprig Url Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-version-comparison/>Sprig Version Comparison</a></li></ul></li><li class=book-section-flat><span>Objects</span><ul><li><a href=/gotemplate/docs/objects/dict_methods/>Dict Methods</a></li><li><a href=/gotemplate/docs/objects/list_methods/>List Methods</a></li><li><a href=/gotemplate/docs/objects/string_array_methods/>String Array Methods</a></li><li><a href=/gotemplate/docs/objects/string_methods/>String Methods</a></li></ul></li></ul></nav><script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script></aside><div class=book-page><header class="flex align-center justify-between book-header"><label for=menu-control><img src=/gotemplate/svg/menu.svg alt=Menu></label>
+<strong>Runtime</strong></header><article class=markdown><h1 id=runtime>Runtime</h1><h2 id=alias>alias</h2><pre><code class=language-go>func alias(name string, function string, source interface{}, args ...interface{}) string, error
+</code></pre><pre>
+Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.
+</pre><h2 id=aliases>aliases</h2><pre><code class=language-go>func aliases() []string
+</code></pre><pre>
+Returns the list of all functions that are simply an alias of another function.
+</pre><h2 id=allfunctions>allFunctions</h2><pre><code class=language-go>func allFunctions() []string
+</code></pre><pre>
+Returns the list of all available functions.
+</pre><h2 id=assert>assert</h2><pre><code class=language-go>func assert(test interface{}, message ...interface{}) string, error
+</code></pre><p>Aliases: assertion</p><pre>
+Raises a formated error if the test condition is false.
+</pre><h2 id=assertwarning>assertWarning</h2><pre><code class=language-go>func assertWarning(test interface{}, message ...interface{}) string
+</code></pre><p>Aliases: assertw</p><pre>
+Issues a formated warning if the test condition is false.
+</pre><h2 id=categories>categories</h2><pre><code class=language-go>func categories() []template.FuncCategory
+</code></pre><pre>
+Returns all functions group by categories.
+
+The returned value has the following properties:
+    Name        string
+    Functions    []string
+</pre><h2 id=completeexamples>completeExamples</h2><pre><code class=language-go>func completeExamples() string
+</code></pre><pre>
+Complete the examples that are not fully generated.
+</pre><h2 id=current>current</h2><pre><code class=language-go>func current() string
+</code></pre><pre>
+Returns the current folder (like pwd, but returns the folder of the currently running folder).
+</pre><h2 id=ellipsis>ellipsis</h2><pre><code class=language-go>func ellipsis(function string, args ...interface{}) interface{}, error
+</code></pre><pre>
+Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).
+</pre><h2 id=exec>exec</h2><pre><code class=language-go>func exec(command interface{}, args ...interface{}) interface{}, error
+</code></pre><p>Aliases: execute</p><pre>
+Returns the result of the shell command as structured data (as string if no other conversion is possible).
+</pre><h2 id=exit>exit</h2><pre><code class=language-go>func exit(exitValue int) int
+</code></pre><pre>
+Exits the current program execution.
+</pre><h2 id=func>func</h2><pre><code class=language-go>func func(name string, function string, source interface{}, config interface{}) string, error
+</code></pre><pre>
+Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.
+</pre><h2 id=function>function</h2><pre><code class=language-go>func function(name string) *template.FuncInfo
+</code></pre><pre>
+Returns the information relative to a specific function.
+
+The returned value has the following properties:
+    Name        string
+    Description string
+    Signature   string
+    Group       string
+    Aliases     []string
+    Arguments   string
+    Result      string
+</pre><h2 id=functions>functions</h2><pre><code class=language-go>func functions() []string
+</code></pre><pre>
+Returns the list of all available functions (excluding aliases).
+</pre><h2 id=getattributes>getAttributes</h2><pre><code class=language-go>func getAttributes(arg1 interface{}) string
+</code></pre><p>Aliases: attr, attributes</p><pre>
+List all attributes accessible from the supplied object.
+</pre><h2 id=getmethods>getMethods</h2><pre><code class=language-go>func getMethods(arg1 interface{}) string
+</code></pre><p>Aliases: methods</p><pre>
+List all methods signatures accessible from the supplied object.
+</pre><h2 id=getsignature>getSignature</h2><pre><code class=language-go>func getSignature(arg1 interface{}) string
+</code></pre><p>Aliases: sign, signature</p><pre>
+List all attributes and methods signatures accessible from the supplied object.
+</pre><h2 id=include>include</h2><pre><code class=language-go>func include(source interface{}, context ...interface{}) interface{}, error
+</code></pre><pre>
+Returns the result of the named template rendering (like template but it is possible to capture the output).
+</pre><h2 id=localalias>localAlias</h2><pre><code class=language-go>func localAlias(name string, function string, source interface{}, args ...interface{}) string, error
+</code></pre><pre>
+Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.
+</pre><h2 id=raise>raise</h2><pre><code class=language-go>func raise(args ...interface{}) string, error
+</code></pre><p>Aliases: raiseError</p><pre>
+Raise a formated error.
+</pre><h2 id=run>run</h2><pre><code class=language-go>func run(command interface{}, args ...interface{}) interface{}, error
+</code></pre><pre>
+Returns the result of the shell command as string.
+</pre><h2 id=substitute>substitute</h2><pre><code class=language-go>func substitute(content string) string
+</code></pre><pre>
+Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).
+</pre><h2 id=templatenames>templateNames</h2><pre><code class=language-go>func templateNames() []string
+</code></pre><pre>
+Returns the list of available templates names.
+</pre><h2 id=templates>templates</h2><pre><code class=language-go>func templates() []*template.Template
+</code></pre><pre>
+Returns the list of available templates.
+</pre></article></div></main></body></html>

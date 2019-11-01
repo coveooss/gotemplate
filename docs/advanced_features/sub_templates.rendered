@@ -3,16 +3,18 @@
 ## Defining templates
 
 ### Razor
-```
+
+```go
 ```
 
 ### Gotemplate
-```
+
+```go
 ```
 
 ## Using templates
 
-```
+```go
 ```
 
 | Razor | Gotemplate
@@ -29,7 +31,7 @@
 
 ### Result
 
-```
+```go
   This is a template with a variable here: Test
   For each item in var2:
     Print it: Test1
