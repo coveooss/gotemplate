@@ -32,7 +32,7 @@ var utilsFuncs = dictionary{
 	"nIndent":    nIndent,
 	"sIndent":    sIndent,
 	"splitLines": collections.SplitLines,
-	"stripColor": stripansi.Strip,
+	"stripColor": striptColor,
 	"wrap":       wrap,
 }
 
@@ -146,6 +146,10 @@ func wrap(width interface{}, args ...interface{}) (string, error) {
 		return "", fmt.Errorf("width must be integer")
 	}
 	return collections.WrapString(multicolor.FormatMessage(args...), w), nil
+}
+
+func striptColor(value interface{}) string {
+	return stripansi.Strip(fmt.Sprint(value))
 }
 
 func indent(space int, args ...interface{}) string {

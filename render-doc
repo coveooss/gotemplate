@@ -4,14 +4,14 @@ go build -o gotemplate
 
 CONTENT_FOLDER="docs/content"
 DOC_FOLDER="$CONTENT_FOLDER/docs"
-export COLUMNS=1024
+export COLUMNS=108
 
 rm -rf $DOC_FOLDER
 mkdir -p $DOC_FOLDER
 
 # Generate usage info
 printf -- '---\ntitle: CLI Usage\nweight: 1\n---'  > $DOC_FOLDER/CLI_Usage.md
-COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> $DOC_FOLDER/CLI_Usage.md
+./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> $DOC_FOLDER/CLI_Usage.md
 
 # Add basics section
 mkdir -p $DOC_FOLDER/basic_features
@@ -29,31 +29,45 @@ rsync -av docs_tests/ $DOC_FOLDER -r
 
 # Generate detailed function info
 ./gotemplate --no-extension --color '
+@-define("trim")
+    @{wrapped} := String(text).Replace("<", "&lt;").Wrap(95)
+    @-if (indent)
+        @{wrapped} = $wrapped.IndentN(indent).TrimSpace()
+    @-end if
+    @-{wrapped}
+@-end define
+
 @-define("GenerateCategory")
     @-print("# ", regexReplaceAll(`(?P<name>.*), (?P<url>http://.*)`, category.Name, `[${name}](${url})`))
-    @<print("<!-- markdownlint-disable MD033 --->")
+    @<print("<!-- markdownlint-disable MD033 MD024 --->")
     @-foreach ($func := category.Functions())
         @{func} := function($func)
         @-if (!$func.IsAlias)
-            @<println("\n##", $func.Name)
+            @<printf("\n## __%s__\n", $func.Name)
             @<print("```go")
             @<println("func", stripColor($func.Signature))
             @-print("```")
-            @-if ($func.Aliases)
-                @<print("\nAliases: ", join(", ", $func.Aliases))
-            @-endif
             @-if ($func.Description)
                 @<print("\n<pre>")
-                @<String($func.Description).Replace("<", "&lt;")
+                @<template("trim", dict("text", $func.Description))
                 @<;</pre>
             @-else
                 @-warning($func.Name, "does not have description")
             @-endif
-            @-if ($func.HasExamples)
-                @<print("\n```go")
-                @-replace("\t", "    ", $func.Examples)
-                @<print("```")
+            @-if ($func.Aliases)
+                @<println("\n### Aliases")
+                @<printf("- _%s_", join("_\n- _", $func.Aliases))
             @-endif
+            @-with ($func.Examples)
+                @<print("\n### Examples")
+                @-foreach ($ex := .)
+                    @<print("\n```go")
+                    @-with($ex.Razor)    @<printf("Razor:    %s", include("trim", dict("text", ., "indent", 10)));
+                    @-with($ex.Template) @<printf("Template: %s", include("trim", dict("text", ., "indent", 10)));
+                    @-with($ex.Result)   @<printf("Result:   %s", include("trim", dict("text", ., "indent", 10)));
+                    @<print("```")
+                @-end for
+            @-end with
         @-endif
     @-end foreach
 @end define

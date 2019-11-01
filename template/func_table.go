@@ -31,6 +31,20 @@ type Example struct {
 	Result   string
 }
 
+func (e Example) String() (result string) {
+	section := color.HiBlackString
+	if e.Razor != "" {
+		result += fmt.Sprintln(section("Razor:       "), String(e.Razor).IndentN(14).TrimSpace())
+	}
+	if e.Template != "" {
+		result += fmt.Sprintln(section("Go Template: "), String(e.Template).IndentN(14).TrimSpace())
+	}
+	if e.Result != "" {
+		result += fmt.Sprintln(section("Result:      "), String(e.Result).IndentN(14).TrimSpace())
+	}
+	return result
+}
+
 // Aliases returns the aliases related to the entry.
 func (fi FuncInfo) Aliases() []string { return ifUndef(&fi, fi.alias).(*FuncInfo).aliases }
 
@@ -68,33 +82,8 @@ func (fi FuncInfo) String() (result string) {
 	return result + signature
 }
 
-// HasExamples returns true if the function has defined examples
-func (fi FuncInfo) HasExamples() bool {
-	return len(fi.examples) > 0
-}
-
-// Examples returns the string representing the examples.
-func (fi FuncInfo) Examples() (result string) {
-	if len(fi.examples) == 0 {
-		return
-	}
-
-	for i, example := range fi.examples {
-		if i > 0 {
-			result += "\n"
-		}
-		if example.Razor != "" {
-			result += fmt.Sprintln(color.MagentaString("    Razor:    "), example.Razor)
-		}
-		if example.Template != "" {
-			result += fmt.Sprintln(color.MagentaString("    Template: "), example.Template)
-		}
-		if example.Result != "" {
-			result += fmt.Sprintln(color.MagentaString("    Result:   "), example.Result)
-		}
-	}
-	return color.MagentaString("\nExample:\n") + strings.TrimRight(result, "\n ")
-}
+// Examples returns the list of examples associated to the function.
+func (fi FuncInfo) Examples() []Example { return fi.examples }
 
 func (fi FuncInfo) getSignature(isMethod bool) string {
 	col := color.HiBlueString
