@@ -123,7 +123,15 @@ func runGotemplate() (exitCode int) {
 	app.GetFlag("extension").Alias("ext")
 
 	// Actually parse the arguments
-	command := kingpin.Parse()
+	command, err := kingpin.CommandLine.Parse(os.Args[1:])
+	if err != nil {
+		// There is a problem with kingpin. If there is no command, the flags associated with the default command
+		// must be specified after the templates. So, we just give it another try by injecting the default command.
+		if command, err = kingpin.CommandLine.Parse(append([]string{"run"}, os.Args[1:]...)); err != nil {
+			kingpin.Usage()
+			os.Exit(0)
+		}
+	}
 
 	// We restore back the modified arguments
 	for i := range *templates {
