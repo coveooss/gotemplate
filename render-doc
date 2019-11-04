@@ -49,7 +49,7 @@ rsync -av docs_tests/ $DOC_FOLDER -r
 @-define("GenerateCategory")
     @{re} := reCompile(`(?P<name>.*), (?P<url>http://.*)`)
     @-println("---\nbookToC: 2\nweight: 2\n---")
-    @-print("# ", re.ReplaceAllString(category.Name, `[${name}](${url})`))
+    @-print("# ", $re.ReplaceAllString(category.Name, `[${name}](${url})`))
     @<print("<!-- markdownlint-disable MD033 MD024 --->")
     @-foreach ($func := category.Functions())
         @{func} = function($func)
