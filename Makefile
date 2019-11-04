@@ -18,11 +18,13 @@ doc:
 # Starts local doc Hugo server (https://gohugo.io/)
 # Before calling this you need to install Hugo
 doc-serve:
-	./render-doc serve
+	./render-doc
+	git submodule update --init
+	cd docs && hugo server
 	
 # Used to generate the final Hugo static website. Used in CI
 doc-generate:
 	./render-doc
+	git submodule update --init
 	hugo --minify --source docs
-	git submodule deinit -f docs/themes/book
 	git diff -b -w --ignore-blank-lines --exit-code

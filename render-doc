@@ -9,16 +9,6 @@ export COLUMNS=108
 rm -rf $DOC_FOLDER
 mkdir -p $DOC_FOLDER
 
-git submodule update --init
-
-echo '
-.flink {
-    display: inline-block;
-    min-width: 1.5in;
-    font-size: .75rem;
-}
-' > docs/themes/book/assets/_custom.scss
-
 # Generate usage info
 ./gotemplate '@-
 ---
@@ -133,13 +123,3 @@ printf -- '---\nbookFlatSection: true\nweight: 5\n---' > $DOC_FOLDER/objects/_in
 # Copy README as the main page
 printf -- '---\ntype: docs\n---' > $CONTENT_FOLDER/_index.md
 cat README.md >> $CONTENT_FOLDER/_index.md
-
-if [ "$1" == serve ]
-then
-    trap quit EXIT
-    function quit() {
-        # Cleanup the imported module since we changed custom CSS
-        git submodule deinit -f docs/themes/book
-    }
-    (cd docs && hugo server)
-fi
