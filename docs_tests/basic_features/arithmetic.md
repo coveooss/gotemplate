@@ -86,13 +86,13 @@
 | @bitwiseAND(222, 111);   | {{ bitwiseAND 222 111 }}    | 78     | *or bitwiseAND*
 | @@(1 &#124; 2 &#124; 4); | {{ bor (bor 1 2) 4 }}       | 7      | **Bitwise OR**
 | @bor(100, 200, 300);     | {{ bor 100 200 300 }}       | 492    | *or bor*
-| @bitwiseOR(64, 256, 4);  | {{ bitwiseOR 64 256 4 }}    | 324    | *or bitwiseOR
+| @bitwiseOR(64, 256, 4);  | {{ bitwiseOR 64 256 4 }}    | 324    | *or bitwiseOR*
 | @(1 ^ 2 ^ 4);            | {{ bxor (bxor 1 2) 4 }}     | 7      | **Bitwise XOR**
 | @bxor(100, 200, 300);    | {{ bxor 100 200 300 }}      | 384    | *or bxor*
-| @bitwiseXOR(64, 256, 4); | {{ bitwiseXOR 64 256 4 }}   | 324    | *or bitwiseXOR
+| @bitwiseXOR(64, 256, 4); | {{ bitwiseXOR 64 256 4 }}   | 324    | *or bitwiseXOR*
 | @(255 &^ 4);             | {{ bclear 255 4 }}          | -      | **Bitwise Clear**
 | @bclear(0xff, 3, 8);     | {{ bclear 0xff 3 8 }}       | -    | *or bclear*
-| @bitwiseClear(0xf, 7);   | {{ bitwiseClear 0xf 7 }}    | -    | *or bitwiseClear
+| @bitwiseClear(0xf, 7);   | {{ bitwiseClear 0xf 7 }}    | -    | *or bitwiseClear*
 
 ## Other mathematic functions
 

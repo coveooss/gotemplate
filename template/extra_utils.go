@@ -30,6 +30,7 @@ var utilsFuncs = dictionary{
 	"repeat":     repeat,
 	"indent":     indent,
 	"nIndent":    nIndent,
+	"reCompile":  regexp.Compile,
 	"sIndent":    sIndent,
 	"splitLines": collections.SplitLines,
 	"stripColor": striptColor,
@@ -104,6 +105,7 @@ var utilsFuncsHelp = descriptions{
 	"mergeList": "Return a single list containing all elements from the lists supplied.",
 	"nIndent":   "Work as indent but add a newline before.",
 	"repeat":    "Returns an array with the item repeated n times.",
+	"reCompile": "Parses a regular expression and returns Regexp object that can be used to match against text.",
 	"sIndent": strings.TrimSpace(collections.UnIndent(`
 		Indents the elements using the provided spacer.
 		

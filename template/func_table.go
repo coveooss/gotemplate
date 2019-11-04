@@ -66,6 +66,14 @@ func (fi FuncInfo) Signature() string { return fi.getSignature(false) }
 // IsAlias indicates if the current function is an alias.
 func (fi FuncInfo) IsAlias() bool { return fi.alias != nil }
 
+// RealName returns the real name of a function wether it's an alias or not.
+func (fi FuncInfo) RealName() string {
+	if fi.alias == nil {
+		return fi.name
+	}
+	return fi.alias.name
+}
+
 // String returns the presentation of the FuncInfo entry.
 func (fi FuncInfo) String() (result string) {
 	signature := fi.Signature()
@@ -139,12 +147,20 @@ func (fi FuncInfo) Result() string {
 	}
 	signature := reflect.ValueOf(fi.function).Type()
 	var outputs []string
-	for i := 0; i < signature.NumOut(); i++ {
-		r := strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "interface{}", -1)
+	for i, nb := 0, signature.NumOut(); i < nb; i++ {
+		r := fmt.Sprint(signature.Out(i))
+		if r == "error" && i == nb-1 {
+			break
+		}
+		r = strings.Replace(r, "interface {}", "interface{}", -1)
 		r = strings.Replace(r, "collections.", "", -1)
 		outputs = append(outputs, r)
 	}
-	return strings.Join(outputs, ", ")
+	if len(outputs) == 1 {
+		return outputs[0]
+
+	}
+	return fmt.Sprintf("(%s)", strings.Join(outputs, ", "))
 }
 
 type funcTableMap map[string]*FuncInfo
