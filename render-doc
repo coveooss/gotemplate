@@ -14,7 +14,8 @@ git submodule update --init
 echo '
 .flink {
     display: inline-block;
-    min-width: 2.5in;
+    min-width: 1.5in;
+    font-size: .75rem;
 }
 ' > docs/themes/book/assets/_custom.scss
 
