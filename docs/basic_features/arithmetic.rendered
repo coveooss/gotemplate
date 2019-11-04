@@ -86,13 +86,13 @@
 | 78   | 78    | 78     | *or bitwiseAND*
 | @(1 &#124; 2 &#124; 4); | 7       | 7      | **Bitwise OR**
 | 492     | 492       | 492    | *or bor*
-| 324  | 324    | 324    | *or bitwiseOR
+| 324  | 324    | 324    | *or bitwiseOR*
 | 7            | 7     | 7      | **Bitwise XOR**
 | 384    | 384      | 384    | *or bxor*
-| 324 | 324   | 324    | *or bitwiseXOR
+| 324 | 324   | 324    | *or bitwiseXOR*
 | 251             | 251          | -      | **Bitwise Clear**
 | 244     | 244       | -    | *or bclear*
-| 8   | 8    | -    | *or bitwiseClear
+| 8   | 8    | -    | *or bitwiseClear*
 
 ## Other mathematic functions
 

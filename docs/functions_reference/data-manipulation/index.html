@@ -1,138 +1,158 @@
-<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Data Manipulation | gotemplate</title><link rel=stylesheet href=/gotemplate/book.min.89885fa0429ec73067282f26fc0c6d38cfc617a443ec4e835d47b821c52c6e92.css integrity="sha256-iYhfoEKexzBnKC8m/AxtOM/GF6RD7E6DXUe4IcUsbpI="><link rel=icon href=/gotemplate/favicon.png type=image/x-icon></head><body><input type=checkbox class=hidden id=menu-control><main class="flex container"><aside class="book-menu fixed"><nav><h2 class=book-brand><a href=https://coveooss.github.io/gotemplate/><img src=/gotemplate/gopher.png alt=Logo><span>gotemplate</span></a></h2><ul><li><a href=/gotemplate/docs/cli_usage/>CLI Usage</a></li><li class=book-section-flat><span>Basic Features</span><ul><li><a href=/gotemplate/docs/basic_features/arithmetic/>Arithmetic</a></li><li><a href=/gotemplate/docs/basic_features/assignation/>Assignation</a></li><li><a href=/gotemplate/docs/basic_features/collections/>Collections</a></li><li><a href=/gotemplate/docs/basic_features/comments/>Comments</a></li><li><a href=/gotemplate/docs/basic_features/conditionals/>Conditionals</a></li><li><a href=/gotemplate/docs/basic_features/data/>Data</a></li><li><a href=/gotemplate/docs/basic_features/literals/>Literals</a></li><li><a href=/gotemplate/docs/basic_features/os-commands/>Os Commands</a></li></ul></li><li class=book-section-flat><span>Advanced Features</span><ul><li><a href=/gotemplate/docs/advanced_features/disabling_processing/>Disabling Processing</a></li><li><a href=/gotemplate/docs/advanced_features/functions/>Functions</a></li><li><a href=/gotemplate/docs/advanced_features/mixing_razor_and_gotemplate/>Mixing Razor and Gotemplate</a></li><li><a href=/gotemplate/docs/advanced_features/pausing_processing/>Pausing Processing</a></li><li><a href=/gotemplate/docs/advanced_features/sub_templates/>Sub Templates</a></li></ul></li><li class=book-section-flat><span>Functions Reference</span><ul><li><a href=/gotemplate/docs/functions_reference/base-go-template-functions/>Base Go Template Functions</a></li><li><a href=/gotemplate/docs/functions_reference/data-conversion/>Data Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/data-manipulation/ class=active>Data Manipulation</a></li><li><a href=/gotemplate/docs/functions_reference/logging/>Logging</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-bit-operations/>Mathematic Bit Operations</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-fundamental/>Mathematic Fundamental</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-stats/>Mathematic Stats</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-trigonometry/>Mathematic Trigonometry</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-utilities/>Mathematic Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/net/>Net</a></li><li><a href=/gotemplate/docs/functions_reference/operating-systems-functions/>Operating Systems Functions</a></li><li><a href=/gotemplate/docs/functions_reference/other-utilities/>Other Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/runtime/>Runtime</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-cryptographic-security/>Sprig Cryptographic &amp; Security</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-date/>Sprig Date</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-default/>Sprig Default</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-dictionary/>Sprig Dictionary</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-encoding/>Sprig Encoding</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-file-path/>Sprig File Path</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-flow-control/>Sprig Flow Control</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-general/>Sprig General</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-list/>Sprig List</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-mathematics/>Sprig Mathematics</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-network-functions/>Sprig Network Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-os/>Sprig Os</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-reflection/>Sprig Reflection</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-regex/>Sprig Regex</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-string-slice/>Sprig String Slice</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-strings/>Sprig Strings</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-type-conversion/>Sprig Type Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-url-functions/>Sprig Url Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-version-comparison/>Sprig Version Comparison</a></li></ul></li><li class=book-section-flat><span>Objects</span><ul><li><a href=/gotemplate/docs/objects/dict_methods/>Dict Methods</a></li><li><a href=/gotemplate/docs/objects/list_methods/>List Methods</a></li><li><a href=/gotemplate/docs/objects/string_array_methods/>String Array Methods</a></li><li><a href=/gotemplate/docs/objects/string_methods/>String Methods</a></li></ul></li></ul></nav><script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script></aside><div class=book-page><header class="flex align-center justify-between book-header"><label for=menu-control><img src=/gotemplate/svg/menu.svg alt=Menu></label>
-<strong>Data Manipulation</strong></header><article class=markdown><h1 id=data-manipulation>Data Manipulation</h1><h2 id=string>String</h2><pre><code class=language-go>func String(value interface{}) String
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta property=og:title content><meta property=og:description content="Data Manipulation String func String(value interface{}) String   Returns a String class object that allows invoking standard string operations as method.  append func append(list interface{}, elements ...interface{}) IGenericList   Append new items to an existing list, creating a new list.  Aliases  push  array func array(value interface{}) interface{}   Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value)."><meta property=og:type content=article><meta property=og:url content=https://coveooss.github.io/gotemplate/docs/functions_reference/data-manipulation/><title>Data Manipulation | gotemplate</title><link rel=icon href=/gotemplate/favicon.png type=image/x-icon><link rel=stylesheet href=/gotemplate/book.min.41e4212348c96ea249d400aff9e0bc6419d3e37cd23911e00664489eb2906ada.css integrity="sha256-QeQhI0jJbqJJ1ACv&#43;eC8ZBnT43zSORHgBmRInrKQato="></head><body><input type=checkbox class=hidden id=menu-control><main class="flex container"><aside class="book-menu fixed"><nav><h2 class=book-brand><a href=https://coveooss.github.io/gotemplate/><img src=/gotemplate/gopher.png alt=Logo><span>gotemplate</span></a></h2><ul><li><a href=/gotemplate/docs/cli_usage/>CLI Usage</a></li><li class=book-section-flat><span>Basic Features</span><ul><li><a href=/gotemplate/docs/basic_features/arithmetic/>Arithmetic</a></li><li><a href=/gotemplate/docs/basic_features/assignation/>Assignation</a></li><li><a href=/gotemplate/docs/basic_features/collections/>Collections</a></li><li><a href=/gotemplate/docs/basic_features/comments/>Comments</a></li><li><a href=/gotemplate/docs/basic_features/conditionals/>Conditionals</a></li><li><a href=/gotemplate/docs/basic_features/data/>Data</a></li><li><a href=/gotemplate/docs/basic_features/literals/>Literals</a></li><li><a href=/gotemplate/docs/basic_features/os-commands/>Os Commands</a></li></ul></li><li class=book-section-flat><span>Advanced Features</span><ul><li><a href=/gotemplate/docs/advanced_features/disabling_processing/>Disabling Processing</a></li><li><a href=/gotemplate/docs/advanced_features/functions/>Functions</a></li><li><a href=/gotemplate/docs/advanced_features/mixing_razor_and_gotemplate/>Mixing Razor and Gotemplate</a></li><li><a href=/gotemplate/docs/advanced_features/pausing_processing/>Pausing Processing</a></li><li><a href=/gotemplate/docs/advanced_features/sub_templates/>Sub Templates</a></li></ul></li><li class=book-section-flat><span>Functions Reference</span><ul><li><a href=/gotemplate/docs/functions_reference/all_functions/>All Functions</a></li><li><a href=/gotemplate/docs/functions_reference/base-go-template-functions/>Base Go Template Functions</a></li><li><a href=/gotemplate/docs/functions_reference/data-conversion/>Data Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/data-manipulation/ class=active>Data Manipulation</a></li><li><a href=/gotemplate/docs/functions_reference/logging/>Logging</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-bit-operations/>Mathematic Bit Operations</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-fundamental/>Mathematic Fundamental</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-stats/>Mathematic Stats</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-trigonometry/>Mathematic Trigonometry</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-utilities/>Mathematic Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/net/>Net</a></li><li><a href=/gotemplate/docs/functions_reference/operating-systems-functions/>Operating Systems Functions</a></li><li><a href=/gotemplate/docs/functions_reference/other-utilities/>Other Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/runtime/>Runtime</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-cryptographic-security/>Sprig Cryptographic &amp; Security</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-date/>Sprig Date</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-default/>Sprig Default</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-dictionary/>Sprig Dictionary</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-encoding/>Sprig Encoding</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-file-path/>Sprig File Path</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-flow-control/>Sprig Flow Control</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-general/>Sprig General</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-list/>Sprig List</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-mathematics/>Sprig Mathematics</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-network-functions/>Sprig Network Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-os/>Sprig Os</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-reflection/>Sprig Reflection</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-regex/>Sprig Regex</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-string-slice/>Sprig String Slice</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-strings/>Sprig Strings</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-type-conversion/>Sprig Type Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-url-functions/>Sprig Url Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-version-comparison/>Sprig Version Comparison</a></li></ul></li><li class=book-section-flat><span>Objects</span><ul><li><a href=/gotemplate/docs/objects/dict_methods/>Dict Methods</a></li><li><a href=/gotemplate/docs/objects/list_methods/>List Methods</a></li><li><a href=/gotemplate/docs/objects/string_array_methods/>String Array Methods</a></li><li><a href=/gotemplate/docs/objects/string_methods/>String Methods</a></li></ul></li></ul></nav><script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script></aside><div class=book-page><header class="flex align-center justify-between book-header"><label for=menu-control><img src=/gotemplate/svg/menu.svg alt=Menu></label>
+<strong>Data Manipulation</strong></header><article class=markdown><h1 id=data-manipulation>Data Manipulation</h1><h2 id=string><strong>String</strong></h2><pre><code class=language-go>func String(value interface{}) String
 </code></pre><pre>
-Returns a String class object that allows invoking standard string operations as method.
-</pre><h2 id=append>append</h2><pre><code class=language-go>func append(list interface{}, elements ...interface{}) IGenericList, error
-</code></pre><p>Aliases: push</p><pre>
+Returns a String class object that allows invoking standard string
+operations as method.
+</pre><h2 id=append><strong>append</strong></h2><pre><code class=language-go>func append(list interface{}, elements ...interface{}) IGenericList
+</code></pre><pre>
 Append new items to an existing list, creating a new list.
-</pre><h2 id=array>array</h2><pre><code class=language-go>func array(value interface{}) interface{}
+</pre><h3 id=aliases>Aliases</h3><ul><li><em>push</em></li></ul><h2 id=array><strong>array</strong></h2><pre><code class=language-go>func array(value interface{}) interface{}
 </code></pre><pre>
-Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value).
-</pre><h2 id=bool>bool</h2><pre><code class=language-go>func bool(str string) bool
+Ensures that the supplied argument is an array (if it is already an
+array/slice, there is no change, if not, the argument is replaced by
+[]interface{} with a single value).
+</pre><h2 id=bool><strong>bool</strong></h2><pre><code class=language-go>func bool(str string) bool
 </code></pre><pre>
-Converts the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)
-</pre><h2 id=char>char</h2><pre><code class=language-go>func char(value interface{}) interface{}, error
+Converts the `string` into boolean value (`string` must be `True`,
+`true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)
+</pre><h2 id=char><strong>char</strong></h2><pre><code class=language-go>func char(value interface{}) interface{}
 </code></pre><pre>
 Returns the character corresponging to the supplied integer value
-</pre><h2 id=contains>contains</h2><pre><code class=language-go>func contains(list interface{}, elements ...interface{}) bool, error
-</code></pre><p>Aliases: has</p><pre>
+</pre><h2 id=contains><strong>contains</strong></h2><pre><code class=language-go>func contains(list interface{}, elements ...interface{}) bool
+</code></pre><pre>
 Test to see if a list has a particular elements.
-</pre><h2 id=content>content</h2><pre><code class=language-go>func content(keymap interface{}) interface{}, error
+</pre><h3 id=aliases-1>Aliases</h3><ul><li><em>has</em></li></ul><h2 id=content><strong>content</strong></h2><pre><code class=language-go>func content(keymap interface{}) interface{}
 </code></pre><pre>
-Returns the content of a single element map (used to retrieve content in a declaration like `value "name" { a = 1 b = 3}`)
-</pre><h2 id=dict>dict</h2><pre><code class=language-go>func dict(args ...interface{}) IDictionary, error
-</code></pre><p>Aliases: dictionary</p><pre>
+Returns the content of a single element map.
+Used to retrieve content in a declaration like:
+    value "name" { a = 1 b = 3 }
+</pre><h2 id=dict><strong>dict</strong></h2><pre><code class=language-go>func dict(args ...interface{}) IDictionary
+</code></pre><pre>
 Returns a new dictionary from a list of pairs (key, value).
-</pre><h2 id=extract>extract</h2><pre><code class=language-go>func extract(source interface{}, indexes ...interface{}) interface{}, error
+</pre><h3 id=aliases-2>Aliases</h3><ul><li><em>dictionary</em></li></ul><h2 id=extract><strong>extract</strong></h2><pre><code class=language-go>func extract(source interface{}, indexes ...interface{}) interface{}
 </code></pre><pre>
-Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps
-</pre><h2 id=get>get</h2><pre><code class=language-go>func get(map interface{}, key interface{}, default ...interface{}) interface{}, error
+Extracts values from a slice or a map, indexes could be either
+integers for slice or strings for maps
+</pre><h2 id=get><strong>get</strong></h2><pre><code class=language-go>func get(map interface{}, key interface{}, default ...interface{})
+interface{}
 </code></pre><pre>
-Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)
-</pre><h2 id=haskey>hasKey</h2><pre><code class=language-go>func hasKey(dictionary interface{}, key interface{}) interface{}, error
+Returns the value associated with the supplied map, key and map could
+be inverted for convenience (i.e. when using piping mode)
+</pre><h2 id=haskey><strong>hasKey</strong></h2><pre><code class=language-go>func hasKey(dictionary interface{}, key interface{}) interface{}
 </code></pre><pre>
 Returns true if the dictionary contains the specified key.
-</pre><pre><code class=language-go[35m>Example:
-[0m[35m    Razor:    [0m @hasKey(dict(&quot;key&quot;, &quot;value&quot;), &quot;key&quot;)
-[35m    Template: [0m {{ hasKey (dict &quot;key&quot; &quot;value&quot;) &quot;key&quot; }}
-[35m    Result:   [0m true
-
-[35m    Razor:    [0m @hasKey(&quot;key&quot;, dict(&quot;key&quot;, &quot;value&quot;))
-[35m    Template: [0m {{ hasKey &quot;key&quot; (dict &quot;key&quot; &quot;value&quot;) }}
-[35m    Result:   [0m true
-
-[35m    Razor:    [0m @hasKey(dict(&quot;key&quot;, &quot;value&quot;), &quot;otherkey&quot;)
-[35m    Template: [0m {{ hasKey (dict &quot;key&quot; &quot;value&quot;) &quot;otherkey&quot; }}
-[35m    Result:   [0m false
-</code></pre><h2 id=initial>initial</h2><pre><code class=language-go>func initial(list interface{}) interface{}, error
+</pre><h3 id=examples>Examples</h3><pre><code class=language-go>Razor:    @hasKey(dict(&quot;key&quot;, &quot;value&quot;), &quot;key&quot;)
+Template: {{ hasKey (dict &quot;key&quot; &quot;value&quot;) &quot;key&quot; }}
+Result:   true
+</code></pre><pre><code class=language-go>Razor:    @hasKey(&quot;key&quot;, dict(&quot;key&quot;, &quot;value&quot;))
+Template: {{ hasKey &quot;key&quot; (dict &quot;key&quot; &quot;value&quot;) }}
+Result:   true
+</code></pre><pre><code class=language-go>Razor:    @hasKey(dict(&quot;key&quot;, &quot;value&quot;), &quot;otherkey&quot;)
+Template: {{ hasKey (dict &quot;key&quot; &quot;value&quot;) &quot;otherkey&quot; }}
+Result:   false
+</code></pre><h2 id=initial><strong>initial</strong></h2><pre><code class=language-go>func initial(list interface{}) interface{}
 </code></pre><pre>
 Returns but the last element.
-</pre><h2 id=intersect>intersect</h2><pre><code class=language-go>func intersect(list interface{}, elements ...interface{}) IGenericList, error
+</pre><h2 id=intersect><strong>intersect</strong></h2><pre><code class=language-go>func intersect(list interface{}, elements ...interface{}) IGenericList
 </code></pre><pre>
-Returns a list that is the intersection of the list and all arguments (removing duplicates).
-</pre><h2 id=isnil>isNil</h2><pre><code class=language-go>func isNil(arg1 interface{}) bool
-</code></pre><p>Aliases: isNull</p><pre>
+Returns a list that is the intersection of the list and all arguments
+(removing duplicates).
+</pre><h2 id=isnil><strong>isNil</strong></h2><pre><code class=language-go>func isNil(arg1 interface{}) bool
+</code></pre><pre>
 Returns true if the supplied value is nil.
-</pre><h2 id=isset>isSet</h2><pre><code class=language-go>func isSet(arg1 interface{}) bool
+</pre><h3 id=aliases-3>Aliases</h3><ul><li><em>isNull</em></li></ul><h2 id=isset><strong>isSet</strong></h2><pre><code class=language-go>func isSet(arg1 interface{}) bool
 </code></pre><pre>
 Returns true if the supplied value is not nil.
-</pre><h2 id=iszero>isZero</h2><pre><code class=language-go>func isZero(arg1 interface{}) bool
-</code></pre><p>Aliases: isEmpty</p><pre>
-Returns true if the supplied value is false, 0, nil or empty.
-</pre><h2 id=key>key</h2><pre><code class=language-go>func key(value interface{}) interface{}, error
+</pre><h2 id=iszero><strong>isZero</strong></h2><pre><code class=language-go>func isZero(arg1 interface{}) bool
 </code></pre><pre>
-Returns the key name of a single element map (used to retrieve name in a declaration like `value "name" { a = 1 b = 3}`)
-</pre><h2 id=keys>keys</h2><pre><code class=language-go>func keys(dictionary IDictionary) IGenericList
+Returns true if the supplied value is false, 0, nil or empty.
+</pre><h3 id=aliases-4>Aliases</h3><ul><li><em>isEmpty</em></li></ul><h2 id=key><strong>key</strong></h2><pre><code class=language-go>func key(value interface{}) interface{}
+</code></pre><pre>
+Returns the key name of a single element map.
+Used to retrieve name in a declaration like:
+    value "name" { a = 1 b = 3 }
+</pre><h2 id=keys><strong>keys</strong></h2><pre><code class=language-go>func keys(dictionary IDictionary) IGenericList
 </code></pre><pre>
 Returns a list of all of the keys in a dict (in alphabetical order).
-</pre><h2 id=lenc>lenc</h2><pre><code class=language-go>func lenc(str string) int
-</code></pre><p>Aliases: nbChars</p><pre>
-Returns the number of actual character in a string.
-</pre><h2 id=list>list</h2><pre><code class=language-go>func list(args ...interface{}) IGenericList
-</code></pre><p>Aliases: tuple</p><pre>
-Returns a generic list from the supplied arguments.
-</pre><h2 id=merge>merge</h2><pre><code class=language-go>func merge(destination IDictionary, sources IDictionary, args ...IDictionary) IDictionary
+</pre><h2 id=lenc><strong>lenc</strong></h2><pre><code class=language-go>func lenc(str string) int
 </code></pre><pre>
-Merges two or more dictionaries into one, giving precedence to the dest dictionary.
-</pre><h2 id=omit>omit</h2><pre><code class=language-go>func omit(dict IDictionary, keys interface{}, args ...interface{}) IDictionary
+Returns the number of actual character in a string.
+</pre><h3 id=aliases-5>Aliases</h3><ul><li><em>nbChars</em></li></ul><h2 id=list><strong>list</strong></h2><pre><code class=language-go>func list(args ...interface{}) IGenericList
+</code></pre><pre>
+Returns a generic list from the supplied arguments.
+</pre><h3 id=aliases-6>Aliases</h3><ul><li><em>tuple</em></li></ul><h2 id=merge><strong>merge</strong></h2><pre><code class=language-go>func merge(destination IDictionary, sources IDictionary, args
+...IDictionary) IDictionary
+</code></pre><pre>
+Merges two or more dictionaries into one, giving precedence to the
+dest dictionary.
+</pre><h2 id=omit><strong>omit</strong></h2><pre><code class=language-go>func omit(dict IDictionary, keys interface{}, args ...interface{})
+IDictionary
 </code></pre><pre>
 Returns a new dict with all the keys that do not match the given keys.
-</pre><h2 id=pick>pick</h2><pre><code class=language-go>func pick(dict IDictionary, keys ...interface{}) IDictionary
+</pre><h2 id=pick><strong>pick</strong></h2><pre><code class=language-go>func pick(dict IDictionary, keys ...interface{}) IDictionary
 </code></pre><pre>
 Selects just the given keys out of a dictionary, creating a new dict.
-</pre><h2 id=pickv>pickv</h2><pre><code class=language-go>func pickv(dict IDictionary, message string, keys interface{}, args ...interface{}) interface{}, error
+</pre><h2 id=pickv><strong>pickv</strong></h2><pre><code class=language-go>func pickv(dict IDictionary, message string, keys interface{}, args
+...interface{}) interface{}
 </code></pre><pre>
-Same as pick, but returns an error message if there are intruders in supplied dictionary.
-</pre><h2 id=pluck>pluck</h2><pre><code class=language-go>func pluck(key interface{}, dictionaries ...IDictionary) IGenericList
+Same as pick, but returns an error message if there are intruders in
+supplied dictionary.
+</pre><h2 id=pluck><strong>pluck</strong></h2><pre><code class=language-go>func pluck(key interface{}, dictionaries ...IDictionary) IGenericList
 </code></pre><pre>
-Extracts a list of values matching the supplied key from a list of dictionary.
-</pre><h2 id=prepend>prepend</h2><pre><code class=language-go>func prepend(list interface{}, elements ...interface{}) IGenericList, error
+Extracts a list of values matching the supplied key from a list of
+dictionary.
+</pre><h2 id=prepend><strong>prepend</strong></h2><pre><code class=language-go>func prepend(list interface{}, elements ...interface{}) IGenericList
 </code></pre><pre>
 Push elements onto the front of a list, creating a new list.
-</pre><h2 id=rest>rest</h2><pre><code class=language-go>func rest(list interface{}) interface{}, error
+</pre><h2 id=rest><strong>rest</strong></h2><pre><code class=language-go>func rest(list interface{}) interface{}
 </code></pre><pre>
 Gets the tail of the list (everything but the first item)
-</pre><h2 id=reverse>reverse</h2><pre><code class=language-go>func reverse(list interface{}) IGenericList, error
+</pre><h2 id=reverse><strong>reverse</strong></h2><pre><code class=language-go>func reverse(list interface{}) IGenericList
 </code></pre><pre>
 Produces a new list with the reversed elements of the given list.
-</pre><h2 id=safeindex>safeIndex</h2><pre><code class=language-go>func safeIndex(value interface{}, index int, default interface{}) interface{}, error
+</pre><h2 id=safeindex><strong>safeIndex</strong></h2><pre><code class=language-go>func safeIndex(value interface{}, index int, default interface{})
+interface{}
 </code></pre><pre>
-Returns the element at index position or default if index is outside bounds.
-</pre><h2 id=set>set</h2><pre><code class=language-go>func set(dict interface{}, key interface{}, value interface{}) string, error
+Returns the element at index position or default if index is outside
+bounds.
+</pre><h2 id=set><strong>set</strong></h2><pre><code class=language-go>func set(dict interface{}, key interface{}, value interface{}) string
 </code></pre><pre>
 Adds the value to the supplied map using key as identifier.
-</pre><h2 id=slice>slice</h2><pre><code class=language-go>func slice(value interface{}, args ...interface{}) interface{}, error
+</pre><h2 id=slice><strong>slice</strong></h2><pre><code class=language-go>func slice(value interface{}, args ...interface{}) interface{}
 </code></pre><pre>
-Returns a slice of the supplied object (equivalent to object[from:to]).
-</pre><h2 id=string-1>string</h2><pre><code class=language-go>func string(value interface{}) string
+Returns a slice of the supplied object (equivalent to
+object[from:to]).
+</pre><h2 id=string-1><strong>string</strong></h2><pre><code class=language-go>func string(value interface{}) string
 </code></pre><pre>
 Converts the supplied value into its string representation.
-</pre><h2 id=undef>undef</h2><pre><code class=language-go>func undef(default interface{}, values ...interface{}) interface{}
-</code></pre><p>Aliases: ifUndef</p><pre>
-Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, "" are not considered as unset).
-</pre><h2 id=union>union</h2><pre><code class=language-go>func union(list interface{}, elements ...interface{}) IGenericList, error
+</pre><h2 id=undef><strong>undef</strong></h2><pre><code class=language-go>func undef(default interface{}, values ...interface{}) interface{}
 </code></pre><pre>
-Returns a list that is the union of the list and all arguments (removing duplicates).
-</pre><h2 id=unique>unique</h2><pre><code class=language-go>func unique(list interface{}) IGenericList, error
-</code></pre><p>Aliases: uniq</p><pre>
+Returns the default value if value is not set, alias `undef` (differs
+from Sprig `default` function as empty value such as 0, false, "" are
+not considered as unset).
+</pre><h3 id=aliases-7>Aliases</h3><ul><li><em>ifUndef</em></li></ul><h2 id=union><strong>union</strong></h2><pre><code class=language-go>func union(list interface{}, elements ...interface{}) IGenericList
+</code></pre><pre>
+Returns a list that is the union of the list and all arguments
+(removing duplicates).
+</pre><h2 id=unique><strong>unique</strong></h2><pre><code class=language-go>func unique(list interface{}) IGenericList
+</code></pre><pre>
 Generates a list with all of the duplicates removed.
-</pre><h2 id=unset>unset</h2><pre><code class=language-go>func unset(dictionary interface{}, key interface{}) string, error
-</code></pre><p>Aliases: delete, remove</p><pre>
+</pre><h3 id=aliases-8>Aliases</h3><ul><li><em>uniq</em></li></ul><h2 id=unset><strong>unset</strong></h2><pre><code class=language-go>func unset(dictionary interface{}, key interface{}) string
+</code></pre><pre>
 Removes an element from a dictionary.
-</pre><pre><code class=language-go[35m>Example:
-[0m[35m    Razor:    [0m @{myDict} := dict(&quot;key&quot;, &quot;value&quot;, &quot;key2&quot;, &quot;value2&quot;, &quot;key3&quot;, &quot;value3&quot;)
-        @-unset($myDict, &quot;key&quot;)
-        @-unset(&quot;key2&quot;, $myDict)
-        @-toJson($myDict)
-[35m    Template: [0m {{- $myDict := dict &quot;key&quot; &quot;value&quot; &quot;key2&quot; &quot;value2&quot; &quot;key3&quot; &quot;value3&quot; }}
-        {{- unset $myDict &quot;key&quot; }}
-        {{- unset &quot;key2&quot; $myDict }}
-        {{- toJson $myDict }}
-[35m    Result:   [0m {&quot;key3&quot;:&quot;value3&quot;}
-</code></pre><h2 id=values>values</h2><pre><code class=language-go>func values(arg1 IDictionary) IGenericList
+</pre><h3 id=aliases-9>Aliases</h3><ul><li><em>delete</em></li><li><em>remove</em></li></ul><h3 id=examples-1>Examples</h3><pre><code class=language-go>Razor:    @{myDict} := dict(&quot;key&quot;, &quot;value&quot;, &quot;key2&quot;, &quot;value2&quot;, &quot;key3&quot;, &quot;value3&quot;)
+          @-unset($myDict, &quot;key&quot;)
+          @-unset(&quot;key2&quot;, $myDict)
+          @-toJson($myDict)
+Template: {{- $myDict := dict &quot;key&quot; &quot;value&quot; &quot;key2&quot; &quot;value2&quot; &quot;key3&quot; &quot;value3&quot; }}
+          {{- unset $myDict &quot;key&quot; }}
+          {{- unset &quot;key2&quot; $myDict }}
+          {{- toJson $myDict }}
+Result:   {&quot;key3&quot;:&quot;value3&quot;}
+</code></pre><h2 id=values><strong>values</strong></h2><pre><code class=language-go>func values(arg1 IDictionary) IGenericList
 </code></pre><pre>
 Returns the list of values contained in a map.
-</pre><h2 id=without>without</h2><pre><code class=language-go>func without(list interface{}, elements ...interface{}) IGenericList, error
+</pre><h2 id=without><strong>without</strong></h2><pre><code class=language-go>func without(list interface{}, elements ...interface{}) IGenericList
 </code></pre><pre>
 Filters items out of a list.
-</pre></article></div></main></body></html>
+</pre></article></div><aside class="book-toc levels-2 fixed"><nav id=TableOfContents><ul><li><a href=#data-manipulation>Data Manipulation</a><ul><li><a href=#string><strong>String</strong></a></li><li><a href=#append><strong>append</strong></a><ul><li><a href=#aliases>Aliases</a></li></ul></li><li><a href=#array><strong>array</strong></a></li><li><a href=#bool><strong>bool</strong></a></li><li><a href=#char><strong>char</strong></a></li><li><a href=#contains><strong>contains</strong></a><ul><li><a href=#aliases-1>Aliases</a></li></ul></li><li><a href=#content><strong>content</strong></a></li><li><a href=#dict><strong>dict</strong></a><ul><li><a href=#aliases-2>Aliases</a></li></ul></li><li><a href=#extract><strong>extract</strong></a></li><li><a href=#get><strong>get</strong></a></li><li><a href=#haskey><strong>hasKey</strong></a><ul><li><a href=#examples>Examples</a></li></ul></li><li><a href=#initial><strong>initial</strong></a></li><li><a href=#intersect><strong>intersect</strong></a></li><li><a href=#isnil><strong>isNil</strong></a><ul><li><a href=#aliases-3>Aliases</a></li></ul></li><li><a href=#isset><strong>isSet</strong></a></li><li><a href=#iszero><strong>isZero</strong></a><ul><li><a href=#aliases-4>Aliases</a></li></ul></li><li><a href=#key><strong>key</strong></a></li><li><a href=#keys><strong>keys</strong></a></li><li><a href=#lenc><strong>lenc</strong></a><ul><li><a href=#aliases-5>Aliases</a></li></ul></li><li><a href=#list><strong>list</strong></a><ul><li><a href=#aliases-6>Aliases</a></li></ul></li><li><a href=#merge><strong>merge</strong></a></li><li><a href=#omit><strong>omit</strong></a></li><li><a href=#pick><strong>pick</strong></a></li><li><a href=#pickv><strong>pickv</strong></a></li><li><a href=#pluck><strong>pluck</strong></a></li><li><a href=#prepend><strong>prepend</strong></a></li><li><a href=#rest><strong>rest</strong></a></li><li><a href=#reverse><strong>reverse</strong></a></li><li><a href=#safeindex><strong>safeIndex</strong></a></li><li><a href=#set><strong>set</strong></a></li><li><a href=#slice><strong>slice</strong></a></li><li><a href=#string-1><strong>string</strong></a></li><li><a href=#undef><strong>undef</strong></a><ul><li><a href=#aliases-7>Aliases</a></li></ul></li><li><a href=#union><strong>union</strong></a></li><li><a href=#unique><strong>unique</strong></a><ul><li><a href=#aliases-8>Aliases</a></li></ul></li><li><a href=#unset><strong>unset</strong></a><ul><li><a href=#aliases-9>Aliases</a></li><li><a href=#examples-1>Examples</a></li></ul></li><li><a href=#values><strong>values</strong></a></li><li><a href=#without><strong>without</strong></a></li></ul></li></ul></nav></aside></main></body></html>
