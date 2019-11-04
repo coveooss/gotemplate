@@ -29,9 +29,18 @@ func WrapString(s string, width int) string {
 	lines := strings.Split(s, "\n")
 	result := make([]string, 0, len(lines))
 
-	for i := range lines {
-		words := strings.Fields(strings.TrimRight(lines[i], "\t "))
-		start, length := 0, 0
+	for _, line := range lines {
+		// We must ensure that already indented text are preserved
+		length := strings.IndexFunc(line, func(r rune) bool { return !unicode.IsSpace(r) })
+		if length == -1 {
+			// There is no character in this string, we just add an empty line
+			result = append(result, "")
+			continue
+		}
+		indent := line[:length]
+
+		words := strings.Fields(strings.TrimRightFunc(line, unicode.IsSpace))
+		start := 0
 		for j := range words {
 			if length > 0 && length+len(words[j]) > width {
 				result = append(result, strings.Join(words[start:j], " "))
@@ -42,7 +51,7 @@ func WrapString(s string, width int) string {
 				length++
 			}
 		}
-		result = append(result, strings.Join(words[start:len(words)], " "))
+		result = append(result, indent+strings.Join(words[start:len(words)], " "))
 	}
 
 	return strings.Join(result, "\n")

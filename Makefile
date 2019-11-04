@@ -21,7 +21,7 @@ doc-serve:
 	./render-doc
 	git submodule update --init
 	cd docs && hugo server
-
+	
 # Used to generate the final Hugo static website. Used in CI
 doc-generate:
 	./render-doc

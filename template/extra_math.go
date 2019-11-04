@@ -2,6 +2,8 @@ package template
 
 import (
 	"math"
+
+	"github.com/coveooss/multilogger/errors"
 )
 
 const (
@@ -30,6 +32,8 @@ var mathBaseFuncs = dictionary{
 	"rem":   remainder,
 	"sub":   subtract,
 	"trunc": trunc,
+
+	"int": func(v interface{}) int { return int(errors.Must(floor(v)).(int64)) },
 }
 
 var mathStatFuncs = dictionary{
@@ -119,10 +123,11 @@ var mathFuncsAliases = aliases{
 	"div":    {"divide", "quotient"},
 	"exp":    {"exponent"},
 	"exp2":   {"exponent2"},
-	"floor":  {"roundDown", "rounddown", "int", "integer"},
+	"floor":  {"roundDown", "rounddown", "int64", "integer64"},
 	"hex":    {"hexa", "hexaDecimal"},
 	"hypot":  {"hypotenuse"},
 	"isInf":  {"isInfinity"},
+	"int":    {"integer"},
 	"j0":     {"firstBessel0"},
 	"j1":     {"firstBessel1"},
 	"jn":     {"firstBesselN"},
@@ -241,7 +246,7 @@ var mathFuncsHelp = descriptions{
 	"erfc":            "Returns the complementary error function of x.\nSpecial cases are:\n    Erfc(+Inf) = 0\nErfc(-Inf) = 2\nErfc(NaN) = NaN",
 	"exp":             "Returns e**x, the base-e exponential of x.\nSpecial cases are:\n    exp(+Inf) = +Inf\n    exp(NaN) = NaN\nVery large values overflow to 0 or +Inf. Very small values underflow to 1.",
 	"exp2":            "Returns 2**x, the base-2 exponential of x.\nSpecial cases are the same as exp.",
-	"expm1":           "Returns e**x - 1, the base-e exponential of x minus 1. It is more\naccurate than exp(x) - 1 when x is near zero.\nSpecial cases are:\n    expm1(+Inf) = +Inf\n    expm1(-Inf) = -1\n    expm1(NaN) = NaN\nVery large values overflow to -1 or +Inf",
+	"expm1":           "Returns e**x - 1, the base-e exponential of x minus 1. It is more accurate than exp(x) - 1 when x is near zero.\nSpecial cases are:\n    expm1(+Inf) = +Inf\n    expm1(-Inf) = -1\n    expm1(NaN) = NaN\nVery large values overflow to -1 or +Inf",
 	"float32bits":     "Returns the IEEE 754 binary representation of f",
 	"float32frombits": "Returns the floating point number corresponding to the\nIEEE 754 binary representation b",
 	"float64bits":     "Returns the IEEE 754 binary representation of f",
@@ -253,6 +258,7 @@ var mathFuncsHelp = descriptions{
 	"hypot":           "Returns Sqrt(p*p + q*q), taking care to avoid unnecessary overflow and underflow.\nSpecial cases are:\n    hypot(±Inf, q) = +Inf\n    hypot(p, ±Inf) = +Inf\n    hypot(NaN, q) = NaN\n    hypot(p, NaN) = NaN",
 	"ilogb":           "Returns the binary exponent of x as an integer.\nSpecial cases are:\n    ilogb(±Inf) = MaxInt32\n    ilogb(0) = MinInt32\n    ilogb(NaN) = MaxInt32",
 	"inf":             "Returns positive infinity if sign >= 0, negative infinity if sign <\n0",
+	"int":             "Returns the integer value (type int).",
 	"isInf":           "Reports whether f is an infinity, according to sign. If sign > 0, isInf reports whether f is positive infinity. If sign < 0, IsInf reports whether f is negative infinity. If sign == 0, IsInf reports whether f is either infinity",
 	"isNaN":           "Reports whether f is an IEEE 754 'not-a-number' value",
 	"j0":              "Returns the order-zero Bessel function of the first kind.\nSpecial cases are:\n    j0(±Inf) = 0\n    j0(0) = 1\n    j0(NaN) = NaN",
@@ -303,6 +309,16 @@ var mathFuncsExamples = examples{
 		{"@abs(-10)", "{{ abs -10 }}", "10"},
 	},
 	"acos": {{"@ceil(acos(0.5) / 3.1416 * 180)", "{{ ceil (mul (div (acos 0.5) 3.1416) 180) }}", "60"}},
+	"to": {
+		{Razor: "@to(10)"},
+		{Razor: "@to(10, 0)"},
+		{Razor: "@to(0, 10, 2)"},
+	},
+	"until": {
+		{Razor: "@until(10)"},
+		{Razor: "@until(10, 0)"},
+		{Razor: "@until(0, 10, 2)"},
+	},
 }
 
 func (t *Template) addMathFuncs() {

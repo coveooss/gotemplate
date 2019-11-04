@@ -173,7 +173,9 @@ func (t Template) printFunctionsDetailed(functions []string, maxLength int, alia
 	for i := range functions {
 		fi := t.functions[functions[i]]
 		if fi.description != "" {
-			Printf(color.GreenString("%s\n"), fi.description)
+			fmt.Println(fi.description)
+			text := String(fi.description).Wrap(100).Indent("// ").Lines().TrimSuffix(" ").Join("\n").String()
+			Println(color.GreenString(text))
 		}
 		Println(fi.Signature())
 
@@ -188,8 +190,11 @@ func (t Template) printFunctionsDetailed(functions []string, maxLength int, alia
 				Println(aliasFunc.Signature())
 			}
 		}
-		if len(fi.examples) > 0 {
-			Println(fi.Examples())
+		title := color.MagentaString("\nExample:")
+		for _, ex := range fi.Examples() {
+			Println(title)
+			title = ""
+			Print(toStringClass(ex).IndentN(4))
 		}
 		Println()
 	}

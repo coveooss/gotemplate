@@ -49,17 +49,9 @@ func (t *Template) addSprigFuncs() {
 			info := sprigFuncRef[key]
 			mustPrefix := "must"
 			if info.group == "" && strings.HasPrefix(key, mustPrefix) {
-				// Sprig also support functions prefixed by must or must_, so we check if we have
-				// information regarding these functions
-				if key[4] == '_' {
-					mustPrefix = "must_"
-				}
-				l := len(mustPrefix)
-				mustKey := strings.ToLower(key[l:l+1]) + key[l+1:]
-				info = sprigFuncRef[mustKey]
-				if info.group == "" {
-					info = sprigFuncRef[mustKey+"Sprig"]
-				}
+				// Sprig also support functions prefixed by must or must_, but we don't add them since the
+				// other version returning an error is enough.
+				continue
 			}
 
 			if info.group == "" {

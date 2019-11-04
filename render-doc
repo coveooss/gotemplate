@@ -4,14 +4,23 @@ go build -o gotemplate
 
 CONTENT_FOLDER="docs/content"
 DOC_FOLDER="$CONTENT_FOLDER/docs"
-export COLUMNS=1024
+export COLUMNS=108
 
 rm -rf $DOC_FOLDER
 mkdir -p $DOC_FOLDER
 
 # Generate usage info
-printf -- '---\ntitle: CLI Usage\nweight: 1\n---'  > $DOC_FOLDER/CLI_Usage.md
-COLUMNS=150 ./gotemplate '```text@<trim(exec("./gotemplate -h"))@<;```' --nv >> $DOC_FOLDER/CLI_Usage.md
+./gotemplate '@-
+---
+title: CLI Usage
+weight: 1
+---
+<!-- markdownlint-disable MD025 --->
+# CLI Usage
+
+```text
+@trim(exec("./gotemplate -h"))
+```' --nv > $DOC_FOLDER/CLI_Usage.md
 
 # Add basics section
 mkdir -p $DOC_FOLDER/basic_features
@@ -29,43 +38,79 @@ rsync -av docs_tests/ $DOC_FOLDER -r
 
 # Generate detailed function info
 ./gotemplate --no-extension --color '
+@-define("trim")
+    @{wrapped} := String(text).Replace("<", "&lt;").Wrap(69)
+    @-if (indent)
+        @{wrapped} = $wrapped.IndentN(indent).TrimSpace()
+    @-end if
+    @-{wrapped}
+@-end define
+
 @-define("GenerateCategory")
-    @-print("# ", regexReplaceAll(`(?P<name>.*), (?P<url>http://.*)`, category.Name, `[${name}](${url})`))
-    @<print("<!-- markdownlint-disable MD033 --->")
+    @{re} := reCompile(`(?P<name>.*), (?P<url>http://.*)`)
+    @-println("---\nbookToC: 2\nweight: 2\n---")
+    @-print("# ", $re.ReplaceAllString(category.Name, `[${name}](${url})`))
+    @<print("<!-- markdownlint-disable MD033 MD024 --->")
     @-foreach ($func := category.Functions())
-        @{func} := function($func)
+        @{func} = function($func)
         @-if (!$func.IsAlias)
-            @<println("\n##", $func.Name)
+            @<printf("\n## __%s__\n", $func.Name)
             @<print("```go")
-            @<println("func", stripColor($func.Signature))
+            @<println("func", include("trim", dict("text", stripColor($func.Signature))))
             @-print("```")
-            @-if ($func.Aliases)
-                @<print("\nAliases: ", join(", ", $func.Aliases))
-            @-endif
             @-if ($func.Description)
                 @<print("\n<pre>")
-                @<String($func.Description).Replace("<", "&lt;")
+                @<template("trim", dict("text", $func.Description))
                 @<;</pre>
             @-else
                 @-warning($func.Name, "does not have description")
             @-endif
-            @-if ($func.HasExamples)
-                @<print("\n```go")
-                @-replace("\t", "    ", $func.Examples)
-                @<print("```")
+            @-if ($func.Aliases)
+                @<println("\n### Aliases")
+                @<printf("- _%s_", join("_\n- _", $func.Aliases))
             @-endif
+            @-with ($func.Examples)
+                @<print("\n### Examples")
+                @-foreach ($ex := .)
+                    @<print("\n```go")
+                    @-with($ex.Razor)    @<printf("Razor:    %s", include("trim", dict("text", ., "indent", 10)));
+                    @-with($ex.Template) @<printf("Template: %s", include("trim", dict("text", ., "indent", 10)));
+                    @-with($ex.Result)   @<printf("Result:   %s", include("trim", dict("text", ., "indent", 10)));
+                    @<print("```")
+                @-end for
+            @-end with
         @-endif
     @-end foreach
 @end define
 
 @-completeExamples()
+@{re} := reCompile(`(?P<name>.*), http://.*`)
+
 @-foreach ($category := categories())
     @{content} := include("GenerateCategory", merge(dict("category", $category), $))
-    @{name} := regexReplaceAll(`(?P<name>.*), http://.*`, $category.Name, `${name}`)
+    @{name} := $re.ReplaceAllString($category.Name, `${name}`)
     @-info("Generating documentation for", $name)
     @-save(joinPath(folder, lower($name))+".md", $content)
 @--end foreach' -Vfolder=$DOC_FOLDER/functions_reference
 printf -- '---\nbookFlatSection: true\nweight: 4\n---' > $DOC_FOLDER/functions_reference/_index.md
+
+./gotemplate --no-extension '
+@-println("---\nweight: 1\n---")
+@<print("<!-- markdownlint-disable MD033 --->")
+
+@{re} := reCompile(`(?P<name>.*), http://.*`)
+@{reClean} := reCompile(`[^\w]+`)
+@<print("# All functions")
+@-foreach ($category := categories())
+    @{categoryName} := $re.ReplaceAllString($category.Name, `${name}`)
+    @<println("\n##", $categoryName)
+    @{categoryName} = $reClean.ReplaceAllString(lower($categoryName), `-`)
+    @-foreach ($func := $category.Functions())
+        @{func} = function($func)
+        @<printf(`<span class="flink"><a href="/gotemplate/docs/functions_reference/%s#%s">%s</a></span>`, $categoryName, lower($func.RealName), $func.Name)
+    @-end foreach
+@--end foreach
+' > $DOC_FOLDER/functions_reference/all_functions.md
 
 # Add structs documentation
 mkdir -p $DOC_FOLDER/objects

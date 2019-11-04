@@ -30,9 +30,10 @@ var utilsFuncs = dictionary{
 	"repeat":     repeat,
 	"indent":     indent,
 	"nIndent":    nIndent,
+	"reCompile":  regexp.Compile,
 	"sIndent":    sIndent,
 	"splitLines": collections.SplitLines,
-	"stripColor": stripansi.Strip,
+	"stripColor": striptColor,
 	"wrap":       wrap,
 }
 
@@ -104,6 +105,7 @@ var utilsFuncsHelp = descriptions{
 	"mergeList": "Return a single list containing all elements from the lists supplied.",
 	"nIndent":   "Work as indent but add a newline before.",
 	"repeat":    "Returns an array with the item repeated n times.",
+	"reCompile": "Parses a regular expression and returns Regexp object that can be used to match against text.",
 	"sIndent": strings.TrimSpace(collections.UnIndent(`
 		Indents the elements using the provided spacer.
 		
@@ -146,6 +148,10 @@ func wrap(width interface{}, args ...interface{}) (string, error) {
 		return "", fmt.Errorf("width must be integer")
 	}
 	return collections.WrapString(multicolor.FormatMessage(args...), w), nil
+}
+
+func striptColor(value interface{}) string {
+	return stripansi.Strip(fmt.Sprint(value))
 }
 
 func indent(space int, args ...interface{}) string {

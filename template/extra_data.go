@@ -164,7 +164,7 @@ var dataFuncsHelp = descriptions{
 	"bool":           "Converts the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)",
 	"char":           "Returns the character corresponging to the supplied integer value",
 	"contains":       "Test to see if a list has a particular elements.",
-	"content":        "Returns the content of a single element map (used to retrieve content in a declaration like `value \"name\" { a = 1 b = 3}`)",
+	"content":        "Returns the content of a single element map.\nUsed to retrieve content in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
 	"data":           "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.",
 	"dict":           "Returns a new dictionary from a list of pairs (key, value).",
 	"extract":        "Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps",
@@ -177,7 +177,7 @@ var dataFuncsHelp = descriptions{
 	"isSet":          "Returns true if the supplied value is not nil.",
 	"isZero":         "Returns true if the supplied value is false, 0, nil or empty.",
 	"json":           "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.",
-	"key":            "Returns the key name of a single element map (used to retrieve name in a declaration like `value \"name\" { a = 1 b = 3}`)",
+	"key":            "Returns the key name of a single element map.\nUsed to retrieve name in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
 	"keys":           "Returns a list of all of the keys in a dict (in alphabetical order).",
 	"lenc":           "Returns the number of actual character in a string.",
 	"list":           "Returns a generic list from the supplied arguments.",
@@ -224,10 +224,11 @@ var dataFuncsExamples = examples{
 		{`@hasKey(dict("key", "value"), "otherkey")`, ``, `false`},
 	},
 	"unset": {
-		{`@{myDict} := dict("key", "value", "key2", "value2", "key3", "value3")
+		{strings.TrimSpace(collections.UnIndent(`
+		@{myDict} := dict("key", "value", "key2", "value2", "key3", "value3")
 		@-unset($myDict, "key")
 		@-unset("key2", $myDict)
-		@-toJson($myDict)`, ``, `{"key3":"value3"}`},
+		@-toJson($myDict)`)), ``, `{"key3":"value3"}`},
 	},
 }
 
