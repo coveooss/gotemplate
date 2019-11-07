@@ -46,6 +46,7 @@ func (t *Template) addFuncs() {
 	add(Utils, t.addUtilsFuncs)
 	add(Net, t.addNetFuncs)
 	add(OS, t.addOSFuncs)
+	add(Git, t.addGitFuncs)
 }
 
 // Apply all regular expressions replacements to the supplied string

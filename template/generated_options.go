@@ -18,17 +18,18 @@ func _() {
 	_ = x[Utils-7]
 	_ = x[Net-8]
 	_ = x[OS-9]
-	_ = x[OptionOnByDefaultCount-10]
-	_ = x[Overwrite-11]
-	_ = x[OutputStdout-12]
-	_ = x[RenderingDisabled-13]
-	_ = x[AcceptNoValue-14]
-	_ = x[StrictErrorCheck-15]
+	_ = x[Git-10]
+	_ = x[OptionOnByDefaultCount-11]
+	_ = x[Overwrite-12]
+	_ = x[OutputStdout-13]
+	_ = x[RenderingDisabled-14]
+	_ = x[AcceptNoValue-15]
+	_ = x[StrictErrorCheck-16]
 }
 
-const _Options_name = "RazorExtensionMathSprigDataLoggingRuntimeUtilsNetOSOptionOnByDefaultCountOverwriteOutputStdoutRenderingDisabledAcceptNoValueStrictErrorCheck"
+const _Options_name = "RazorExtensionMathSprigDataLoggingRuntimeUtilsNetOSGitOptionOnByDefaultCountOverwriteOutputStdoutRenderingDisabledAcceptNoValueStrictErrorCheck"
 
-var _Options_index = [...]uint8{0, 5, 14, 18, 23, 27, 34, 41, 46, 49, 51, 73, 82, 94, 111, 124, 140}
+var _Options_index = [...]uint8{0, 5, 14, 18, 23, 27, 34, 41, 46, 49, 51, 54, 76, 85, 97, 114, 127, 143}
 
 func (i Options) String() string {
 	if i < 0 || i >= Options(len(_Options_index)-1) {
