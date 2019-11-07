@@ -2,6 +2,7 @@ package template
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -20,6 +21,7 @@ const (
 
 func TestGetCurrentBranch(t *testing.T) {
 	path, _, _ := initTestRepository(t)
+	defer os.RemoveAll(path)
 
 	result, err := currentBranch(path)
 
@@ -29,6 +31,7 @@ func TestGetCurrentBranch(t *testing.T) {
 
 func TestGetCurrentCommit(t *testing.T) {
 	path, _, commit := initTestRepository(t)
+	defer os.RemoveAll(path)
 
 	result, err := currentCommit(path)
 
@@ -38,6 +41,7 @@ func TestGetCurrentCommit(t *testing.T) {
 
 func TestOrigin(t *testing.T) {
 	path, _, _ := initTestRepository(t)
+	defer os.RemoveAll(path)
 
 	result, err := origin(path)
 
@@ -62,7 +66,7 @@ func initTestRepository(t *testing.T) (string, *git.Repository, *object.Commit) 
 	_, err = worktree.Add("example-git-file")
 	assert.NoError(t, err)
 
-	// Craete a commit
+	// Create a commit
 	commit, err := worktree.Commit("example go-git commit", &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "John Doe",
