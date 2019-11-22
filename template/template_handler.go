@@ -254,7 +254,7 @@ func (t Template) processContentInternal(originalContent, source string, origina
 	}
 	result = revertReplacements(t.substitute(out.String()))
 
-	changed = result != th.Code
+	changed = result != originalContent
 
 	if topCall && !t.options[AcceptNoValue] {
 		// Detect possible <no value> or <nil> that could be generated
