@@ -24,5 +24,5 @@ require (
 	golang.org/x/crypto v0.0.0-20191011190513-0e8c3a9068a2
 	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
-	gopkg.in/yaml.v2 v2.2.5
+	gopkg.in/yaml.v2 v2.2.7
 )
