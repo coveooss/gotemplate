@@ -10,7 +10,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/andybalholm/cascadia v1.1.0 // indirect
 	github.com/bmatcuk/doublestar v1.1.5
-	github.com/coveooss/multilogger v0.3.0
+	github.com/coveooss/multilogger v0.4.0
 	github.com/coveord/kingpin/v2 v2.3.1
 	github.com/drhodes/goLorem v0.0.0-20160418191928-ecccc744c2d9
 	github.com/fatih/color v1.7.0

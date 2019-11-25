@@ -205,8 +205,8 @@ func runGotemplate() (exitCode int) {
 		errors.Printf("Unable to set logging level for internal logs: %v", err)
 	}
 	if path := *logFilePath; path != "" {
-		template.TemplateLog.AddFile(path, *templateLogFileLevel)
-		template.InternalLog.AddFile(path, *internalLogFileLevel)
+		template.TemplateLog.AddFile(path, false, *templateLogFileLevel)
+		template.InternalLog.AddFile(path, false, *internalLogFileLevel)
 	}
 
 	if *targetFolder == "" {
