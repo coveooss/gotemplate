@@ -3,7 +3,7 @@ package implementation
 import (
 	"fmt"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 func (d baseDict) String() string {
@@ -235,6 +235,6 @@ func (dh DictHelper) delete(dict baseIDict, keys []interface{}, mustExist bool) 
 
 // Register the default implementation of dictionary helper
 var _ = func() int {
-	collections.DictionaryHelper = baseDictHelper
+	collections.SetDictionaryHelper(baseDictHelper)
 	return 0
 }()

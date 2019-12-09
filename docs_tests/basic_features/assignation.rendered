@@ -1,0 +1,72 @@
+
+# Assignation
+
+## Global variables
+
+| Razor expression                            | Go Template                                              | Note
+| ----------------                            | -----------                                              | ----
+| ``                | ``                   | Global assignation of string
+| ``                          | ``                             | Global assignation of integer
+| ``                        | ``                           | Global assignation of floating point
+| ``                        | ``                           | Global assignation of large scientific notation number
+| ``                        | ``                           | Global assignation of small scientific notation number
+| ``                          | ``                             | Global assignation of hexadecimal number
+| ``                      | ``               | Global assignation of mathematic expression
+| `` | `` | Global assignation of generic expression
+
+## Local variables
+
+| Razor expression                             | Go Template                                        | Note
+| ----------------                             | -----------                                        | ----
+| ``                | ``                 | Local assignation of string
+| ``                          | ``                           | Local assignation of integer
+| ``                        | ``                         | Local assignation of floating point
+| ``                        | ``                         | Local assignation of large scientific number
+| ``                        | ``                         | Local assignation of small scientific number
+| ``                          | ``                           | Local assignation of hexadecimal number
+| ``                      | ``               | Local assignation of mathematic expression
+| `` | `` | Local assignation of generic expression
+
+### Exception
+
+| Razor expression                                | Go Template                                        | Note
+| ----------------                                | -----------                                        | ----
+| ` "hello" "world" | upper`   | ` "hello" "world" | upper` | Using a mixup of go template expression and razor expression could lead to undesired result
+| ``     | ``   | Enclosing the whole assignation statement within {} ensures that the whole expression is assigned
+| ``    | ``   | Using that syntax give the exact same result
+
+### Assignation within expression
+
+```go
+    1
+    2
+    3
+    4
+    5
+    6
+    7
+    8
+    9
+    10
+```
+
+```go
+    0 = 2
+    1 = 4
+    2 = 6
+    3 = 8
+    4 = 10
+    5 = 12
+    6 = 14
+    7 = 16
+    8 = 18
+    9 = 20
+```
+
+```go
+    result = true
+```
+
+```go
+    value = 4
+```

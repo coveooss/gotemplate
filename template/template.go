@@ -10,9 +10,9 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/utils"
-	logging "github.com/op/go-logging"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/utils"
+	multicolor "github.com/coveooss/multilogger/color"
 )
 
 // String is an alias to collections.String
@@ -50,7 +50,13 @@ const (
 const (
 	noGoTemplate       = "no-gotemplate!"
 	noRazor            = "no-razor!"
-	explicitGoTemplate = "gotemplate!"
+	explicitGoTemplate = "force-gotemplate!"
+
+	pauseGoTemplate  = "gotemplate-pause!"
+	resumeGoTemplate = "gotemplate-resume!"
+
+	pauseRazor  = "razor-pause!"
+	resumeRazor = "razor-resume!"
 )
 
 // Common variables
@@ -60,12 +66,12 @@ var (
 	toStrings      = collections.ToStrings
 	acceptNoValue  = String(os.Getenv(EnvAcceptNoValue)).ParseBool()
 	strictError    = String(os.Getenv(EnvStrictErrorCheck)).ParseBool()
-	Print          = utils.ColorPrint
-	Printf         = utils.ColorPrintf
-	Println        = utils.ColorPrintln
-	ErrPrintf      = utils.ColorErrorPrintf
-	ErrPrintln     = utils.ColorErrorPrintln
-	ErrPrint       = utils.ColorErrorPrint
+	Print          = multicolor.Print
+	Printf         = multicolor.Printf
+	Println        = multicolor.Println
+	ErrPrintf      = multicolor.ErrorPrintf
+	ErrPrintln     = multicolor.ErrorPrintln
+	ErrPrint       = multicolor.ErrorPrint
 )
 
 // IsRazor determines if the supplied code appears to have Razor code (using default delimiters).
@@ -193,11 +199,6 @@ func (t *Template) initExtension() {
 	ext := t.GetNewContext("", false)
 	ext.options = DefaultOptions()
 
-	// We temporary set the logging level one grade lower
-	logLevel := logging.GetLevel(logger)
-	logging.SetLevel(logLevel-1, logger)
-	defer func() { logging.SetLevel(logLevel, logger) }()
-
 	var extensionfiles []string
 	if extensionFolders := strings.TrimSpace(os.Getenv(EnvExtensionPath)); extensionFolders != "" {
 		for _, path := range strings.Split(extensionFolders, string(os.PathListSeparator)) {
@@ -219,7 +220,7 @@ func (t *Template) initExtension() {
 		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
 		// We also do not ask to clone the context as we wish to let extension to be able to alter the supplied context
 		if _, _, err := ext.processContentInternal(content, file, nil, 0, false, nil); err != nil {
-			log.Error(err)
+			InternalLog.Error(err)
 		}
 	}
 

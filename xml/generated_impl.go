@@ -4,7 +4,10 @@
 
 package xml
 
-import "github.com/coveo/gotemplate/v3/collections"
+import (
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/multilogger/errors"
+)
 
 // List implementation of IGenericList for xmlList
 type List = xmlList
@@ -95,7 +98,7 @@ func (d xmlDict) GetValues() xmlIList                 { return xmlDictHelper.Get
 func (d xmlDict) Has(keys ...interface{}) bool        { return xmlDictHelper.Has(d, keys) }
 func (d xmlDict) KeysAsString() strArray              { return xmlDictHelper.KeysAsString(d) }
 func (d xmlDict) Len() int                            { return len(d) }
-func (d xmlDict) Native() interface{}                 { return collections.ToNativeRepresentation(d) }
+func (d xmlDict) Native() interface{}                 { return must(collections.MarshalGo(d)) }
 func (d xmlDict) Pop(keys ...interface{}) interface{} { return xmlDictHelper.Pop(d, keys) }
 func (d xmlDict) Set(key, v interface{}) xmlIDict     { return xmlDictHelper.Set(d, key, v) }
 func (d xmlDict) Transpose() xmlIDict                 { return xmlDictHelper.Transpose(d) }
@@ -143,4 +146,7 @@ type (
 	strArray = collections.StringArray
 )
 
-var iif = collections.IIf
+var (
+	iif  = collections.IIf
+	must = errors.Must
+)

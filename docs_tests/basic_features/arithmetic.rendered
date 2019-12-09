@@ -1,0 +1,107 @@
+# Arithmetic
+
+## Addition
+
+| Razor expression       | Go Template                 | Result | Note
+| ---------------------- | --------------------------- | -----: | ----
+| 3              | 3               | 3      | **Addition**
+| 9            | 9               | 9      | *or add*
+| 13             | 13               | 13     | *or sum*
+| 5                | 5               | 5      | Spaces are optional
+| 17        | 17               | 17     | You can insert an arbitrary number of spaces in expressions
+| 4.6        | 4.6           | 4.6    | It also works with floating point numbers
+| 10      | 10           | 10     | It is possible to supply multiple arguments to addition operation
+| 10   | 10    | 10     | this is useful on this line since there is ambiguity on where the expression finish
+
+## Subtraction
+
+| Razor expression       | Go Template                 | Result | Note
+| ---------------------- | --------------------------- | -----: | ----
+| 2              | 2               | 2      | **Subtraction**
+| 2            | 2               | 2      | *or sub*
+| 2       | 2          | 2      | *or subtract*
+
+## Negative values
+
+| Razor expression       | Go Template                 | Result | Note
+| ---------------------- | --------------------------- | -----: | ----
+| -23                | -23                   | -23    | Negative value
+| -21            | -21             | -21    | Operation with negative value
+| -13       | -13 | -13  | Operation with negative expression
+
+## Product
+
+| Razor expression       | Go Template                 | Result | Note
+| ---------------------- | --------------------------- | -----: | ----
+| 6              | 6               | 6      | **Multiplication**
+| 20            | 20               | 20     | *or mul*
+| 42       | 42          | 42     | *or multiply*
+| 72           | 72              | 42     | *or prod*
+| 110      | 110         | 110    | *or product*
+| 24      | 24           | 24     | It is possible to supply multiple arguments to multiplication operation
+| 1680   | 1680    | 1680   | or even an array
+
+## Division
+
+| Razor expression       | Go Template                 | Result | Note
+| ---------------------- | --------------------------- | -----: | ----
+| 2              | 2               | 2      | **Division**
+| 4.333333333333333             | 4.333333333333333              | 4.333333333333333 | *you can use the ÷ character instead of /*
+| 5           | 5              | 5      | *or div*
+| 2.5        | 2.5           | 2.5    | *or divide*
+| 2.2     | 2.2        | 2.2    | *or quotient*
+
+## modulo
+
+| Razor expression       | Go Template                 | Result | Note
+| ---------------------- | --------------------------- | -----: | ----
+| 1              | 1               | 1      | **Modulo**
+| 2           | 2              | 2      | *or mod*
+| 2         | 2           | 2      | *or modulo*
+
+## Power
+
+| Razor expression       | Go Template                 | Result | Note
+| ---------------------- | --------------------------- | -----: | ----
+| 64             | 64               | 64     | **Power**
+| 248832           | 248832              | 248832 | *or pow*
+| 6561          | 6561             | 6561   | *or power*
+| 1000             | 1000               | 1000   | **Power 10**
+| 100000           | 100000             | 100000 | *or power10*
+| 100000               | 100000                  | 100000 | Scientific notation (positive)
+| 0.002               | 0.002                  | 0.002  | Scientific notation (negative)
+
+## Bit operators
+
+| Razor expression         | Go Template                 | Result | Note
+| ------------------------ | --------------------------- | -----: | ----
+| 256               | 256            | 256    | **Left shift**
+| 96           | 96            | 96     | *or lshift*
+| 64        | 64         | 64     | *or leftShift*
+| 64            | 64         | 64     | **Right shift**
+| 57         | 57          | 57     | *or rshift*
+| 36      | 36       | 36     | *or rightShift*
+| 512          | 512        | 512    | **Bitwise AND**
+| 32       | 32        | 32     | *or band*
+| 78   | 78    | 78     | *or bitwiseAND*
+| @(1 &#124; 2 &#124; 4); | 7       | 7      | **Bitwise OR**
+| 492     | 492       | 492    | *or bor*
+| 324  | 324    | 324    | *or bitwiseOR*
+| 7            | 7     | 7      | **Bitwise XOR**
+| 384    | 384      | 384    | *or bxor*
+| 324 | 324   | 324    | *or bitwiseXOR*
+| 251             | 251          | -      | **Bitwise Clear**
+| 244     | 244       | -    | *or bclear*
+| 8   | 8    | -    | *or bitwiseClear*
+
+## Other mathematic functions
+
+### Special cases
+
+There are special behavior for certain operators depending of the arguments:
+
+#### String multiplication
+
+**************************************************************************************************** will result in **************************************************************************************************** which result in:
+
+****************************************************************************************************

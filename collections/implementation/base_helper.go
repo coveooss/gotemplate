@@ -3,15 +3,11 @@ package implementation
 import (
 	"fmt"
 	"reflect"
-
-	"github.com/coveo/gotemplate/v3/errors"
 )
 
 type helperBase = BaseHelper
 type helperList = ListHelper
 type helperDict = DictHelper
-
-var must = errors.Must
 
 // BaseHelper implements basic functionalities required for both IGenericList & IDictionary
 type BaseHelper struct {

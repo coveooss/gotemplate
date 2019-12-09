@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"reflect"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/collections/implementation"
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections/implementation"
+	"github.com/coveooss/multilogger/errors"
 	"github.com/hashicorp/hcl"
 )
 
@@ -54,7 +54,7 @@ var _ = func() int {
 // Unmarshal adds support to single array and struct representation
 func Unmarshal(bs []byte, out interface{}) (err error) {
 	defer func() { err = errors.Trap(err, recover()) }()
-	bs = bytes.TrimSpace(bs)
+	bs = append(bytes.TrimSpace(bs), byte('\n'))
 
 	if err = hcl.Unmarshal(bs, out); err != nil {
 		bs = append([]byte("_="), bs...)
@@ -83,24 +83,33 @@ func Load(filename string) (result interface{}, err error) {
 func Marshal(value interface{}) ([]byte, error) { return MarshalIndent(value, "", "") }
 
 // MarshalIndent serialize values to hcl format with indentation
-func MarshalIndent(value interface{}, prefix, indent string) ([]byte, error) {
-	result, err := marshalHCL(collections.ToNativeRepresentation(value), true, true, prefix, indent)
-	return []byte(result), err
+func MarshalIndent(value interface{}, prefix, indent string) (result []byte, err error) {
+	if value, err = collections.MarshalGo(value); err != nil {
+		return
+	}
+	s, err := marshalHCL(value, true, true, prefix, indent)
+	return []byte(s), err
 }
 
 // MarshalInternal serialize values to hcl format for result used in outer hcl struct
-func MarshalInternal(value interface{}) ([]byte, error) {
-	result, err := marshalHCL(collections.ToNativeRepresentation(value), false, false, "", "")
-	return []byte(result), err
+func MarshalInternal(value interface{}) (result []byte, err error) {
+	if value, err = collections.MarshalGo(value); err != nil {
+		return
+	}
+	s, err := marshalHCL(value, false, false, "", "")
+	return []byte(s), err
 }
 
 // MarshalTFVars serialize values to hcl format (without hcl map format)
 func MarshalTFVars(value interface{}) ([]byte, error) { return MarshalTFVarsIndent(value, "", "") }
 
 // MarshalTFVarsIndent serialize values to hcl format with indentation (without hcl map format)
-func MarshalTFVarsIndent(value interface{}, prefix, indent string) ([]byte, error) {
-	result, err := marshalHCL(collections.ToNativeRepresentation(value), false, true, prefix, indent)
-	return []byte(result), err
+func MarshalTFVarsIndent(value interface{}, prefix, indent string) (result []byte, err error) {
+	if value, err = collections.MarshalGo(value); err != nil {
+		return
+	}
+	s, err := marshalHCL(value, false, true, prefix, indent)
+	return []byte(s), err
 }
 
 // SingleContext converts array of 1 to single object otherwise, let the context unchanged

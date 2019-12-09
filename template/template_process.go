@@ -5,25 +5,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/utils"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-var (
-	templateExt    = []string{".gt", ".template"}
-	linePrefix     = `template: ` + p(tagLocation, p(tagFile, `.*?`)+`:`+p(tagLine, `\d+`)+`(:`+p(tagCol, `\d+`)+`)?: `)
-	reError        = regexp.MustCompile(linePrefix)
-	execPrefix     = "^" + linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
-	templateErrors = []string{
-		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"`,
-		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
-		execPrefix + p(tagErr, `.*`),
-		linePrefix + p(tagErr, `.*`),
-	}
-)
+var templateExt = []string{".gt", ".template"}
 
 func p(name, expr string) string { return fmt.Sprintf("(?P<%s>%s)", name, expr) }
 
@@ -84,9 +72,9 @@ func (t Template) printResult(source, target, result string) (err error) {
 		target = relTarget
 	}
 	if source != target {
-		log.Noticef("%s => %s", source, target)
+		InternalLog.Infof("%s => %s", source, target)
 	} else {
-		log.Notice(target)
+		InternalLog.Info(target)
 	}
 	Print(result)
 	if result != "" && terminal.IsTerminal(int(os.Stdout.Fd())) {
