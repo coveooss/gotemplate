@@ -34,6 +34,8 @@ github.com/bmatcuk/doublestar v1.1.5 h1:2bNwBOmhyFEFcoB3tGvTD5xanq+4kyOZlB8wFYbM
 github.com/bmatcuk/doublestar v1.1.5/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
 github.com/bmatcuk/doublestar v1.2.0 h1:78hES0pLRDR9cRJMQugZf11C+ZwEeGykuY4R7AZYGy0=
 github.com/bmatcuk/doublestar v1.2.0/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
+github.com/bmatcuk/doublestar v1.2.1 h1:eetYiv8DDYOZcBADY+pRvRytf3Dlz1FhnpvL2FsClBc=
+github.com/bmatcuk/doublestar v1.2.1/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
 github.com/coveooss/multilogger v0.4.0 h1:mVLeYqkw0E1sr4magefIhL41xaZ5wuZjrNh0rtUg0XU=
 github.com/coveooss/multilogger v0.4.0/go.mod h1:A2c+mJI+0nxjg7vnEMg00sQFGwHXqhHP73zYdYIbieQ=
 github.com/coveooss/multilogger v0.4.3 h1:eQ1QIB/vevI3jUJPvZuf1e6fhjprUIjfwdMGM0GXbBs=
