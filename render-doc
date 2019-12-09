@@ -117,8 +117,8 @@ mkdir -p $DOC_FOLDER/objects
 printf -- '---\nbookFlatSection: true\nweight: 5\n---' > $DOC_FOLDER/objects/_index.md
 ./gotemplate '@println("# String object\n")```go@<getMethods(String(""))@<;```' > $DOC_FOLDER/objects/string_methods.md
 ./gotemplate '@println("# StringArray object\n")```go@<getMethods(String("").Split(""))@<;```' > $DOC_FOLDER/objects/string_array_methods.md
-./gotemplate '@println("# List object\n")```go@<@getMethods(list())@<;```' > $DOC_FOLDER/objects/list_methods.md
-./gotemplate '@println("# Dictionary object\n")```go@<@getMethods(dict())@<;```' > $DOC_FOLDER/objects/dict_methods.md
+./gotemplate '@println("# List object\n")```go@<getMethods(list())@<;```' > $DOC_FOLDER/objects/list_methods.md
+./gotemplate '@println("# Dictionary object\n")```go<@getMethods(dict())@<;```' > $DOC_FOLDER/objects/dict_methods.md
 
 # Copy README as the main page
 printf -- '---\ntype: docs\n---' > $CONTENT_FOLDER/_index.md
