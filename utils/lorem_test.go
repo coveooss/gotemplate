@@ -1,25 +1,27 @@
 package utils
 
 import (
+	"math/rand"
 	"testing"
 )
 
 func TestLorem(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name    string
 		want    string
 		wantErr bool
 	}{
-		// WARNING: If you add tests, you must add them after those that are already there, otherwise, all results will be changed.
-		{"Word", "expedita", false},
-		{"1", "hac", false},
-		{"Sentence", "Laudes en sequatur aer deo vos.", false},
-		{"Url", "http://www.dicamfactis.net/integer", false},
-		{"EMail", "dicentium@montiumita.org", false},
+		{"Word", "araneae", false},
+		{"1", "araneae", false},
+		{"Sentence", "Fac vel varias vim, cor munerum traiecta.", false},
+		{"Url", "http://www.diuvi.com/curam/beata.html", false},
+		{"EMail", "ardentius@curainest.net", false},
 		{"Anything", "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			rand.Seed(0)
 			kind, _ := GetLoremKind(tt.name)
 			got, err := Lorem(kind)
 			if (err != nil) != tt.wantErr {

@@ -1,0 +1,39 @@
+# Sub Templates
+
+## Defining templates
+
+### Razor
+
+```go
+```
+
+### Gotemplate
+
+```go
+```
+
+## Using templates
+
+```go
+```
+
+| Razor | Gotemplate
+| ---   | ---
+| ```
+  This is a template with a variable here: Test  
+  For each item in var2:
+    Print it: Test1
+    Print it: Test2``` | ```
+  This is a template with a variable here: Test
+  For each item in var2:
+    Print it: Test1
+    Print it: Test2```
+
+### Result
+
+```go
+  This is a template with a variable here: Test
+  For each item in var2:
+    Print it: Test1
+    Print it: Test2
+```

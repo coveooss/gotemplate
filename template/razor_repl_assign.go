@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/reutils"
 	"github.com/fatih/color"
 )
 
@@ -19,13 +19,13 @@ func assignExpressionAcceptError(repl replacement, match string) string {
 }
 
 func assignExpressionInternal(repl replacement, match string, acceptError bool) string {
-	matches, _ := utils.MultiMatch(match, repl.re)
+	matches, _ := reutils.MultiMatch(match, repl.re)
 	tp := matches["type"]
 	id := matches["id"]
 	expr := matches["expr"]
 	assign := matches["assign"]
 	if tp == "" || id == "" || expr == "" || assign == "" {
-		log.Errorf("Invalid assign regex %s: %s, must contains type, id and expr", repl.name, repl.expr)
+		InternalLog.Errorf("Invalid assign regex %s: %s, must contains type, id and expr", repl.name, repl.expr)
 		return match
 	}
 
@@ -38,7 +38,7 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	if local {
 		if assign == "~=" {
 			if alreadyIssued[match] == 0 {
-				log.Error("~= assignment is not supported on local variables in", color.HiBlackString(match))
+				InternalLog.Error("~= assignment is not supported on local variables in", color.HiBlackString(match))
 				alreadyIssued[match]++
 			}
 			return match
@@ -53,7 +53,7 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	if tp == "$" {
 		if len(parts) < 2 {
 			if alreadyIssued[match] == 0 {
-				log.Errorf("Invalid local assignment: %s", match)
+				InternalLog.Errorf("Invalid local assignment: %s", match)
 				alreadyIssued[match]++
 			}
 			return match

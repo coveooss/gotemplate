@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/utils"
 	"github.com/fatih/color"
 )
 
@@ -51,7 +51,7 @@ func (t Template) PrintFunctions(all, long, groupByCategory bool, filters ...str
 		if groupByCategory {
 			funcInfo := t.functions[functions[i]]
 			if funcInfo.alias != nil {
-				funcInfo = *funcInfo.alias
+				funcInfo = funcInfo.alias
 			}
 			group = funcInfo.group
 		}
@@ -101,7 +101,7 @@ func (t Template) filterFunctions(all, category, detailed bool, filters ...strin
 			if !all {
 				continue
 			}
-			funcInfo = *funcInfo.alias
+			funcInfo = funcInfo.alias
 		}
 
 		if len(filters) == 0 {
@@ -151,6 +151,9 @@ func (t Template) printFunctionsShort(functions []string, maxLength int, alias b
 }
 
 func (t Template) printFunctionsDetailed(functions []string, maxLength int, alias bool) {
+	t.options[Razor] = true
+	t.completeExamples()
+
 	// We only print entries that are not alias
 	allFunc := make(map[string]int)
 	for i := range functions {
@@ -170,7 +173,9 @@ func (t Template) printFunctionsDetailed(functions []string, maxLength int, alia
 	for i := range functions {
 		fi := t.functions[functions[i]]
 		if fi.description != "" {
-			Printf(color.GreenString("%s\n"), fi.description)
+			fmt.Println(fi.description)
+			text := String(fi.description).Wrap(100).Indent("// ").Lines().TrimSuffix(" ").Join("\n").String()
+			Println(color.GreenString(text))
 		}
 		Println(fi.Signature())
 
@@ -184,6 +189,12 @@ func (t Template) printFunctionsDetailed(functions []string, maxLength int, alia
 				}
 				Println(aliasFunc.Signature())
 			}
+		}
+		title := color.MagentaString("\nExample:")
+		for _, ex := range fi.Examples() {
+			Println(title)
+			title = ""
+			Print(toStringClass(ex).IndentN(4))
 		}
 		Println()
 	}

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/op/go-logging"
+	"github.com/sirupsen/logrus"
 )
 
 // Add additional functions to the go template context
@@ -27,7 +27,7 @@ func (t *Template) applyRazor(content []byte) (result []byte, changed bool) {
 		}
 	}
 	content = []byte(strings.Replace(string(content), funcCall, "", -1))
-	log.Noticef("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
+	InternalLog.Infof("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
 	return content, true
 }
 
@@ -58,6 +58,7 @@ const expressionKey = "[expr]"
 var expressions = [][]interface{}{
 	// Literals
 	{"Protect email", `(\W|^)[\w.!#$%&'*+/=?^_{|}~-]+@[\w-]{1,61}(?:\.[\w-]{1,61})+`, "", replacementFunc(protectEmail)},
+	{"", `\${`, literalReplacement},
 	{"", `@@`, literalAt},
 	{"", `@{{`, literalStart},
 	{"", "(?s)`+.*?`+", "", replacementFunc(protectMultiLineStrings)},
@@ -121,6 +122,7 @@ var expressions = [][]interface{}{
 	// Restoring literals
 	{"", `}}\\\.`, "}}."},
 	{"", literalAt, "@"},
+	{"", literalReplacement, "${"},
 	{"", fmt.Sprintf(`\x60%s(?P<num>\d+)\x60`, protectString), "", replacementFunc(protectMultiLineStrings)},
 }
 
@@ -184,7 +186,7 @@ func (t *Template) ensureInit() {
 }
 
 func printDebugInfo(r replacement, content string) {
-	if r.name == "" || getLogLevelInternal() < logging.INFO {
+	if r.name == "" || !InternalLog.IsLevelEnabled(logrus.DebugLevel) {
 		return
 	}
 
@@ -198,7 +200,7 @@ func printDebugInfo(r replacement, content string) {
 			newContent := r.re.ReplaceAllStringFunc(found, func(match string) string {
 				return r.parser(r, match)
 			})
-			if newContent == found && getLogLevelInternal() < 6 {
+			if newContent == found && !InternalLog.IsLevelEnabled(logrus.TraceLevel) {
 				// There is no change
 				continue
 			}
@@ -211,7 +213,7 @@ func printDebugInfo(r replacement, content string) {
 		allUnique[found] = allUnique[found] + 1
 	}
 
-	if len(allUnique) == 0 && getLogLevelInternal() < 7 {
+	if len(allUnique) == 0 && !InternalLog.IsLevelEnabled(logrus.TraceLevel) {
 		return
 	}
 
@@ -225,11 +227,11 @@ func printDebugInfo(r replacement, content string) {
 		}
 		matches = append(matches, key)
 	}
-
-	log.Infof("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
+	logString := fmt.Sprintf("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
 	if len(matches) > 0 {
-		ErrPrintln()
+		logString = logString + " \n"
 	}
+	InternalLog.Debug(logString)
 }
 
 var debugMode bool

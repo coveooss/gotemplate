@@ -10,7 +10,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 )
 
 // TypeConverters is used to register the available converters

@@ -5,8 +5,8 @@
 package hcl
 
 import (
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/multilogger/errors"
 )
 
 // List implementation of IGenericList for hclList

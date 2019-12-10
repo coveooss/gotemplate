@@ -10,15 +10,18 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/errors"
-	"github.com/coveo/gotemplate/v3/hcl"
-	"github.com/coveo/gotemplate/v3/json"
-	"github.com/coveo/gotemplate/v3/template"
-	"github.com/coveo/gotemplate/v3/utils"
-	"github.com/coveo/gotemplate/v3/yaml"
-	"github.com/coveo/kingpin/v2"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/hcl"
+	"github.com/coveooss/gotemplate/v3/json"
+	"github.com/coveooss/gotemplate/v3/template"
+	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/yaml"
+	"github.com/coveooss/multilogger"
+	multicolor "github.com/coveooss/multilogger/color"
+	"github.com/coveooss/multilogger/errors"
+	"github.com/coveord/kingpin/v2"
 	"github.com/fatih/color"
+	"github.com/sirupsen/logrus"
 )
 
 // Version is initialized at build time through -ldflags "-X main.Version=<version number>"
@@ -52,9 +55,14 @@ func runGotemplate() (exitCode int) {
 	kingpin.CommandLine = app
 
 	var (
-		colorIsSet   bool
-		colorEnabled = app.Flag("color", "Force rendering of colors event if output is redirected").IsSetByUser(&colorIsSet).Bool()
-		getVersion   = app.Flag("version", "Get the current version of gotemplate").Short('v').Bool()
+		colorIsSet           bool
+		colorEnabled         = app.Flag("color", "Force rendering of colors event if output is redirected").IsSetByUser(&colorIsSet).Bool()
+		getVersion           = app.Flag("version", "Get the current version of gotemplate").Short('v').NoEnvar().Bool()
+		templateLogLevel     = app.Flag("template-log-level", "Set the template logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Default(logrus.InfoLevel).PlaceHolder("level").String()
+		internalLogLevel     = app.Flag("internal-log-level", "Set the internal logging level. Accepted values: "+multilogger.AcceptedLevelsString()).Default(logrus.WarnLevel).PlaceHolder("level").Short('L').Alias("log-level").String()
+		logFilePath          = app.Flag("internal-log-file-path", "Set a file where verbose logs should be written").PlaceHolder("path").Short('F').String()
+		templateLogFileLevel = app.Flag("template-log-file-level", "Set the template logging level for the verbose logs file").Default(logrus.TraceLevel).PlaceHolder("level").String()
+		internalLogFileLevel = app.Flag("internal-log-file-level", "Set the internal logging level for the verbose logs file").Default(logrus.DebugLevel).PlaceHolder("level").String()
 
 		run                 = app.Command("run", "").Default()
 		delimiters          = run.Flag("delimiters", "Define the default delimiters for go template (separate the left, right and razor delimiters by a comma)").Alias("del").PlaceHolder("{{,}},@").String()
@@ -77,9 +85,6 @@ func runGotemplate() (exitCode int) {
 		disableRender       = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
 		acceptNoValue       = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error").Alias("no-value").Envar(template.EnvAcceptNoValue).Bool()
 		strictError         = run.Flag("strict-error-validation", "Consider error encountered in any file as real error").Alias("strict").Envar(template.EnvStrictErrorCheck).Short('S').Bool()
-		logLevel            = run.Flag("log-level", "Set the logging level CRITICAL (0), ERROR (1), WARNING (2), NOTICE (3), INFO (4), DEBUG (5)").Short('L').Default("INFO").PlaceHolder("level").String()
-		debugLogLevel       = run.Flag("debug-log-level", "Set the debug logging level 0-9").Alias("debug-level").Default("WARNING").PlaceHolder("level").String()
-		logSimple           = run.Flag("log-simple", "Disable the extended logging, i.e. no color, no date").Bool()
 		ignoreMissingImport = run.Flag("ignore-missing-import", "Exit with code 0 even if import does not exist").Bool()
 		ignoreMissingSource = run.Flag("ignore-missing-source", "Exit with code 0 even if source does not exist").Bool()
 		ignoreMissingPaths  = run.Flag("ignore-missing-paths", "Exit with code 0 even if import or source do not exist").Bool()
@@ -94,17 +99,7 @@ func runGotemplate() (exitCode int) {
 		listFilters   = list.Arg("filters", "List only functions that contains one of the filter").Strings()
 	)
 
-	// Set the options for the available options (most of them are on by default)
-	optionsOff := app.Flag("base", "Turn off all addons (they could then be enabled explicitly)").NoAutoShortcut().Bool()
-	options := make([]bool, template.OptionOnByDefaultCount)
-	for i := range options {
-		opt := template.Options(i)
-		optName := strings.ToLower(fmt.Sprint(opt))
-		app.Flag(optName, fmt.Sprintf("%v Addon (ON by default)", opt)).NoAutoShortcut().Default(true).BoolVar(&options[i])
-	}
-	app.GetFlag("extension").Alias("ext")
-
-	_ = typeMode
+	loadAllAddins := true
 	var changedArgs []int
 	for i := range os.Args {
 		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
@@ -113,14 +108,30 @@ func runGotemplate() (exitCode int) {
 			changedArgs = append(changedArgs, i)
 		}
 		if os.Args[i] == "--base" {
-			for n := range options {
-				options[n] = false
-			}
+			loadAllAddins = false
 		}
 	}
 
-	// Adjust the help
-	command := kingpin.Parse()
+	// Set the options for the available options (most of them are on by default)
+	optionsOff := app.Flag("base", "Turn off all addons (they could then be enabled explicitly)").NoAutoShortcut().Bool()
+	options := make([]bool, template.OptionOnByDefaultCount)
+	for i := range options {
+		opt := template.Options(i)
+		optName := strings.ToLower(fmt.Sprint(opt))
+		app.Flag(optName, fmt.Sprintf("%v Addon (ON by default)", opt)).NoAutoShortcut().Default(loadAllAddins).BoolVar(&options[i])
+	}
+	app.GetFlag("extension").Alias("ext")
+
+	// Actually parse the arguments
+	command, err := kingpin.CommandLine.Parse(os.Args[1:])
+	if err != nil {
+		// There is a problem with kingpin. If there is no command, the flags associated with the default command
+		// must be specified after the templates. So, we just give it another try by injecting the default command.
+		if command, err = kingpin.CommandLine.Parse(append([]string{"run"}, os.Args[1:]...)); err != nil {
+			kingpin.Usage()
+			os.Exit(0)
+		}
+	}
 
 	// We restore back the modified arguments
 	for i := range *templates {
@@ -141,18 +152,18 @@ func runGotemplate() (exitCode int) {
 	if mode := *typeMode; mode != "" {
 		switch strings.ToUpper(mode[:1]) {
 		case "Y":
-			collections.ListHelper = yaml.GenericListHelper
-			collections.DictionaryHelper = yaml.DictionaryHelper
+			collections.SetListHelper(yaml.GenericListHelper)
+			collections.SetDictionaryHelper(yaml.DictionaryHelper)
 		case "H":
-			collections.ListHelper = hcl.GenericListHelper
-			collections.DictionaryHelper = hcl.DictionaryHelper
+			collections.SetListHelper(hcl.GenericListHelper)
+			collections.SetDictionaryHelper(hcl.DictionaryHelper)
 		case "J":
-			collections.ListHelper = json.GenericListHelper
-			collections.DictionaryHelper = json.DictionaryHelper
+			collections.SetListHelper(json.GenericListHelper)
+			collections.SetDictionaryHelper(json.DictionaryHelper)
 		}
 	} else {
-		collections.ListHelper = json.GenericListHelper
-		collections.DictionaryHelper = json.DictionaryHelper
+		collections.SetListHelper(json.GenericListHelper)
+		collections.SetDictionaryHelper(json.DictionaryHelper)
 	}
 
 	optionsSet[template.RenderingDisabled] = *disableRender
@@ -187,11 +198,16 @@ func runGotemplate() (exitCode int) {
 		*ignoreMissingSource = true
 	}
 
-	template.ConfigureLogging(
-		template.GetLoggingLevelFromString(*logLevel),
-		template.GetLoggingLevelFromString(*debugLogLevel),
-		*logSimple,
-	)
+	if err := template.TemplateLog.SetHookLevel("", *templateLogLevel); err != nil {
+		errors.Printf("Unable to set logging level for templates: %v", err)
+	}
+	if err := template.InternalLog.SetHookLevel("", *internalLogLevel); err != nil {
+		errors.Printf("Unable to set logging level for internal logs: %v", err)
+	}
+	if path := *logFilePath; path != "" {
+		template.TemplateLog.AddFile(path, false, *templateLogFileLevel)
+		template.InternalLog.AddFile(path, false, *internalLogFileLevel)
+	}
 
 	if *targetFolder == "" {
 		// Target folder default to source folder
@@ -203,7 +219,7 @@ func runGotemplate() (exitCode int) {
 			errors.Printf("Source folder: %s does not exist", *sourceFolder)
 			return 1
 		}
-		template.Log.Infof("Source folder: %s does not exist, skipping gotemplate", *sourceFolder)
+		template.InternalLog.Debugf("Source folder: %s does not exist, skipping gotemplate", *sourceFolder)
 		return 0
 	}
 
@@ -345,8 +361,8 @@ func main() {
 }
 
 var (
-	print     = utils.ColorPrint
-	printf    = utils.ColorPrintf
-	println   = utils.ColorPrintln
-	errPrintf = utils.ColorErrorPrintf
+	print     = multicolor.Print
+	printf    = multicolor.Printf
+	println   = multicolor.Println
+	errPrintf = multicolor.ErrorPrintf
 )

@@ -1,0 +1,88 @@
+
+# Assignation
+
+## Global variables
+
+As in Go lang, you must initially declare your global variable using the `:=` assignment operator and subsequent overwrite use the `=` operator.
+
+Sometime, global variables may exist without the code writer being aware of their existence. They could be defined in an imported file and we
+need a mean to be able to assign theses variables without pre-assign validation. In that case, you could use the special `~=` assignment operator.
+
+| Razor expression                            | Go Template                                                                     | Note
+| ----------------                            | -----------                                                                     | ----
+| ``                | `<pre-assign check code>`                   | Global declare and assign of string
+| ``                          | `<pre-assign check code>`                             | Global declare and assign of integer
+| ``                        | `<pre-assign check code>`                           | Global declare and assign of floating point
+| ``                        | `<pre-assign check code>`                           | Global declare and assign of large scientific notation number
+| ``                        | `<pre-assign check code>`                           | Global declare and assign of small scientific notation number
+| ``                          | `<pre-assign check code>`                             | Global declare and assign of hexadecimal number
+| ``                      | `<pre-assign check code>`               | Global declare and assign of mathematic expression
+| `` | `<pre-assign check code>` | Global declare and assign of generic expression
+| ``                    | `<pre-assign check code>`                      | Global replacement of previously declared global variable
+| ``                   | ``                                             | Global declare and assign or replacement of previously declared global variable
+
+## Local variables
+
+First declaration of local variable must use the `:=` assignment operator and subsequent assignation must use only `=`.
+
+There are many form used to declare local variable using razor syntax:
+
+- `&#64;{variable} := <value or expression>`
+- `&#64;{variable := <value or expression>}`
+- `&#64;$variable := <value or expression>`
+
+| Razor expression                             | Go Template                                        | Note
+| ----------------                             | -----------                                        | ----
+| ``                | ``                 | Local declare and assign of string
+| ``                          | ``                           | Local declare and assign of integer
+| ``                         | ``                         | Local declare and assign of floating point
+| ``                        | ``                         | Local declare and assign of large scientific number
+| ``                        | ``                         | Local declare and assign of small scientific number
+| ``                          | ``                           | Local declare and assign of hexadecimal number
+| ``                      | ``               | Local declare and assign of mathematic expression
+| `` | `` | Local declare and assign of generic expression
+| ``                   | ``                     | Local replacement of previously declared local variable
+
+### Exception
+
+| Razor expression                                | Go Template                                        | Note
+| ----------------                                | -----------                                        | ----
+| ` "hello" "world" | upper`   | ` "hello" "world" | upper` | Using a mixup of go template expression and razor expression could lead to undesired result
+| ``     | ``   | Enclosing the whole assignation statement within {} ensures that the whole expression is assigned
+| ``    | ``   | Using that syntax give the exact same result
+
+### Assignation within expression
+
+```go
+    1
+    2
+    3
+    4
+    5
+    6
+    7
+    8
+    9
+    10
+```
+
+```go
+    0 = 2
+    1 = 4
+    2 = 6
+    3 = 8
+    4 = 10
+    5 = 12
+    6 = 14
+    7 = 16
+    8 = 18
+    9 = 20
+```
+
+```go
+    result = true
+```
+
+```go
+    value = 4
+```

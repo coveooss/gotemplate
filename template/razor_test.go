@@ -10,18 +10,19 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/json"
-	logging "github.com/op/go-logging"
+	"github.com/bmatcuk/doublestar"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/json"
+	"github.com/coveooss/multilogger"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 func TestTemplate_applyRazor(t *testing.T) {
 	t.Parallel()
 	dmp := diffmatchpatch.New()
-	SetLogLevel(logging.WARNING)
-	template := MustNewTemplate("../docs/doc_test", nil, "", nil)
-	files, err := filepath.Glob(filepath.Join(template.folder, "*.md"))
+	TemplateLog = multilogger.New("test")
+	template := MustNewTemplate("../docs_tests", nil, "", nil)
+	files, err := doublestar.Glob(filepath.Join(template.folder, "**/*.md"))
 	if err != nil {
 		t.Fatalf("Unable to read test files (documentation in %s)", template.folder)
 		t.Fail()
@@ -41,8 +42,8 @@ func TestTemplate_applyRazor(t *testing.T) {
 		return path
 	}
 
-	collections.ListHelper = json.GenericListHelper
-	collections.DictionaryHelper = json.DictionaryHelper
+	collections.SetListHelper(json.GenericListHelper)
+	collections.SetDictionaryHelper(json.DictionaryHelper)
 	template.options[AcceptNoValue] = true
 
 	load := func(path string) []byte { return must(ioutil.ReadFile(path)).([]byte) }
@@ -62,31 +63,36 @@ func TestTemplate_applyRazor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			template.options[Razor] = tt.razor != ""
 
-			content := load(tt.path)
+			processContent := func(renderingDisabled bool) string {
+				var got string
+				var err error
+				func() {
+					defer func() {
+						if rec := recover(); rec != nil {
+							err = fmt.Errorf("Template.ProcessContent() panic=%v\n%s", rec, string(debug.Stack()))
+						}
+					}()
+					template.options[RenderingDisabled] = renderingDisabled
+					got, err = template.ProcessContent(string(load(tt.path)), tt.path)
+				}()
+				if err != nil {
+					t.Errorf("Template.ProcessContent(), err=%v", err)
+				}
+				return got
+			}
+
 			if tt.razor != "" {
-				result := load(tt.razor)
-				got, _ := template.applyRazor(content)
+				result := string(load(tt.razor))
+				got := processContent(true)
 				if !reflect.DeepEqual(got, result) {
 					diffs := dmp.DiffMain(string(result), string(got), true)
 					t.Errorf("Differences on Razor result for %s\n%s", tt.razor, dmp.DiffPrettyText(diffs))
 				}
 			}
 
-			var got string
-			var err error
-			func() {
-				defer func() {
-					if rec := recover(); rec != nil {
-						err = fmt.Errorf("Template.ProcessContent() panic=%v\n%s", rec, string(debug.Stack()))
-					}
-				}()
-				got, err = template.ProcessContent(string(content), tt.path)
-			}()
-
-			if err != nil {
-				t.Errorf("Template.ProcessContent(), err=%v", err)
-			} else if tt.render != "" {
+			if tt.render != "" {
 				result := string(load(tt.render))
+				got := processContent(false)
 				if !reflect.DeepEqual(got, result) {
 					diffs := dmp.DiffMain(string(result), string(got), true)
 					t.Errorf("Differences on Rendered for %s\n%s", tt.render, dmp.DiffPrettyText(diffs))
@@ -142,41 +148,38 @@ func TestBase(t *testing.T) {
 
 func TestInvocation(t *testing.T) {
 	tests := []struct {
-		name       string
-		debugLevel int
-		razor      string
-		want       string
+		name  string
+		razor string
+		want  string
 	}{
 		{
-			"Func call", 2,
+			"Func call",
 			"@func(1,2,3)",
 			"{{ func 1 2 3 }}",
 		},
 		{
-			"Method call", 2,
+			"Method call",
 			"@object.func(1,2,3)",
 			"{{ $.object.func 1 2 3 }}",
 		},
 		{
-			"Method call on result", 2,
+			"Method call on result",
 			"@object.func(1,2).func2(3)",
 			"{{ ($.object.func 1 2).func2 3 }}",
 		},
 		{
-			"Double invocation", 2,
+			"Double invocation",
 			"@func1().func2()",
 			"{{ func1.func2 }}",
 		},
 		{
-			"Double invocation with params", 6,
+			"Double invocation with params",
 			"@func1(1).func2(2)",
 			"{{ (func1 1).func2 2 }}",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logging.SetLevel(logging.Level(tt.debugLevel), loggerInternal)
-			defer func() { logging.SetLevel(logging.Level(2), loggerInternal) }()
 			template := MustNewTemplate(".", nil, "", nil)
 			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
 				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
