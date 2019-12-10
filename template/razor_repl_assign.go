@@ -25,17 +25,43 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	expr := matches["expr"]
 	assign := matches["assign"]
 	if tp == "" || id == "" || expr == "" || assign == "" {
-		InternalLog.Errorf("Invalid assign regex %s: %s, must contains type, id and expr", repl.name, repl.expr)
+		InternalLog.Errorf("Invalid assign regex %s: %s for '%s', must contains type, id and expr", repl.name, repl.expr, match)
 		return match
 	}
 
-	local := (tp == "$" || tp == "@{" || tp == "@$") && idRegex.MatchString(id)
+	global := false
+	internal := true
+	switch tp {
+	case "@$.":
+		tp = "@"
+		fallthrough
+	case "@", "@.":
+		global = true
+	case "@{", "@$":
+		internal = strings.Contains(id, ".")
+	}
 	var err error
-	if expr, err = expressionParserInternal(exprRepl, expr, true, !local); err != nil && !acceptError {
+	if expr, err = expressionParserInternal(exprRepl, expr, true, internal); err != nil && !acceptError {
 		return match
 	}
 
-	if local {
+	switch assign {
+	case ":=", "=", "~=":
+		break
+	default:
+		// This is an assignment operator (i.e. +=, /=, <<=, etc.)
+		if tp != "@{" {
+			value := map[string]string{"@": "$.", "@.": ".", "@$": "$"}[tp] + id
+			match = fmt.Sprintf("%[5]s%[1]s = %[2]s %[3]s %[4]s", id, value, assign[:len(assign)-1], expr, tp)
+		} else if acceptError {
+			match = fmt.Sprintf("@{%[1]s = $%[1]s %[2]s %[3]s}", id, assign[:len(assign)-1], expr)
+		} else {
+			match = fmt.Sprintf("@{%[1]s} = $%[1]s %[2]s %[3]s", id, assign[:len(assign)-1], expr)
+		}
+		return assignExpressionInternal(repl, match, acceptError)
+	}
+
+	if !global && !internal {
 		if assign == "~=" {
 			if alreadyIssued[match] == 0 {
 				InternalLog.Error("~= assignment is not supported on local variables in", color.HiBlackString(match))
@@ -50,16 +76,12 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	object := strings.Join(parts[:len(parts)-1], ".")
 	id = parts[len(parts)-1]
 
-	if tp == "$" {
-		if len(parts) < 2 {
-			if alreadyIssued[match] == 0 {
-				InternalLog.Errorf("Invalid local assignment: %s", match)
-				alreadyIssued[match]++
-			}
-			return match
-		}
-		object = "$" + object
-	} else if strings.HasSuffix(tp, ".") {
+	if !global {
+		// This is a local assignation with sub elements
+		return fmt.Sprintf(`%[1]s- set $%[3]s "%[4]s" %[5]s %[2]s`, repl.delimiters[0], repl.delimiters[1], object, id, expr)
+	}
+
+	if strings.HasSuffix(tp, ".") {
 		object = "." + object
 	} else {
 		object = iif(object == "", "$", "$."+object).(string)

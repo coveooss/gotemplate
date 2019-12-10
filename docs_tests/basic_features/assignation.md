@@ -43,6 +43,33 @@ There are many form used to declare local variable using razor syntax:
 | `@{result2 := String("hello world!").Title}` | `{{- $result2 := (String "hello world!").Title }}` | Local declare and assign of generic expression
 | `@{result2} = "Replaced";`                   | `{{- $result2 = "Replaced" }}`                     | Local replacement of previously declared local variable
 
+## Assignment operators
+
+Using the Razor syntax, it is possible to use assignment operators such as `+=`, `/=`... The operators that are supported are:
+
+| Operator    | Assignment   | Note
+| ----------- | ------------ | ----
+| `+`         | `+=`         | Addition
+| `-`         | `-=`         | Subtraction
+| `*`         | `*=`         | Multiplication
+| `/`, `÷`    | `/=`, `÷=`   | Division
+| `%`         | `%=`         | Modulo
+| `&`         | `&=`         | Bitwise AND
+| `|`         | `|=`         | Bitwise OR
+| `^`         | `^=`         | Bitwise XOR
+| `&^`        | `&^=`        | Bit clear
+| `<<`, `«`   | `<<=`, `«==` | Left shift
+| `>>`, `»`   | `>>=`, `»==` | Right shift
+
+| Razor expression  | Go Template                                                | Note
+| ----------------  | -----------                                                | ----
+| `@num ~= 5`       | `{{- set $ "num" 5 }}`                                     | Global assignation
+| `@num += 10`      | `<pre-assign check code>{{- set $ "num" (add $.num 10) }}` | Add assignment operator on global
+| `@{local} := 5`   | `{{- $local := 5 }}`                                       | Local assignation
+| `@$local += 10`   | `{{- $local = add $local 10 }}`                            | Add assignment operator on local
+| `@{local} *= 20`  | `{{- $local = mul $local 20 }}`                            | Multiply assignment operator on local
+| `@{local /= 2}`   | `{{- $local = div $local 2 }}`                             | Divide assignment operator on local
+
 ### Exception
 
 | Razor expression                                | Go Template                                        | Note
