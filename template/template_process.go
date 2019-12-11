@@ -34,25 +34,25 @@ const (
 )
 
 // ProcessContent loads and runs the file template.
-func (t Template) ProcessContent(content, source string) (result string, err error) {
+func (t *Template) ProcessContent(content, source string) (result string, err error) {
 	result, _, err = t.processContentInternal(content, source, nil, 0, true, nil)
 	return
 }
 
 // ProcessTemplate loads and runs the template if it is a file, otherwise, it simply process the content.
-func (t Template) ProcessTemplate(template, sourceFolder, targetFolder string) (resultFile string, err error) {
+func (t *Template) ProcessTemplate(template, sourceFolder, targetFolder string) (resultFile string, err error) {
 	return t.processTemplate(template, sourceFolder, targetFolder, nil)
 }
 
 // ProcessTemplates loads and runs the file template or execute the content if it is not a file.
-func (t Template) ProcessTemplates(sourceFolder, targetFolder string, templates ...string) (resultFiles []string, err error) {
+func (t *Template) ProcessTemplates(sourceFolder, targetFolder string, templates ...string) (resultFiles []string, err error) {
 	return t.ProcessTemplatesWithHandler(sourceFolder, targetFolder, nil, templates...)
 }
 
-func (t Template) printResult(source, target, result string) (err error) {
+func (t *Template) printResult(source, target, result string) (err error) {
 	if utils.IsTerraformFile(target) {
 		base := filepath.Base(target)
-		tempFolder := must(ioutil.TempDir(t.TempFolder, base)).(string)
+		tempFolder := must(ioutil.TempDir(t.tempFolder, base)).(string)
 		tempFile := filepath.Join(tempFolder, base)
 		err = ioutil.WriteFile(tempFile, []byte(result), 0644)
 		if err != nil {

@@ -50,12 +50,12 @@ func (t *Template) addFuncs() {
 }
 
 // Apply all regular expressions replacements to the supplied string
-func (t Template) substitute(content string) string {
+func (t *Template) substitute(content string) string {
 	return utils.Substitute(content, t.substitutes...)
 }
 
 // List the available template names
-func (t Template) getTemplateNames() []string {
+func (t *Template) getTemplateNames() []string {
 	templates := t.Templates()
 	result := make([]string, len(templates))
 	for i := range templates {
