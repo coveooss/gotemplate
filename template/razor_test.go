@@ -311,6 +311,11 @@ func TestAssign(t *testing.T) {
 			`@{a.b.c} ÷= 2`,
 			`{{- set $a.b "c" (div $a.b.c 2) }}`,
 		},
+		{
+			"Assignment with @",
+			`@a := "How do you @handle this"`,
+			`{{- set $ "a" "How do you @handle this" }}`,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
