@@ -1,6 +1,8 @@
 package implementation
 
 import (
+	"strings"
+
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/multilogger/errors"
 )
@@ -9,6 +11,8 @@ import (
 type ListTypeName = baseList
 type baseIList = collections.IGenericList
 type baseList []interface{}
+
+var baseLower = strings.ToLower("base") // This is required because genny capitalize the type name in strings
 
 func (l baseList) AsArray() []interface{}              { return []interface{}(l) }
 func (l baseList) Cap() int                            { return cap(l) }
@@ -20,6 +24,8 @@ func (l baseList) Create(args ...int) baseIList        { return baseListHelper.C
 func (l baseList) CreateDict(args ...int) baseIDict    { return baseListHelper.CreateDictionary(args...) }
 func (l baseList) First() interface{}                  { return baseListHelper.GetIndexes(l, 0) }
 func (l baseList) Get(indexes ...int) interface{}      { return baseListHelper.GetIndexes(l, indexes...) }
+func (l baseList) GetKinds() baseIList                 { return baseListHelper.GetTypes(l, true) }
+func (l baseList) GetTypes() baseIList                 { return baseListHelper.GetTypes(l, false) }
 func (l baseList) Has(values ...interface{}) bool      { return l.Contains(values...) }
 func (l baseList) Join(sep interface{}) str            { return l.StringArray().Join(sep) }
 func (l baseList) Last() interface{}                   { return baseListHelper.GetIndexes(l, len(l)-1) }
@@ -28,7 +34,8 @@ func (l baseList) New(args ...interface{}) baseIList   { return baseListHelper.N
 func (l baseList) Reverse() baseIList                  { return baseListHelper.Reverse(l) }
 func (l baseList) StringArray() strArray               { return baseListHelper.GetStringArray(l) }
 func (l baseList) Strings() []string                   { return baseListHelper.GetStrings(l) }
-func (l baseList) TypeName() str                       { return "base" }
+func (l baseList) Type() str                           { return baseListHelper.Type(l) }
+func (l baseList) TypeName() str                       { return str(baseLower) }
 func (l baseList) Unique() baseIList                   { return baseListHelper.Unique(l) }
 
 func (l baseList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -84,6 +91,8 @@ func (d baseDict) CreateList(args ...int) baseIList    { return baseHelper.Creat
 func (d baseDict) Flush(keys ...interface{}) baseIDict { return baseDictHelper.Flush(d, keys) }
 func (d baseDict) Get(keys ...interface{}) interface{} { return baseDictHelper.Get(d, keys) }
 func (d baseDict) GetKeys() baseIList                  { return baseDictHelper.GetKeys(d) }
+func (d baseDict) GetKinds() baseIDict                 { return baseDictHelper.GetTypes(d, true) }
+func (d baseDict) GetTypes() baseIDict                 { return baseDictHelper.GetTypes(d, false) }
 func (d baseDict) GetValues() baseIList                { return baseDictHelper.GetValues(d) }
 func (d baseDict) Has(keys ...interface{}) bool        { return baseDictHelper.Has(d, keys) }
 func (d baseDict) KeysAsString() strArray              { return baseDictHelper.KeysAsString(d) }
@@ -92,7 +101,8 @@ func (d baseDict) Native() interface{}                 { return must(collections
 func (d baseDict) Pop(keys ...interface{}) interface{} { return baseDictHelper.Pop(d, keys) }
 func (d baseDict) Set(key, v interface{}) baseIDict    { return baseDictHelper.Set(d, key, v) }
 func (d baseDict) Transpose() baseIDict                { return baseDictHelper.Transpose(d) }
-func (d baseDict) TypeName() str                       { return "base" }
+func (d baseDict) Type() str                           { return baseDictHelper.Type(d) }
+func (d baseDict) TypeName() str                       { return str(baseLower) }
 
 func (d baseDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return baseDictHelper, baseListHelper

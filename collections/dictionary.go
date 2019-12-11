@@ -19,6 +19,8 @@ type IDictionary interface {
 	Get(...interface{}) interface{}                          // Returns the values associated with key.
 	GetHelpers() (IDictionaryHelper, IListHelper)            // Returns the helpers implementation associated with the current type.
 	GetKeys() IGenericList                                   // Returns the keys in the dictionary in alphabetical order.
+	GetKinds() IDictionary                                   // Returns the kind associated to each key in the dictionary.
+	GetTypes() IDictionary                                   // Returns the type associated to each key in the dictionary.
 	GetValues() IGenericList                                 // Returns the values in the dictionary in alphabetical order of keys.
 	Has(...interface{}) bool                                 // Returns true if the dictionary object contains all the key.
 	KeysAsString() StringArray                               // Returns the keys in the dictionary in alphabetical order.
@@ -30,8 +32,9 @@ type IDictionary interface {
 	PrettyPrint() string                                     // Returns the pretty string representation of the dictionary.
 	Set(key, value interface{}) IDictionary                  // Sets key to value in the dictionary.
 	String() string                                          // Returns the string representation of the dictionary.
-	Transpose() IDictionary                                  // Transpose keys/values and return the resulting dictionary
-	TypeName() String                                        // Returns the actual type name
+	Transpose() IDictionary                                  // Transpose keys/values and return the resulting dictionary.
+	Type() String                                            // Returns the type of object.
+	TypeName() String                                        // Returns the actual type name.
 }
 
 // IDictionaryHelper represents objects that implement IDictionary compatible objects

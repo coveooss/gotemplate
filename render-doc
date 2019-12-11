@@ -1,5 +1,11 @@
 #! /usr/bin/env bash
 
+function cleanup {
+  echo "Removing gotemplate"
+  rm  -f gotemplate
+}
+
+trap cleanup EXIT
 go build -o gotemplate
 
 CONTENT_FOLDER="docs/content"

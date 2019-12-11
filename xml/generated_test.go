@@ -174,6 +174,33 @@ func Test_list_Get(t *testing.T) {
 	}
 }
 
+func Test_list_GetTypes(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		kind bool
+		l    xmlList
+		want interface{}
+	}{
+		{"Empty", false, nil, xmlList{}},
+		{"Fixture", false, strFixture, xmlList{"string", "string", "string", "string", "string"}},
+		{"Mixed Types", false, xmlList{1, 1.2, true, "Hello", xmlList{}, xmlDict{}}, xmlList{"int", "float64", "bool", "string", xmlLower + "List", xmlLower + "Dict"}},
+		{"Mixed Kinds", true, xmlList{1, 1.2, true, "Hello", xmlList{}, xmlDict{}}, xmlList{"int", "float64", "bool", "string", "slice", "map"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testFunc := tt.l.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.l.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("XmlList.Get%s() = %v, want %v", name, got, tt.want)
+			}
+		})
+	}
+}
 func Test_list_Len(t *testing.T) {
 	t.Parallel()
 
@@ -1010,58 +1037,68 @@ func Test_dict_Transpose(t *testing.T) {
 	}
 }
 
-func Test_XmlList_Get(t *testing.T) {
-	type args struct {
-		indexes []int
-	}
+func Test_dict_GetTypes(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
-		l    xmlList
-		args args
+		kind bool
+		d    xmlDict
 		want interface{}
 	}{
-		// TODO: Add test cases.
+		{"Empty", false, nil, xmlDict{}},
+		{"Fixture Types", false, dictFixture, xmlDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    xmlLower + "List",
+			"listInt": xmlLower + "List",
+			"map":     xmlLower + "Dict",
+			"mapInt":  xmlLower + "Dict",
+			"string":  "string",
+		}},
+		{"Fixture Kinds", true, dictFixture, xmlDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    "slice",
+			"listInt": "slice",
+			"map":     "map",
+			"mapInt":  "map",
+			"string":  "string",
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("XmlList.Get() = %v, want %v", got, tt.want)
+			testFunc := tt.d.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.d.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("XmlDict.Get%s() = %v, want %v", name, got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_XmlList_TypeName(t *testing.T) {
-	tests := []struct {
-		name string
-		l    xmlList
-		want str
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("XmlList.TypeName() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func Test_Xml_Type(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(xmlLower+"List"), xmlList{}.Type()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(xmlLower+"Dict"), xmlDict{}.Type()) })
 }
 
 func Test_Xml_TypeName(t *testing.T) {
-	t.Run("list", func(t *testing.T) { assert.Equal(t, xmlList{}.TypeName(), str("Xml")) })
-	t.Run("dict", func(t *testing.T) { assert.Equal(t, xmlDict{}.TypeName(), str("Xml")) })
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(xmlLower), xmlList{}.TypeName()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(xmlLower), xmlDict{}.TypeName()) })
 }
 
 func Test_Xml_GetHelper(t *testing.T) {
 	t.Run("list", func(t *testing.T) {
 		gotD, gotL := xmlList{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), xmlDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), xmlListHelper.CreateList().TypeName())
+		assert.Equal(t, xmlDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, xmlListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 	t.Run("dict", func(t *testing.T) {
 		gotD, gotL := xmlDict{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), xmlDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), xmlListHelper.CreateList().TypeName())
+		assert.Equal(t, xmlDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, xmlListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 }

@@ -5,6 +5,8 @@
 package yaml
 
 import (
+	"strings"
+
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/multilogger/errors"
 )
@@ -13,6 +15,8 @@ import (
 type List = yamlList
 type yamlIList = collections.IGenericList
 type yamlList []interface{}
+
+var yamlLower = strings.ToLower("Yaml") // This is required because genny capitalize the type name in strings
 
 func (l yamlList) AsArray() []interface{} { return []interface{}(l) }
 func (l yamlList) Cap() int               { return cap(l) }
@@ -30,6 +34,8 @@ func (l yamlList) First() interface{} { return yamlListHelper.GetIndexes(l, 0) }
 func (l yamlList) Get(indexes ...int) interface{} {
 	return yamlListHelper.GetIndexes(l, indexes...)
 }
+func (l yamlList) GetKinds() yamlIList               { return yamlListHelper.GetTypes(l, true) }
+func (l yamlList) GetTypes() yamlIList               { return yamlListHelper.GetTypes(l, false) }
 func (l yamlList) Has(values ...interface{}) bool    { return l.Contains(values...) }
 func (l yamlList) Join(sep interface{}) str          { return l.StringArray().Join(sep) }
 func (l yamlList) Last() interface{}                 { return yamlListHelper.GetIndexes(l, len(l)-1) }
@@ -38,7 +44,8 @@ func (l yamlList) New(args ...interface{}) yamlIList { return yamlListHelper.New
 func (l yamlList) Reverse() yamlIList                { return yamlListHelper.Reverse(l) }
 func (l yamlList) StringArray() strArray             { return yamlListHelper.GetStringArray(l) }
 func (l yamlList) Strings() []string                 { return yamlListHelper.GetStrings(l) }
-func (l yamlList) TypeName() str                     { return "Yaml" }
+func (l yamlList) Type() str                         { return yamlListHelper.Type(l) }
+func (l yamlList) TypeName() str                     { return str(yamlLower) }
 func (l yamlList) Unique() yamlIList                 { return yamlListHelper.Unique(l) }
 
 func (l yamlList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
@@ -94,6 +101,8 @@ func (d yamlDict) CreateList(args ...int) yamlIList    { return yamlHelper.Creat
 func (d yamlDict) Flush(keys ...interface{}) yamlIDict { return yamlDictHelper.Flush(d, keys) }
 func (d yamlDict) Get(keys ...interface{}) interface{} { return yamlDictHelper.Get(d, keys) }
 func (d yamlDict) GetKeys() yamlIList                  { return yamlDictHelper.GetKeys(d) }
+func (d yamlDict) GetKinds() yamlIDict                 { return yamlDictHelper.GetTypes(d, true) }
+func (d yamlDict) GetTypes() yamlIDict                 { return yamlDictHelper.GetTypes(d, false) }
 func (d yamlDict) GetValues() yamlIList                { return yamlDictHelper.GetValues(d) }
 func (d yamlDict) Has(keys ...interface{}) bool        { return yamlDictHelper.Has(d, keys) }
 func (d yamlDict) KeysAsString() strArray              { return yamlDictHelper.KeysAsString(d) }
@@ -102,7 +111,8 @@ func (d yamlDict) Native() interface{}                 { return must(collections
 func (d yamlDict) Pop(keys ...interface{}) interface{} { return yamlDictHelper.Pop(d, keys) }
 func (d yamlDict) Set(key, v interface{}) yamlIDict    { return yamlDictHelper.Set(d, key, v) }
 func (d yamlDict) Transpose() yamlIDict                { return yamlDictHelper.Transpose(d) }
-func (d yamlDict) TypeName() str                       { return "Yaml" }
+func (d yamlDict) Type() str                           { return yamlDictHelper.Type(d) }
+func (d yamlDict) TypeName() str                       { return str(yamlLower) }
 
 func (d yamlDict) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return yamlDictHelper, yamlListHelper
