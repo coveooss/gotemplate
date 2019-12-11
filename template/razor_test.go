@@ -190,6 +190,7 @@ func TestInvocation(t *testing.T) {
 
 func TestAssign(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name  string
 		razor string
@@ -211,19 +212,104 @@ func TestAssign(t *testing.T) {
 			`{{- $a := 2 }}`,
 		},
 		{
-			"Global assign",
+			"Local replacement 1",
+			"@$a = 2",
+			`{{- $a = 2 }}`,
+		},
+		{
+			"Local replacement 2",
+			"@{a = 2}",
+			"{{- $a = 2 }}",
+		},
+		{
+			"Local replacement 3",
+			"@$a = 2",
+			`{{- $a = 2 }}`,
+		},
+		{
+			"Local replacement 4",
+			"@{a.b.c} = 2",
+			`{{- set $a.b "c" 2 }}`,
+		},
+		{
+			"Global assign 1",
 			`@a := "test"`,
-			`{{- assertWarning (isNil $.a) "$.a has already been declared, use = to overwrite existing value" }}{{- set $ "a" "test" }}`,
+			`{{- set $ "a" "test" }}`,
 		},
 		{
-			"Deprecated local assign with no other razor",
-			`$a := "test"`,
-			`$a := "test"`,
+			"Global assign 2",
+			`@.a := "test"`,
+			`{{- set . "a" "test" }}`,
 		},
 		{
-			"Deprecated local assign",
-			`@test; $a := $.test`,
-			`{{ $.test }} {{- $a := $.test }}`,
+			"Global assign 3",
+			`@$.a := "test"`,
+			`{{- set $ "a" "test" }}`,
+		},
+		{
+			"Replacement of global value",
+			`@a = "test"`,
+			`{{- assertWarning (not (isNil $.a)) "$.a does not exist, use := to declare new variable" }}{{- set $ "a" "test" }}`,
+		},
+		{
+			"Global assign with non standard identifier characters",
+			`@12t%!e#st- := "test"`,
+			`{{- set $ "12t%!e#st-" "test" }}`,
+		},
+		{
+			"Global assign with sub objects",
+			`@a.b.c.d.e := "test"`,
+			`{{- set $.a.b.c.d "e" "test" }}`,
+		},
+		{
+			"Assignment operator 1",
+			`@{a} += 10`,
+			`{{- $a = add $a 10 }}`,
+		},
+		{
+			"Assignment operator 2",
+			`@{a *= 10}`,
+			`{{- $a = mul $a 10 }}`,
+		},
+		{
+			"Assignment operator 3",
+			`@a <<= 10`,
+			`{{- assertWarning (not (isNil $.a)) "$.a does not exist, use := to declare new variable" }}{{- set $ "a" (lshift $.a 10) }}`,
+		},
+		{
+			"Assignment operator 3",
+			`@a.b.c <<= 10`,
+			`{{- assertWarning (not (isNil $.a.b.c)) "$.a.b.c does not exist, use := to declare new variable" }}{{- set $.a.b "c" (lshift $.a.b.c 10) }}`,
+		},
+		{
+			"Assignment operator 4",
+			`@{a} »= 10`,
+			`{{- $a = rshift $a 10 }}`,
+		},
+		{
+			"Assignment operator 5",
+			`@{a} ÷= 2`,
+			`{{- $a = div $a 2 }}`,
+		},
+		{
+			"Assignment operator 6",
+			`@.a.b *= 4`,
+			`{{- assertWarning (not (isNil .a.b)) ".a.b does not exist, use := to declare new variable" }}{{- set .a "b" (mul .a.b 4) }}`,
+		},
+		{
+			"Assignment operator 7",
+			`@$.a.b *= 4`,
+			`{{- assertWarning (not (isNil $.a.b)) "$.a.b does not exist, use := to declare new variable" }}{{- set $.a "b" (mul $.a.b 4) }}`,
+		},
+		{
+			"Assignment operator 8",
+			`@$a *= 4`,
+			`{{- $a = mul $a 4 }}`,
+		},
+		{
+			"Assignment operator local sub",
+			`@{a.b.c} ÷= 2`,
+			`{{- set $a.b "c" (div $a.b.c 2) }}`,
 		},
 	}
 	for _, tt := range tests {

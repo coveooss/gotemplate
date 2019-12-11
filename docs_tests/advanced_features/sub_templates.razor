@@ -29,7 +29,7 @@
 ## Using templates
 
 ```go
-  {{- assertWarning (isNil $.values) "$.values has already been declared, use = to overwrite existing value" }}{{- set $ "values" (data (`{"var1": "Test", "var2": ["Test1", "Test2"]}`)) }}
+  {{- set $ "values" (data (`{"var1": "Test", "var2": ["Test1", "Test2"]}`)) }}
 ```
 
 | Razor | Gotemplate

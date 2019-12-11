@@ -85,6 +85,7 @@ func runGotemplate() (exitCode int) {
 		disableRender       = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
 		acceptNoValue       = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error").Alias("no-value").Envar(template.EnvAcceptNoValue).Bool()
 		strictError         = run.Flag("strict-error-validation", "Consider error encountered in any file as real error").Alias("strict").Envar(template.EnvStrictErrorCheck).Short('S').Bool()
+		strictAssignations  = run.Flag("strict-assignations-validation", "Enforce strict assignation validation on global variables").Default("warning").Enum("on", "off", "warning")
 		ignoreMissingImport = run.Flag("ignore-missing-import", "Exit with code 0 even if import does not exist").Bool()
 		ignoreMissingSource = run.Flag("ignore-missing-source", "Exit with code 0 even if source does not exist").Bool()
 		ignoreMissingPaths  = run.Flag("ignore-missing-paths", "Exit with code 0 even if import or source do not exist").Bool()
@@ -173,6 +174,15 @@ func runGotemplate() (exitCode int) {
 	optionsSet[template.StrictErrorCheck] = *strictError
 	for i := range options {
 		optionsSet[template.Options(i)] = options[i]
+	}
+
+	switch *strictAssignations {
+	case "on":
+		template.StrictAssignationMode = template.AssignationValidationStrict
+	case "warning":
+		template.StrictAssignationMode = template.AssignationValidationWarning
+	default:
+		template.StrictAssignationMode = template.AssignationValidationDisabled
 	}
 
 	// Set the recursion level

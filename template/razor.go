@@ -44,9 +44,12 @@ var customMetaclass = [][2]string{
 	{"endexpr;", `(?:[sp];)?`},                                    // End expression (spaces + ; or end of line)
 	{"[sp]", `[[:blank:]]*`},                                      // Optional spaces
 	{"[id]", `[\p{L}\d_]+`},                                       // Go language id
+	{"[id_comp]", `[\p{L}\d_\.]+`},                                // Go language id with .
 	{"[flexible_id]", `[map_id;][map_id;\.\-]*`},                  // Id with additional character that could be used to create variables in maps
 	{"[idSel]", `[\p{L}_][\p{L}\d_\.]*`},                          // Id with optional selection (object.selection.subselection)
 	{"map_id;", `\p{L}\d_\+\*%#!~`},                               // Id with additional character that could be used to create variables in maps
+
+	{"assign_op;", `:=|~=|=|\+=|-=|\*=|\/=|÷=|%=|&=|\|=|\^=|<<=|«=|>>=|»=|&\^=`}, // Assignment operator
 }
 
 // Expression (any character that is not a new line, a start of razor expression or a semicolumn)
@@ -85,12 +88,9 @@ var expressions = [][]interface{}{
 	{"various ends", `@reduce;(?P<command>end[sp](if|range|define|block|with|for[sp]each|for|))endexpr;`, "{{${reduce1} end ${reduce2}}}"},
 
 	// Assignations
-	{"Assign - @$var := value", `(?P<type>@\$)(?P<id>[id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
-	{"Assign - @var := value", `(?P<type>@[\$\.]?)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
-	{"Assign - @{var} := value", `(?P<type>@{)(?P<id>[id])}[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
-	{"Assign - @{var := expr}", `(?P<type>@{)(?P<id>[id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+?)}endexpr;`, ``, replacementFunc(assignExpressionAcceptError)},
-	// TODO Remove in future version
-	{"DEPRECATED Assign - $var := value", `(?:{{-?[sp](?:if|range|with)?[sp](\$[id],)?[sp]|@\(\s*)?(?P<type>\$)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - @var := value", `(?P<type>@(\$|\.|\$\.)?)(?P<id>[flexible_id])[sp](?P<assign>assign_op;)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - @{var} := value", `(?P<type>@{)(?P<id>[id_comp])}[sp](?P<assign>assign_op;)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - @{var := expr}", `(?P<type>@{)(?P<id>[id_comp])[sp](?P<assign>assign_op;)[sp](?P<expr>[expr]+?)}endexpr;`, ``, replacementFunc(assignExpressionAcceptError)},
 
 	// Function calls
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@${reduce}((${expr})${selection});`, replacementFunc(expressionParserSkipError)},
@@ -117,7 +117,7 @@ var expressions = [][]interface{}{
 	{"Expression @(expr)[...]", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)index;endexpr;`, `{{${reduce1} ${slicer} (${expr}) ${index} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)", `@reduce;\([sp](?P<assign>.*?:= ?)?[sp](?P<expr>[expr]+)[sp]\)endexpr;`, `{{${reduce1} ${assign}${expr} ${reduce2}}}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 
-	{"Space eater", `@-`, `{{- "" -}}`},
+	{"Space eater", `@-endexpr;`, `{{- "" -}}`},
 
 	// Inline contents: Render the content without its enclosing quotes
 	{`Inline content "<<..."`, `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},

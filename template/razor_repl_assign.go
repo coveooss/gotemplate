@@ -2,11 +2,9 @@ package template
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/coveooss/multilogger/reutils"
-	"github.com/fatih/color"
 )
 
 var alreadyIssued = make(map[string]int)
@@ -19,43 +17,50 @@ func assignExpressionAcceptError(repl replacement, match string) string {
 	return assignExpressionInternal(repl, match, true)
 }
 
-// TODO: Deprecated, to remove in future version
-var deprecatedAssign = String(os.Getenv(EnvDeprecatedAssign)).ParseBool()
-
 func assignExpressionInternal(repl replacement, match string, acceptError bool) string {
-	// TODO: Deprecated, to remove in future version
-	if strings.HasPrefix(match, repl.delimiters[0]) || strings.HasPrefix(match, repl.delimiters[2]+"(") {
-		// This is an already go template assignation
-		return match
-	}
-	if strings.HasPrefix(match, "$") {
-		if deprecatedAssign {
-			return match
-		}
-	}
-
 	matches, _ := reutils.MultiMatch(match, repl.re)
 	tp := matches["type"]
 	id := matches["id"]
 	expr := matches["expr"]
 	assign := matches["assign"]
 	if tp == "" || id == "" || expr == "" || assign == "" {
-		InternalLog.Errorf("Invalid assign regex %s: %s, must contains type, id and expr", repl.name, repl.expr)
+		InternalLog.Errorf("Invalid assign regex %s: %s for '%s', must contains type, id and expr", repl.name, repl.expr, match)
 		return match
 	}
 
-	local := (tp == "$" || tp == "@{" || tp == "@$") && idRegex.MatchString(id)
+	global := false
+	internal := true
+	switch tp {
+	case "@$.":
+		tp = "@"
+		fallthrough
+	case "@", "@.":
+		global = true
+	case "@{", "@$":
+		internal = strings.Contains(id, ".")
+	}
 	var err error
-	if expr, err = expressionParserInternal(exprRepl, expr, true, !local); err != nil && !acceptError {
+	if expr, err = expressionParserInternal(exprRepl, expr, true, internal); err != nil && !acceptError {
 		return match
 	}
 
-	if local {
-		if strings.HasPrefix(match, "$") {
-			// TODO: Deprecated, to remove in future version
-			InternalLog.Warningf("$var := value assignation is deprecated, use @{var} := value instead. In: %s", color.HiBlackString(match))
+	switch assign {
+	case ":=", "=":
+		break
+	default:
+		// This is an assignment operator (i.e. +=, /=, <<=, etc.)
+		if tp != "@{" {
+			value := map[string]string{"@": "$.", "@.": ".", "@$": "$"}[tp] + id
+			match = fmt.Sprintf("%[5]s%[1]s = %[2]s %[3]s %[4]s", id, value, assign[:len(assign)-1], expr, tp)
+		} else if acceptError {
+			match = fmt.Sprintf("@{%[1]s = $%[1]s %[2]s %[3]s}", id, assign[:len(assign)-1], expr)
+		} else {
+			match = fmt.Sprintf("@{%[1]s} = $%[1]s %[2]s %[3]s", id, assign[:len(assign)-1], expr)
 		}
+		return assignExpressionInternal(repl, match, acceptError)
+	}
 
+	if !global && !internal {
 		return fmt.Sprintf("%s- $%s %s %s %s", repl.delimiters[0], id, assign, expr, repl.delimiters[1])
 	}
 
@@ -63,28 +68,36 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	object := strings.Join(parts[:len(parts)-1], ".")
 	id = parts[len(parts)-1]
 
-	if tp == "$" {
-		if len(parts) < 2 {
-			if alreadyIssued[match] == 0 {
-				InternalLog.Errorf("Invalid local assignment: %s", match)
-				alreadyIssued[match]++
-			}
-			return match
-		}
-		object = "$" + object
-	} else if strings.HasSuffix(tp, ".") {
+	if !global {
+		// This is a local assignation with sub elements
+		return fmt.Sprintf(`%[1]s- set $%[3]s "%[4]s" %[5]s %[2]s`, repl.delimiters[0], repl.delimiters[1], object, id, expr)
+	}
+
+	if strings.HasSuffix(tp, ".") {
 		object = "." + object
 	} else {
 		object = iif(object == "", "$", "$."+object).(string)
 	}
 
-	// To avoid breaking change, we issue a warning instead of assertion if the variable has not been declared before being set
-	// or declared more than once and the feature flag GOTEMPLATE_DEPRECATED_ASSIGN is not set
-	validateFunction := iif(deprecatedAssign, "assert", "assertWarning")
-	validateCode := fmt.Sprintf(map[bool]string{
-		true:  `%[2]s (not (isNil %[1]s)) "%[1]s does not exist, use := to declare new variable"`,
-		false: `%[2]s (isNil %[1]s) "%[1]s has already been declared, use = to overwrite existing value"`,
-	}[assign == "="], fmt.Sprintf("%s%s", iif(strings.HasSuffix(object, "."), object, object+"."), id), validateFunction)
-
-	return fmt.Sprintf(`%[1]s- %[3]s %[2]s%[1]s- set %[4]s "%[5]s" %s %[2]s`, repl.delimiters[0], repl.delimiters[1], validateCode, object, id, expr, repl.delimiters[1])
+	if assign == ":=" || StrictAssignationMode == AssignationValidationDisabled {
+		// We do not check if the variable already exist (or not)
+		return fmt.Sprintf(`%[1]s- set %[3]s "%[4]s" %[5]s %[2]s`, repl.delimiters[0], repl.delimiters[1], object, id, expr)
+	}
+	objectID := fmt.Sprintf("%s%s", iif(strings.HasSuffix(object, "."), object, object+"."), id)
+	validateCode := iif(StrictAssignationMode == AssignationValidationWarning, "assertWarning", "assert").(string)
+	validateCode += fmt.Sprintf(` (not (isNil %[1]s)) "%[1]s does not exist, use := to declare new variable"`, objectID)
+	return fmt.Sprintf(`%[1]s- %[3]s %[2]s%[1]s- set %[4]s "%[5]s" %[6]s %[2]s`, repl.delimiters[0], repl.delimiters[1], validateCode, object, id, expr)
 }
+
+// AssignationValidationType is the enum type to define valid global variables validation mode.
+type AssignationValidationType uint8
+
+// Valid values for AssignationValidationType
+const (
+	AssignationValidationDisabled AssignationValidationType = iota
+	AssignationValidationWarning
+	AssignationValidationStrict
+)
+
+// StrictAssignationMode defines the global assignation validation mode.
+var StrictAssignationMode = AssignationValidationWarning
