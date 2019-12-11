@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/coveooss/multilogger"
 )
 
 // String is an enhanced class implementation of the standard go string library.
@@ -436,18 +438,8 @@ func (s String) AddLineNumber(space int) String {
 	return lines.Join("\n")
 }
 
-// ParseBool returns true if variable exist and is not clearly a false value
-//    i.e. empty, 0, Off, No, n, false, f
+// ParseBool returns true if variable exist and is not clearly a false value.
+//    i.e. empty, 0, Off, No, n, false, f.
 func (s String) ParseBool() bool {
-	// We first try with the strconv library
-	if result, err := strconv.ParseBool(s.Str()); err == nil {
-		return result
-	}
-	switch s.ToUpper() {
-	case "", "N", "NO", "OFF":
-		return false
-	default:
-		// Any other value is considered as true
-		return true
-	}
+	return multilogger.ParseBool(string(s))
 }

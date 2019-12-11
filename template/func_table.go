@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/fatih/color"
 )
 
@@ -21,6 +21,28 @@ type FuncInfo struct {
 	description string
 	in, out     string
 	alias       *FuncInfo
+	examples    []Example
+}
+
+// Example can be added to a function to describe how to use it.
+type Example struct {
+	Razor    string
+	Template string
+	Result   string
+}
+
+func (e Example) String() (result string) {
+	section := color.HiBlackString
+	if e.Razor != "" {
+		result += fmt.Sprintln(section("Razor:       "), String(e.Razor).IndentN(14).TrimSpace())
+	}
+	if e.Template != "" {
+		result += fmt.Sprintln(section("Go Template: "), String(e.Template).IndentN(14).TrimSpace())
+	}
+	if e.Result != "" {
+		result += fmt.Sprintln(section("Result:      "), String(e.Result).IndentN(14).TrimSpace())
+	}
+	return result
 }
 
 // Aliases returns the aliases related to the entry.
@@ -38,11 +60,19 @@ func (fi FuncInfo) Group() string { return ifUndef(&fi, fi.alias).(*FuncInfo).gr
 // Name returns the name related to the entry.
 func (fi FuncInfo) Name() string { return fi.name }
 
-// Signature returns the function signature
+// Signature returns the function signature.
 func (fi FuncInfo) Signature() string { return fi.getSignature(false) }
 
 // IsAlias indicates if the current function is an alias.
 func (fi FuncInfo) IsAlias() bool { return fi.alias != nil }
+
+// RealName returns the real name of a function wether it's an alias or not.
+func (fi FuncInfo) RealName() string {
+	if fi.alias == nil {
+		return fi.name
+	}
+	return fi.alias.name
+}
 
 // String returns the presentation of the FuncInfo entry.
 func (fi FuncInfo) String() (result string) {
@@ -60,7 +90,9 @@ func (fi FuncInfo) String() (result string) {
 	return result + signature
 }
 
-// Signature returns the function signature
+// Examples returns the list of examples associated to the function.
+func (fi FuncInfo) Examples() []Example { return fi.examples }
+
 func (fi FuncInfo) getSignature(isMethod bool) string {
 	col := color.HiBlueString
 	name := fi.name
@@ -115,15 +147,23 @@ func (fi FuncInfo) Result() string {
 	}
 	signature := reflect.ValueOf(fi.function).Type()
 	var outputs []string
-	for i := 0; i < signature.NumOut(); i++ {
-		r := strings.Replace(fmt.Sprint(signature.Out(i)), "interface {}", "interface{}", -1)
+	for i, nb := 0, signature.NumOut(); i < nb; i++ {
+		r := fmt.Sprint(signature.Out(i))
+		if r == "error" && i == nb-1 {
+			break
+		}
+		r = strings.Replace(r, "interface {}", "interface{}", -1)
 		r = strings.Replace(r, "collections.", "", -1)
 		outputs = append(outputs, r)
 	}
-	return strings.Join(outputs, ", ")
+	if len(outputs) == 1 {
+		return outputs[0]
+
+	}
+	return fmt.Sprintf("(%s)", strings.Join(outputs, ", "))
 }
 
-type funcTableMap map[string]FuncInfo
+type funcTableMap map[string]*FuncInfo
 
 func (ftm funcTableMap) convert() template.FuncMap {
 	result := collections.CreateDictionary(len(ftm))
@@ -148,6 +188,8 @@ const (
 	FuncAliases
 	// FuncGroup is used to associate a group to functions added to go templates.
 	FuncGroup
+	// FuncExamples is used to associate examples (from razor to template to result) to functions added to go templates.
+	FuncExamples
 )
 
 // FuncOptions is a map of FuncOptionsSet that is used to associates help, aliases, arguments and groups to functions added to go template.
@@ -157,6 +199,7 @@ type aliases = map[string][]string
 type arguments = map[string][]string
 type descriptions = map[string]string
 type dictionary = map[string]interface{}
+type examples = map[string][]Example
 type groups = map[string]string
 
 // AddFunctions add functions to the template, but keep a detailled definition of the function added for helping purpose
@@ -166,14 +209,17 @@ func (t *Template) AddFunctions(funcs dictionary, group string, options FuncOpti
 	aliases := defval(options[FuncAliases], aliases{}).(aliases)
 	arguments := defval(options[FuncArgs], arguments{}).(arguments)
 	groups := defval(options[FuncGroup], groups{}).(groups)
+	examples := defval(options[FuncExamples], examples{}).(examples)
 	for key, val := range funcs {
-		ft[key] = FuncInfo{
+		funcInfo := &FuncInfo{
 			function:    val,
 			group:       defval(group, groups[key]).(string),
 			aliases:     aliases[key],
 			arguments:   arguments[key],
 			description: help[key],
+			examples:    examples[key],
 		}
+		ft[key] = funcInfo
 	}
 
 	return t.addFunctions(ft)
@@ -190,10 +236,7 @@ func (t *Template) addFunctions(funcMap funcTableMap) *Template {
 		value.name = key
 		t.functions[key] = value
 		for i := range value.aliases {
-			// It is necessary here to take a distinct copy of the variable since
-			// val will change over the iteration and we cannot rely on its address
-			copy := value
-			funcMap[value.aliases[i]] = FuncInfo{alias: &copy, function: value.function, name: value.aliases[i]}
+			funcMap[value.aliases[i]] = &FuncInfo{alias: value, function: value.function, name: value.aliases[i]}
 			t.functions[value.aliases[i]] = funcMap[value.aliases[i]]
 		}
 	}
@@ -201,8 +244,28 @@ func (t *Template) addFunctions(funcMap funcTableMap) *Template {
 	return t
 }
 
+// Completes example that are not fully described.
+func (t *Template) completeExamples() string {
+	for _, function := range t.functions {
+		for i := range function.examples {
+			example := &function.examples[i]
+			if example.Razor != "" && example.Template == "" {
+				result, _ := t.applyRazor([]byte(example.Razor))
+				example.Template = string(result)
+			}
+			if example.Template != "" && example.Result == "" {
+				var err error
+				if example.Result, err = t.ProcessContent(example.Template, "."); err != nil {
+					InternalLog.Errorf("Error while ")
+				}
+			}
+		}
+	}
+	return ""
+}
+
 // List the available functions in the template
-func (t Template) getFunctionsInternal(original, alias bool) (result []string) {
+func (t *Template) getFunctionsInternal(original, alias bool) (result []string) {
 	for name := range t.functions {
 		fi := t.functions[name]
 		if original && fi.alias == nil {
@@ -216,11 +279,11 @@ func (t Template) getFunctionsInternal(original, alias bool) (result []string) {
 	return
 }
 
-func (t Template) getAliases() []string      { return t.getFunctionsInternal(false, true) }
-func (t Template) getAllFunctions() []string { return t.getFunctionsInternal(true, true) }
-func (t Template) getFunctions() []string    { return t.getFunctionsInternal(true, false) }
+func (t *Template) getAliases() []string      { return t.getFunctionsInternal(false, true) }
+func (t *Template) getAllFunctions() []string { return t.getFunctionsInternal(true, true) }
+func (t *Template) getFunctions() []string    { return t.getFunctionsInternal(true, false) }
 
 // List the available functions in the template
-func (t Template) getFunction(name string) FuncInfo {
+func (t *Template) getFunction(name string) *FuncInfo {
 	return t.functions[name]
 }

@@ -4,7 +4,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/utils"
 )
 
 const (
@@ -22,7 +22,7 @@ func (t *Template) addFuncs() {
 	if baseGoTemplateFuncs == nil {
 		baseGoTemplateFuncs = make(funcTableMap, len(baseGoTemplate))
 		for key, val := range baseGoTemplate {
-			baseGoTemplateFuncs[key] = FuncInfo{
+			baseGoTemplateFuncs[key] = &FuncInfo{
 				group:       goTemplateBase,
 				description: val.description,
 				in:          val.args,
@@ -46,15 +46,16 @@ func (t *Template) addFuncs() {
 	add(Utils, t.addUtilsFuncs)
 	add(Net, t.addNetFuncs)
 	add(OS, t.addOSFuncs)
+	add(Git, t.addGitFuncs)
 }
 
 // Apply all regular expressions replacements to the supplied string
-func (t Template) substitute(content string) string {
+func (t *Template) substitute(content string) string {
 	return utils.Substitute(content, t.substitutes...)
 }
 
 // List the available template names
-func (t Template) getTemplateNames() []string {
+func (t *Template) getTemplateNames() []string {
 	templates := t.Templates()
 	result := make([]string, len(templates))
 	for i := range templates {
@@ -75,7 +76,7 @@ var baseGoTemplate = map[string]struct {
 	},
 	"call": {
 		`Returns the result of calling the first argument, which must be a function, with the remaining arguments as parameters. Thus "call .X.Y 1 2" is, in Go notation, dot.X.Y(1, 2) where Y is a func-valued field, map entry, or the like. The first argument must be the result of an evaluation that yields a value of function type (as distinct from a predefined function such as print). The function must return either one or two result values, the second of which is of type error. If the arguments don't match the function or the returned error value is non-nil, execution stops.`,
-		`fn reflect.Value, args ...reflect.Value`, `reflect.Value, error)`,
+		`fn reflect.Value, args ...reflect.Value`, `reflect.Value`,
 	},
 	"html": {
 		`Returns the escaped HTML equivalent of the textual representation of its arguments. This function is unavailable in html/template, with a few exceptions.`,
@@ -83,7 +84,7 @@ var baseGoTemplate = map[string]struct {
 	},
 	"index": {
 		`Returns the result of indexing its first argument by the following arguments. Thus "index x 1 2 3" is, in Go syntax, x[1][2][3]. Each indexed item must be a map, slice, or array.`,
-		`item reflect.Value, indices ...reflect.Value`, `(reflect.Value, error)`,
+		`item reflect.Value, indices ...reflect.Value`, `reflect.Value`,
 	},
 	"js": {
 		`Returns the escaped JavaScript equivalent of the textual representation of its arguments.`,
@@ -91,7 +92,7 @@ var baseGoTemplate = map[string]struct {
 	},
 	"len": {
 		`Returns the integer length of its argument.`,
-		`item interface{}`, `(int, error)`,
+		`item interface{}`, `int`,
 	},
 	"not": {
 		`Returns the boolean negation of its single argument.`,
@@ -120,26 +121,26 @@ var baseGoTemplate = map[string]struct {
 
 	"eq": {
 		`Returns the boolean truth of arg1 == arg2`,
-		`arg1 reflect.Value, arg2 ...reflect.Value`, `(bool, error)`,
+		`arg1 reflect.Value, arg2 ...reflect.Value`, `bool`,
 	},
 	"ge": {
 		`Returns the boolean truth of arg1 >= arg2`,
-		`arg1 reflect.Value, arg2 ...reflect.Value`, `(bool, error)`,
+		`arg1 reflect.Value, arg2 ...reflect.Value`, `bool`,
 	},
 	"gt": {
 		`Returns the boolean truth of arg1 > arg2`,
-		`arg1 reflect.Value, arg2 ...reflect.Value`, `(bool, error)`,
+		`arg1 reflect.Value, arg2 ...reflect.Value`, `bool`,
 	},
 	"le": {
 		`Returns the boolean truth of arg1 <= arg2`,
-		`arg1 reflect.Value, arg2 ...reflect.Value`, `(bool, error)`,
+		`arg1 reflect.Value, arg2 ...reflect.Value`, `bool`,
 	},
 	"lt": {
 		`Returns the boolean truth of arg1 < arg2`,
-		`arg1 reflect.Value, arg2 ...reflect.Value`, `(bool, error)`,
+		`arg1 reflect.Value, arg2 ...reflect.Value`, `bool`,
 	},
 	"ne": {
 		`Returns the boolean truth of arg1 != arg2`,
-		`arg1 reflect.Value, arg2 ...reflect.Value`, `(bool, error)`,
+		`arg1 reflect.Value, arg2 ...reflect.Value`, `bool`,
 	},
 }

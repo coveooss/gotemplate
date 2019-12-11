@@ -1,0 +1,31 @@
+name: Build Pull Request
+on: [pull_request]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+        id: go
+
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Run Tests
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          make codecov
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2.2.1
+        with:
+          hugo-version: "0.58.3"
+          extended: true
+
+      - name: Test Documentation
+        run: |
+          make doc-generate

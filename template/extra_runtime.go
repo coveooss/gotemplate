@@ -10,8 +10,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/utils"
+	multicolor "github.com/coveooss/multilogger/color"
 	"github.com/fatih/color"
 )
 
@@ -59,11 +60,12 @@ var runtimeFuncsHelp = descriptions{
 		    Name        string
 		    Functions    []string
 	`)),
-	"current":  "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
-	"ellipsis": "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
-	"exec":     "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
-	"exit":     "Exits the current program execution.",
-	"func":     "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
+	"completeExamples": "Complete the examples that are not fully generated.",
+	"current":          "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
+	"ellipsis":         "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
+	"exec":             "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
+	"exit":             "Exits the current program execution.",
+	"func":             "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
 	"function": strings.TrimSpace(collections.UnIndent(`
 		Returns the information relative to a specific function.
 
@@ -91,37 +93,43 @@ var runtimeFuncsHelp = descriptions{
 }
 
 func (t *Template) addRuntimeFuncs() {
-	t.AddFunctions(dictionary{
-		"assert":        assert,
-		"assertWarning": assertWarning,
-		"exit":          exit,
-		"getAttributes": getAttributes,
-		"getMethods":    getMethods,
-		"getSignature":  getSignature,
-		"raise":         raise,
-		"alias":         t.alias,
-		"aliases":       t.getAliases,
-		"allFunctions":  t.getAllFunctions,
-		"categories":    t.getCategories,
-		"current":       t.current,
-		"ellipsis":      t.ellipsis,
-		"exec":          t.execCommand,
-		"func":          t.defineFunc,
-		"function":      t.getFunction,
-		"functions":     t.getFunctions,
-		"include":       t.include,
-		"localAlias":    t.localAlias,
-		"run":           t.runCommand,
-		"substitute":    t.substitute,
-		"templateNames": t.getTemplateNames,
-		"templates":     t.Templates,
-		"userContext":   t.userContext,
-	}, runtimeFunc, FuncOptions{FuncHelp: runtimeFuncsHelp, FuncArgs: runtimeFuncsArgs, FuncAliases: runtimeFuncsAliases})
+	var funcs = dictionary{
+		"alias":            t.alias,
+		"aliases":          t.getAliases,
+		"allFunctions":     t.getAllFunctions,
+		"assert":           assertError,
+		"assertWarning":    assertWarning,
+		"categories":       t.getCategories,
+		"completeExamples": t.completeExamples,
+		"current":          t.current,
+		"ellipsis":         t.ellipsis,
+		"exec":             t.execCommand,
+		"exit":             exit,
+		"func":             t.defineFunc,
+		"function":         t.getFunction,
+		"functions":        t.getFunctions,
+		"getAttributes":    getAttributes,
+		"getMethods":       getMethods,
+		"getSignature":     getSignature,
+		"include":          t.include,
+		"localAlias":       t.localAlias,
+		"raise":            raise,
+		"run":              t.runCommand,
+		"substitute":       t.substitute,
+		"templateNames":    t.getTemplateNames,
+		"templates":        t.Templates,
+		"userContext":      t.userContext,
+	}
+	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
+		FuncHelp:    runtimeFuncsHelp,
+		FuncArgs:    runtimeFuncsArgs,
+		FuncAliases: runtimeFuncsAliases,
+	})
 }
 
 func exit(exitValue int) int { os.Exit(exitValue); return exitValue }
 
-func (t Template) current() string { return t.folder }
+func (t *Template) current() string { return t.folder }
 
 func (t *Template) userContext() interface{} {
 	c, err := collections.TryAsDictionary(t.context)
@@ -181,7 +189,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	if !context {
-		t.aliases[name] = FuncInfo{
+		t.aliases[name] = &FuncInfo{
 			function: func(args ...interface{}) (result interface{}, err error) {
 				return f(collections.Interface2string(source), append(defaultArgs, args...)...)
 			},
@@ -252,7 +260,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	emptyList := collections.CreateList()
-	fi := FuncInfo{
+	fi := &FuncInfo{
 		name:        name,
 		group:       defval(config.Get("group"), "User defined functions").(string),
 		description: defval(config.Get("description"), "").(string),
@@ -343,7 +351,7 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Dir = t.folder
-	log.Notice("Launching", cmd.Args, "in", cmd.Dir)
+	InternalLog.Info("Launching", cmd.Args, "in", cmd.Dir)
 
 	if err = cmd.Run(); err == nil {
 		result = stdout.String()
@@ -438,13 +446,13 @@ func (t *Template) runTemplate(source string, args ...interface{}) (resultConten
 	return
 }
 
-func (t Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
+func (t *Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
 	content, _, err := t.runTemplate(source, context...)
 	return content, err
 }
 
 // This function is used to call a function that requires its last argument to be expanded ...
-func (t Template) ellipsis(function string, args ...interface{}) (interface{}, error) {
+func (t *Template) ellipsis(function string, args ...interface{}) (interface{}, error) {
 	last := len(args) - 1
 	if last >= 0 && args[last] == nil {
 		args[last] = []interface{}{}
@@ -527,10 +535,10 @@ func getSignature(object interface{}) string {
 }
 
 func raise(args ...interface{}) (string, error) {
-	return "", fmt.Errorf(utils.FormatMessage(args...))
+	return "", fmt.Errorf(multicolor.FormatMessage(args...))
 }
 
-func assert(test interface{}, args ...interface{}) (string, error) {
+func assertError(test interface{}, args ...interface{}) (string, error) {
 	if isZero(test) {
 		if len(args) == 0 {
 			args = []interface{}{"Assertion failed"}
@@ -545,7 +553,7 @@ func assertWarning(test interface{}, args ...interface{}) string {
 		if len(args) == 0 {
 			args = []interface{}{"Assertion failed"}
 		}
-		Log.Warning(utils.FormatMessage(args...))
+		TemplateLog.Warning(multicolor.FormatMessage(args...))
 	}
 	return ""
 }

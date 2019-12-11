@@ -5,7 +5,7 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 func toInt(value interface{}) int {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 func (l baseList) String() string      { return fmt.Sprint(l.AsArray()) }
@@ -69,6 +69,16 @@ func (lh ListHelper) GetStringArray(list baseIList) strArray {
 	return result
 }
 
+// GetTypes returns a list with all types (or kinds) for each element.
+func (lh ListHelper) GetTypes(list baseIList, kind bool) baseIList {
+	result := lh.CreateList(list.Len())
+	for i := range list.AsArray() {
+		value := list.Get(i)
+		result.Set(i, iif(kind, reflect.TypeOf(value).Kind().String(), reflect.TypeOf(value).Name()))
+	}
+	return result
+}
+
 // NewList creates a new IGenericList from supplied arguments.
 func (bh BaseHelper) NewList(items ...interface{}) baseIList {
 	if len(items) == 1 && items[0] != nil {
@@ -120,9 +130,14 @@ func (lh ListHelper) SetIndex(list baseIList, index int, value interface{}) (bas
 	return list, nil
 }
 
+// Type returns the actual type of object.
+func (lh ListHelper) Type(list baseIList) str {
+	return str(reflect.TypeOf(list).Name())
+}
+
 // Register the implementation of list functions
 var _ = func() int {
-	collections.ListHelper = baseListHelper
+	collections.SetListHelper(baseListHelper)
 	return 0
 }()
 

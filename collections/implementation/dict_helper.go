@@ -2,8 +2,9 @@ package implementation
 
 import (
 	"fmt"
+	"reflect"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 func (d baseDict) String() string {
@@ -105,6 +106,16 @@ func (dh DictHelper) GetKeys(dict baseIDict) baseIList {
 	return result
 }
 
+// GetTypes returns a dictionary with key and type (or kind) for each element.
+func (dh DictHelper) GetTypes(dict baseIDict, kind bool) baseIDict {
+	result := dh.CreateDictionary(dict.Len())
+
+	for key, value := range dict.AsMap() {
+		result.Set(key, iif(kind, reflect.TypeOf(value).Kind().String(), reflect.TypeOf(value).Name()))
+	}
+	return result
+}
+
 // KeysAsString returns the keys in the dictionary in alphabetical order.
 func (dh DictHelper) KeysAsString(dict baseIDict) collections.StringArray {
 	keys := make(collections.StringArray, 0, dict.Len())
@@ -150,17 +161,10 @@ func (dh DictHelper) deepMerge(target baseIDict, source baseIDict) baseIDict {
 
 // Omit returns a distinct copy of the object including all keys except specified ones.
 func (dh DictHelper) Omit(dict baseIDict, keys []interface{}) baseIDict {
-	omitKeys := make(map[string]bool, len(keys))
-	for i := range keys {
-		omitKeys[fmt.Sprint(keys[i])] = true
+	if len(keys) == 0 {
+		return dict.Clone()
 	}
-	keep := make([]interface{}, 0, dict.Len())
-	for key := range dict.AsMap() {
-		if !omitKeys[key] {
-			keep = append(keep, key)
-		}
-	}
-	return dh.Clone(dict, keep)
+	return dict.Clone().Flush(keys...)
 }
 
 // Pop returns and remove the objects with the specified keys.
@@ -230,6 +234,11 @@ func (dh DictHelper) Transpose(dict baseIDict) baseIDict {
 	return result
 }
 
+// Type returns the actual type of object.
+func (dh DictHelper) Type(dict baseIDict) str {
+	return str(reflect.TypeOf(dict).Name())
+}
+
 func (dh DictHelper) delete(dict baseIDict, keys []interface{}, mustExist bool) (baseIDict, error) {
 	for i := range keys {
 		if mustExist && !dict.Has(keys[i]) {
@@ -242,6 +251,6 @@ func (dh DictHelper) delete(dict baseIDict, keys []interface{}, mustExist bool) 
 
 // Register the default implementation of dictionary helper
 var _ = func() int {
-	collections.DictionaryHelper = baseDictHelper
+	collections.SetDictionaryHelper(baseDictHelper)
 	return 0
 }()
