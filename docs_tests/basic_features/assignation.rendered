@@ -7,15 +7,15 @@ As in Go lang, you must initially declare your global variable using the `:=` as
 
 | Razor expression                            | Go Template                                                                     | Note
 | ----------------                            | -----------                                                                     | ----
-| ``                | `<pre-assign check code>`                   | Global declare and assign of string
-| ``                          | `<pre-assign check code>`                             | Global declare and assign of integer
-| ``                        | `<pre-assign check code>`                           | Global declare and assign of floating point
-| ``                        | `<pre-assign check code>`                           | Global declare and assign of large scientific notation number
-| ``                        | `<pre-assign check code>`                           | Global declare and assign of small scientific notation number
-| ``                          | `<pre-assign check code>`                             | Global declare and assign of hexadecimal number
-| ``                      | `<pre-assign check code>`               | Global declare and assign of mathematic expression
-| `` | `<pre-assign check code>` | Global declare and assign of generic expression
-| ``                    | `<pre-assign check code>`                      | Global replacement of previously declared global variable
+| ``                | ``                   | Global declare and assign of string
+| ``                          | ``                             | Global declare and assign of integer
+| ``                        | ``                           | Global declare and assign of floating point
+| ``                        | ``                           | Global declare and assign of large scientific notation number
+| ``                        | ``                           | Global declare and assign of small scientific notation number
+| ``                          | ``                             | Global declare and assign of hexadecimal number
+| ``                      | ``               | Global declare and assign of mathematic expression
+| `` | `` | Global declare and assign of generic expression
+| ``                    | ``                      | Global replacement of previously declared global variable
 
 ## Local variables
 
@@ -57,13 +57,14 @@ Using the Razor syntax, it is possible to use assignment operators such as `+=`,
 | `<<`, `«`   | `<<=`, `«==` | Left shift
 | `>>`, `»`   | `>>=`, `»==` | Right shift
 
-| Razor expression  | Go Template                                                | Note
-| ----------------  | -----------                                                | ----
-| ``      | `<pre-assign check code>` | Add assignment operator on global
-| ``   | ``                                       | Local assignation
-| ``   | ``                            | Add assignment operator on local
-| ``  | ``                            | Multiply assignment operator on local
-| ``   | ``                             | Divide assignment operator on local
+| Razor expression  | Go Template                         | Note
+| ----------------  | -----------                         | ----
+| ``      | ``             | Add assignment operator on global
+| ``       | `` | Add assignment operator on global
+| ``   | ``                | Local assignation
+| ``   | ``     | Add assignment operator on local
+| ``  | ``     | Multiply assignment operator on local
+| ``   | ``      | Divide assignment operator on local
 
 ### Exception
 

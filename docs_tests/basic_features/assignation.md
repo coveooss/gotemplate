@@ -7,15 +7,15 @@ As in Go lang, you must initially declare your global variable using the `:=` as
 
 | Razor expression                            | Go Template                                                                     | Note
 | ----------------                            | -----------                                                                     | ----
-| `@string := "string value";`                | `<pre-assign check code>{{- set $ "string" "string value" }}`                   | Global declare and assign of string
-| `@numeric1 := 10;`                          | `<pre-assign check code>{{- set $ "numeric1" 10 }}`                             | Global declare and assign of integer
-| `@numeric2 := 1.23;`                        | `<pre-assign check code>{{- set $ "numeric2" 1.23 }}`                           | Global declare and assign of floating point
-| `@numeric3 := 4E+4;`                        | `<pre-assign check code>{{- set $ "numeric3" 4E+4 }}`                           | Global declare and assign of large scientific notation number
-| `@numeric4 := 5E-3;`                        | `<pre-assign check code>{{- set $ "numeric4" 5E-3 }}`                           | Global declare and assign of small scientific notation number
-| `@hexa1 := 0x100;`                          | `<pre-assign check code>{{- set $ "hexa1" 0x100 }}`                             | Global declare and assign of hexadecimal number
-| `@result1 := (2+3)*4;`                      | `<pre-assign check code>{{- set $ "result1" (mul (add 2 3) 4) }}`               | Global declare and assign of mathematic expression
-| `@result2 := String("hello world!").Title;` | `<pre-assign check code>{{- set $ "result2" ((String "hello world!").Title) }}` | Global declare and assign of generic expression
-| `@result2 = "Replaced";`                    | `<pre-assign check code>{{- set $ "result2" "Replaced" }}`                      | Global replacement of previously declared global variable
+| `@string := "string value";`                | `{{- set $ "string" "string value" }}`                   | Global declare and assign of string
+| `@numeric1 := 10;`                          | `{{- set $ "numeric1" 10 }}`                             | Global declare and assign of integer
+| `@numeric2 := 1.23;`                        | `{{- set $ "numeric2" 1.23 }}`                           | Global declare and assign of floating point
+| `@numeric3 := 4E+4;`                        | `{{- set $ "numeric3" 4E+4 }}`                           | Global declare and assign of large scientific notation number
+| `@numeric4 := 5E-3;`                        | `{{- set $ "numeric4" 5E-3 }}`                           | Global declare and assign of small scientific notation number
+| `@hexa1 := 0x100;`                          | `{{- set $ "hexa1" 0x100 }}`                             | Global declare and assign of hexadecimal number
+| `@result1 := (2+3)*4;`                      | `{{- set $ "result1" (mul (add 2 3) 4) }}`               | Global declare and assign of mathematic expression
+| `@result2 := String("hello world!").Title;` | `{{- set $ "result2" ((String "hello world!").Title) }}` | Global declare and assign of generic expression
+| `@result2 = "Replaced";`                    | `{{- set $ "result2" "Replaced" }}`                      | Global replacement of previously declared global variable
 
 ## Local variables
 
@@ -57,13 +57,14 @@ Using the Razor syntax, it is possible to use assignment operators such as `+=`,
 | `<<`, `«`   | `<<=`, `«==` | Left shift
 | `>>`, `»`   | `>>=`, `»==` | Right shift
 
-| Razor expression  | Go Template                                                | Note
-| ----------------  | -----------                                                | ----
-| `@num += 10`      | `<pre-assign check code>{{- set $ "num" (add $.num 10) }}` | Add assignment operator on global
-| `@{local} := 5`   | `{{- $local := 5 }}`                                       | Local assignation
-| `@$local += 10`   | `{{- $local = add $local 10 }}`                            | Add assignment operator on local
-| `@{local} *= 20`  | `{{- $local = mul $local 20 }}`                            | Multiply assignment operator on local
-| `@{local /= 2}`   | `{{- $local = div $local 2 }}`                             | Divide assignment operator on local
+| Razor expression  | Go Template                         | Note
+| ----------------  | -----------                         | ----
+| `@num := 10`      | `{{- set $ "num" 10 }}`             | Add assignment operator on global
+| `@num += 5`       | `{{- set $ "num" (add $.num 10) }}` | Add assignment operator on global
+| `@{local} := 5`   | `{{- $local := 5 }}`                | Local assignation
+| `@$local += 10`   | `{{- $local = add $local 10 }}`     | Add assignment operator on local
+| `@{local} *= 20`  | `{{- $local = mul $local 20 }}`     | Multiply assignment operator on local
+| `@{local /= 2}`   | `{{- $local = div $local 2 }}`      | Divide assignment operator on local
 
 ### Exception
 
