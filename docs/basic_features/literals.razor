@@ -9,8 +9,8 @@ But it you type something like `{{ $.john.doe }}{{ $.company.com }}`, it will tr
 The result would be `<no value><no value>` unless you have defined:
 
 ```go
-{{- assertWarning (isNil $.john) "$.john has already been declared, use = to overwrite existing value" }}{{- set $ "john" (data "doe = 123.45") }}
-{{- assertWarning (isNil $.company) "$.company has already been declared, use = to overwrite existing value" }}{{- set $ "company" (data "com = {{ $.Math.Pi }}") }}
+{{- set $ "john" (data "doe = 123.45") }}
+{{- set $ "company" (data "com = {{ $.Math.Pi }}") }}
 ```
 
 In that case, the result of `{{ $.john.doe }}{{ $.company.com }}` will be `123.453.141592653589793`.
@@ -37,7 +37,7 @@ The `{{ "expression" }}` will keep the spaces before and after expression as the
 
 With razor, assignation will render go template code with - on left side.
 
-* `{{- assertWarning (isNil $.expr) "$.expr has already been declared, use = to overwrite existing value" }}{{- set $ "expr" "expression" }}` => `{{- set $ "expr" "expression" }}`
+* `{{- set $ "expr" "expression" }}` => `{{- set $ "expr" "expression" }}`
 * `{{- $expr := "expression" }}` => `{{- $expr := "expression" }}`
 
 But for variables and other expressions, you have to specify the expected behavior.
