@@ -23,7 +23,7 @@ var templateMutex sync.Mutex
 // Template let us extend the functionalities of base go template library.
 type Template struct {
 	*template.Template
-	TempFolder     string
+	tempFolder     string
 	substitutes    []utils.RegexReplacer
 	context        interface{}
 	delimiters     []string
@@ -134,17 +134,23 @@ func MustNewTemplate(folder string, context interface{}, delimiters string, opti
 	return must(NewTemplate(folder, context, delimiters, options, substitutes...)).(*Template)
 }
 
+// TempFolder set temporary folder used by this template.
+func (t *Template) TempFolder(folder string) *Template {
+	t.tempFolder = folder
+	return t
+}
+
 // GetNewContext returns a distint context for each folder.
-func (t Template) GetNewContext(folder string, useCache bool) *Template {
+func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 	folder = iif(folder != "", folder, t.folder).(string)
 	if context, found := t.children[folder]; useCache && found {
 		return context
 	}
 
-	newTemplate := Template(t)
+	newTemplate := Template(*t)
 	newTemplate.Template = template.New(folder)
 	newTemplate.init(folder)
-	newTemplate.parent = &t
+	newTemplate.parent = t
 	newTemplate.addFunctions(t.aliases)
 	newTemplate.importTemplates(t)
 	newTemplate.options = make(OptionsSet)
@@ -163,28 +169,28 @@ func (t Template) GetNewContext(folder string, useCache bool) *Template {
 }
 
 // IsCode determines if the supplied code appears to have gotemplate code.
-func (t Template) IsCode(code string) bool {
+func (t *Template) IsCode(code string) bool {
 	return !strings.Contains(code, noGoTemplate) && (t.IsRazor(code) || strings.Contains(code, t.LeftDelim()) || strings.Contains(code, t.RightDelim()))
 }
 
 // IsRazor determines if the supplied code appears to have Razor code.
-func (t Template) IsRazor(code string) bool {
+func (t *Template) IsRazor(code string) bool {
 	return strings.Contains(code, t.RazorDelim()) && !strings.Contains(code, noGoTemplate) && !strings.Contains(code, noRazor)
 }
 
 // LeftDelim returns the left delimiter.
-func (t Template) LeftDelim() string { return t.delimiters[0] }
+func (t *Template) LeftDelim() string { return t.delimiters[0] }
 
 // RightDelim returns the right delimiter.
-func (t Template) RightDelim() string { return t.delimiters[1] }
+func (t *Template) RightDelim() string { return t.delimiters[1] }
 
 // RazorDelim returns the razor delimiter.
-func (t Template) RazorDelim() string { return t.delimiters[2] }
+func (t *Template) RazorDelim() string { return t.delimiters[2] }
 
 // SetOption allows setting of template option after initialization.
 func (t *Template) SetOption(option Options, value bool) { t.options[option] = value }
 
-func (t Template) isTemplate(file string) bool {
+func (t *Template) isTemplate(file string) bool {
 	for i := range templateExt {
 		if strings.HasSuffix(file, templateExt[i]) {
 			return true
@@ -224,7 +230,7 @@ func (t *Template) initExtension() {
 
 	// Add the children contexts to the main context
 	for _, context := range ext.children {
-		t.importTemplates(*context)
+		t.importTemplates(context)
 	}
 
 	// We reset the list of templates
@@ -266,7 +272,7 @@ func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...str
 }
 
 // Import templates from another template.
-func (t *Template) importTemplates(source Template) {
+func (t *Template) importTemplates(source *Template) {
 	for _, subTemplate := range source.Templates() {
 		if subTemplate.Name() != subTemplate.ParseName {
 			t.AddParseTree(subTemplate.Name(), subTemplate.Tree)
