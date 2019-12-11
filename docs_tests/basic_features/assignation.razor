@@ -5,21 +5,17 @@
 
 As in Go lang, you must initially declare your global variable using the `:=` assignment operator and subsequent overwrite use the `=` operator.
 
-Sometime, global variables may exist without the code writer being aware of their existence. They could be defined in an imported file and we
-need a mean to be able to assign theses variables without pre-assign validation. In that case, you could use the special `~=` assignment operator.
-
 | Razor expression                            | Go Template                                                                     | Note
 | ----------------                            | -----------                                                                     | ----
-| `{{- assert (isNil $.string) "$.string has already been declared, use = to overwrite existing value" }}{{- set $ "string" "string value" }}`                | `<pre-assign check code>{{- set $ "string" "string value" }}`                   | Global declare and assign of string
-| `{{- assert (isNil $.numeric1) "$.numeric1 has already been declared, use = to overwrite existing value" }}{{- set $ "numeric1" 10 }}`                          | `<pre-assign check code>{{- set $ "numeric1" 10 }}`                             | Global declare and assign of integer
-| `{{- assert (isNil $.numeric2) "$.numeric2 has already been declared, use = to overwrite existing value" }}{{- set $ "numeric2" 1.23 }}`                        | `<pre-assign check code>{{- set $ "numeric2" 1.23 }}`                           | Global declare and assign of floating point
-| `{{- assert (isNil $.numeric3) "$.numeric3 has already been declared, use = to overwrite existing value" }}{{- set $ "numeric3" 4E+4 }}`                        | `<pre-assign check code>{{- set $ "numeric3" 4E+4 }}`                           | Global declare and assign of large scientific notation number
-| `{{- assert (isNil $.numeric4) "$.numeric4 has already been declared, use = to overwrite existing value" }}{{- set $ "numeric4" 5E-3 }}`                        | `<pre-assign check code>{{- set $ "numeric4" 5E-3 }}`                           | Global declare and assign of small scientific notation number
-| `{{- assert (isNil $.hexa1) "$.hexa1 has already been declared, use = to overwrite existing value" }}{{- set $ "hexa1" 0x100 }}`                          | `<pre-assign check code>{{- set $ "hexa1" 0x100 }}`                             | Global declare and assign of hexadecimal number
-| `{{- assert (isNil $.result1) "$.result1 has already been declared, use = to overwrite existing value" }}{{- set $ "result1" (mul (add 2 3) 4) }}`                      | `<pre-assign check code>{{- set $ "result1" (mul (add 2 3) 4) }}`               | Global declare and assign of mathematic expression
-| `{{- assert (isNil $.result2) "$.result2 has already been declared, use = to overwrite existing value" }}{{- set $ "result2" ((String "hello world!").Title) }}` | `<pre-assign check code>{{- set $ "result2" ((String "hello world!").Title) }}` | Global declare and assign of generic expression
-| `{{- assert (not (isNil $.result2)) "$.result2 does not exist, use := to declare new variable" }}{{- set $ "result2" "Replaced" }}`                    | `<pre-assign check code>{{- set $ "result2" "Replaced" }}`                      | Global replacement of previously declared global variable
-| `{{- set $ "result1" "Replaced" }}`                   | `{{- set $ "result1" "Replaced" }}`                                             | Global declare and assign or replacement of previously declared global variable
+| `{{- set $ "string" "string value" }}`                | `<pre-assign check code>{{- set $ "string" "string value" }}`                   | Global declare and assign of string
+| `{{- set $ "numeric1" 10 }}`                          | `<pre-assign check code>{{- set $ "numeric1" 10 }}`                             | Global declare and assign of integer
+| `{{- set $ "numeric2" 1.23 }}`                        | `<pre-assign check code>{{- set $ "numeric2" 1.23 }}`                           | Global declare and assign of floating point
+| `{{- set $ "numeric3" 4E+4 }}`                        | `<pre-assign check code>{{- set $ "numeric3" 4E+4 }}`                           | Global declare and assign of large scientific notation number
+| `{{- set $ "numeric4" 5E-3 }}`                        | `<pre-assign check code>{{- set $ "numeric4" 5E-3 }}`                           | Global declare and assign of small scientific notation number
+| `{{- set $ "hexa1" 0x100 }}`                          | `<pre-assign check code>{{- set $ "hexa1" 0x100 }}`                             | Global declare and assign of hexadecimal number
+| `{{- set $ "result1" (mul (add 2 3) 4) }}`                      | `<pre-assign check code>{{- set $ "result1" (mul (add 2 3) 4) }}`               | Global declare and assign of mathematic expression
+| `{{- set $ "result2" ((String "hello world!").Title) }}` | `<pre-assign check code>{{- set $ "result2" ((String "hello world!").Title) }}` | Global declare and assign of generic expression
+| `{{- assertWarning (not (isNil $.result2)) "$.result2 does not exist, use := to declare new variable" }}{{- set $ "result2" "Replaced" }}`                    | `<pre-assign check code>{{- set $ "result2" "Replaced" }}`                      | Global replacement of previously declared global variable
 
 ## Local variables
 
@@ -63,8 +59,7 @@ Using the Razor syntax, it is possible to use assignment operators such as `+=`,
 
 | Razor expression  | Go Template                                                | Note
 | ----------------  | -----------                                                | ----
-| `{{- set $ "num" 5 }}`       | `{{- set $ "num" 5 }}`                                     | Global assignation
-| `{{- assert (not (isNil $.num)) "$.num does not exist, use := to declare new variable" }}{{- set $ "num" (add $.num 10) }}`      | `<pre-assign check code>{{- set $ "num" (add $.num 10) }}` | Add assignment operator on global
+| `{{- assertWarning (not (isNil $.num)) "$.num does not exist, use := to declare new variable" }}{{- set $ "num" (add $.num 10) }}`      | `<pre-assign check code>{{- set $ "num" (add $.num 10) }}` | Add assignment operator on global
 | `{{- $local := 5 }}`   | `{{- $local := 5 }}`                                       | Local assignation
 | `{{- $local = add $local 10 }}`   | `{{- $local = add $local 10 }}`                            | Add assignment operator on local
 | `{{- $local = mul $local 20 }}`  | `{{- $local = mul $local 20 }}`                            | Multiply assignment operator on local

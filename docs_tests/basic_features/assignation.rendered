@@ -5,9 +5,6 @@
 
 As in Go lang, you must initially declare your global variable using the `:=` assignment operator and subsequent overwrite use the `=` operator.
 
-Sometime, global variables may exist without the code writer being aware of their existence. They could be defined in an imported file and we
-need a mean to be able to assign theses variables without pre-assign validation. In that case, you could use the special `~=` assignment operator.
-
 | Razor expression                            | Go Template                                                                     | Note
 | ----------------                            | -----------                                                                     | ----
 | ``                | `<pre-assign check code>`                   | Global declare and assign of string
@@ -19,7 +16,6 @@ need a mean to be able to assign theses variables without pre-assign validation.
 | ``                      | `<pre-assign check code>`               | Global declare and assign of mathematic expression
 | `` | `<pre-assign check code>` | Global declare and assign of generic expression
 | ``                    | `<pre-assign check code>`                      | Global replacement of previously declared global variable
-| ``                   | ``                                             | Global declare and assign or replacement of previously declared global variable
 
 ## Local variables
 
@@ -63,7 +59,6 @@ Using the Razor syntax, it is possible to use assignment operators such as `+=`,
 
 | Razor expression  | Go Template                                                | Note
 | ----------------  | -----------                                                | ----
-| ``       | ``                                     | Global assignation
 | ``      | `<pre-assign check code>` | Add assignment operator on global
 | ``   | ``                                       | Local assignation
 | ``   | ``                            | Add assignment operator on local

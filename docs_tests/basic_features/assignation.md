@@ -5,9 +5,6 @@
 
 As in Go lang, you must initially declare your global variable using the `:=` assignment operator and subsequent overwrite use the `=` operator.
 
-Sometime, global variables may exist without the code writer being aware of their existence. They could be defined in an imported file and we
-need a mean to be able to assign theses variables without pre-assign validation. In that case, you could use the special `~=` assignment operator.
-
 | Razor expression                            | Go Template                                                                     | Note
 | ----------------                            | -----------                                                                     | ----
 | `@string := "string value";`                | `<pre-assign check code>{{- set $ "string" "string value" }}`                   | Global declare and assign of string
@@ -19,7 +16,6 @@ need a mean to be able to assign theses variables without pre-assign validation.
 | `@result1 := (2+3)*4;`                      | `<pre-assign check code>{{- set $ "result1" (mul (add 2 3) 4) }}`               | Global declare and assign of mathematic expression
 | `@result2 := String("hello world!").Title;` | `<pre-assign check code>{{- set $ "result2" ((String "hello world!").Title) }}` | Global declare and assign of generic expression
 | `@result2 = "Replaced";`                    | `<pre-assign check code>{{- set $ "result2" "Replaced" }}`                      | Global replacement of previously declared global variable
-| `@result1 ~= "Replaced";`                   | `{{- set $ "result1" "Replaced" }}`                                             | Global declare and assign or replacement of previously declared global variable
 
 ## Local variables
 
@@ -63,7 +59,6 @@ Using the Razor syntax, it is possible to use assignment operators such as `+=`,
 
 | Razor expression  | Go Template                                                | Note
 | ----------------  | -----------                                                | ----
-| `@num ~= 5`       | `{{- set $ "num" 5 }}`                                     | Global assignation
 | `@num += 10`      | `<pre-assign check code>{{- set $ "num" (add $.num 10) }}` | Add assignment operator on global
 | `@{local} := 5`   | `{{- $local := 5 }}`                                       | Local assignation
 | `@$local += 10`   | `{{- $local = add $local 10 }}`                            | Add assignment operator on local

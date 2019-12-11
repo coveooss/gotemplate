@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/coveooss/multilogger/reutils"
-	"github.com/fatih/color"
 )
 
 var alreadyIssued = make(map[string]int)
@@ -46,7 +45,7 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	}
 
 	switch assign {
-	case ":=", "=", "~=":
+	case ":=", "=":
 		break
 	default:
 		// This is an assignment operator (i.e. +=, /=, <<=, etc.)
@@ -62,13 +61,6 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	}
 
 	if !global && !internal {
-		if assign == "~=" {
-			if alreadyIssued[match] == 0 {
-				InternalLog.Error("~= assignment is not supported on local variables in", color.HiBlackString(match))
-				alreadyIssued[match]++
-			}
-			return match
-		}
 		return fmt.Sprintf("%s- $%s %s %s %s", repl.delimiters[0], id, assign, expr, repl.delimiters[1])
 	}
 
@@ -87,14 +79,25 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 		object = iif(object == "", "$", "$."+object).(string)
 	}
 
-	if assign == "~=" {
-		// This is a flexible assign, we do not check if the variable already exist (or not)
+	if assign == ":=" || StrictAssignationMode == AssignationValidationDisabled {
+		// We do not check if the variable already exist (or not)
 		return fmt.Sprintf(`%[1]s- set %[3]s "%[4]s" %[5]s %[2]s`, repl.delimiters[0], repl.delimiters[1], object, id, expr)
 	}
-	validateCode := fmt.Sprintf(map[bool]string{
-		true:  `assert (not (isNil %[1]s)) "%[1]s does not exist, use := to declare new variable"`,
-		false: `assert (isNil %[1]s) "%[1]s has already been declared, use = to overwrite existing value"`,
-	}[assign == "="], fmt.Sprintf("%s%s", iif(strings.HasSuffix(object, "."), object, object+"."), id))
-
+	objectID := fmt.Sprintf("%s%s", iif(strings.HasSuffix(object, "."), object, object+"."), id)
+	validateCode := iif(StrictAssignationMode == AssignationValidationWarning, "assertWarning", "assert").(string)
+	validateCode += fmt.Sprintf(` (not (isNil %[1]s)) "%[1]s does not exist, use := to declare new variable"`, objectID)
 	return fmt.Sprintf(`%[1]s- %[3]s %[2]s%[1]s- set %[4]s "%[5]s" %[6]s %[2]s`, repl.delimiters[0], repl.delimiters[1], validateCode, object, id, expr)
 }
+
+// AssignationValidationType is the enum type to define valid global variables validation mode.
+type AssignationValidationType uint8
+
+// Valid values for AssignationValidationType
+const (
+	AssignationValidationDisabled AssignationValidationType = iota
+	AssignationValidationWarning
+	AssignationValidationStrict
+)
+
+// StrictAssignationMode defines the global assignation validation mode.
+var StrictAssignationMode = AssignationValidationWarning
