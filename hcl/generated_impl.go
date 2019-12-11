@@ -4,7 +4,10 @@
 
 package hcl
 
-import "github.com/coveo/gotemplate/v3/collections"
+import (
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/multilogger/errors"
+)
 
 // List implementation of IGenericList for hclList
 type List = hclList
@@ -95,7 +98,7 @@ func (d hclDict) GetValues() hclIList                 { return hclDictHelper.Get
 func (d hclDict) Has(keys ...interface{}) bool        { return hclDictHelper.Has(d, keys) }
 func (d hclDict) KeysAsString() strArray              { return hclDictHelper.KeysAsString(d) }
 func (d hclDict) Len() int                            { return len(d) }
-func (d hclDict) Native() interface{}                 { return collections.ToNativeRepresentation(d) }
+func (d hclDict) Native() interface{}                 { return must(collections.MarshalGo(d)) }
 func (d hclDict) Pop(keys ...interface{}) interface{} { return hclDictHelper.Pop(d, keys) }
 func (d hclDict) Set(key, v interface{}) hclIDict     { return hclDictHelper.Set(d, key, v) }
 func (d hclDict) Transpose() hclIDict                 { return hclDictHelper.Transpose(d) }
@@ -143,4 +146,7 @@ type (
 	strArray = collections.StringArray
 )
 
-var iif = collections.IIf
+var (
+	iif  = collections.IIf
+	must = errors.Must
+)

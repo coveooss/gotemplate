@@ -1,59 +1,125 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 
-for file in docs/doc_test/*.md
-do
-    gotemplate -dP $file > ${file%.*}.razor
-    gotemplate -P $file > ${file%.*}.rendered --accept-no-value
-done
+go build -o gotemplate
 
-DOC_FOLDER="docs"
-export COLUMNS=1024
+CONTENT_FOLDER="docs/content"
+DOC_FOLDER="$CONTENT_FOLDER/docs"
+export COLUMNS=108
 
+rm -rf $DOC_FOLDER
 mkdir -p $DOC_FOLDER
 
-# Generate function info
-gotemplate '```text@<exec("gotemplate  list --no-extension -c")```' > $DOC_FOLDER/_functions.md
-
 # Generate usage info
-COLUMNS=255 gotemplate '```text@<trim(exec("gotemplate --help-long"))@<;```' --nv > $DOC_FOLDER/_usage.md
+./gotemplate '@-
+---
+title: CLI Usage
+weight: 1
+---
+<!-- markdownlint-disable MD025 --->
+# CLI Usage
 
-# Generate methods on String objects
-gotemplate '```go@<getMethods(String(""))@<;```' > $DOC_FOLDER/_string_methods.md
+```text
+@trim(exec("./gotemplate -h"))
+```' --nv > $DOC_FOLDER/CLI_Usage.md
 
-# Generate methods on StringArray objects
-gotemplate '```go@<getMethods(String("").Split(""))@<;```' > $DOC_FOLDER/_string_array_methods.md
+# Add basics section
+mkdir -p $DOC_FOLDER/basic_features
+printf -- '---\nbookFlatSection: true\nweight: 2\n---' > $DOC_FOLDER/basic_features/_index.md
 
-# Generate methods on List objects
-gotemplate '```go@<@getMethods(list())@<;```' > $DOC_FOLDER/_list_methods.md
-
-# Generate methods on Dictionary objects
-gotemplate '```go@<@getMethods(dict())@<;```' > $DOC_FOLDER/_dict_methods.md
+# Add advanced section
+mkdir -p $DOC_FOLDER/advanced_features
+printf -- '---\nbookFlatSection: true\nweight: 3\n---' > $DOC_FOLDER/advanced_features/_index.md
+for file in docs_tests/**/*.md
+do
+    ./gotemplate --rd 3 -dP $file > ${file%.*}.razor
+    ./gotemplate --rd 3 -P $file > ${file%.*}.rendered --accept-no-value
+done
+rsync -av docs_tests/ $DOC_FOLDER -r
 
 # Generate detailed function info
-gotemplate --no-extension '{% include navigation.html %}
+./gotemplate --no-extension --color '
+@-define("trim")
+    @{wrapped} := String(text).Replace("<", "&lt;").Wrap(69)
+    @-if (indent)
+        @{wrapped} = $wrapped.IndentN(indent).TrimSpace()
+    @-end if
+    @-{wrapped}
+@-end define
 
-## Functions@<;
-
-| @foreach ($category := categories())
-    @<;[@(String($category.Name).Split(",")[0])](#@(String($category.Name).Replace(" ", "-").ToLower());) |
-@-end foreach
-
-@foreach ($category := categories())
-@-// We have to make a trick here by adding {{ "" }} otherwise, the entire line will be considered as a comment
-### {{ "" }}@($category.Name)
-    @-foreach ($func := $category.Functions())
-        @{func} := function($func)
+@-define("GenerateCategory")
+    @{re} := reCompile(`(?P<name>.*), (?P<url>http://.*)`)
+    @-println("---\nbookToC: 2\nweight: 2\n---")
+    @-print("# ", $re.ReplaceAllString(category.Name, `[${name}](${url})`))
+    @<print("<!-- markdownlint-disable MD033 MD024 --->")
+    @-foreach ($func := category.Functions())
+        @{func} = function($func)
         @-if (!$func.IsAlias)
-            @<;@<;```go
+            @<printf("\n## __%s__\n", $func.Name)
+            @<print("```go")
+            @<println("func", include("trim", dict("text", stripColor($func.Signature))))
+            @-print("```")
             @-if ($func.Description)
-                @<;// @(String($func.Description).Lines.Join("\n// "))
+                @<print("\n<pre>")
+                @<template("trim", dict("text", $func.Description))
+                @<;</pre>
+            @-else
+                @-warning($func.Name, "does not have description")
             @-endif
             @-if ($func.Aliases)
-                @<;// Aliases: @join(", ", $func.Aliases)
+                @<println("\n### Aliases")
+                @<printf("- _%s_", join("_\n- _", $func.Aliases))
             @-endif
-            @<;func @($func.Signature)
-            @<;```
+            @-with ($func.Examples)
+                @<print("\n### Examples")
+                @-foreach ($ex := .)
+                    @<print("\n```go")
+                    @-with($ex.Razor)    @<printf("Razor:    %s", include("trim", dict("text", ., "indent", 10)));
+                    @-with($ex.Template) @<printf("Template: %s", include("trim", dict("text", ., "indent", 10)));
+                    @-with($ex.Result)   @<printf("Result:   %s", include("trim", dict("text", ., "indent", 10)));
+                    @<print("```")
+                @-end for
+            @-end with
         @-endif
     @-end foreach
-@-end foreach
-' > $DOC_FOLDER/functions_long.md
+@end define
+
+@-completeExamples()
+@{re} := reCompile(`(?P<name>.*), http://.*`)
+
+@-foreach ($category := categories())
+    @{content} := include("GenerateCategory", merge(dict("category", $category), $))
+    @{name} := $re.ReplaceAllString($category.Name, `${name}`)
+    @-info("Generating documentation for", $name)
+    @-save(joinPath(folder, lower($name))+".md", $content)
+@--end foreach' -Vfolder=$DOC_FOLDER/functions_reference
+printf -- '---\nbookFlatSection: true\nweight: 4\n---' > $DOC_FOLDER/functions_reference/_index.md
+
+./gotemplate --no-extension '
+@-println("---\nweight: 1\n---")
+@<print("<!-- markdownlint-disable MD033 --->")
+
+@{re} := reCompile(`(?P<name>.*), http://.*`)
+@{reClean} := reCompile(`[^\w]+`)
+@<print("# All functions")
+@-foreach ($category := categories())
+    @{categoryName} := $re.ReplaceAllString($category.Name, `${name}`)
+    @<println("\n##", $categoryName)
+    @{categoryName} = $reClean.ReplaceAllString(lower($categoryName), `-`)
+    @-foreach ($func := $category.Functions())
+        @{func} = function($func)
+        @<printf(`<span class="flink"><a href="/gotemplate/docs/functions_reference/%s#%s">%s</a></span>`, $categoryName, lower($func.RealName), $func.Name)
+    @-end foreach
+@--end foreach
+' > $DOC_FOLDER/functions_reference/all_functions.md
+
+# Add structs documentation
+mkdir -p $DOC_FOLDER/objects
+printf -- '---\nbookFlatSection: true\nweight: 5\n---' > $DOC_FOLDER/objects/_index.md
+./gotemplate '@println("# String object\n")```go@<getMethods(String(""))@<;```' > $DOC_FOLDER/objects/string_methods.md
+./gotemplate '@println("# StringArray object\n")```go@<getMethods(String("").Split(""))@<;```' > $DOC_FOLDER/objects/string_array_methods.md
+./gotemplate '@println("# List object\n")```go@<getMethods(list())@<;```' > $DOC_FOLDER/objects/list_methods.md
+./gotemplate '@println("# Dictionary object\n")```go<@getMethods(dict())@<;```' > $DOC_FOLDER/objects/dict_methods.md
+
+# Copy README as the main page
+printf -- '---\ntype: docs\n---' > $CONTENT_FOLDER/_index.md
+cat README.md >> $CONTENT_FOLDER/_index.md

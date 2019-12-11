@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 )
 
 // RegexReplacer defines struct composed of one regular expression and its replacement string

@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/errors"
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/errors"
 	"github.com/fatih/color"
 )
 
@@ -102,14 +102,14 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 	mode := must(os.Stat(template)).(os.FileInfo).Mode()
 	if !isTemplate && !t.options[Overwrite] {
 		newName := template + ".original"
-		log.Noticef("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
+		InternalLog.Infof("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
 		must(os.Rename(template, template+".original"))
 	}
 
 	if sourceFolder != targetFolder {
 		must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
-	log.Notice("Writing file", utils.Relative(t.folder, resultFile))
+	InternalLog.Info("Writing file", utils.Relative(t.folder, resultFile))
 
 	if utils.IsShebangScript(result) {
 		mode = 0755
@@ -136,6 +136,20 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 	}
 
 	topCall := th.Lines == nil
+
+	pausingIsEnabled := strings.Contains(originalContent, pauseGoTemplate) || strings.Contains(originalContent, pauseRazor)
+
+	// When pausing templating, we replace delimiters with dummy strings and then we revert the replacements when the processing is complete
+	leftDelimReplacement, rightDelimReplacement, razorDelimReplacement := "$&paused-left&$", "$&paused-right&$", "$&paused-razor&$"
+	revertReplacements := func(template string) string {
+		if pausingIsEnabled {
+			template = strings.ReplaceAll(template, leftDelimReplacement, t.LeftDelim())
+			template = strings.ReplaceAll(template, rightDelimReplacement, t.RightDelim())
+			template = strings.ReplaceAll(template, razorDelimReplacement, t.RazorDelim())
+		}
+		return template
+	}
+
 	if topCall {
 		if handler != nil {
 			defer func() {
@@ -156,16 +170,33 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 			}
 		}
 
+		if pausingIsEnabled {
+			splitLines := strings.Split(th.Code, "\n")
+			isGoTemplatePaused, isRazorPaused := false, false
+			for index, line := range splitLines {
+				isGoTemplatePaused = (isGoTemplatePaused || strings.Contains(line, pauseGoTemplate)) && !strings.Contains(line, resumeGoTemplate)
+				isRazorPaused = (isRazorPaused || strings.Contains(line, pauseRazor)) && !strings.Contains(line, resumeRazor)
+				if isRazorPaused || isGoTemplatePaused {
+					splitLines[index] = strings.ReplaceAll(splitLines[index], t.RazorDelim(), razorDelimReplacement)
+				}
+				if isGoTemplatePaused {
+					splitLines[index] = strings.ReplaceAll(splitLines[index], t.LeftDelim(), leftDelimReplacement)
+					splitLines[index] = strings.ReplaceAll(splitLines[index], t.RightDelim(), rightDelimReplacement)
+				}
+			}
+			th.Code = strings.Join(splitLines, "\n")
+		}
+
 		var razor []byte
 		razor, _ = t.applyRazor([]byte(th.Code))
 		th.Code = string(razor)
 
 		if t.options[RenderingDisabled] || !t.IsCode(th.Code) {
 			// There is no template element to evaluate or the template rendering is off
-			return th.Code, false, nil
+			return revertReplacements(th.Code), false, nil
 		}
 
-		log.Notice("GoTemplate processing of", th.Filename)
+		InternalLog.Info("GoTemplate processing of ", th.Filename)
 
 		if !t.options[AcceptNoValue] {
 			// We replace any pre-existing no value to avoid false error detection
@@ -183,7 +214,7 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 				extension := filepath.Ext(th.Filename)
 				strictMode = strictMode || (extension != "" && strings.Contains(".gt,.gte,.template", extension))
 				if !(strictMode) {
-					Log.Errorf("Ignored gotemplate error in %s (file left unchanged):\n%s", color.CyanString(th.Filename), err.Error())
+					InternalLog.Errorf("Ignored gotemplate error in %s (file left unchanged):\n%s", color.CyanString(th.Filename), err.Error())
 					result, err = th.Source, nil
 				}
 			}
@@ -208,7 +239,7 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		newTemplate, err = newTemplate.Parse(th.Code)
 	}()
 	if err != nil {
-		log.Infof("%s(%d): Parsing error %v", th.Filename, th.Try, err)
+		InternalLog.Debugf("%s(%d): Parsing error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}
 
@@ -218,11 +249,12 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		workingContext = collections.AsDictionary(workingContext).Clone()
 	}
 	if err = newTemplate.Execute(&out, workingContext); err != nil {
-		log.Infof("%s(%d): Execution error %v", th.Filename, th.Try, err)
+		InternalLog.Debugf("%s(%d): Execution error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}
-	result = t.substitute(out.String())
-	changed = result != th.Code
+	result = revertReplacements(t.substitute(out.String()))
+
+	changed = result != originalContent
 
 	if topCall && !t.options[AcceptNoValue] {
 		// Detect possible <no value> or <nil> that could be generated

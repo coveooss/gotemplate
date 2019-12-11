@@ -8,8 +8,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/fatih/color"
+	"github.com/sirupsen/logrus"
 )
 
 func nodeValue(node ast.Node) (result string, err error) {
@@ -125,8 +126,8 @@ func nodeValue(node ast.Node) (result string, err error) {
 	default:
 		err = fmt.Errorf("Unknown: %v", reflect.TypeOf(node))
 	}
-	if !debugMode && getLogLevelInternal() >= 6 {
-		log.Debugf(color.HiBlueString("%T => %s"), node, result)
+	if !debugMode && InternalLog.IsLevelEnabled(logrus.TraceLevel) {
+		InternalLog.Tracef(color.HiBlueString("%T => %s"), node, result)
 	}
 	return
 }

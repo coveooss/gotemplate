@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/hcl"
-	"github.com/coveo/gotemplate/v3/json"
-	"github.com/coveo/gotemplate/v3/yaml"
+	"github.com/coveooss/gotemplate/v3/hcl"
+	"github.com/coveooss/gotemplate/v3/json"
+	"github.com/coveooss/gotemplate/v3/yaml"
 )
 
 func Test_Data(t *testing.T) {
