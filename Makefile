@@ -1,30 +1,30 @@
+SHELL:=/bin/bash
+
 pre-commit:
 	go fmt ./...
-	go test ./...
+	go test ./... -count 1
+	./render-doc
 
-install:
-	go install
+codecov:
+	bash ./test.sh
+	bash <(curl -s https://codecov.io/bash)
 
 # IMPORTANT:
-# type: make doc
-# to generate the doc rendering used to test gotemplate
+# call `make doc` to generate the doc rendering used to test gotemplate
 # Be sure to validate the rendered files before commiting your code
 doc:
 	./render-doc
 
-coveralls:
-	wget https://raw.githubusercontent.com/coveo/terragrunt/master/scripts/coverage.sh
-	@sh ./coverage.sh --coveralls
-	rm coverage.sh
-
-html-coverage:
-	wget https://raw.githubusercontent.com/coveo/terragrunt/master/scripts/coverage.sh
-	@sh ./coverage.sh --html
-	rm coverage.sh
-
-# Starts a jekyll server identical to the one on github pages
-# Need ruby and this gem:
-# gem install bundler
-run-doc-server:
-	cd docs && bundle install --path vendor/bundle
-	cd docs && bundle exec jekyll serve
+# Starts local doc Hugo server (https://gohugo.io/)
+# Before calling this you need to install Hugo
+doc-serve:
+	./render-doc
+	git submodule update --init
+	cd docs && hugo server
+	
+# Used to generate the final Hugo static website. Used in CI
+doc-generate:
+	./render-doc
+	git submodule update --init
+	hugo --minify --source docs
+	git diff -b -w --ignore-blank-lines --exit-code

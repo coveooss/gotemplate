@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -900,7 +900,8 @@ func Test_dict_Merge(t *testing.T) {
 		{"Add new1 & new2 to map", dictFixture, args{adding1, []xmlIDict{adding2}}, dictFixture.Clone().Merge(adding1).Merge(adding2)},
 	}
 	for _, tt := range tests {
-		go t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			d := tt.d.Clone()
 			got := d.Merge(tt.args.xmlDict, tt.args.dicts...)
 			if !reflect.DeepEqual(got, tt.want) {

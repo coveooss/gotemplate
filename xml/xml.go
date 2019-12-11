@@ -5,7 +5,7 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/coveo/gotemplate/v3/collections/implementation"
+	"github.com/coveooss/gotemplate/v3/collections/implementation"
 )
 
 // Expose xml public objects

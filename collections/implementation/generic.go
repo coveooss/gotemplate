@@ -3,7 +3,8 @@ package implementation
 import (
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/multilogger/errors"
 )
 
 // ListTypeName implementation of IGenericList for baseList
@@ -96,7 +97,7 @@ func (d baseDict) GetValues() baseIList                { return baseDictHelper.G
 func (d baseDict) Has(keys ...interface{}) bool        { return baseDictHelper.Has(d, keys) }
 func (d baseDict) KeysAsString() strArray              { return baseDictHelper.KeysAsString(d) }
 func (d baseDict) Len() int                            { return len(d) }
-func (d baseDict) Native() interface{}                 { return collections.ToNativeRepresentation(d) }
+func (d baseDict) Native() interface{}                 { return must(collections.MarshalGo(d)) }
 func (d baseDict) Pop(keys ...interface{}) interface{} { return baseDictHelper.Pop(d, keys) }
 func (d baseDict) Set(key, v interface{}) baseIDict    { return baseDictHelper.Set(d, key, v) }
 func (d baseDict) Transpose() baseIDict                { return baseDictHelper.Transpose(d) }
@@ -145,4 +146,7 @@ type (
 	strArray = collections.StringArray
 )
 
-var iif = collections.IIf
+var (
+	iif  = collections.IIf
+	must = errors.Must
+)

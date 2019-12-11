@@ -3,17 +3,17 @@ package template
 import (
 	"fmt"
 
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/reutils"
 )
 
 func autoWrap(repl replacement, match string) string {
-	matches, _ := utils.MultiMatch(match, repl.re)
+	matches, _ := reutils.MultiMatch(match, repl.re)
 	before := String(matches["before"])
 	context := String(matches["context"])
 	context, strings := context.Protect()
 	args := context.SelectContext(1, "(", ")")
 	if args == "" {
-		log.Warningf("Missing closing parenthesis in %s%s", matches["func"], context.RestoreProtected(strings))
+		InternalLog.Warningf("Missing closing parenthesis in %s%s", matches["func"], context.RestoreProtected(strings))
 		return match
 	}
 	after := context[len(args):]

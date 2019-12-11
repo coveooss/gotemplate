@@ -2,6 +2,7 @@ package collections
 
 import (
 	"fmt"
+	"sync"
 )
 
 // IDictionary represents objects that act as map[string]interface.
@@ -45,11 +46,25 @@ type IDictionaryHelper interface {
 	TryConvert(object interface{}) (interface{}, bool)       // Tries to convert any object to IGenericList or IDictionary object.
 }
 
-// DictionaryHelper configures the default dictionary manager.
-var DictionaryHelper IDictionaryHelper
+var dictionaryHelper IDictionaryHelper
+var dictionaryHelperMutex sync.Mutex
+
+// GetDictionaryHelper fetches the default dictionary manager
+func GetDictionaryHelper() IDictionaryHelper {
+	dictionaryHelperMutex.Lock()
+	defer dictionaryHelperMutex.Unlock()
+	return dictionaryHelper
+}
+
+// SetDictionaryHelper configures the default dictionary manager
+func SetDictionaryHelper(newDictionaryHelper IDictionaryHelper) {
+	dictionaryHelperMutex.Lock()
+	defer dictionaryHelperMutex.Unlock()
+	dictionaryHelper = newDictionaryHelper
+}
 
 func assertDictionaryHelper() {
-	if DictionaryHelper == nil {
+	if GetDictionaryHelper() == nil {
 		panic(fmt.Errorf("DictionaryHelper not configured"))
 	}
 }
@@ -62,7 +77,7 @@ func AsDictionary(object interface{}) IDictionary {
 // CreateDictionary instantiates a new dictionary with optional size.
 func CreateDictionary(size ...int) IDictionary {
 	assertDictionaryHelper()
-	return DictionaryHelper.CreateDictionary(size...)
+	return GetDictionaryHelper().CreateDictionary(size...)
 }
 
 // TryAsDictionary returns the object casted as IDictionary if possible.
@@ -71,5 +86,5 @@ func TryAsDictionary(object interface{}) (IDictionary, error) {
 		return result, nil
 	}
 	assertDictionaryHelper()
-	return DictionaryHelper.TryAsDictionary(object)
+	return GetDictionaryHelper().TryAsDictionary(object)
 }

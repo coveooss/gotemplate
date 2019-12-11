@@ -95,6 +95,27 @@ func TestWrapString(t *testing.T) {
 	}
 }
 
+func TestWrapString_with_new_line(t *testing.T) {
+	t.Parallel()
+
+	sample := "\n \t \nLorem ipsum dolor sit amet,\n   consectetur adipiscing elit.\n\t\tsed do eiusmod temp."
+	tests := []struct {
+		s          string
+		width      int
+		wantResult string
+	}{
+		{sample, 10, "\n\nLorem ipsum\ndolor sit\namet,\n\nconsectetur\nadipiscing\n   elit.\nsed do\neiusmod\n\t\ttemp."},
+		{sample, 100, "\n\nLorem ipsum dolor sit amet,\n   consectetur adipiscing elit.\n\t\tsed do eiusmod temp."},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("Test with %d", tt.width), func(t *testing.T) {
+			if gotResult := WrapString(tt.s, tt.width); !reflect.DeepEqual(gotResult, tt.wantResult) {
+				t.Errorf("WrapString() =\n%q, want\n%q", gotResult, tt.wantResult)
+			}
+		})
+	}
+}
+
 func TestString_GetWordAtPosition(t *testing.T) {
 	t.Parallel()
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 func (l baseList) String() string      { return fmt.Sprint(l.AsArray()) }
@@ -137,7 +137,7 @@ func (lh ListHelper) Type(list baseIList) str {
 
 // Register the implementation of list functions
 var _ = func() int {
-	collections.ListHelper = baseListHelper
+	collections.SetListHelper(baseListHelper)
 	return 0
 }()
 
