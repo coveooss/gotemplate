@@ -419,11 +419,13 @@ func (t *Template) runTemplate(source string, args ...interface{}) (resultConten
 					return
 				}
 			} else {
-				razor, _ := t.applyRazor(fileContent)
-				source = string(razor)
+				source = string(fileContent)
 				filename = tryFile
 			}
 		}
+		razor, _ := t.applyRazor([]byte(source))
+		source = string(razor)
+
 		// There is no file named <source>, so we consider that <source> is the content
 		inline, e := t.New("inline").Parse(source)
 		if e != nil {

@@ -17,7 +17,7 @@ func nodeValue(node ast.Node) (result string, err error) {
 	switch n := node.(type) {
 	case *ast.UnaryExpr:
 		var op, x string
-		if op, err = opName(n.Op); err != nil {
+		if op, err = operatorName(n.Op); err != nil {
 			return
 		}
 		if x, err = nodeValueInternal(n.X); err != nil {
@@ -30,7 +30,7 @@ func nodeValue(node ast.Node) (result string, err error) {
 		result = fmt.Sprintf("%s %s", op, x)
 	case *ast.BinaryExpr:
 		var op, x, y string
-		if op, err = opName(n.Op); err != nil {
+		if op, err = operatorName(n.Op); err != nil {
 			return
 		}
 		if x, err = nodeValueInternal(n.X); err != nil {
@@ -132,7 +132,7 @@ func nodeValue(node ast.Node) (result string, err error) {
 	return
 }
 
-var ops = map[string]string{
+var operators = map[string]string{
 	"==": "eq",
 	"!=": "ne",
 	"<":  "lt",
@@ -155,8 +155,8 @@ var ops = map[string]string{
 	"&^": "bclear",
 }
 
-func opName(token token.Token) (string, error) {
-	if name, ok := ops[token.String()]; ok {
+func operatorName(token token.Token) (string, error) {
+	if name, ok := operators[token.String()]; ok {
 		return name, nil
 	}
 	return "", fmt.Errorf("Unknown operator %v", token)
@@ -169,7 +169,6 @@ func nodeValueInternal(node ast.Node) (result string, err error) {
 		return
 	}
 
-	// if first, _ := collections.Split2(result, " "); !strings.HasPrefix(first, dotRep) || strings.Contains(first, funcCall) {
 	if first, _ := collections.Split2(result, " "); !(strings.HasPrefix(first, dotRep) && strings.Contains(first, funcCall)) {
 		result = fmt.Sprintf("(%s)", result)
 	}
