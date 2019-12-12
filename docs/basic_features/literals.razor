@@ -10,7 +10,7 @@ The result would be `<no value><no value>` unless you have defined:
 
 ```go
 {{- set $ "john" (data "doe = 123.45") }}
-{{- set $ "company" (data "com = {{ $.Math.Pi }}") }}
+{{- set $ "company" (data "com = @Math.Pi") }}
 ```
 
 In that case, the result of `{{ $.john.doe }}{{ $.company.com }}` will be `123.453.141592653589793`.
