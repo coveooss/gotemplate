@@ -155,6 +155,10 @@ func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 	newTemplate.addFunctions(t.aliases)
 	newTemplate.importTemplates(t)
 	newTemplate.options = make(OptionsSet)
+	if dict := t.Context(); dict.Len() > 0 {
+		newTemplate.context = dict.Clone()
+	}
+
 	// We duplicate the options because the new context may alter them afterwhile and
 	// it should not modify the original values.
 	for k, v := range t.options {
@@ -281,4 +285,24 @@ func (t *Template) importTemplates(source *Template) {
 			t.AddParseTree(subTemplate.Name(), subTemplate.Tree)
 		}
 	}
+}
+
+// Add allows adding a value to the template context.
+// The context must be a dictionnary to use that function, otherwise, it will panic.
+func (t *Template) Add(key string, value interface{}) {
+	collections.AsDictionary(t.context).Add(key, value)
+}
+
+// Merge allows adding multiple values to the template context.
+// The context and values must both be dictionnary to use that function, otherwise, it will panic.
+func (t *Template) Merge(values interface{}) {
+	collections.AsDictionary(t.context).Add(key, collections.AsDictionary(values))
+}
+
+// Context returns the template context as a dictionnary if possible, otherwise, it returns null.
+func (t *Template) Context() (result collections.IDictionary) {
+	if result, _ = collections.TryAsDictionary(t.context); result == nil {
+		result = collections.CreateDictionary()
+	}
+	return
 }

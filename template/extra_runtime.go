@@ -132,11 +132,7 @@ func exit(exitValue int) int { os.Exit(exitValue); return exitValue }
 func (t *Template) current() string { return t.folder }
 
 func (t *Template) userContext() interface{} {
-	c, err := collections.TryAsDictionary(t.context)
-	if err != nil {
-		return dictionary{}
-	}
-	return c.Flush(t.constantKeys...)
+	return t.Context().Clone().Flush(t.constantKeys...)
 }
 
 func (t *Template) alias(name, function string, source interface{}, args ...interface{}) (string, error) {
@@ -278,8 +274,8 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 
 	fi.function = func(args ...interface{}) (result interface{}, err error) {
 		context := collections.CreateDictionary()
-		parentContext, err := collections.TryAsDictionary(t.context)
-		if err != nil {
+		parentContext := t.Context()
+		if parentContext.Len() == 0 {
 			context.Set("DEFAULT", t.context)
 		}
 
@@ -385,23 +381,28 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 func (t *Template) runTemplate(source string, args ...interface{}) (resultContent, filename string, err error) {
 	var out bytes.Buffer
 
-	context, err := collections.TryAsDictionary(t.context)
-	if err != nil {
-		context = collections.CreateDictionary()
+	// Keep the parent context to make it available
+	parentContext := t.userContext()
+	// Clone the current context to ensure that the sub template has a distinct set of values
+	t = t.GetNewContext("", false)
+	context := t.Context()
+	if context.Len() == 0 {
 		context.Set("CONTEXT", t.context)
-	} else {
-		context = context.Clone()
 	}
 	switch len(args) {
 	case 1:
 		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
-			context.Merge(arguments)
+			context = arguments.Merge(context)
 			break
 		}
 		fallthrough
 	default:
 		context.Set("ARGS", args)
 	}
+
+	// Make the parent context available
+	context.Set("_", parentContext)
+	t.context = context
 
 	// We first try to find a template named <source>
 	internalTemplate := t.Lookup(source)
@@ -433,7 +434,7 @@ func (t *Template) runTemplate(source string, args ...interface{}) (resultConten
 	}
 
 	// We execute the resulting template
-	if err = internalTemplate.Execute(&out, context); err != nil {
+	if err = internalTemplate.Execute(&out, t.context); err != nil {
 		return
 	}
 

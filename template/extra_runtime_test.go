@@ -1,12 +1,21 @@
 package template
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/json"
+	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	collections.SetListHelper(json.GenericListHelper)
+	collections.SetDictionaryHelper(json.DictionaryHelper)
+}
 
 func TestRuntime(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name    string
 		content string
@@ -22,10 +31,27 @@ func TestRuntime(t *testing.T) {
 			content: `@define("func")@Math.Pi@end @-include("func", 1, 2, 3)`,
 			result:  "3.141592653589793",
 		},
-	}
+		{
+			name: "Get context",
+			content: `@define("func")
+			@-context()
+			@-end
+			@-include("func", 1, 2, 3)`,
+			result: `{"ARGS":[1,2,3],"_":{"base":1},"base":1}`,
+		},
+		{
+			name: "Override parent value",
+			content: `@define("func")
+			@-println("base =", base)
+			@-println("_.base =", _.base)
+			@-end
+			@-include("func", data("base=over"))`,
+			result: "base = over\n_.base = 1\n",
+		}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
+			template.Add("base", 1)
 			result, err := template.ProcessContent(tt.content, tt.name)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.result, result)

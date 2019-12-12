@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/utils"
 	"github.com/coveooss/multilogger/errors"
 	"github.com/fatih/color"
@@ -221,12 +220,7 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		}()
 	}
 
-	if cloneContext {
-		th.Template = t.GetNewContext(filepath.Dir(th.Filename), false)
-		th.Template.context = collections.AsDictionary(th.Template.context).Clone()
-	} else {
-		th.Template = t.GetNewContext(filepath.Dir(th.Filename), true)
-	}
+	th.Template = t.GetNewContext(filepath.Dir(th.Filename), !cloneContext)
 	actualTemplate := th.Template.New(th.Filename)
 	th.Template.Template = actualTemplate
 
@@ -250,11 +244,7 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 	}
 
 	var out bytes.Buffer
-	workingContext := t.context
-	if cloneContext {
-		workingContext = collections.AsDictionary(workingContext).Clone()
-	}
-	if err = actualTemplate.Execute(&out, workingContext); err != nil {
+	if err = actualTemplate.Execute(&out, th.Template.context); err != nil {
 		InternalLog.Debugf("%s(%d): Execution error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}

@@ -11,8 +11,6 @@ import (
 	"testing"
 
 	"github.com/bmatcuk/doublestar"
-	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/gotemplate/v3/json"
 	"github.com/coveooss/multilogger"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -42,8 +40,6 @@ func TestTemplate_applyRazor(t *testing.T) {
 		return path
 	}
 
-	collections.SetListHelper(json.GenericListHelper)
-	collections.SetDictionaryHelper(json.DictionaryHelper)
 	template.options[AcceptNoValue] = true
 
 	load := func(path string) []byte { return must(ioutil.ReadFile(path)).([]byte) }

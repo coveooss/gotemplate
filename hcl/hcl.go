@@ -46,10 +46,7 @@ func (d hclDict) PrettyPrint() string {
 	return string(result)
 }
 
-var _ = func() int {
-	collections.TypeConverters["hcl"] = Unmarshal
-	return 0
-}()
+func init() { collections.TypeConverters["hcl"] = Unmarshal }
 
 // Unmarshal adds support to single array and struct representation
 func Unmarshal(bs []byte, out interface{}) (err error) {
