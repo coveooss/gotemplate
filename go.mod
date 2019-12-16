@@ -3,7 +3,7 @@ module github.com/coveooss/gotemplate/v3
 go 1.13
 
 require (
-	github.com/Masterminds/sprig/v3 v3.0.1
+	github.com/Masterminds/sprig/v3 v3.0.2
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
