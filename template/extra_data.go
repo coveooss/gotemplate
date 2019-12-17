@@ -248,7 +248,6 @@ func (t *Template) addDataFuncs() {
 		//"xml":  t.xmlConverter,
 		"yaml": t.yamlConverter,
 	}, dataConversion, options)
-	t.optionsEnabled[Data] = true
 }
 
 func toChar(value interface{}) (r interface{}, err error) {

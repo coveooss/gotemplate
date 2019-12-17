@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/utils"
 	"github.com/coveooss/multilogger/errors"
 	"github.com/fatih/color"
@@ -221,14 +220,15 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		}()
 	}
 
-	context := t.GetNewContext(filepath.Dir(th.Filename), true)
-	newTemplate := context.New(th.Filename)
+	th.Template = t.GetNewContext(filepath.Dir(th.Filename), !cloneContext)
+	actualTemplate := th.Template.New(th.Filename)
+	th.Template.Template = actualTemplate
 
 	if topCall {
-		newTemplate.Option("missingkey=default")
+		actualTemplate.Option("missingkey=default")
 	} else if !t.options[AcceptNoValue] {
 		// To help detect errors on second run, we enable the option to raise error on nil values
-		newTemplate.Option("missingkey=error")
+		actualTemplate.Option("missingkey=error")
 	}
 
 	func() {
@@ -236,7 +236,7 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		// call the parser without locking
 		templateMutex.Lock()
 		defer templateMutex.Unlock()
-		newTemplate, err = newTemplate.Parse(th.Code)
+		actualTemplate, err = actualTemplate.Parse(th.Code)
 	}()
 	if err != nil {
 		InternalLog.Debugf("%s(%d): Parsing error %v", th.Filename, th.Try, err)
@@ -244,11 +244,7 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 	}
 
 	var out bytes.Buffer
-	workingContext := t.context
-	if cloneContext {
-		workingContext = collections.AsDictionary(workingContext).Clone()
-	}
-	if err = newTemplate.Execute(&out, workingContext); err != nil {
+	if err = actualTemplate.Execute(&out, th.Template.context); err != nil {
 		InternalLog.Debugf("%s(%d): Execution error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}

@@ -4,17 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/gotemplate/v3/json"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestFunctionTemplating(t *testing.T) {
-	// Remove the run in parallel because we want to be sure that examples are generated using the right
-	// output format
+	t.Parallel()
 	template := MustNewTemplate(".", nil, "", nil)
-	collections.SetListHelper(json.GenericListHelper)
-	collections.SetDictionaryHelper(json.DictionaryHelper)
 	template.completeExamples()
 
 	for _, functionName := range template.getFunctions() {

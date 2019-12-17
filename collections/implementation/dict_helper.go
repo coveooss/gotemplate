@@ -250,7 +250,4 @@ func (dh DictHelper) delete(dict baseIDict, keys []interface{}, mustExist bool) 
 }
 
 // Register the default implementation of dictionary helper
-var _ = func() int {
-	collections.SetDictionaryHelper(baseDictHelper)
-	return 0
-}()
+func init() { collections.SetDictionaryHelper(baseDictHelper) }

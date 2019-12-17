@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/gotemplate/v3/hcl"
 	"github.com/coveooss/gotemplate/v3/utils"
 	multicolor "github.com/coveooss/multilogger/color"
 	"github.com/fatih/color"
@@ -45,6 +44,7 @@ var runtimeFuncsAliases = aliases{
 	"getMethods":    {"methods"},
 	"getSignature":  {"sign", "signature"},
 	"raise":         {"raiseError"},
+	"userContext":   {"c", "context"},
 }
 
 var runtimeFuncsHelp = descriptions{
@@ -89,6 +89,7 @@ var runtimeFuncsHelp = descriptions{
 	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
 	"templateNames": "Returns the list of available templates names.",
 	"templates":     "Returns the list of available templates.",
+	"userContext":   "Returns the user context (i.e. all global variables except the injected constant).",
 }
 
 func (t *Template) addRuntimeFuncs() {
@@ -117,6 +118,7 @@ func (t *Template) addRuntimeFuncs() {
 		"substitute":       t.substitute,
 		"templateNames":    t.getTemplateNames,
 		"templates":        t.Templates,
+		"userContext":      t.userContext,
 	}
 	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
 		FuncHelp:    runtimeFuncsHelp,
@@ -128,6 +130,10 @@ func (t *Template) addRuntimeFuncs() {
 func exit(exitValue int) int { os.Exit(exitValue); return exitValue }
 
 func (t *Template) current() string { return t.folder }
+
+func (t *Template) userContext() interface{} {
+	return t.Context().Clone().Flush(t.constantKeys...)
+}
 
 func (t *Template) alias(name, function string, source interface{}, args ...interface{}) (string, error) {
 	return t.addAlias(name, function, source, false, false, args...)
@@ -268,8 +274,8 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 
 	fi.function = func(args ...interface{}) (result interface{}, err error) {
 		context := collections.CreateDictionary()
-		parentContext, err := collections.TryAsDictionary(t.context)
-		if err != nil {
+		parentContext := t.Context()
+		if parentContext.Len() == 0 {
 			context.Set("DEFAULT", t.context)
 		}
 
@@ -372,12 +378,32 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 	return
 }
 
-func (t *Template) runTemplate(source string, context ...interface{}) (resultContent, filename string, err error) {
+func (t *Template) runTemplate(source string, args ...interface{}) (resultContent, filename string, err error) {
 	var out bytes.Buffer
 
-	if len(context) == 0 {
-		context = []interface{}{t.context}
+	// Keep the parent context to make it available
+	parentContext := t.userContext()
+	// Clone the current context to ensure that the sub template has a distinct set of values
+	t = t.GetNewContext("", false)
+	context := t.Context()
+	if context.Len() == 0 {
+		context.Set("CONTEXT", t.context)
 	}
+	switch len(args) {
+	case 1:
+		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
+			context = arguments.Merge(context)
+			break
+		}
+		fallthrough
+	default:
+		context.Set("ARGS", args)
+	}
+
+	// Make the parent context available
+	context.Set("_", parentContext)
+	t.context = context
+
 	// We first try to find a template named <source>
 	internalTemplate := t.Lookup(source)
 	if internalTemplate == nil {
@@ -410,7 +436,7 @@ func (t *Template) runTemplate(source string, context ...interface{}) (resultCon
 	}
 
 	// We execute the resulting template
-	if err = internalTemplate.Execute(&out, hcl.SingleContext(context...)); err != nil {
+	if err = internalTemplate.Execute(&out, t.context); err != nil {
 		return
 	}
 

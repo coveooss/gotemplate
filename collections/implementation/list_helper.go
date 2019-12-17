@@ -135,12 +135,6 @@ func (lh ListHelper) Type(list baseIList) str {
 	return str(reflect.TypeOf(list).Name())
 }
 
-// Register the implementation of list functions
-var _ = func() int {
-	collections.SetListHelper(baseListHelper)
-	return 0
-}()
-
 // Unique returns a copy of the list removing all duplicate elements.
 func (lh ListHelper) Unique(list baseIList) baseIList {
 	source := list.AsArray()
@@ -214,3 +208,6 @@ func (lh ListHelper) Contains(list baseIList, values ...interface{}) bool {
 
 	return len(source) > 0
 }
+
+// Register the implementation of list functions
+func init() { collections.SetListHelper(baseListHelper) }
