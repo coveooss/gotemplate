@@ -87,7 +87,7 @@ IntegerValue   = 1
 ListValue      = ["value1", "value2"]
 StringValue    = "Foo bar"
 
-DictValue {
+DictValue = {
   key1 = "value1"
   key2 = "value2"
 }
