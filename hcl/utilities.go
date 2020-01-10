@@ -176,7 +176,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 				}
 
 				equal := ifIndent(" = ", "=").(string)
-				if _, err := hclHelper.TryAsDictionary(value[key]); err == nil {
+				if _, err := hclHelper.TryAsDictionary(value[key]); err == nil && fullHcl {
 					if multiline {
 						equal = " "
 					} else if indent == "" {
