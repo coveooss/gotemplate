@@ -119,3 +119,21 @@ func Test_templateWithErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestTemplateAddFunctions(t *testing.T) {
+	t.Parallel()
+
+	getValue := func() interface{} {
+		return "This Is My Value"
+	}
+
+	options := DefaultOptions()
+	options[StrictErrorCheck] = true
+	template, _ := NewTemplate(".", map[string]interface{}{}, "", options)
+	template.AddFunctions(map[string]interface{}{"getValue": getValue}, "Inline", nil)
+	_, ok := template.functions["getValue"]
+	assert.True(t, ok, "getValue is not defined")
+	result, err := template.ProcessContent("@getValue()", ".")
+	assert.Nil(t, err)
+	assert.Equal(t, "This Is My Value", result)
+}

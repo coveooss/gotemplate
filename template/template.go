@@ -141,7 +141,7 @@ func (t *Template) TempFolder(folder string) *Template {
 	return t
 }
 
-// GetNewContext returns a distint context for each folder.
+// GetNewContext returns a distinct context for each folder.
 func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 	folder = iif(folder != "", folder, t.folder).(string)
 	if context, found := t.children[folder]; useCache && found {
@@ -150,9 +150,10 @@ func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 
 	newTemplate := Template(*t)
 	newTemplate.Template = template.New(folder)
+	newTemplate.addFunctions(t.functions)
+	newTemplate.addFunctions(t.aliases)
 	newTemplate.init(folder)
 	newTemplate.parent = t
-	newTemplate.addFunctions(t.aliases)
 	newTemplate.importTemplates(t)
 	newTemplate.options = make(OptionsSet)
 	if dict := t.Context(); dict.Len() > 0 {
@@ -249,7 +250,6 @@ func (t *Template) init(folder string) {
 		t.folder, _ = filepath.Abs(folder)
 	}
 	t.addFuncs()
-	t.Parse("")
 	t.children = make(map[string]*Template)
 	t.Delims(t.delimiters[0], t.delimiters[1])
 	t.setConstant(false, "\n", "NL", "CR", "NEWLINE")
