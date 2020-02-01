@@ -64,7 +64,8 @@ var expressions = [][]interface{}{
 	{"", `\${`, literalReplacement},
 	{"", `@@`, literalAt},
 	{"", `@{{`, literalStart},
-	{"", "(?s)`+.*?`+", "", replacementFunc(protectMultiLineStrings)},
+	{"", "```", literalTrippleBTs},
+	{"", "(?s)`.*?`", "", replacementFunc(protectMultiLineStrings)},
 	{"", `@<;`, `{{- $.NEWLINE }}`},
 	{"Auto indent", `(?m)^(?P<before>.*)@reduce;(?:autoIndent|aindent|aIndent)\(`, "@<-spaceIndent(`${before}`, "},
 	{"Auto wrap", `(?m)^(?P<before>.*)@(?P<nl><)?reduce;(?P<func>autoWrap|awrap|aWrap)(?P<context>\(.*)$`, "", replacementFunc(autoWrap)},
@@ -125,6 +126,7 @@ var expressions = [][]interface{}{
 	// Restoring literals
 	{"", `}}\\\.`, "}}."},
 	{"", literalAt, "@"},
+	{"", literalTrippleBTs, "```"},
 	{"", literalReplacement, "${"},
 	{"", fmt.Sprintf(`\x60%s(?P<num>\d+)\x60`, protectString), "", replacementFunc(protectMultiLineStrings)},
 }

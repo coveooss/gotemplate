@@ -14,6 +14,7 @@ import (
 const (
 	protectString      = "_=LONG_STRING="
 	literalAt          = "_=!AT!=_"
+	literalTrippleBTs  = "_=!TRIPPLE_BT!=_"
 	literalReplacement = "_=!REPL!=_"
 	literalStart       = `{{ "{{" }}`
 	stringRep          = "__StRiNg__"

@@ -13,6 +13,7 @@ import (
 	"github.com/bmatcuk/doublestar"
 	"github.com/coveooss/multilogger"
 	"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTemplate_applyRazor(t *testing.T) {
@@ -323,6 +324,49 @@ func TestAssign(t *testing.T) {
 	}
 }
 
+func TestAssignWithValue(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		razor  string
+		want   string
+		result string
+	}{
+		{
+			"Assignment with with",
+			`
+			@d := dict("v0", 0)
+			@-with (d)
+				@.v1 := 1
+				@.v2 := 2
+			@-end
+			@--d
+			`,
+			`
+			{{- set $ "d" (dict "v0" 0) }}
+			{{- with $.d }}
+				{{- set . "v1" 1 }}
+				{{- set . "v2" 2 }}
+			{{- end }}
+			{{- $.d -}}
+			`,
+			`{"v0":0,"v1":1,"v2":2}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			got, changed := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got))
+			assert.True(t, changed)
+			r, err := template.ProcessContent(string(got), ".")
+			assert.NoError(t, err)
+			assert.Equal(t, r, string(tt.result))
+		})
+	}
+}
+
 func TestAutoWrap(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -387,6 +431,54 @@ func TestSpaceEater(t *testing.T) {
 			"Both",
 			"@--value",
 			`{{- $.value -}}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
+				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMultilineStringProtect(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		razor string
+		want  string
+	}{
+		{
+			"Empty",
+			"This is an empty string ``",
+			"This is an empty string ``",
+		},
+		{
+			"Expression within quote",
+			"`@(1+2)`",
+			"`{{ add 1 2 }}`",
+		},
+		{
+			"String withing expression",
+			"@func(`@(1+2)`)",
+			"{{ func `@(1+2)` }}",
+		},
+		{
+			"Expression within multiline quote",
+			"`\n@(1+2)\n`",
+			"`\n@(1+2)\n`",
+		},
+		{
+			"Expression within empty quotes",
+			"``\n@(1+2)\n``",
+			"``\n{{ add 1 2 }}\n``",
+		},
+		{
+			"Expression within markdown (md)",
+			"```razor\n@(1+2)\n```",
+			"```razor\n{{ add 1 2 }}\n```",
 		},
 	}
 	for _, tt := range tests {
