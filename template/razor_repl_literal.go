@@ -14,8 +14,8 @@ func protectMultiLineStrings(repl replacement, match string) string {
 		longStrings[index] = ""
 		return restore
 	}
-	if !strings.Contains(match, "\n") || strings.Contains(match, "``") {
-		// We do not have to protect lines without newline or non real multiline string
+	if !strings.Contains(match, "\n") {
+		// We do not have to protect lines without newline
 		return match
 	}
 	// We save the long string in a buffer, they will be restored at the end of razor preprocessing
