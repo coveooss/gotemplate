@@ -136,9 +136,8 @@ func TestBase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }
@@ -178,9 +177,8 @@ func TestInvocation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }
@@ -317,9 +315,8 @@ func TestAssign(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }
@@ -358,7 +355,7 @@ func TestAssignWithValue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
 			got, changed := template.applyRazor([]byte(tt.razor))
-			assert.Equal(t, tt.want, string(got))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 			assert.True(t, changed)
 			r, err := template.ProcessContent(string(got), ".")
 			assert.NoError(t, err)
@@ -398,9 +395,8 @@ func TestAutoWrap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }
@@ -436,9 +432,8 @@ func TestSpaceEater(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }
@@ -480,13 +475,17 @@ func TestMultilineStringProtect(t *testing.T) {
 			"```razor\n@(1+2)\n```",
 			"```razor\n{{ add 1 2 }}\n```",
 		},
+		{
+			"Expression with escaped @ in multiline string",
+			"`\n@@Not changed\n`",
+			"`\n@@Not changed\n`",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }

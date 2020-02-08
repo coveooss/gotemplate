@@ -12,21 +12,21 @@ import (
 )
 
 const (
-	protectString      = "_=LONG_STRING="
-	literalAt          = "_=!AT!=_"
-	literalTrippleBTs  = "_=!TRIPPLE_BT!=_"
-	literalReplacement = "_=!REPL!=_"
-	literalStart       = `{{ "{{" }}`
-	stringRep          = "__StRiNg__"
-	rangeExpr          = "__RaNgE__"
-	defaultExpr        = "__DeFaUlT__"
-	funcExpr           = "__FuNc__"
-	funcCall           = "__FuNcAlL__"
-	typeExpr           = "__TyPe__"
-	mapExpr            = "__MaP__"
-	dotRep             = "__DoT_PrEfIx__"
-	ellipsisRep        = "__ElLiPsIs__"
-	globalRep          = "__GlObAl__"
+	protectString          = "_=LONG_STRING="
+	literalAt              = "_=!AT!=_"
+	literalTripleBackticks = "_=!TRIPLE_BT!=_"
+	literalReplacement     = "_=!REPL!=_"
+	literalStart           = `{{ "{{" }}`
+	stringRep              = "__StRiNg__"
+	rangeExpr              = "__RaNgE__"
+	defaultExpr            = "__DeFaUlT__"
+	funcExpr               = "__FuNc__"
+	funcCall               = "__FuNcAlL__"
+	typeExpr               = "__TyPe__"
+	mapExpr                = "__MaP__"
+	dotRep                 = "__DoT_PrEfIx__"
+	ellipsisRep            = "__ElLiPsIs__"
+	globalRep              = "__GlObAl__"
 )
 
 var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*)?`)

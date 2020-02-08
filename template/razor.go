@@ -60,12 +60,12 @@ const expressionKey = "[expr]"
 // Warning: The declaration order is important
 var expressions = [][]interface{}{
 	// Literals
+	{"", "```", literalTripleBackticks},
+	{"", "(?s)`.*?`", "", replacementFunc(protectMultiLineStrings)},
 	{"Protect email", `(\W|^)[\w.!#$%&'*+/=?^_{|}~-]+@[\w-]{1,61}(?:\.[\w-]{1,61})+`, "", replacementFunc(protectEmail)},
 	{"", `\${`, literalReplacement},
 	{"", `@@`, literalAt},
 	{"", `@{{`, literalStart},
-	{"", "```", literalTrippleBTs},
-	{"", "(?s)`.*?`", "", replacementFunc(protectMultiLineStrings)},
 	{"", `@<;`, `{{- $.NEWLINE }}`},
 	{"Auto indent", `(?m)^(?P<before>.*)@reduce;(?:autoIndent|aindent|aIndent)\(`, "@<-spaceIndent(`${before}`, "},
 	{"Auto wrap", `(?m)^(?P<before>.*)@(?P<nl><)?reduce;(?P<func>autoWrap|awrap|aWrap)(?P<context>\(.*)$`, "", replacementFunc(autoWrap)},
@@ -126,7 +126,7 @@ var expressions = [][]interface{}{
 	// Restoring literals
 	{"", `}}\\\.`, "}}."},
 	{"", literalAt, "@"},
-	{"", literalTrippleBTs, "```"},
+	{"", literalTripleBackticks, "```"},
 	{"", literalReplacement, "${"},
 	{"", fmt.Sprintf(`\x60%s(?P<num>\d+)\x60`, protectString), "", replacementFunc(protectMultiLineStrings)},
 }
