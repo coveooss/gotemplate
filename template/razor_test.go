@@ -288,8 +288,8 @@ func TestAssign(t *testing.T) {
 		},
 		{
 			"Assignment operator 6",
-			`@.a.b *= 4`,
-			`{{- assertWarning (not (isNil .a.b)) ".a.b does not exist, use := to declare new variable" }}{{- set .a "b" (mul .a.b 4) }}`,
+			`@.a.b *= 4*2`,
+			`{{- assertWarning (not (isNil .a.b)) ".a.b does not exist, use := to declare new variable" }}{{- set .a "b" (mul .a.b (mul 4 2)) }}`,
 		},
 		{
 			"Assignment operator 7",
@@ -305,6 +305,21 @@ func TestAssign(t *testing.T) {
 			"Assignment operator local sub",
 			`@{a.b.c} ÷= 2`,
 			`{{- set $a.b "c" (div $a.b.c 2) }}`,
+		},
+		{
+			"Assignment operator with expression",
+			`@{a} /= 2 * 3`,
+			`{{- $a = div $a (mul 2 3) }}`,
+		},
+		{
+			"Global assignment operator with expression",
+			`@a %= 2 / 3`,
+			`{{- assertWarning (not (isNil $.a)) "$.a does not exist, use := to declare new variable" }}{{- set $ "a" (mod $.a (div 2 3)) }}`,
+		},
+		{
+			"Assignment operator with index",
+			`@{a} += $text[3:]`,
+			`{{- $a = add $a (slice $text 3 -1) }}`,
 		},
 		{
 			"Assignment with @",
