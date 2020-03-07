@@ -39,25 +39,25 @@ func assignExpressionInternal(repl replacement, match string, acceptError bool) 
 	case "@{", "@$":
 		internal = strings.Contains(id, ".")
 	}
-	var err error
-	if expr, err = expressionParserInternal(exprRepl, expr, true, internal); err != nil && !acceptError {
-		return match
-	}
 
 	switch assign {
 	case ":=", "=":
 		break
 	default:
 		// This is an assignment operator (i.e. +=, /=, <<=, etc.)
-		if tp != "@{" {
-			value := map[string]string{"@": "$.", "@.": ".", "@$": "$"}[tp] + id
-			match = fmt.Sprintf("%[5]s%[1]s = %[2]s %[3]s %[4]s", id, value, assign[:len(assign)-1], expr, tp)
-		} else if acceptError {
-			match = fmt.Sprintf("@{%[1]s = $%[1]s %[2]s %[3]s}", id, assign[:len(assign)-1], expr)
+		operator := assign[:len(assign)-1]
+		assign = "="
+		if tp == "@{" {
+			expr = fmt.Sprintf("$%[1]s %[2]s (%[3]s)", id, operator, expr)
 		} else {
-			match = fmt.Sprintf("@{%[1]s} = $%[1]s %[2]s %[3]s", id, assign[:len(assign)-1], expr)
+			value := map[string]string{"@": "$.", "@.": ".", "@$": "$"}[tp] + id
+			expr = fmt.Sprintf("%[1]s %[2]s (%[3]s)", value, operator, expr)
 		}
-		return assignExpressionInternal(repl, match, acceptError)
+	}
+
+	var err error
+	if expr, err = expressionParserInternal(exprRepl, expr, true, internal); err != nil && !acceptError {
+		return match
 	}
 
 	if !global && !internal {
