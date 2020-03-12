@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/op/go-logging"
+	"github.com/sirupsen/logrus"
 )
 
 // Add additional functions to the go template context
@@ -27,7 +27,7 @@ func (t *Template) applyRazor(content []byte) (result []byte, changed bool) {
 		}
 	}
 	content = []byte(strings.Replace(string(content), funcCall, "", -1))
-	log.Noticef("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
+	InternalLog.Infof("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
 	return content, true
 }
 
@@ -44,9 +44,12 @@ var customMetaclass = [][2]string{
 	{"endexpr;", `(?:[sp];)?`},                                    // End expression (spaces + ; or end of line)
 	{"[sp]", `[[:blank:]]*`},                                      // Optional spaces
 	{"[id]", `[\p{L}\d_]+`},                                       // Go language id
+	{"[id_comp]", `[\p{L}\d_\.]+`},                                // Go language id with .
 	{"[flexible_id]", `[map_id;][map_id;\.\-]*`},                  // Id with additional character that could be used to create variables in maps
 	{"[idSel]", `[\p{L}_][\p{L}\d_\.]*`},                          // Id with optional selection (object.selection.subselection)
 	{"map_id;", `\p{L}\d_\+\*%#!~`},                               // Id with additional character that could be used to create variables in maps
+
+	{"assign_op;", `:=|~=|=|\+=|-=|\*=|\/=|÷=|%=|&=|\|=|\^=|<<=|«=|>>=|»=|&\^=`}, // Assignment operator
 }
 
 // Expression (any character that is not a new line, a start of razor expression or a semicolumn)
@@ -57,10 +60,12 @@ const expressionKey = "[expr]"
 // Warning: The declaration order is important
 var expressions = [][]interface{}{
 	// Literals
+	{"", "```", literalTripleBackticks},
+	{"", "(?s)`.*?`", "", replacementFunc(protectMultiLineStrings)},
 	{"Protect email", `(\W|^)[\w.!#$%&'*+/=?^_{|}~-]+@[\w-]{1,61}(?:\.[\w-]{1,61})+`, "", replacementFunc(protectEmail)},
+	{"", `\${`, literalReplacement},
 	{"", `@@`, literalAt},
 	{"", `@{{`, literalStart},
-	{"", "(?s)`+.*?`+", "", replacementFunc(protectMultiLineStrings)},
 	{"", `@<;`, `{{- $.NEWLINE }}`},
 	{"Auto indent", `(?m)^(?P<before>.*)@reduce;(?:autoIndent|aindent|aIndent)\(`, "@<-spaceIndent(`${before}`, "},
 	{"Auto wrap", `(?m)^(?P<before>.*)@(?P<nl><)?reduce;(?P<func>autoWrap|awrap|aWrap)(?P<context>\(.*)$`, "", replacementFunc(autoWrap)},
@@ -84,12 +89,9 @@ var expressions = [][]interface{}{
 	{"various ends", `@reduce;(?P<command>end[sp](if|range|define|block|with|for[sp]each|for|))endexpr;`, "{{${reduce1} end ${reduce2}}}"},
 
 	// Assignations
-	{"Assign - @$var := value", `(?P<type>@\$)(?P<id>[id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
-	{"Assign - @var := value", `(?P<type>@[\$\.]?)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
-	{"Assign - @{var} := value", `(?P<type>@{)(?P<id>[id])}[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
-	{"Assign - @{var := expr}", `(?P<type>@{)(?P<id>[id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+?)}endexpr;`, ``, replacementFunc(assignExpressionAcceptError)},
-	// TODO Remove in future version
-	{"DEPRECATED Assign - $var := value", `(?:{{-?[sp](?:if|range|with)?[sp](\$[id],)?[sp]|@\(\s*)?(?P<type>\$)(?P<id>[flexible_id])[sp](?P<assign>:=|=)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - @var := value", `(?P<type>@(\$|\.|\$\.)?)(?P<id>[flexible_id])[sp](?P<assign>assign_op;)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - @{var} := value", `(?P<type>@{)(?P<id>[id_comp])}[sp](?P<assign>assign_op;)[sp](?P<expr>[expr]+)endexpr;`, ``, replacementFunc(assignExpression)},
+	{"Assign - @{var := expr}", `(?P<type>@{)(?P<id>[id_comp])[sp](?P<assign>assign_op;)[sp](?P<expr>[expr]+?)}endexpr;`, ``, replacementFunc(assignExpressionAcceptError)},
 
 	// Function calls
 	{"Function call followed by expression - @func(args...).args", `function;selector;endexpr;`, `@${reduce}((${expr})${selection});`, replacementFunc(expressionParserSkipError)},
@@ -116,7 +118,7 @@ var expressions = [][]interface{}{
 	{"Expression @(expr)[...]", `@reduce;\([sp](?P<expr>[expr]+)[sp]\)index;endexpr;`, `{{${reduce1} ${slicer} (${expr}) ${index} ${reduce2}}}`, replacementFunc(expressionParserSkipError)},
 	{"Expression @(expr)", `@reduce;\([sp](?P<assign>.*?:= ?)?[sp](?P<expr>[expr]+)[sp]\)endexpr;`, `{{${reduce1} ${assign}${expr} ${reduce2}}}`, replacementFunc(expressionParserSkipError), replacementFunc(expressionParser)},
 
-	{"Space eater", `@-`, `{{- "" -}}`},
+	{"Space eater", `@-endexpr;`, `{{- "" -}}`},
 
 	// Inline contents: Render the content without its enclosing quotes
 	{`Inline content "<<..."`, `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},
@@ -124,6 +126,8 @@ var expressions = [][]interface{}{
 	// Restoring literals
 	{"", `}}\\\.`, "}}."},
 	{"", literalAt, "@"},
+	{"", literalTripleBackticks, "```"},
+	{"", literalReplacement, "${"},
 	{"", fmt.Sprintf(`\x60%s(?P<num>\d+)\x60`, protectString), "", replacementFunc(protectMultiLineStrings)},
 }
 
@@ -187,7 +191,7 @@ func (t *Template) ensureInit() {
 }
 
 func printDebugInfo(r replacement, content string) {
-	if r.name == "" || getLogLevelInternal() < logging.INFO {
+	if r.name == "" || !InternalLog.IsLevelEnabled(logrus.DebugLevel) {
 		return
 	}
 
@@ -201,7 +205,7 @@ func printDebugInfo(r replacement, content string) {
 			newContent := r.re.ReplaceAllStringFunc(found, func(match string) string {
 				return r.parser(r, match)
 			})
-			if newContent == found && getLogLevelInternal() < 6 {
+			if newContent == found && !InternalLog.IsLevelEnabled(logrus.TraceLevel) {
 				// There is no change
 				continue
 			}
@@ -214,7 +218,7 @@ func printDebugInfo(r replacement, content string) {
 		allUnique[found] = allUnique[found] + 1
 	}
 
-	if len(allUnique) == 0 && getLogLevelInternal() < 7 {
+	if len(allUnique) == 0 && !InternalLog.IsLevelEnabled(logrus.TraceLevel) {
 		return
 	}
 
@@ -228,11 +232,11 @@ func printDebugInfo(r replacement, content string) {
 		}
 		matches = append(matches, key)
 	}
-
-	log.Infof("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
+	logString := fmt.Sprintf("%s: %s%s", color.YellowString(r.name), r.expr, strings.Join(matches, "\n- "))
 	if len(matches) > 0 {
-		ErrPrintln()
+		logString = logString + " \n"
 	}
+	InternalLog.Debug(logString)
 }
 
 var debugMode bool

@@ -6,26 +6,28 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/multilogger/reutils"
 	"github.com/fatih/color"
-	"github.com/op/go-logging"
+	"github.com/sirupsen/logrus"
 )
 
 const (
-	protectString = "_=LONG_STRING="
-	literalAt     = "_=!AT!=_"
-	literalStart  = `{{ "{{" }}`
-	stringRep     = "__StRiNg__"
-	rangeExpr     = "__RaNgE__"
-	defaultExpr   = "__DeFaUlT__"
-	funcExpr      = "__FuNc__"
-	funcCall      = "__FuNcAlL__"
-	typeExpr      = "__TyPe__"
-	mapExpr       = "__MaP__"
-	structExpr    = "__StRuCt__"
-	dotRep        = "__DoT_PrEfIx__"
-	ellipsisRep   = "__ElLiPsIs__"
-	globalRep     = "__GlObAl__"
+	protectString          = "_=LONG_STRING="
+	literalAt              = "_=!AT!=_"
+	literalTripleBackticks = "_=!TRIPLE_BT!=_"
+	literalReplacement     = "_=!REPL!=_"
+	literalStart           = `{{ "{{" }}`
+	stringRep              = "__StRiNg__"
+	rangeExpr              = "__RaNgE__"
+	defaultExpr            = "__DeFaUlT__"
+	funcExpr               = "__FuNc__"
+	funcCall               = "__FuNcAlL__"
+	typeExpr               = "__TyPe__"
+	mapExpr                = "__MaP__"
+	structExpr             = "__StRuCt__"
+	dotRep                 = "__DoT_PrEfIx__"
+	ellipsisRep            = "__ElLiPsIs__"
+	globalRep              = "__GlObAl__"
 )
 
 var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*)?`)
@@ -42,19 +44,22 @@ func expressionParserSkipError(repl replacement, match string) string {
 }
 
 func expressionParserInternal(repl replacement, match string, skipError, internal bool) (result string, err error) {
-	matches, _ := utils.MultiMatch(match, repl.re)
+	matches, _ := reutils.MultiMatch(match, repl.re)
 	var expr, expression string
 	if expression = matches["expr"]; expression != "" {
-		if getLogLevelInternal() >= logging.DEBUG {
+		if InternalLog.IsLevelEnabled(logrus.TraceLevel) {
 			defer func() {
-				if !debugMode && result != match {
-					log.Debug("Resulting expression =", result)
+				if result != match {
+					InternalLog.Trace("Resulting expression =", result)
 				}
 			}()
 		}
 
 		// We first protect strings declared in the expression
 		protected, includedStrings := String(expression).Protect()
+		for i := range includedStrings {
+			includedStrings[i] = includedStrings[i].Replace("@", literalAt)
+		}
 
 		// We transform the expression into a valid go statement
 		for k, v := range map[string]string{"$": stringRep, "range": rangeExpr, "default": defaultExpr, "func": funcExpr, "...": ellipsisRep, "type": typeExpr, "struct": structExpr, "map": mapExpr} {
@@ -65,7 +70,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 			protected = protected.Replace(k, v)
 		}
 
-		for key, val := range ops {
+		for key, val := range operators {
 			protected = protected.Replace(" "+val+" ", key)
 		}
 		// We add support to partial slice
@@ -85,7 +90,7 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		}
 		values := strings.Split(indexExpr, sep)
 		if !debugMode && limit2 && len(values) > 2 {
-			log.Errorf("Only one : character is allowed in slice expression: %s", match)
+			InternalLog.Errorf("Only one : character is allowed in slice expression: %s", match)
 		}
 		for i := range values {
 			if values[i], err = expressionParserInternal(exprRepl, values[i], true, true); err != nil {
@@ -128,8 +133,8 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 				return result, nil
 			}
 		}
-		if !debugMode && err != nil && getLogLevelInternal() >= 6 {
-			log.Debug(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
+		if !debugMode && err != nil {
+			InternalLog.Trace(color.CyanString(fmt.Sprintf("Invalid expression '%s' : %v", expression, err)))
 		}
 		if skipError {
 			return match, err

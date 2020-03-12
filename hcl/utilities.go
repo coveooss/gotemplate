@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 // flatten converts array of map to single map if there is only one element in the array.
@@ -89,7 +89,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 			unIndented = strings.Replace(unIndented, `\t`, "\t", -1)
 			unIndented = collections.UnIndent(unIndented)
 			if strings.HasSuffix(unIndented, "\n") {
-				value = fmt.Sprintf("<<-EOF\n%sEOF", unIndented)
+				value = fmt.Sprintf("<<HCLVALUE\n%sHCLVALUE", unIndented)
 			}
 		}
 		result = value
@@ -176,7 +176,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 				}
 
 				equal := ifIndent(" = ", "=").(string)
-				if _, err := hclHelper.TryAsDictionary(value[key]); err == nil {
+				if _, err := hclHelper.TryAsDictionary(value[key]); err == nil && fullHcl {
 					if multiline {
 						equal = " "
 					} else if indent == "" {

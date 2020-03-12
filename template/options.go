@@ -18,6 +18,7 @@ const (
 	Utils
 	Net
 	OS
+	Git
 	OptionOnByDefaultCount // Trigger of options that are on by default
 	Overwrite
 	OutputStdout

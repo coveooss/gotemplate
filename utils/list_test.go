@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/collections/implementation"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections/implementation"
 )
 
 type iList = collections.IGenericList

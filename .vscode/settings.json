@@ -1,9 +1,10 @@
 {
-    "cSpell.words": [
+    "cSpell.ignoreWords": [
         "UUIDs",
         "adipiscing",
         "amet",
         "awrap",
+        "bmatcuk",
         "consectetur",
         "dolore",
         "eiusmod",
@@ -20,6 +21,30 @@
         "typeis",
         "unsplit",
         "uuid",
-        "uuidv"
+        "uuidv",
+        "warnf",
+        "symlinks",
+        "Sprintf",
+        "butexpression",
+        "cbrt",
+        "codecov",
+        "logb",
+        "lshift",
+        "nnet",
+        "prepend",
+        "rshift",
+        "sincos",
+        "camelcase",
+        "trunc",
+        "atoi",
+        "modf",
+        "lgamma",
+        "nospace",
+        "snakecase"
+    ],
+    "cSpell.words": [
+        "acarl",
+        "colorln",
+        "markdownlint"
     ]
 }

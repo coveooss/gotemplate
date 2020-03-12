@@ -5,7 +5,7 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/coveo/gotemplate/v3/collections/implementation"
+	"github.com/coveooss/gotemplate/v3/collections/implementation"
 )
 
 // Expose xml public objects
@@ -33,10 +33,7 @@ func (d xmlDict) PrettyPrint() string {
 }
 
 // TODO activate when Marshall will be enabled on maps
-// var _ = func() int {
-// 	collections.TypeConverters["xml"] = Unmarshal
-// 	return 0
-// }()
+// func init() { collections.TypeConverters["xml"] = Unmarshal }
 
 // Unmarshal calls the native Unmarshal but transform the results
 // to returns Dictionary and GenerecList instead of go native collections.

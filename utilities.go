@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/errors"
-	"github.com/coveo/gotemplate/v3/template"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/template"
+	"github.com/coveooss/multilogger/errors"
 	goerrors "github.com/go-errors/errors"
 )
 
@@ -63,7 +63,7 @@ func exclude(files []string, patterns []string) (result []string, err error) {
 			if excluded, err = doublestar.Match(pattern, file); err != nil {
 				return
 			} else if excluded {
-				template.Log.Debugf("%s ignored", files[i])
+				template.InternalLog.Tracef("%s ignored", files[i])
 				break
 			}
 		}

@@ -1,0 +1,191 @@
+# Data manipulation
+
+Using a data file with the following content in a format that doesn't follow a standard.
+
+```data
+IntegerValue = 1
+FloatValue = 1.23
+StringValue = "Foo bar"
+EquationResult = 46658
+ListValue = ["value1", "value2"]
+DictValue = {"key1": "value1", "key2": "value2"}
+```
+
+## toYaml
+
+| Razor | Gotemplate
+| ---   | ---
+| ```DictValue:
+  key1: value1
+  key2: value2
+EquationResult: 46658
+FloatValue: 1.23
+IntegerValue: 1
+ListValue:
+- value1
+- value2
+StringValue: Foo bar
+``` | ```DictValue:
+  key1: value1
+  key2: value2
+EquationResult: 46658
+FloatValue: 1.23
+IntegerValue: 1
+ListValue:
+- value1
+- value2
+StringValue: Foo bar
+```
+
+```data
+DictValue:
+  key1: value1
+  key2: value2
+EquationResult: 46658
+FloatValue: 1.23
+IntegerValue: 1
+ListValue:
+- value1
+- value2
+StringValue: Foo bar
+```
+
+## toJson
+
+| Razor | Gotemplate
+| ---   | ---
+| ```{
+  "DictValue": {
+    "key1": "value1",
+    "key2": "value2"
+  },
+  "EquationResult": 46658,
+  "FloatValue": 1.23,
+  "IntegerValue": 1,
+  "ListValue": [
+    "value1",
+    "value2"
+  ],
+  "StringValue": "Foo bar"
+}``` | ```{
+  "DictValue": {
+    "key1": "value1",
+    "key2": "value2"
+  },
+  "EquationResult": 46658,
+  "FloatValue": 1.23,
+  "IntegerValue": 1,
+  "ListValue": [
+    "value1",
+    "value2"
+  ],
+  "StringValue": "Foo bar"
+}```
+
+```data
+{
+  "DictValue": {
+    "key1": "value1",
+    "key2": "value2"
+  },
+  "EquationResult": 46658,
+  "FloatValue": 1.23,
+  "IntegerValue": 1,
+  "ListValue": [
+    "value1",
+    "value2"
+  ],
+  "StringValue": "Foo bar"
+}
+```
+
+## toHcl
+
+| Razor | Gotemplate
+| ---   | ---
+| ```EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue {
+  key1 = "value1"
+  key2 = "value2"
+}``` | ```EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue {
+  key1 = "value1"
+  key2 = "value2"
+}```
+
+```data
+EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue {
+  key1 = "value1"
+  key2 = "value2"
+}
+```
+
+## Nested conversions
+
+This test shows how you can convert from and to other formats.
+
+| Razor | Gotemplate
+| ---   | ---
+| ```EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue = {
+  key1 = "value1"
+  key2 = "value2"
+}``` | ```EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue = {
+  key1 = "value1"
+  key2 = "value2"
+}```
+
+```data
+EquationResult = 46658
+FloatValue     = 1.23
+IntegerValue   = 1
+ListValue      = ["value1", "value2"]
+StringValue    = "Foo bar"
+
+DictValue = {
+  key1 = "value1"
+  key2 = "value2"
+}
+```
+
+## Merging data structures
+
+This test shows how you can merge data structures
+
+```go
+
+# Gives precedence to the first dictionary
+value1 string == value1 string
+value2 string == value2 string
+value3 string == value3 string
+true bool == true bool
+false bool == false bool
+true bool == true bool
+```

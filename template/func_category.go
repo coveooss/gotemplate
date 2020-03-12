@@ -16,12 +16,12 @@ func (fc FuncCategory) Name() string { return fc.name }
 // Functions returns the list of functions associated with the category.
 func (fc FuncCategory) Functions() []string { return fc.functions }
 
-func (t Template) getCategories() []FuncCategory {
+func (t *Template) getCategories() []FuncCategory {
 	categories := make(map[string][]string)
 	for name := range t.functions {
 		fi := t.functions[name]
 		if fi.alias != nil {
-			fi = *fi.alias
+			fi = fi.alias
 		}
 		categories[fi.group] = append(categories[fi.group], name)
 	}

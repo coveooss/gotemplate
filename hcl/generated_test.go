@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -174,6 +174,33 @@ func Test_list_Get(t *testing.T) {
 	}
 }
 
+func Test_list_GetTypes(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		kind bool
+		l    hclList
+		want interface{}
+	}{
+		{"Empty", false, nil, hclList{}},
+		{"Fixture", false, strFixture, hclList{"string", "string", "string", "string", "string"}},
+		{"Mixed Types", false, hclList{1, 1.2, true, "Hello", hclList{}, hclDict{}}, hclList{"int", "float64", "bool", "string", hclLower + "List", hclLower + "Dict"}},
+		{"Mixed Kinds", true, hclList{1, 1.2, true, "Hello", hclList{}, hclDict{}}, hclList{"int", "float64", "bool", "string", "slice", "map"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testFunc := tt.l.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.l.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HclList.Get%s() = %v, want %v", name, got, tt.want)
+			}
+		})
+	}
+}
 func Test_list_Len(t *testing.T) {
 	t.Parallel()
 
@@ -873,7 +900,8 @@ func Test_dict_Merge(t *testing.T) {
 		{"Add new1 & new2 to map", dictFixture, args{adding1, []hclIDict{adding2}}, dictFixture.Clone().Merge(adding1).Merge(adding2)},
 	}
 	for _, tt := range tests {
-		go t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			d := tt.d.Clone()
 			got := d.Merge(tt.args.hclDict, tt.args.dicts...)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -1009,58 +1037,68 @@ func Test_dict_Transpose(t *testing.T) {
 	}
 }
 
-func Test_HclList_Get(t *testing.T) {
-	type args struct {
-		indexes []int
-	}
+func Test_dict_GetTypes(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
-		l    hclList
-		args args
+		kind bool
+		d    hclDict
 		want interface{}
 	}{
-		// TODO: Add test cases.
+		{"Empty", false, nil, hclDict{}},
+		{"Fixture Types", false, dictFixture, hclDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    hclLower + "List",
+			"listInt": hclLower + "List",
+			"map":     hclLower + "Dict",
+			"mapInt":  hclLower + "Dict",
+			"string":  "string",
+		}},
+		{"Fixture Kinds", true, dictFixture, hclDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    "slice",
+			"listInt": "slice",
+			"map":     "map",
+			"mapInt":  "map",
+			"string":  "string",
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("HclList.Get() = %v, want %v", got, tt.want)
+			testFunc := tt.d.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.d.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HclDict.Get%s() = %v, want %v", name, got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HclList_TypeName(t *testing.T) {
-	tests := []struct {
-		name string
-		l    hclList
-		want str
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("HclList.TypeName() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func Test_Hcl_Type(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(hclLower+"List"), hclList{}.Type()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(hclLower+"Dict"), hclDict{}.Type()) })
 }
 
 func Test_Hcl_TypeName(t *testing.T) {
-	t.Run("list", func(t *testing.T) { assert.Equal(t, hclList{}.TypeName(), str("Hcl")) })
-	t.Run("dict", func(t *testing.T) { assert.Equal(t, hclDict{}.TypeName(), str("Hcl")) })
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(hclLower), hclList{}.TypeName()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(hclLower), hclDict{}.TypeName()) })
 }
 
 func Test_Hcl_GetHelper(t *testing.T) {
 	t.Run("list", func(t *testing.T) {
 		gotD, gotL := hclList{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), hclDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), hclListHelper.CreateList().TypeName())
+		assert.Equal(t, hclDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, hclListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 	t.Run("dict", func(t *testing.T) {
 		gotD, gotL := hclDict{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), hclDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), hclListHelper.CreateList().TypeName())
+		assert.Equal(t, hclDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, hclListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 }

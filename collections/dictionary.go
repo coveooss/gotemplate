@@ -2,6 +2,7 @@ package collections
 
 import (
 	"fmt"
+	"sync"
 )
 
 // IDictionary represents objects that act as map[string]interface.
@@ -18,6 +19,8 @@ type IDictionary interface {
 	Get(...interface{}) interface{}                          // Returns the values associated with key.
 	GetHelpers() (IDictionaryHelper, IListHelper)            // Returns the helpers implementation associated with the current type.
 	GetKeys() IGenericList                                   // Returns the keys in the dictionary in alphabetical order.
+	GetKinds() IDictionary                                   // Returns the kind associated to each key in the dictionary.
+	GetTypes() IDictionary                                   // Returns the type associated to each key in the dictionary.
 	GetValues() IGenericList                                 // Returns the values in the dictionary in alphabetical order of keys.
 	Has(...interface{}) bool                                 // Returns true if the dictionary object contains all the key.
 	KeysAsString() StringArray                               // Returns the keys in the dictionary in alphabetical order.
@@ -29,8 +32,9 @@ type IDictionary interface {
 	PrettyPrint() string                                     // Returns the pretty string representation of the dictionary.
 	Set(key, value interface{}) IDictionary                  // Sets key to value in the dictionary.
 	String() string                                          // Returns the string representation of the dictionary.
-	Transpose() IDictionary                                  // Transpose keys/values and return the resulting dictionary
-	TypeName() String                                        // Returns the actual type name
+	Transpose() IDictionary                                  // Transpose keys/values and return the resulting dictionary.
+	Type() String                                            // Returns the type of object.
+	TypeName() String                                        // Returns the actual type name.
 }
 
 // IDictionaryHelper represents objects that implement IDictionary compatible objects
@@ -42,11 +46,25 @@ type IDictionaryHelper interface {
 	TryConvert(object interface{}) (interface{}, bool)       // Tries to convert any object to IGenericList or IDictionary object.
 }
 
-// DictionaryHelper configures the default dictionary manager.
-var DictionaryHelper IDictionaryHelper
+var dictionaryHelper IDictionaryHelper
+var dictionaryHelperMutex sync.Mutex
+
+// GetDictionaryHelper fetches the default dictionary manager
+func GetDictionaryHelper() IDictionaryHelper {
+	dictionaryHelperMutex.Lock()
+	defer dictionaryHelperMutex.Unlock()
+	return dictionaryHelper
+}
+
+// SetDictionaryHelper configures the default dictionary manager
+func SetDictionaryHelper(newDictionaryHelper IDictionaryHelper) {
+	dictionaryHelperMutex.Lock()
+	defer dictionaryHelperMutex.Unlock()
+	dictionaryHelper = newDictionaryHelper
+}
 
 func assertDictionaryHelper() {
-	if DictionaryHelper == nil {
+	if GetDictionaryHelper() == nil {
 		panic(fmt.Errorf("DictionaryHelper not configured"))
 	}
 }
@@ -59,7 +77,7 @@ func AsDictionary(object interface{}) IDictionary {
 // CreateDictionary instantiates a new dictionary with optional size.
 func CreateDictionary(size ...int) IDictionary {
 	assertDictionaryHelper()
-	return DictionaryHelper.CreateDictionary(size...)
+	return GetDictionaryHelper().CreateDictionary(size...)
 }
 
 // TryAsDictionary returns the object casted as IDictionary if possible.
@@ -68,5 +86,5 @@ func TryAsDictionary(object interface{}) (IDictionary, error) {
 		return result, nil
 	}
 	assertDictionaryHelper()
-	return DictionaryHelper.TryAsDictionary(object)
+	return GetDictionaryHelper().TryAsDictionary(object)
 }

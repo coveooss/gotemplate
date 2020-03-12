@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/collections/implementation"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/collections/implementation"
 	"gopkg.in/yaml.v2"
 )
 
@@ -24,10 +24,7 @@ func (d yamlDict) String() string      { result, _ := Marshal(d.AsMap()); return
 func (l yamlList) PrettyPrint() string { return l.String() }
 func (d yamlDict) PrettyPrint() string { return d.String() }
 
-var _ = func() int {
-	collections.TypeConverters["yaml"] = Unmarshal
-	return 0
-}()
+func init() { collections.TypeConverters["yaml"] = Unmarshal }
 
 // Unmarshal calls the native Unmarshal but transform the results
 // to returns Dictionary and GenericList instead of go native collections.

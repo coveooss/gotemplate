@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -170,6 +170,33 @@ func Test_list_Get(t *testing.T) {
 	}
 }
 
+func Test_list_GetTypes(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		kind bool
+		l    baseList
+		want interface{}
+	}{
+		{"Empty", false, nil, baseList{}},
+		{"Fixture", false, strFixture, baseList{"string", "string", "string", "string", "string"}},
+		{"Mixed Types", false, baseList{1, 1.2, true, "Hello", baseList{}, baseDict{}}, baseList{"int", "float64", "bool", "string", baseLower + "List", baseLower + "Dict"}},
+		{"Mixed Kinds", true, baseList{1, 1.2, true, "Hello", baseList{}, baseDict{}}, baseList{"int", "float64", "bool", "string", "slice", "map"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testFunc := tt.l.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.l.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseList.Get%s() = %v, want %v", name, got, tt.want)
+			}
+		})
+	}
+}
 func Test_list_Len(t *testing.T) {
 	t.Parallel()
 
@@ -869,7 +896,8 @@ func Test_dict_Merge(t *testing.T) {
 		{"Add new1 & new2 to map", dictFixture, args{adding1, []baseIDict{adding2}}, dictFixture.Clone().Merge(adding1).Merge(adding2)},
 	}
 	for _, tt := range tests {
-		go t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			d := tt.d.Clone()
 			got := d.Merge(tt.args.baseDict, tt.args.dicts...)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -1005,58 +1033,68 @@ func Test_dict_Transpose(t *testing.T) {
 	}
 }
 
-func Test_baseList_Get(t *testing.T) {
-	type args struct {
-		indexes []int
-	}
+func Test_dict_GetTypes(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
-		l    baseList
-		args args
+		kind bool
+		d    baseDict
 		want interface{}
 	}{
-		// TODO: Add test cases.
+		{"Empty", false, nil, baseDict{}},
+		{"Fixture Types", false, dictFixture, baseDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    baseLower + "List",
+			"listInt": baseLower + "List",
+			"map":     baseLower + "Dict",
+			"mapInt":  baseLower + "Dict",
+			"string":  "string",
+		}},
+		{"Fixture Kinds", true, dictFixture, baseDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    "slice",
+			"listInt": "slice",
+			"map":     "map",
+			"mapInt":  "map",
+			"string":  "string",
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Get() = %v, want %v", got, tt.want)
+			testFunc := tt.d.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.d.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("baseDict.Get%s() = %v, want %v", name, got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_baseList_TypeName(t *testing.T) {
-	tests := []struct {
-		name string
-		l    baseList
-		want str
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.TypeName() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func Test_base_Type(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(baseLower+"List"), baseList{}.Type()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(baseLower+"Dict"), baseDict{}.Type()) })
 }
 
 func Test_base_TypeName(t *testing.T) {
-	t.Run("list", func(t *testing.T) { assert.Equal(t, baseList{}.TypeName(), str("base")) })
-	t.Run("dict", func(t *testing.T) { assert.Equal(t, baseDict{}.TypeName(), str("base")) })
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(baseLower), baseList{}.TypeName()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(baseLower), baseDict{}.TypeName()) })
 }
 
 func Test_base_GetHelper(t *testing.T) {
 	t.Run("list", func(t *testing.T) {
 		gotD, gotL := baseList{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), baseDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), baseListHelper.CreateList().TypeName())
+		assert.Equal(t, baseDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, baseListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 	t.Run("dict", func(t *testing.T) {
 		gotD, gotL := baseDict{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), baseDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), baseListHelper.CreateList().TypeName())
+		assert.Equal(t, baseDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, baseListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 }

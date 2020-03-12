@@ -1,0 +1,57 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+        id: go
+
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Run Tests
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          make codecov
+
+      - name: Setup Hugo
+        if: github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-hugo@v2.2.1
+        with:
+          hugo-version: "0.58.3"
+          extended: true
+
+      - name: Build Documentation
+        if: github.ref == 'refs/heads/master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          make doc-generate
+
+      - name: Deploy Documentation
+        if: github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v2.4.0
+        env:
+          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: ./docs/public
+        with:
+          emptyCommits: false
+
+      - name: Build Tag
+        if: github.ref != 'refs/heads/master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -sL https://git.io/goreleaser | bash;

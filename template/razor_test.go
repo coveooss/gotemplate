@@ -10,9 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/json"
-	logging "github.com/op/go-logging"
+	"github.com/bmatcuk/doublestar"
+	"github.com/coveooss/multilogger"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,9 +19,9 @@ import (
 func TestTemplate_applyRazor(t *testing.T) {
 	t.Parallel()
 	dmp := diffmatchpatch.New()
-	SetLogLevel(logging.WARNING)
-	template := MustNewTemplate("../docs/doc_test", nil, "", nil)
-	files, err := filepath.Glob(filepath.Join(template.folder, "*.md"))
+	TemplateLog = multilogger.New("test")
+	template := MustNewTemplate("../docs_tests", nil, "", nil)
+	files, err := doublestar.Glob(filepath.Join(template.folder, "**/*.md"))
 	if err != nil {
 		t.Fatalf("Unable to read test files (documentation in %s)", template.folder)
 		t.Fail()
@@ -42,8 +41,6 @@ func TestTemplate_applyRazor(t *testing.T) {
 		return path
 	}
 
-	collections.ListHelper = json.GenericListHelper
-	collections.DictionaryHelper = json.DictionaryHelper
 	template.options[AcceptNoValue] = true
 
 	load := func(path string) []byte { return must(ioutil.ReadFile(path)).([]byte) }
@@ -63,31 +60,36 @@ func TestTemplate_applyRazor(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			template.options[Razor] = tt.razor != ""
 
-			content := load(tt.path)
+			processContent := func(renderingDisabled bool) string {
+				var got string
+				var err error
+				func() {
+					defer func() {
+						if rec := recover(); rec != nil {
+							err = fmt.Errorf("Template.ProcessContent() panic=%v\n%s", rec, string(debug.Stack()))
+						}
+					}()
+					template.options[RenderingDisabled] = renderingDisabled
+					got, err = template.ProcessContent(string(load(tt.path)), tt.path)
+				}()
+				if err != nil {
+					t.Errorf("Template.ProcessContent(), err=%v", err)
+				}
+				return got
+			}
+
 			if tt.razor != "" {
-				result := load(tt.razor)
-				got, _ := template.applyRazor(content)
+				result := string(load(tt.razor))
+				got := processContent(true)
 				if !reflect.DeepEqual(got, result) {
 					diffs := dmp.DiffMain(string(result), string(got), true)
 					t.Errorf("Differences on Razor result for %s\n%s", tt.razor, dmp.DiffPrettyText(diffs))
 				}
 			}
 
-			var got string
-			var err error
-			func() {
-				defer func() {
-					if rec := recover(); rec != nil {
-						err = fmt.Errorf("Template.ProcessContent() panic=%v\n%s", rec, string(debug.Stack()))
-					}
-				}()
-				got, err = template.ProcessContent(string(content), tt.path)
-			}()
-
-			if err != nil {
-				t.Errorf("Template.ProcessContent(), err=%v", err)
-			} else if tt.render != "" {
+			if tt.render != "" {
 				result := string(load(tt.render))
+				got := processContent(false)
 				if !reflect.DeepEqual(got, result) {
 					diffs := dmp.DiffMain(string(result), string(got), true)
 					t.Errorf("Differences on Rendered for %s\n%s", tt.render, dmp.DiffPrettyText(diffs))
@@ -134,60 +136,56 @@ func TestBase(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }
 
 func TestInvocation(t *testing.T) {
 	tests := []struct {
-		name       string
-		debugLevel int
-		razor      string
-		want       string
+		name  string
+		razor string
+		want  string
 	}{
 		{
-			"Func call", 2,
+			"Func call",
 			"@func(1,2,3)",
 			"{{ func 1 2 3 }}",
 		},
 		{
-			"Method call", 2,
+			"Method call",
 			"@object.func(1,2,3)",
 			"{{ $.object.func 1 2 3 }}",
 		},
 		{
-			"Method call on result", 2,
+			"Method call on result",
 			"@object.func(1,2).func2(3)",
 			"{{ ($.object.func 1 2).func2 3 }}",
 		},
 		{
-			"Double invocation", 2,
+			"Double invocation",
 			"@func1().func2()",
 			"{{ func1.func2 }}",
 		},
 		{
-			"Double invocation with params", 6,
+			"Double invocation with params",
 			"@func1(1).func2(2)",
 			"{{ (func1 1).func2 2 }}",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logging.SetLevel(logging.Level(tt.debugLevel), loggerInternal)
-			defer func() { logging.SetLevel(logging.Level(2), loggerInternal) }()
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }
 
 func TestAssign(t *testing.T) {
 	t.Parallel()
+
 	tests := []struct {
 		name  string
 		razor string
@@ -209,27 +207,174 @@ func TestAssign(t *testing.T) {
 			`{{- $a := 2 }}`,
 		},
 		{
-			"Global assign",
+			"Local replacement 1",
+			"@$a = 2",
+			`{{- $a = 2 }}`,
+		},
+		{
+			"Local replacement 2",
+			"@{a = 2}",
+			"{{- $a = 2 }}",
+		},
+		{
+			"Local replacement 3",
+			"@$a = 2",
+			`{{- $a = 2 }}`,
+		},
+		{
+			"Local replacement 4",
+			"@{a.b.c} = 2",
+			`{{- set $a.b "c" 2 }}`,
+		},
+		{
+			"Global assign 1",
 			`@a := "test"`,
-			`{{- assertWarning (isNil $.a) "$.a has already been declared, use = to overwrite existing value" }}{{- set $ "a" "test" }}`,
+			`{{- set $ "a" "test" }}`,
 		},
 		{
-			"Deprecated local assign with no other razor",
-			`$a := "test"`,
-			`$a := "test"`,
+			"Global assign 2",
+			`@.a := "test"`,
+			`{{- set . "a" "test" }}`,
 		},
 		{
-			"Deprecated local assign",
-			`@test; $a := $.test`,
-			`{{ $.test }} {{- $a := $.test }}`,
+			"Global assign 3",
+			`@$.a := "test"`,
+			`{{- set $ "a" "test" }}`,
+		},
+		{
+			"Replacement of global value",
+			`@a = "test"`,
+			`{{- assertWarning (not (isNil $.a)) "$.a does not exist, use := to declare new variable" }}{{- set $ "a" "test" }}`,
+		},
+		{
+			"Global assign with non standard identifier characters",
+			`@12t%!e#st- := "test"`,
+			`{{- set $ "12t%!e#st-" "test" }}`,
+		},
+		{
+			"Global assign with sub objects",
+			`@a.b.c.d.e := "test"`,
+			`{{- set $.a.b.c.d "e" "test" }}`,
+		},
+		{
+			"Assignment operator 1",
+			`@{a} += 10`,
+			`{{- $a = add $a 10 }}`,
+		},
+		{
+			"Assignment operator 2",
+			`@{a *= 10}`,
+			`{{- $a = mul $a 10 }}`,
+		},
+		{
+			"Assignment operator 3",
+			`@a <<= 10`,
+			`{{- assertWarning (not (isNil $.a)) "$.a does not exist, use := to declare new variable" }}{{- set $ "a" (lshift $.a 10) }}`,
+		},
+		{
+			"Assignment operator 3",
+			`@a.b.c <<= 10`,
+			`{{- assertWarning (not (isNil $.a.b.c)) "$.a.b.c does not exist, use := to declare new variable" }}{{- set $.a.b "c" (lshift $.a.b.c 10) }}`,
+		},
+		{
+			"Assignment operator 4",
+			`@{a} »= 10`,
+			`{{- $a = rshift $a 10 }}`,
+		},
+		{
+			"Assignment operator 5",
+			`@{a} ÷= 2`,
+			`{{- $a = div $a 2 }}`,
+		},
+		{
+			"Assignment operator 6",
+			`@.a.b *= 4*2`,
+			`{{- assertWarning (not (isNil .a.b)) ".a.b does not exist, use := to declare new variable" }}{{- set .a "b" (mul .a.b (mul 4 2)) }}`,
+		},
+		{
+			"Assignment operator 7",
+			`@$.a.b *= 4`,
+			`{{- assertWarning (not (isNil $.a.b)) "$.a.b does not exist, use := to declare new variable" }}{{- set $.a "b" (mul $.a.b 4) }}`,
+		},
+		{
+			"Assignment operator 8",
+			`@$a *= 4`,
+			`{{- $a = mul $a 4 }}`,
+		},
+		{
+			"Assignment operator local sub",
+			`@{a.b.c} ÷= 2`,
+			`{{- set $a.b "c" (div $a.b.c 2) }}`,
+		},
+		{
+			"Assignment operator with expression",
+			`@{a} /= 2 * 3`,
+			`{{- $a = div $a (mul 2 3) }}`,
+		},
+		{
+			"Global assignment operator with expression",
+			`@a %= 2 / 3`,
+			`{{- assertWarning (not (isNil $.a)) "$.a does not exist, use := to declare new variable" }}{{- set $ "a" (mod $.a (div 2 3)) }}`,
+		},
+		{
+			"Assignment operator with index",
+			`@{a} += $text[3:]`,
+			`{{- $a = add $a (slice $text 3 -1) }}`,
+		},
+		{
+			"Assignment with @",
+			`@a := "How do you @handle this"`,
+			`{{- set $ "a" "How do you @handle this" }}`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
+		})
+	}
+}
+
+func TestAssignWithValue(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		razor  string
+		want   string
+		result string
+	}{
+		{
+			"Assignment with with",
+			`
+			@d := dict("v0", 0)
+			@-with (d)
+				@.v1 := 1
+				@.v2 := 2
+			@-end
+			@--d
+			`,
+			`
+			{{- set $ "d" (dict "v0" 0) }}
+			{{- with $.d }}
+				{{- set . "v1" 1 }}
+				{{- set . "v2" 2 }}
+			{{- end }}
+			{{- $.d -}}
+			`,
+			`{"v0":0,"v1":1,"v2":2}`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			got, changed := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
+			assert.True(t, changed)
+			r, err := template.ProcessContent(string(got), ".")
+			assert.NoError(t, err)
+			assert.Equal(t, r, string(tt.result))
 		})
 	}
 }
@@ -265,9 +410,8 @@ func TestAutoWrap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }
@@ -303,9 +447,60 @@ func TestSpaceEater(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
-			if got, _ := template.applyRazor([]byte(tt.razor)); string(got) != tt.want {
-				t.Errorf("applyRazor() = got %s, want %s", got, tt.want)
-			}
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
+		})
+	}
+}
+
+func TestMultilineStringProtect(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		razor string
+		want  string
+	}{
+		{
+			"Empty",
+			"This is an empty string ``",
+			"This is an empty string ``",
+		},
+		{
+			"Expression within quote",
+			"`@(1+2)`",
+			"`{{ add 1 2 }}`",
+		},
+		{
+			"String withing expression",
+			"@func(`@(1+2)`)",
+			"{{ func `@(1+2)` }}",
+		},
+		{
+			"Expression within multiline quote",
+			"`\n@(1+2)\n`",
+			"`\n@(1+2)\n`",
+		},
+		{
+			"Expression within empty quotes",
+			"``\n@(1+2)\n``",
+			"``\n{{ add 1 2 }}\n``",
+		},
+		{
+			"Expression within markdown (md)",
+			"```razor\n@(1+2)\n```",
+			"```razor\n{{ add 1 2 }}\n```",
+		},
+		{
+			"Expression with escaped @ in multiline string",
+			"`\n@@Not changed\n`",
+			"`\n@@Not changed\n`",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			got, _ := template.applyRazor([]byte(tt.razor))
+			assert.Equal(t, tt.want, string(got), tt.razor)
 		})
 	}
 }

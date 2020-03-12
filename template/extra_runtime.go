@@ -10,9 +10,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/hcl"
-	"github.com/coveo/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/utils"
+	multicolor "github.com/coveooss/multilogger/color"
 	"github.com/fatih/color"
 )
 
@@ -44,6 +44,7 @@ var runtimeFuncsAliases = aliases{
 	"getMethods":    {"methods"},
 	"getSignature":  {"sign", "signature"},
 	"raise":         {"raiseError"},
+	"userContext":   {"c", "context"},
 }
 
 var runtimeFuncsHelp = descriptions{
@@ -59,11 +60,12 @@ var runtimeFuncsHelp = descriptions{
 		    Name        string
 		    Functions    []string
 	`)),
-	"current":  "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
-	"ellipsis": "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
-	"exec":     "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
-	"exit":     "Exits the current program execution.",
-	"func":     "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
+	"completeExamples": "Complete the examples that are not fully generated.",
+	"current":          "Returns the current folder (like pwd, but returns the folder of the currently running folder).",
+	"ellipsis":         "Returns the result of the function by expanding its last argument that must be an array into values. It's like calling function(arg1, arg2, otherArgs...).",
+	"exec":             "Returns the result of the shell command as structured data (as string if no other conversion is possible).",
+	"exit":             "Exits the current program execution.",
+	"func":             "Defines a function with the current context using the function (exec, run, include, template). Executed in the context of the caller.",
 	"function": strings.TrimSpace(collections.UnIndent(`
 		Returns the information relative to a specific function.
 
@@ -87,35 +89,37 @@ var runtimeFuncsHelp = descriptions{
 	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
 	"templateNames": "Returns the list of available templates names.",
 	"templates":     "Returns the list of available templates.",
+	"userContext":   "Returns the user context (i.e. all global variables except the injected constant).",
 }
 
 func (t *Template) addRuntimeFuncs() {
 	var funcs = dictionary{
-		"alias":         t.alias,
-		"aliases":       t.getAliases,
-		"allFunctions":  t.getAllFunctions,
-		"assert":        assertError,
-		"assertWarning": assertWarning,
-		"categories":    t.getCategories,
-		"current":       t.current,
-		"ellipsis":      t.ellipsis,
-		"exec":          t.execCommand,
-		"exit":          exit,
-		"func":          t.defineFunc,
-		"function":      t.getFunction,
-		"functions":     t.getFunctions,
-		"getAttributes": getAttributes,
-		"getMethods":    getMethods,
-		"getSignature":  getSignature,
-		"include":       t.include,
-		"localAlias":    t.localAlias,
-		"raise":         raise,
-		"run":           t.runCommand,
-		"substitute":    t.substitute,
-		"templateNames": t.getTemplateNames,
-		"templates":     t.Templates,
+		"alias":            t.alias,
+		"aliases":          t.getAliases,
+		"allFunctions":     t.getAllFunctions,
+		"assert":           assertError,
+		"assertWarning":    assertWarning,
+		"categories":       t.getCategories,
+		"completeExamples": t.completeExamples,
+		"current":          t.current,
+		"ellipsis":         t.ellipsis,
+		"exec":             t.execCommand,
+		"exit":             exit,
+		"func":             t.defineFunc,
+		"function":         t.getFunction,
+		"functions":        t.getFunctions,
+		"getAttributes":    getAttributes,
+		"getMethods":       getMethods,
+		"getSignature":     getSignature,
+		"include":          t.include,
+		"localAlias":       t.localAlias,
+		"raise":            raise,
+		"run":              t.runCommand,
+		"substitute":       t.substitute,
+		"templateNames":    t.getTemplateNames,
+		"templates":        t.Templates,
+		"userContext":      t.userContext,
 	}
-
 	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
 		FuncHelp:    runtimeFuncsHelp,
 		FuncArgs:    runtimeFuncsArgs,
@@ -123,8 +127,13 @@ func (t *Template) addRuntimeFuncs() {
 	})
 }
 
-func exit(exitValue int) int       { os.Exit(exitValue); return exitValue }
-func (t Template) current() string { return t.folder }
+func exit(exitValue int) int { os.Exit(exitValue); return exitValue }
+
+func (t *Template) current() string { return t.folder }
+
+func (t *Template) userContext() interface{} {
+	return t.Context().Clone().Flush(t.constantKeys...)
+}
 
 func (t *Template) alias(name, function string, source interface{}, args ...interface{}) (string, error) {
 	return t.addAlias(name, function, source, false, false, args...)
@@ -176,7 +185,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	if !context {
-		t.aliases[name] = FuncInfo{
+		t.aliases[name] = &FuncInfo{
 			function: func(args ...interface{}) (result interface{}, err error) {
 				return f(collections.Interface2string(source), append(defaultArgs, args...)...)
 			},
@@ -247,7 +256,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 	}
 
 	emptyList := collections.CreateList()
-	fi := FuncInfo{
+	fi := &FuncInfo{
 		name:        name,
 		group:       defval(config.Get("group"), "User defined functions").(string),
 		description: defval(config.Get("description"), "").(string),
@@ -265,8 +274,8 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 
 	fi.function = func(args ...interface{}) (result interface{}, err error) {
 		context := collections.CreateDictionary()
-		parentContext, err := collections.TryAsDictionary(t.context)
-		if err != nil {
+		parentContext := t.Context()
+		if parentContext.Len() == 0 {
 			context.Set("DEFAULT", t.context)
 		}
 
@@ -338,7 +347,7 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Dir = t.folder
-	log.Notice("Launching", cmd.Args, "in", cmd.Dir)
+	InternalLog.Info("Launching", cmd.Args, "in", cmd.Dir)
 
 	if err = cmd.Run(); err == nil {
 		result = stdout.String()
@@ -369,15 +378,35 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 	return
 }
 
-func (t Template) runTemplate(source string, context ...interface{}) (resultContent, filename string, err error) {
+func (t *Template) runTemplate(source string, args ...interface{}) (resultContent, filename string, err error) {
 	if source == "" {
 		return
 	}
 	var out bytes.Buffer
 
-	if len(context) == 0 {
-		context = []interface{}{t.context}
+	// Keep the parent context to make it available
+	parentContext := t.userContext()
+	// Clone the current context to ensure that the sub template has a distinct set of values
+	t = t.GetNewContext("", false)
+	context := t.Context()
+	if context.Len() == 0 {
+		context.Set("CONTEXT", t.context)
 	}
+	switch len(args) {
+	case 1:
+		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
+			context = arguments.Merge(context)
+			break
+		}
+		fallthrough
+	default:
+		context.Set("ARGS", args)
+	}
+
+	// Make the parent context available
+	context.Set("_", parentContext)
+	t.context = context
+
 	// We first try to find a template named <source>
 	internalTemplate := t.Lookup(source)
 	if internalTemplate == nil {
@@ -393,11 +422,13 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 					return
 				}
 			} else {
-				razor, _ := t.applyRazor(fileContent)
-				source = string(razor)
+				source = string(fileContent)
 				filename = tryFile
 			}
 		}
+		razor, _ := t.applyRazor([]byte(source))
+		source = string(razor)
+
 		// There is no file named <source>, so we consider that <source> is the content
 		inline, e := t.New("inline").Parse(source)
 		if e != nil {
@@ -411,7 +442,7 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 		internalTemplate.Option("missingkey=error")
 	}
 	// We execute the resulting template
-	if err = internalTemplate.Execute(&out, hcl.SingleContext(context...)); err != nil {
+	if err = internalTemplate.Execute(&out, t.context); err != nil {
 		return
 	}
 
@@ -424,13 +455,13 @@ func (t Template) runTemplate(source string, context ...interface{}) (resultCont
 	return
 }
 
-func (t Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
+func (t *Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
 	content, _, err := t.runTemplate(source, context...)
 	return content, err
 }
 
 // This function is used to call a function that requires its last argument to be expanded ...
-func (t Template) ellipsis(function string, args ...interface{}) (interface{}, error) {
+func (t *Template) ellipsis(function string, args ...interface{}) (interface{}, error) {
 	last := len(args) - 1
 	if last >= 0 && args[last] == nil {
 		args[last] = []interface{}{}
@@ -520,7 +551,7 @@ func getSignature(object interface{}) string {
 }
 
 func raise(args ...interface{}) (string, error) {
-	return "", fmt.Errorf(utils.FormatMessage(args...))
+	return "", fmt.Errorf(multicolor.FormatMessage(args...))
 }
 
 func assertError(test interface{}, args ...interface{}) (string, error) {
@@ -538,7 +569,7 @@ func assertWarning(test interface{}, args ...interface{}) string {
 		if len(args) == 0 {
 			args = []interface{}{"Assertion failed"}
 		}
-		Log.Warning(utils.FormatMessage(args...))
+		TemplateLog.Warning(multicolor.FormatMessage(args...))
 	}
 	return ""
 }

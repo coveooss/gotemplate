@@ -10,9 +10,9 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/utils"
-	logging "github.com/op/go-logging"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/utils"
+	multicolor "github.com/coveooss/multilogger/color"
 )
 
 // String is an alias to collections.String
@@ -23,9 +23,10 @@ var templateMutex sync.Mutex
 // Template let us extend the functionalities of base go template library.
 type Template struct {
 	*template.Template
-	TempFolder     string
+	tempFolder     string
 	substitutes    []utils.RegexReplacer
 	context        interface{}
+	constantKeys   []interface{}
 	delimiters     []string
 	parent         *Template
 	folder         string
@@ -43,14 +44,18 @@ const (
 	EnvSubstitutes      = "GOTEMPLATE_SUBSTITUTES"
 	EnvDebug            = "GOTEMPLATE_DEBUG"
 	EnvExtensionPath    = "GOTEMPLATE_PATH"
-	// TODO: Deprecated, to remove in future version
-	EnvDeprecatedAssign = "GOTEMPLATE_DEPRECATED_ASSIGN"
 )
 
 const (
 	noGoTemplate       = "no-gotemplate!"
 	noRazor            = "no-razor!"
-	explicitGoTemplate = "gotemplate!"
+	explicitGoTemplate = "force-gotemplate!"
+
+	pauseGoTemplate  = "gotemplate-pause!"
+	resumeGoTemplate = "gotemplate-resume!"
+
+	pauseRazor  = "razor-pause!"
+	resumeRazor = "razor-resume!"
 )
 
 // Common variables
@@ -60,12 +65,12 @@ var (
 	toStrings      = collections.ToStrings
 	acceptNoValue  = String(os.Getenv(EnvAcceptNoValue)).ParseBool()
 	strictError    = String(os.Getenv(EnvStrictErrorCheck)).ParseBool()
-	Print          = utils.ColorPrint
-	Printf         = utils.ColorPrintf
-	Println        = utils.ColorPrintln
-	ErrPrintf      = utils.ColorErrorPrintf
-	ErrPrintln     = utils.ColorErrorPrintln
-	ErrPrint       = utils.ColorErrorPrint
+	Print          = multicolor.Print
+	Printf         = multicolor.Printf
+	Println        = multicolor.Println
+	ErrPrintf      = multicolor.ErrorPrintf
+	ErrPrintln     = multicolor.ErrorPrintln
+	ErrPrint       = multicolor.ErrorPrint
 )
 
 // IsRazor determines if the supplied code appears to have Razor code (using default delimiters).
@@ -130,20 +135,31 @@ func MustNewTemplate(folder string, context interface{}, delimiters string, opti
 	return must(NewTemplate(folder, context, delimiters, options, substitutes...)).(*Template)
 }
 
-// GetNewContext returns a distint context for each folder.
-func (t Template) GetNewContext(folder string, useCache bool) *Template {
+// TempFolder set temporary folder used by this template.
+func (t *Template) TempFolder(folder string) *Template {
+	t.tempFolder = folder
+	return t
+}
+
+// GetNewContext returns a distinct context for each folder.
+func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 	folder = iif(folder != "", folder, t.folder).(string)
 	if context, found := t.children[folder]; useCache && found {
 		return context
 	}
 
-	newTemplate := Template(t)
+	newTemplate := Template(*t)
 	newTemplate.Template = template.New(folder)
-	newTemplate.init(folder)
-	newTemplate.parent = &t
+	newTemplate.addFunctions(t.functions)
 	newTemplate.addFunctions(t.aliases)
+	newTemplate.init(folder)
+	newTemplate.parent = t
 	newTemplate.importTemplates(t)
 	newTemplate.options = make(OptionsSet)
+	if dict := t.Context(); dict.Len() > 0 {
+		newTemplate.context = dict.Clone()
+	}
+
 	// We duplicate the options because the new context may alter them afterwhile and
 	// it should not modify the original values.
 	for k, v := range t.options {
@@ -159,28 +175,28 @@ func (t Template) GetNewContext(folder string, useCache bool) *Template {
 }
 
 // IsCode determines if the supplied code appears to have gotemplate code.
-func (t Template) IsCode(code string) bool {
+func (t *Template) IsCode(code string) bool {
 	return !strings.Contains(code, noGoTemplate) && (t.IsRazor(code) || strings.Contains(code, t.LeftDelim()) || strings.Contains(code, t.RightDelim()))
 }
 
 // IsRazor determines if the supplied code appears to have Razor code.
-func (t Template) IsRazor(code string) bool {
+func (t *Template) IsRazor(code string) bool {
 	return strings.Contains(code, t.RazorDelim()) && !strings.Contains(code, noGoTemplate) && !strings.Contains(code, noRazor)
 }
 
 // LeftDelim returns the left delimiter.
-func (t Template) LeftDelim() string { return t.delimiters[0] }
+func (t *Template) LeftDelim() string { return t.delimiters[0] }
 
 // RightDelim returns the right delimiter.
-func (t Template) RightDelim() string { return t.delimiters[1] }
+func (t *Template) RightDelim() string { return t.delimiters[1] }
 
 // RazorDelim returns the razor delimiter.
-func (t Template) RazorDelim() string { return t.delimiters[2] }
+func (t *Template) RazorDelim() string { return t.delimiters[2] }
 
 // SetOption allows setting of template option after initialization.
 func (t *Template) SetOption(option Options, value bool) { t.options[option] = value }
 
-func (t Template) isTemplate(file string) bool {
+func (t *Template) isTemplate(file string) bool {
 	for i := range templateExt {
 		if strings.HasSuffix(file, templateExt[i]) {
 			return true
@@ -191,12 +207,8 @@ func (t Template) isTemplate(file string) bool {
 
 func (t *Template) initExtension() {
 	ext := t.GetNewContext("", false)
+	t.constantKeys = ext.constantKeys
 	ext.options = DefaultOptions()
-
-	// We temporary set the logging level one grade lower
-	logLevel := logging.GetLevel(logger)
-	logging.SetLevel(logLevel-1, logger)
-	defer func() { logging.SetLevel(logLevel, logger) }()
 
 	var extensionfiles []string
 	if extensionFolders := strings.TrimSpace(os.Getenv(EnvExtensionPath)); extensionFolders != "" {
@@ -219,13 +231,13 @@ func (t *Template) initExtension() {
 		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
 		// We also do not ask to clone the context as we wish to let extension to be able to alter the supplied context
 		if _, _, err := ext.processContentInternal(content, file, nil, 0, false, nil); err != nil {
-			log.Error(err)
+			InternalLog.Error(err)
 		}
 	}
 
 	// Add the children contexts to the main context
 	for _, context := range ext.children {
-		t.importTemplates(*context)
+		t.importTemplates(context)
 	}
 
 	// We reset the list of templates
@@ -238,7 +250,6 @@ func (t *Template) init(folder string) {
 		t.folder, _ = filepath.Abs(folder)
 	}
 	t.addFuncs()
-	t.Parse("")
 	t.children = make(map[string]*Template)
 	t.Delims(t.delimiters[0], t.delimiters[1])
 	t.setConstant(false, "\n", "NL", "CR", "NEWLINE")
@@ -257,6 +268,7 @@ func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...str
 	for i := range names {
 		if val, isSet := context[names[i]]; !isSet {
 			context[names[i]] = value
+			t.constantKeys = append(t.constantKeys, names[i])
 			if stopOnFirst {
 				return
 			}
@@ -267,10 +279,30 @@ func (t *Template) setConstant(stopOnFirst bool, value interface{}, names ...str
 }
 
 // Import templates from another template.
-func (t *Template) importTemplates(source Template) {
+func (t *Template) importTemplates(source *Template) {
 	for _, subTemplate := range source.Templates() {
 		if subTemplate.Name() != subTemplate.ParseName {
 			t.AddParseTree(subTemplate.Name(), subTemplate.Tree)
 		}
 	}
+}
+
+// Add allows adding a value to the template context.
+// The context must be a dictionnary to use that function, otherwise, it will panic.
+func (t *Template) Add(key string, value interface{}) {
+	collections.AsDictionary(t.context).Add(key, value)
+}
+
+// Merge allows adding multiple values to the template context.
+// The context and values must both be dictionnary to use that function, otherwise, it will panic.
+func (t *Template) Merge(values interface{}) {
+	collections.AsDictionary(t.context).Add(key, collections.AsDictionary(values))
+}
+
+// Context returns the template context as a dictionnary if possible, otherwise, it returns null.
+func (t *Template) Context() (result collections.IDictionary) {
+	if result, _ = collections.TryAsDictionary(t.context); result == nil {
+		result = collections.CreateDictionary()
+	}
+	return
 }

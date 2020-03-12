@@ -3,16 +3,16 @@ package template
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 	"unicode/utf8"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/hcl"
-	"github.com/coveo/gotemplate/v3/json"
-	"github.com/coveo/gotemplate/v3/utils"
-	"github.com/coveo/gotemplate/v3/xml"
-	"github.com/coveo/gotemplate/v3/yaml"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/hcl"
+	"github.com/coveooss/gotemplate/v3/json"
+	"github.com/coveooss/gotemplate/v3/utils"
+	"github.com/coveooss/gotemplate/v3/xml"
+	"github.com/coveooss/gotemplate/v3/yaml"
+	"github.com/coveooss/multilogger"
 )
 
 const (
@@ -24,7 +24,7 @@ var dataFuncsBase = dictionary{
 	"String":    toStringClass,
 	"append":    addElements,
 	"array":     array,
-	"bool":      strconv.ParseBool,
+	"bool":      multilogger.ParseBool,
 	"char":      toChar,
 	"contains":  contains,
 	"content":   content,
@@ -164,20 +164,20 @@ var dataFuncsHelp = descriptions{
 	"bool":           "Converts the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)",
 	"char":           "Returns the character corresponging to the supplied integer value",
 	"contains":       "Test to see if a list has a particular elements.",
-	"content":        "Returns the content of a single element map (used to retrieve content in a declaration like `value \"name\" { a = 1 b = 3}`)",
+	"content":        "Returns the content of a single element map.\nUsed to retrieve content in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
 	"data":           "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.",
 	"dict":           "Returns a new dictionary from a list of pairs (key, value).",
 	"extract":        "Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps",
 	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)",
 	"hasKey":         "Returns true if the dictionary contains the specified key.",
 	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
-	"initial":        "Returns but the last element. ",
+	"initial":        "Returns but the last element.",
 	"intersect":      "Returns a list that is the intersection of the list and all arguments (removing duplicates).",
 	"isNil":          "Returns true if the supplied value is nil.",
 	"isSet":          "Returns true if the supplied value is not nil.",
 	"isZero":         "Returns true if the supplied value is false, 0, nil or empty.",
 	"json":           "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.",
-	"key":            "Returns the key name of a single element map (used to retrieve name in a declaration like `value \"name\" { a = 1 b = 3}`)",
+	"key":            "Returns the key name of a single element map.\nUsed to retrieve name in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
 	"keys":           "Returns a list of all of the keys in a dict (in alphabetical order).",
 	"lenc":           "Returns the number of actual character in a string.",
 	"list":           "Returns a generic list from the supplied arguments.",
@@ -211,16 +211,33 @@ var dataFuncsHelp = descriptions{
 	"union":          "Returns a list that is the union of the list and all arguments (removing duplicates).",
 	"unique":         "Generates a list with all of the duplicates removed.",
 	"unset":          "Removes an element from a dictionary.",
+	"values":         "Returns the list of values contained in a map.",
 	"without":        "Filters items out of a list.",
 	"xml":            "Converts the supplied xml string into data structure (Go spec). If context is omitted, default context is used.",
 	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",
 }
 
+var dataFuncsExamples = examples{
+	"hasKey": {
+		{`@hasKey(dict("key", "value"), "key")`, `{{ hasKey (dict "key" "value") "key" }}`, `true`},
+		{`@hasKey("key", dict("key", "value"))`, ``, `true`},
+		{`@hasKey(dict("key", "value"), "otherkey")`, ``, `false`},
+	},
+	"unset": {
+		{strings.TrimSpace(collections.UnIndent(`
+		@{myDict} := dict("key", "value", "key2", "value2", "key3", "value3")
+		@-unset($myDict, "key")
+		@-unset("key2", $myDict)
+		@-toJson($myDict)`)), ``, `{"key3":"value3"}`},
+	},
+}
+
 func (t *Template) addDataFuncs() {
 	options := FuncOptions{
-		FuncHelp:    dataFuncsHelp,
-		FuncArgs:    dataFuncsArgs,
-		FuncAliases: dataFuncsAliases,
+		FuncHelp:     dataFuncsHelp,
+		FuncArgs:     dataFuncsArgs,
+		FuncAliases:  dataFuncsAliases,
+		FuncExamples: dataFuncsExamples,
 	}
 	t.AddFunctions(dataFuncsBase, dataBase, options)
 	t.AddFunctions(dataFuncsConversion, dataConversion, options)
@@ -231,7 +248,6 @@ func (t *Template) addDataFuncs() {
 		//"xml":  t.xmlConverter,
 		"yaml": t.yamlConverter,
 	}, dataConversion, options)
-	t.optionsEnabled[Data] = true
 }
 
 func toChar(value interface{}) (r interface{}, err error) {
@@ -399,7 +415,7 @@ type marshaler func(interface{}) ([]byte, error)
 type unMarshaler func([]byte, interface{}) error
 
 // Internal function used to actually convert the supplied string and apply a conversion function over it to get a go map
-func (t Template) converter(from unMarshaler, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
+func converter(from unMarshaler, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
 	if err = from([]byte(content), &result); err != nil && sourceWithError {
 		source := "\n"
 		for i, line := range collections.SplitLines(content) {
@@ -411,7 +427,7 @@ func (t Template) converter(from unMarshaler, content string, sourceWithError bo
 }
 
 // Apply a converter to the result of the template execution of the supplied string
-func (t Template) templateConverter(to marshaler, from unMarshaler, source interface{}, context ...interface{}) (result interface{}, err error) {
+func (t *Template) templateConverter(to marshaler, from unMarshaler, source interface{}, context ...interface{}) (result interface{}, err error) {
 	if source == nil {
 		return nil, nil
 	}
@@ -424,28 +440,28 @@ func (t Template) templateConverter(to marshaler, from unMarshaler, source inter
 
 	var content string
 	if content, _, err = t.runTemplate(fmt.Sprint(source), context...); err == nil {
-		result, err = t.converter(from, content, true, context...)
+		result, err = converter(from, content, true, context...)
 	}
 	return
 }
 
-func (t Template) xmlConverter(source interface{}, context ...interface{}) (interface{}, error) {
+func (t *Template) xmlConverter(source interface{}, context ...interface{}) (interface{}, error) {
 	return t.templateConverter(xml.Marshal, xml.Unmarshal, source, context...)
 }
 
-func (t Template) yamlConverter(source interface{}, context ...interface{}) (interface{}, error) {
+func (t *Template) yamlConverter(source interface{}, context ...interface{}) (interface{}, error) {
 	return t.templateConverter(yaml.Marshal, yaml.Unmarshal, source, context...)
 }
 
-func (t Template) jsonConverter(source interface{}, context ...interface{}) (interface{}, error) {
+func (t *Template) jsonConverter(source interface{}, context ...interface{}) (interface{}, error) {
 	return t.templateConverter(json.Marshal, json.Unmarshal, source, context...)
 }
 
-func (t Template) hclConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
+func (t *Template) hclConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
 	return t.templateConverter(hcl.Marshal, hcl.Unmarshal, source, context...)
 }
 
-func (t Template) dataConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
+func (t *Template) dataConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
 	return t.templateConverter(
 		func(in interface{}) ([]byte, error) { return []byte(fmt.Sprint(in)), nil },
 		func(bs []byte, out interface{}) error { return collections.ConvertData(string(bs), out) },

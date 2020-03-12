@@ -1,0 +1,27 @@
+# Operators mixin
+
+Note that you cannot combine razor extended expression (+, -,  /, *, etc.) with go template expression such as in:
+
+## Razor syntax
+
+```go
+# In this statement, | is interpreted as bitwise or between 2 and 4
+8
+
+# While in this statement (no binary operator), | is interpreted as go template piping operator
+10
+```
+
+## gotemplate syntax
+
+```go
+8
+10
+```
+
+### Result
+
+```go
+8
+10
+```

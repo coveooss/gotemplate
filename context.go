@@ -7,17 +7,18 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/coveo/gotemplate/v3/collections"
-	"github.com/coveo/gotemplate/v3/template"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/template"
 )
 
-func createContext(varsFiles []string, namedVars []string, mode string, ignoreMissingFiles bool) (collections.IDictionary, error) {
+func createContext(varsFiles, varsFilesIfExist, namedVars []string, mode string, ignoreMissingFiles bool) (collections.IDictionary, error) {
 	var context collections.IDictionary
 
 	type fileDef struct {
-		name    string
-		value   interface{}
-		unnamed bool
+		name     string
+		value    interface{}
+		unnamed  bool
+		required bool
 	}
 
 	if mode != "" {
@@ -28,7 +29,10 @@ func createContext(varsFiles []string, namedVars []string, mode string, ignoreMi
 
 	nameValuePairs := make([]fileDef, 0, len(varsFiles)+len(namedVars))
 	for i := range varsFiles {
-		nameValuePairs = append(nameValuePairs, fileDef{value: varsFiles[i]})
+		nameValuePairs = append(nameValuePairs, fileDef{value: varsFiles[i], required: true})
+	}
+	for i := range varsFilesIfExist {
+		nameValuePairs = append(nameValuePairs, fileDef{value: varsFilesIfExist[i]})
 	}
 
 	for i := range namedVars {
@@ -37,7 +41,7 @@ func createContext(varsFiles []string, namedVars []string, mode string, ignoreMi
 			var fd fileDef
 			fd.name, fd.value = collections.Split2(namedVars[i], "=")
 			if fd.value == "" {
-				fd = fileDef{"", fd.name, true}
+				fd = fileDef{value: fd.name, unnamed: true}
 			}
 			nameValuePairs = append(nameValuePairs, fd)
 			continue
@@ -49,7 +53,7 @@ func createContext(varsFiles []string, namedVars []string, mode string, ignoreMi
 			data[name] = value
 		}
 		for key, value := range data {
-			nameValuePairs = append(nameValuePairs, fileDef{key, value, false})
+			nameValuePairs = append(nameValuePairs, fileDef{name: key, value: value})
 		}
 	}
 
@@ -83,6 +87,9 @@ func createContext(varsFiles []string, namedVars []string, mode string, ignoreMi
 				}
 
 				if nv.name == "" && isFileErr {
+					if !nv.required {
+						loadErr = nil
+					}
 					return nil, loadErr
 				} else if nv.name == "" {
 					unnamed = append(unnamed, content)
@@ -123,20 +130,24 @@ func createContext(varsFiles []string, namedVars []string, mode string, ignoreMi
 		content, err := loader(filename)
 		if err != nil {
 			if _, isFileErr := err.(*os.PathError); isFileErr && ignoreMissingFiles {
-				template.Log.Infof("Import: %s not found. Skipping the import", filename)
+				template.InternalLog.Debugf("Import: %s not found. Skipping the import", filename)
 				continue
 			} else {
-				return nil, fmt.Errorf("Error %v while loading vars file %s", nv.value, err)
+				return nil, fmt.Errorf("Error %v while loading variable file %s", nv.value, err)
 			}
 		}
-		if context == nil {
-			// The context is not initialized yet, so we create it with the same type of the
-			// first file argument
-			context = content.Create()
-			collections.DictionaryHelper, collections.ListHelper = content.GetHelpers()
-		}
-		for key, value := range content.AsMap() {
-			context.Set(key, value)
+		if content != nil {
+			if context == nil {
+				// The context is not initialized yet, so we create it with the same type of the
+				// first file argument
+				context = content.Create()
+				dictHelper, listHelper := content.GetHelpers()
+				collections.SetDictionaryHelper(dictHelper)
+				collections.SetListHelper(listHelper)
+			}
+			for key, value := range content.AsMap() {
+				context.Set(key, value)
+			}
 		}
 	}
 

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coveo/gotemplate/v3/errors"
+	"github.com/coveooss/multilogger/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -174,6 +174,33 @@ func Test_list_Get(t *testing.T) {
 	}
 }
 
+func Test_list_GetTypes(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name string
+		kind bool
+		l    yamlList
+		want interface{}
+	}{
+		{"Empty", false, nil, yamlList{}},
+		{"Fixture", false, strFixture, yamlList{"string", "string", "string", "string", "string"}},
+		{"Mixed Types", false, yamlList{1, 1.2, true, "Hello", yamlList{}, yamlDict{}}, yamlList{"int", "float64", "bool", "string", yamlLower + "List", yamlLower + "Dict"}},
+		{"Mixed Kinds", true, yamlList{1, 1.2, true, "Hello", yamlList{}, yamlDict{}}, yamlList{"int", "float64", "bool", "string", "slice", "map"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testFunc := tt.l.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.l.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("YamlList.Get%s() = %v, want %v", name, got, tt.want)
+			}
+		})
+	}
+}
 func Test_list_Len(t *testing.T) {
 	t.Parallel()
 
@@ -873,7 +900,8 @@ func Test_dict_Merge(t *testing.T) {
 		{"Add new1 & new2 to map", dictFixture, args{adding1, []yamlIDict{adding2}}, dictFixture.Clone().Merge(adding1).Merge(adding2)},
 	}
 	for _, tt := range tests {
-		go t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			d := tt.d.Clone()
 			got := d.Merge(tt.args.yamlDict, tt.args.dicts...)
 			if !reflect.DeepEqual(got, tt.want) {
@@ -1009,58 +1037,68 @@ func Test_dict_Transpose(t *testing.T) {
 	}
 }
 
-func Test_YamlList_Get(t *testing.T) {
-	type args struct {
-		indexes []int
-	}
+func Test_dict_GetTypes(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
-		l    yamlList
-		args args
+		kind bool
+		d    yamlDict
 		want interface{}
 	}{
-		// TODO: Add test cases.
+		{"Empty", false, nil, yamlDict{}},
+		{"Fixture Types", false, dictFixture, yamlDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    yamlLower + "List",
+			"listInt": yamlLower + "List",
+			"map":     yamlLower + "Dict",
+			"mapInt":  yamlLower + "Dict",
+			"string":  "string",
+		}},
+		{"Fixture Kinds", true, dictFixture, yamlDict{
+			"float":   "float64",
+			"int":     "int",
+			"list":    "slice",
+			"listInt": "slice",
+			"map":     "map",
+			"mapInt":  "map",
+			"string":  "string",
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.args.indexes...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("YamlList.Get() = %v, want %v", got, tt.want)
+			testFunc := tt.d.GetTypes
+			name := "Types"
+			if tt.kind {
+				testFunc = tt.d.GetKinds
+				name = "Kinds"
+			}
+			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("YamlDict.Get%s() = %v, want %v", name, got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_YamlList_TypeName(t *testing.T) {
-	tests := []struct {
-		name string
-		l    yamlList
-		want str
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.TypeName(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("YamlList.TypeName() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func Test_Yaml_Type(t *testing.T) {
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(yamlLower+"List"), yamlList{}.Type()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(yamlLower+"Dict"), yamlDict{}.Type()) })
 }
 
 func Test_Yaml_TypeName(t *testing.T) {
-	t.Run("list", func(t *testing.T) { assert.Equal(t, yamlList{}.TypeName(), str("Yaml")) })
-	t.Run("dict", func(t *testing.T) { assert.Equal(t, yamlDict{}.TypeName(), str("Yaml")) })
+	t.Run("list", func(t *testing.T) { assert.Equal(t, str(yamlLower), yamlList{}.TypeName()) })
+	t.Run("dict", func(t *testing.T) { assert.Equal(t, str(yamlLower), yamlDict{}.TypeName()) })
 }
 
 func Test_Yaml_GetHelper(t *testing.T) {
 	t.Run("list", func(t *testing.T) {
 		gotD, gotL := yamlList{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), yamlDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), yamlListHelper.CreateList().TypeName())
+		assert.Equal(t, yamlDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, yamlListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 	t.Run("dict", func(t *testing.T) {
 		gotD, gotL := yamlDict{}.GetHelpers()
-		assert.Equal(t, gotD.CreateDictionary().TypeName(), yamlDictHelper.CreateDictionary().TypeName())
-		assert.Equal(t, gotL.CreateList().TypeName(), yamlListHelper.CreateList().TypeName())
+		assert.Equal(t, yamlDictHelper.CreateDictionary().TypeName(), gotD.CreateDictionary().TypeName())
+		assert.Equal(t, yamlListHelper.CreateList().TypeName(), gotL.CreateList().TypeName())
 	})
 }
