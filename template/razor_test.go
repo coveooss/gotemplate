@@ -538,3 +538,25 @@ func TestData(t *testing.T) {
 		})
 	}
 }
+
+func TestReservedKeywords(t *testing.T) {
+	// Ensure that protected go keyword are processed correctly
+	t.Parallel()
+
+	template := MustNewTemplate(".", nil, "", nil)
+	for i, keyword := range reservedKeywords {
+		if keyword == "..." {
+			continue
+		}
+		t.Run(keyword, func(t *testing.T) {
+			code := fmt.Sprintf("@var := %s + %d", keyword, i)
+			got, _ := template.applyRazor([]byte(code))
+			switch keyword {
+			case "$":
+				assert.Equal(t, `{{- set $ "var" (add $ 0) }}`, string(got), code)
+			default:
+				assert.Equal(t, fmt.Sprintf(`{{- set $ "var" (add $.%s %d) }}`, keyword, i), string(got), code)
+			}
+		})
+	}
+}

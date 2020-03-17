@@ -17,18 +17,24 @@ const (
 	literalTripleBackticks = "_=!TRIPLE_BT!=_"
 	literalReplacement     = "_=!REPL!=_"
 	literalStart           = `{{ "{{" }}`
-	stringRep              = "__StRiNg__"
-	rangeExpr              = "__RaNgE__"
-	defaultExpr            = "__DeFaUlT__"
-	funcExpr               = "__FuNc__"
-	funcCall               = "__FuNcAlL__"
-	typeExpr               = "__TyPe__"
-	mapExpr                = "__MaP__"
-	structExpr             = "__StRuCt__"
-	dotRep                 = "__DoT_PrEfIx__"
-	ellipsisRep            = "__ElLiPsIs__"
-	globalRep              = "__GlObAl__"
+	funcCall               = "__FuncCall__"
+	dotRep                 = "__DoTPrefix__"
+	globalRep              = "__GlobalVar__"
 )
+
+var (
+	reserved         = map[string]string{}
+	reservedKeywords = []string{
+		"$", "...",
+		"range", "default", "func", "type", "struct", "map",
+	}
+)
+
+func init() {
+	for i, key := range reservedKeywords {
+		reserved[key] = fmt.Sprintf("__REPL_%d__", i)
+	}
+}
 
 var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*)?`)
 var idRegex = regexp.MustCompile(`^[\p{L}\d_]+$`)
@@ -62,11 +68,17 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		}
 
 		// We transform the expression into a valid go statement
-		for k, v := range map[string]string{"$": stringRep, "range": rangeExpr, "default": defaultExpr, "func": funcExpr, "...": ellipsisRep, "type": typeExpr, "struct": structExpr, "map": mapExpr} {
+		for k, v := range reserved {
 			protected = protected.Replace(k, v)
 		}
 		protected = String(dotPrefix.ReplaceAllString(protected.Str(), fmt.Sprintf("${prefix}%s${value}", dotRep)))
-		for k, v := range map[string]string{ellipsisRep: "...", "<>": "!=", "÷": "/", "≠": "!=", "≦": "<=", "≧": ">=", "«": "<<", "»": ">>"} {
+		for k, v := range map[string]string{
+			"<>": "!=", "≠": "!=",
+			"÷": "/",
+			"≦": "<=", "≧": ">=",
+			"«": "<<", "»": ">>",
+			reserved["..."]: "...",
+		} {
 			protected = protected.Replace(k, v)
 		}
 
@@ -118,13 +130,11 @@ func expressionParserInternal(repl replacement, match string, skipError, interna
 		if err == nil {
 			result, err := node(tr)
 			if err == nil {
-				result = strings.Replace(result, stringRep, "$$", -1)
-				result = strings.Replace(result, rangeExpr, "range", -1)
-				result = strings.Replace(result, defaultExpr, "default", -1)
-				result = strings.Replace(result, funcExpr, "func", -1)
-				result = strings.Replace(result, typeExpr, "type", -1)
-				result = strings.Replace(result, mapExpr, "map", -1)
-				result = strings.Replace(result, structExpr, "struct", -1)
+				result = strings.Replace(result, reserved["$"], "$$", -1)
+				for _, keyword := range reservedKeywords {
+					// Bring back all reserved keywords
+					result = strings.Replace(result, reserved[keyword], keyword, -1)
+				}
 				result = strings.Replace(result, dotRep, ".", -1)
 				result = strings.Replace(result, globalRep, "$$.", -1)
 				repl.replace = strings.Replace(repl.replace, "${expr}", result, -1)
