@@ -64,7 +64,7 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			} else {
 				currentLine = String(fileContent).Lines()[toInt(matches[tagLine])-1]
 			}
-			return "", true, fmt.Errorf("%s %v in: %s", color.WhiteString(t.Filename), err, color.HiBlackString(currentLine.Str()))
+			return "", true, fmt.Errorf("%s %w in: %s", color.WhiteString(t.Filename), err, color.HiBlackString(currentLine.Str()))
 		}
 		if faultyColumn != 0 && strings.Contains(" (", currentLine[faultyColumn:faultyColumn+1].Str()) {
 			// Sometime, the error is not reporting the exact column, we move 1 char forward to get the real problem
