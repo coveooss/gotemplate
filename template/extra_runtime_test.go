@@ -58,3 +58,16 @@ func TestRuntime(t *testing.T) {
 		})
 	}
 }
+
+func TestMultilineError(t *testing.T) {
+	// Ensure that multiline errors are not truncated after the first line
+	t.Parallel()
+
+	template := MustNewTemplate(".", nil, "", nil)
+	template.SetOption(StrictErrorCheck, true)
+	_, err := template.ProcessContent(`@run("ls -DONT EXIST")`, "bad param")
+	assert.Error(t, err)
+	if err != nil {
+		assert.GreaterOrEqual(t, len(toStringClass(err.Error()).Lines()), 2)
+	}
+}

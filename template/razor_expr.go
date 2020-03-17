@@ -47,7 +47,7 @@ func nodeValue(node ast.Node) (result string, err error) {
 		result = fmt.Sprintf("%s %s %s", op, x, y)
 	case *ast.Ident:
 		result = n.Name
-		if !strings.HasPrefix(result, dotRep) && !strings.HasPrefix(result, stringRep) && !strings.Contains(result, funcCall) {
+		if !strings.HasPrefix(result, dotRep) && !strings.HasPrefix(result, reserved["$"]) && !strings.Contains(result, funcCall) {
 			result = globalRep + result
 		}
 	case *ast.BasicLit:

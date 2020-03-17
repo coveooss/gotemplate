@@ -421,7 +421,7 @@ func converter(from unMarshaler, content string, sourceWithError bool, context .
 		for i, line := range collections.SplitLines(content) {
 			source += fmt.Sprintf("%4d %s\n", i+1, line)
 		}
-		err = fmt.Errorf("%s\n%v", source, err)
+		err = fmt.Errorf("%s\n%w", source, err)
 	}
 	return
 }

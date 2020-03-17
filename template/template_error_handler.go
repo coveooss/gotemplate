@@ -64,7 +64,7 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			} else {
 				currentLine = String(fileContent).Lines()[toInt(matches[tagLine])-1]
 			}
-			return "", true, fmt.Errorf("%s %v in: %s", color.WhiteString(t.Filename), err, color.HiBlackString(currentLine.Str()))
+			return "", true, fmt.Errorf("%s %w in: %s", color.WhiteString(t.Filename), err, color.HiBlackString(currentLine.Str()))
 		}
 		if faultyColumn != 0 && strings.Contains(" (", currentLine[faultyColumn:faultyColumn+1].Str()) {
 			// Sometime, the error is not reporting the exact column, we move 1 char forward to get the real problem
@@ -156,7 +156,11 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		}
 		if lines[faultyLine] != currentLine.Str() || strings.Contains(err.Error(), noValueError) {
 			// If we changed something in the current text, we try to continue the evaluation to get further errors
-			result, changed, err2 := t.processContentInternal(strings.Join(lines, "\n"), t.Filename, t.Lines, t.Try+1, false, nil)
+			newCode := strings.Join(lines, "\n")
+			if err != nil {
+				InternalLog.Infof("Retrying %d with:\n%s", t.Try, color.HiBlackString(String(newCode).AddLineNumber(0).Str()))
+			}
+			result, changed, err2 := t.processContentInternal(newCode, t.Filename, t.Lines, t.Try+1, false, nil)
 			if err2 != nil {
 				if err != nil && errText != noValueError {
 					if err.Error() == err2.Error() {
@@ -182,7 +186,7 @@ var (
 )
 
 func init() {
-	execPrefix := "^" + linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
+	execPrefix := "(?s)^" + linePrefix + `executing ".*" at <` + p(tagCode, `.*`) + `>: `
 	templateErrors := []string{
 		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"`,
 		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),

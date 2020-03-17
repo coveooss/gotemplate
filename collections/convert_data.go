@@ -57,7 +57,7 @@ func ConvertData(data string, out interface{}) (err error) {
 		if err == nil {
 			return
 		}
-		errs = append(errs, fmt.Errorf("Trying %s: %v", key, err))
+		errs = append(errs, fmt.Errorf("Trying %s: %w", key, err))
 	}
 
 	return errs.AsError()
@@ -91,7 +91,6 @@ func toBash(value interface{}, level int) (result string) {
 		for i := range results {
 			results[i] = quote(results[i])
 		}
-		fmt.Println(results)
 		switch level {
 		case 2:
 			result = strings.Join(results, ",")

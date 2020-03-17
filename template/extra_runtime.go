@@ -352,7 +352,7 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	if err = cmd.Run(); err == nil {
 		result = stdout.String()
 	} else {
-		err = fmt.Errorf("Error %v: %s", err, stderr.String())
+		err = fmt.Errorf("Error %w: %s", err, stderr.String())
 	}
 	return
 }
@@ -379,6 +379,9 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 }
 
 func (t *Template) runTemplate(source string, args ...interface{}) (resultContent, filename string, err error) {
+	if source == "" {
+		return
+	}
 	var out bytes.Buffer
 
 	// Keep the parent context to make it available
@@ -435,6 +438,9 @@ func (t *Template) runTemplate(source string, args ...interface{}) (resultConten
 		internalTemplate = inline
 	}
 
+	if !t.options[AcceptNoValue] {
+		internalTemplate.Option("missingkey=error")
+	}
 	// We execute the resulting template
 	if err = internalTemplate.Execute(&out, t.context); err != nil {
 		return
@@ -483,6 +489,13 @@ func (t *Template) ellipsis(function string, args ...interface{}) (interface{}, 
 
 	template := fmt.Sprintf("%s %s %s %s", t.delimiters[0], function, strings.Join(argsStr, " "), t.delimiters[1])
 	result, _, err := t.runTemplate(template, context)
+	if err != nil {
+		split := strings.SplitN(err.Error(), ">: ", 2)
+		if len(split) == 2 {
+			// For internal evaluation, we do not want the file/position details on the error
+			err = fmt.Errorf(split[1])
+		}
+	}
 	return t.tryConvert(result), err
 }
 

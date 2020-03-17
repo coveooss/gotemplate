@@ -37,7 +37,7 @@ func TerraformFormat(files ...string) error {
 		cmd := exec.Command("terraform", "fmt")
 		cmd.Dir = folder
 		if output, err := cmd.CombinedOutput(); err != nil {
-			errs = append(errs, fmt.Errorf("%v: %s", errs, strings.TrimSpace(string(output))))
+			errs = append(errs, fmt.Errorf("%w: %s", errs, strings.TrimSpace(string(output))))
 			continue
 		}
 

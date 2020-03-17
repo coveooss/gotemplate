@@ -133,7 +133,7 @@ func createContext(varsFiles, varsFilesIfExist, namedVars []string, mode string,
 				template.InternalLog.Debugf("Import: %s not found. Skipping the import", filename)
 				continue
 			} else {
-				return nil, fmt.Errorf("Error %v while loading variable file %s", nv.value, err)
+				return nil, fmt.Errorf("Error %w while loading variable file %v", err, nv.value)
 			}
 		}
 		if content != nil {
