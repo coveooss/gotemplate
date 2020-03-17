@@ -91,7 +91,6 @@ func toBash(value interface{}, level int) (result string) {
 		for i := range results {
 			results[i] = quote(results[i])
 		}
-		fmt.Println(results)
 		switch level {
 		case 2:
 			result = strings.Join(results, ",")
