@@ -35,7 +35,9 @@ func (as StringArray) Trim(cutset string) StringArray { return as.applyStr(Strin
 func (as StringArray) TrimFunc(f func(rune) bool) StringArray { return as.applyRF(String.TrimFunc, f) }
 
 // TrimLeft applies the corresponding String method on each string in the array.
-func (as StringArray) TrimLeft(cutset string) StringArray { return as.applyStr(String.TrimLeft, cutset) }
+func (as StringArray) TrimLeft(cutset string) StringArray {
+	return as.applyStr(String.TrimLeft, cutset)
+}
 
 // TrimLeftFunc applies the corresponding String method on each string in the array.
 func (as StringArray) TrimLeftFunc(f func(rune) bool) StringArray {

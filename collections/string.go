@@ -182,7 +182,9 @@ func (s String) TrimLeftFunc(f func(rune) bool) String {
 
 // TrimPrefix returns s without the provided leading prefix string.
 // If s doesn't start with prefix, s is returned unchanged.
-func (s String) TrimPrefix(prefix string) String { return String(strings.TrimPrefix(string(s), prefix)) }
+func (s String) TrimPrefix(prefix string) String {
+	return String(strings.TrimPrefix(string(s), prefix))
+}
 
 // TrimRight returns a slice of the string s, with all trailing Unicode code points contained in cutset removed.
 func (s String) TrimRight(cutset string) String { return String(strings.TrimRight(string(s), cutset)) }
@@ -197,7 +199,9 @@ func (s String) TrimSpace() String { return String(strings.TrimSpace(string(s)))
 
 // TrimSuffix returns s without the provided trailing suffix string.
 // If s doesn't end with suffix, s is returned unchanged.
-func (s String) TrimSuffix(suffix string) String { return String(strings.TrimSuffix(string(s), suffix)) }
+func (s String) TrimSuffix(suffix string) String {
+	return String(strings.TrimSuffix(string(s), suffix))
+}
 
 // ToLowerSpecial returns a copy of the string s with all Unicode letters mapped to their
 // lower case, giving priority to the special casing rules.
