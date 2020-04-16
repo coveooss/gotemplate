@@ -33,10 +33,15 @@ Generates a new, self-signed x509 certificate.
 nbDays int, ca sprig.certificate) sprig.certificate
 </code></pre><pre>
 Generates a new, x509 certificate signed by the specified CA.
+</pre><h2 id=htpasswd><strong>htpasswd</strong></h2><pre><code class=language-go>func htpasswd(user string, password string) string
+</code></pre><pre>
+Takes a username and password and generates a bcrypt hash of the
+password. The result can be used for basic authentication on an Apache
+HTTP Server.
 </pre><h2 id=sha1sum><strong>sha1sum</strong></h2><pre><code class=language-go>func sha1sum(input string) string
 </code></pre><pre>
 Computes SHA1 digest.
 </pre><h2 id=sha256sum><strong>sha256sum</strong></h2><pre><code class=language-go>func sha256sum(input string) string
 </code></pre><pre>
 Computes SHA256 digest.
-</pre></article></div><aside class="book-toc levels-2 fixed"><nav id=TableOfContents><ul><li><a href=#sprig-cryptographic-security-http-masterminds-github-io-sprig-crypto-html><a href=http://masterminds.github.io/sprig/crypto.html>Sprig Cryptographic &amp; Security</a></a><ul><li><a href=#adler32sum><strong>adler32sum</strong></a></li><li><a href=#buildcustomcert><strong>buildCustomCert</strong></a></li><li><a href=#decryptaes><strong>decryptAES</strong></a></li><li><a href=#derivepassword><strong>derivePassword</strong></a></li><li><a href=#encryptaes><strong>encryptAES</strong></a></li><li><a href=#genca><strong>genCA</strong></a></li><li><a href=#genprivatekey><strong>genPrivateKey</strong></a></li><li><a href=#genselfsignedcert><strong>genSelfSignedCert</strong></a></li><li><a href=#gensignedcert><strong>genSignedCert</strong></a></li><li><a href=#sha1sum><strong>sha1sum</strong></a></li><li><a href=#sha256sum><strong>sha256sum</strong></a></li></ul></li></ul></nav></aside></main></body></html>
+</pre></article></div><aside class="book-toc levels-2 fixed"><nav id=TableOfContents><ul><li><a href=#sprig-cryptographic-security-http-masterminds-github-io-sprig-crypto-html><a href=http://masterminds.github.io/sprig/crypto.html>Sprig Cryptographic &amp; Security</a></a><ul><li><a href=#adler32sum><strong>adler32sum</strong></a></li><li><a href=#buildcustomcert><strong>buildCustomCert</strong></a></li><li><a href=#decryptaes><strong>decryptAES</strong></a></li><li><a href=#derivepassword><strong>derivePassword</strong></a></li><li><a href=#encryptaes><strong>encryptAES</strong></a></li><li><a href=#genca><strong>genCA</strong></a></li><li><a href=#genprivatekey><strong>genPrivateKey</strong></a></li><li><a href=#genselfsignedcert><strong>genSelfSignedCert</strong></a></li><li><a href=#gensignedcert><strong>genSignedCert</strong></a></li><li><a href=#htpasswd><strong>htpasswd</strong></a></li><li><a href=#sha1sum><strong>sha1sum</strong></a></li><li><a href=#sha256sum><strong>sha256sum</strong></a></li></ul></li></ul></nav></aside></main></body></html>
