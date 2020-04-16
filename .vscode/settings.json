@@ -44,8 +44,11 @@
     ],
     "cSpell.words": [
         "HCLVALUE",
+        "Warningln",
         "acarl",
+        "bcrypt",
         "colorln",
+        "htpasswd",
         "markdownlint"
     ]
 }
