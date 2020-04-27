@@ -27,7 +27,7 @@ func (t *Template) applyRazor(content []byte) (result []byte, changed bool) {
 		}
 	}
 	content = []byte(strings.Replace(string(content), funcCall, "", -1))
-	InternalLog.Infof("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
+	InternalLog.Debugf("Generated content\n\n%s\n", color.HiCyanString(String(content).AddLineNumber(0).Str()))
 	return content, true
 }
 
@@ -120,8 +120,9 @@ var expressions = [][]interface{}{
 
 	{"Space eater", `@-endexpr;`, `{{- "" -}}`},
 
-	// Inline contents: Render the content without its enclosing quotes
-	{`Inline content "<<..."`, `"<<(?P<content>{{[sp].*[sp]}})"`, `${content}`},
+	// Inline contents: Render the content without its enclosing double quotes
+	{`Raw content "{{ raw ...`, `"(?P<content>{{-? (?:raw(?:__FuncCall__)?|ellipsis "raw__FuncCall__") .*?}})"`, `"<<${content}"`},
+	{`Inline content "<<..."`, `"<<(?P<content>.*?{{[sp].*?[sp]}}.*?)"`, `${content}`},
 
 	// Restoring literals
 	{"", `}}\\\.`, "}}."},

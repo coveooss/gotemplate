@@ -109,7 +109,7 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 	if sourceFolder != targetFolder {
 		must(os.MkdirAll(filepath.Dir(resultFile), 0777))
 	}
-	InternalLog.Info("Writing file", utils.Relative(t.folder, resultFile))
+	InternalLog.Infoln("Writing file", utils.Relative(t.folder, resultFile))
 
 	if utils.IsShebangScript(result) {
 		mode = 0755
@@ -196,7 +196,7 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 			return revertReplacements(th.Code), false, nil
 		}
 
-		InternalLog.Info("GoTemplate processing of ", th.Filename)
+		InternalLog.Debug("GoTemplate processing of ", th.Filename)
 
 		if !t.options[AcceptNoValue] {
 			// We replace any pre-existing no value to avoid false error detection

@@ -378,7 +378,7 @@ func (t *Template) exec(command string, args ...interface{}) (result interface{}
 	return
 }
 
-func (t *Template) runTemplate(source string, args ...interface{}) (resultContent, filename string, err error) {
+func (t *Template) runTemplate(source string, args ...interface{}) (result, filename string, err error) {
 	if source == "" {
 		return
 	}
@@ -438,16 +438,23 @@ func (t *Template) runTemplate(source string, args ...interface{}) (resultConten
 		internalTemplate = inline
 	}
 
-	if !t.options[AcceptNoValue] {
-		internalTemplate.Option("missingkey=error")
-	}
 	// We execute the resulting template
 	if err = internalTemplate.Execute(&out, t.context); err != nil {
 		return
 	}
 
-	resultContent = out.String()
-	if resultContent != source {
+	result = out.String()
+
+	if !t.options[AcceptNoValue] {
+		// Detect possible <no value> or <nil> that could be generated
+		if pos := strings.Index(strings.Replace(result, nilValue, noValue, -1), noValue); pos >= 0 {
+			lines := strings.Split(result[:pos+len(noValue)], "\n")
+			err = fmt.Errorf(`%s in "%s"`, noValueError, strings.TrimSpace(lines[len(lines)-1]))
+			return
+		}
+	}
+
+	if result != source {
 		// If the content is different from the source, that is because the source contains
 		// templating, In that case, we do not consider the original filename as unaltered source.
 		filename = ""

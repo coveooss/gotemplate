@@ -46,7 +46,7 @@ rsync -av docs_tests/ $DOC_FOLDER -r
 ./gotemplate --no-extension --color '
 @-define("trim")
     @{wrapped} := String(text).Replace("<", "&lt;").Wrap(69)
-    @-if (isSet(indent))
+    @-if (indent)
         @{wrapped} = $wrapped.IndentN(indent).TrimSpace()
     @-end if
     @-{wrapped}

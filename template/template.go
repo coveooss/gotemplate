@@ -104,7 +104,11 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	t.delimiters = []string{"{{", "}}", "@"}
 
 	// Set the regular expression replacements
-	baseSubstitutesRegex := []string{`/(?m)^\s*#!\s*$/`}
+	baseSubstitutesRegex := []string{
+		`/(?m)^\s*#!\s*$/`,
+		`/"!Q!(?P<content>[\S]+?)!Q!"/${content}`,
+		`/"!Q!(?P<content>.*?)!Q!"/"${content}"`,
+	}
 	if substitutesFromEnv := os.Getenv(EnvSubstitutes); substitutesFromEnv != "" {
 		baseSubstitutesRegex = append(baseSubstitutesRegex, strings.Split(substitutesFromEnv, "\n")...)
 	}
