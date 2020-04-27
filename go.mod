@@ -8,7 +8,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
-	github.com/bmatcuk/doublestar v1.2.4
+	github.com/bmatcuk/doublestar v1.3.0
 	github.com/coveooss/multilogger v0.4.6
 	github.com/coveord/kingpin/v2 v2.3.1
 	github.com/drhodes/goLorem v0.0.0-20160418191928-ecccc744c2d9
