@@ -130,15 +130,15 @@ var sprigFuncRef = map[string]struct {
 	"atoi":      {group: sprigTypeConversion, description: "Convert a string to an integer.", arguments: []string{"str"}},
 	"float64":   {group: sprigTypeConversion, description: "Convert to a `float64`.", arguments: []string{"value"}},
 	"int64":     {group: sprigTypeConversion, description: "Convert a numeric to an `int64`.", arguments: []string{"value"}},
-	"intSprig":  {group: sprigTypeConversion, description: "Convert to an `int` at the system's width.", aliases: []string{"int"}},
+	"intSprig":  {group: sprigTypeConversion, description: "Convert to an `int` at the system's width.", aliases: []string{"int"}, arguments: []string{"value"}},
 	"toDecimal": {group: sprigTypeConversion, description: "Convert a unix octal to a 'int64'.", arguments: []string{"octalString"}},
 
-	"join":      {group: sprigStringList, description: "Joins a list of strings into a single string, with the given separator."},
-	"sortAlpha": {group: sprigStringList, description: "Sorts a list of strings into alphabetical (lexicographical) order."},
-	"split":     {group: sprigStringList, description: "Splits a string into a `dict`. It is designed to make it easy to use template dot notation for accessing members"},
-	"splitList": {group: sprigStringList, description: "Splits a string into a list of strings."},
-	"splitn":    {group: sprigStringList, description: "Splits a string into a `dict`. It is designed to make it easy to use template dot notation for accessing members."},
-	"toStrings": {group: sprigStringList, description: "Given a list-like collection, produce a slice of strings."},
+	"join":      {group: sprigStringList, description: "Joins a list of strings into a single string, with the given separator.", arguments: []string{"separator", "list"}},
+	"sortAlpha": {group: sprigStringList, description: "Sorts a list of strings into alphabetical (lexicographical) order.", arguments: []string{"list"}},
+	"split":     {group: sprigStringList, description: "Splits a string into a `dict`. It is designed to make it easy to use template dot notation for accessing members", arguments: []string{"separator", "str"}},
+	"splitList": {group: sprigStringList, description: "Splits a string into a list of strings.", arguments: []string{"separator", "str"}},
+	"splitn":    {group: sprigStringList, description: "Splits a string into a `dict`. It is designed to make it easy to use template dot notation for accessing members.", arguments: []string{"separator", "count", "str"}},
+	"toStrings": {group: sprigStringList, description: "Given a list-like collection, produce a slice of strings.", arguments: []string{"list"}},
 
 	// VERY basic arithmetic.
 	"add1":       {group: sprigMath, description: "Increments a value by 1"},
@@ -159,13 +159,13 @@ var sprigFuncRef = map[string]struct {
 
 	// Defaults
 	"coalesce":          {group: sprigDefault, description: "Takes a list of values and returns the first non-empty one."},
-	"compact":           {group: sprigDefault, description: "Removes entries with empty values."},
-	"default":           {group: sprigDefault, description: "Set a simple default value."},
-	"empty":             {group: sprigDefault, description: "Returns true if the given value is considered empty."},
-	"ternarySprig":      {group: sprigDefault, description: "If the test value is true, the first value will be returned, otherwise, the second is returned.", aliases: []string{"ternary"}},
-	"toJsonSprig":       {group: sprigDefault, description: "Encodes an item into a JSON string.", aliases: []string{"toJson"}},
-	"toPrettyJsonSprig": {group: sprigDefault, description: "Encodes an item into a pretty (indented) JSON string.", aliases: []string{"toPrettyJson"}},
-	"toRawJson":         {group: sprigDefault, description: "Encodes an item into JSON string with HTML characters unescaped."},
+	"compact":           {group: sprigDefault, description: "Removes entries with empty values.", arguments: []string{"list"}},
+	"default":           {group: sprigDefault, description: "Set a simple default value.", arguments: []string{"default", "value"}},
+	"empty":             {group: sprigDefault, description: "Returns true if the given value is considered empty.", arguments: []string{"value"}},
+	"ternarySprig":      {group: sprigDefault, description: "If the test value is true, the first value will be returned, otherwise, the second is returned.", arguments: []string{"true", "false", "condition"}, aliases: []string{"ternary"}},
+	"toJsonSprig":       {group: sprigDefault, description: "Encodes an item into a JSON string.", aliases: []string{"toJson"}, arguments: []string{"object"}},
+	"toPrettyJsonSprig": {group: sprigDefault, description: "Encodes an item into a pretty (indented) JSON string.", aliases: []string{"toPrettyJson"}, arguments: []string{"object"}},
+	"toRawJson":         {group: sprigDefault, description: "Encodes an item into JSON string with HTML characters unescaped.", arguments: []string{"object"}},
 
 	// Reflection
 	"deepEqual":  {group: sprigReflect, description: "returns true if two values are deeply equal."},

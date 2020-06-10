@@ -53,7 +53,7 @@ func TestMergeDictionaries(t *testing.T) {
 	}{
 		{"Empty", nil, map[string]interface{}{}, false},
 		{"Add 1", []map[string]interface{}{map1}, map1, false},
-		{"Add empty to 1", []map[string]interface{}{map1, map[string]interface{}{}}, map1, false},
+		{"Add empty to 1", []map[string]interface{}{map1, {}}, map1, false},
 		{"Add nil to 1", []map[string]interface{}{map1, nil}, map1, false},
 		{"Add 2 to 1", []map[string]interface{}{map1, map2}, map[string]interface{}{
 			"int":         1000,

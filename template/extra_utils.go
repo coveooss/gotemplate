@@ -30,6 +30,7 @@ var utilsFuncs = dictionary{
 	"repeat":     repeat,
 	"indent":     indent,
 	"nIndent":    nIndent,
+	"raw":        rawPrint,
 	"reCompile":  regexp.Compile,
 	"sIndent":    sIndent,
 	"splitLines": collections.SplitLines,
@@ -61,6 +62,7 @@ var utilsFuncsAliases = aliases{
 	"lorem":      {"loremIpsum"},
 	"nIndent":    {"nindent"},
 	"formatList": {"autoWrap", "aWrap", "awrap"},
+	"raw":        {"printRaw"},
 	"sIndent":    {"sindent", "spaceIndent", "autoIndent", "aindent", "aIndent"},
 	"stripColor": {"stripansi", "stripANSI", "striptcolor"},
 	"wrap":       {"wrapped"},
@@ -104,6 +106,7 @@ var utilsFuncsHelp = descriptions{
 	"lorem":     "Returns a random string. Valid types are be word, words, sentence, para, paragraph, host, email, url.",
 	"mergeList": "Return a single list containing all elements from the lists supplied.",
 	"nIndent":   "Work as indent but add a newline before.",
+	"raw":       "Print the arguments outside of their enclosing quotes",
 	"repeat":    "Returns an array with the item repeated n times.",
 	"reCompile": "Parses a regular expression and returns Regexp object that can be used to match against text.",
 	"sIndent": strings.TrimSpace(collections.UnIndent(`
@@ -200,4 +203,11 @@ func repeat(n int, a interface{}) (result collections.IGenericList, err error) {
 		result.Set(i, a)
 	}
 	return
+}
+
+func rawPrint(args ...interface{}) interface{} {
+	if len(args) <= 1 {
+		return fmt.Sprint(args...)
+	}
+	return utils.FormatList("!Q!%v!Q!", args...)
 }
