@@ -141,13 +141,13 @@ Generates a list with all of the duplicates removed.
 </code></pre><pre>
 Removes an element from a dictionary.
 </pre><h3 id=aliases-9>Aliases</h3><ul><li><em>delete</em></li><li><em>remove</em></li></ul><h3 id=examples-1>Examples</h3><pre><code class=language-go>Razor:    @{myDict} := dict(&quot;key&quot;, &quot;value&quot;, &quot;key2&quot;, &quot;value2&quot;, &quot;key3&quot;, &quot;value3&quot;)
-@-unset($myDict, &quot;key&quot;)
-@-unset(&quot;key2&quot;, $myDict)
-@-toJson($myDict)
+          @-unset($myDict, &quot;key&quot;)
+          @-unset(&quot;key2&quot;, $myDict)
+          @-toJson($myDict)
 Template: {{- $myDict := dict &quot;key&quot; &quot;value&quot; &quot;key2&quot; &quot;value2&quot; &quot;key3&quot; &quot;value3&quot; }}
-{{- unset $myDict &quot;key&quot; }}
-{{- unset &quot;key2&quot; $myDict }}
-{{- toJson $myDict }}
+          {{- unset $myDict &quot;key&quot; }}
+          {{- unset &quot;key2&quot; $myDict }}
+          {{- toJson $myDict }}
 Result:   {&quot;key3&quot;:&quot;value3&quot;}
 </code></pre><h2 id=values><strong>values</strong></h2><pre><code class=language-go>func values(arg1 IDictionary) IGenericList
 </code></pre><pre>
