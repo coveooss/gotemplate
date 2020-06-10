@@ -71,3 +71,22 @@ func TestMultilineError(t *testing.T) {
 		assert.GreaterOrEqual(t, len(toStringClass(err.Error()).Lines()), 2)
 	}
 }
+
+func TestInclude(t *testing.T) {
+	t.Parallel()
+
+	// This test confirm that validation mode is not changing when we invoke a sub template.
+	// In the second call, value does not exist, so if strict validation is applied, the call would fail.
+	template := MustNewTemplate(".", nil, "", nil)
+	template.SetOption(StrictErrorCheck, true)
+	x, err := template.ProcessContent(`
+		@--define("sub")
+			Hello @if (value) @value;
+		@-end
+
+		@-include("sub", dict("value", 123))
+		@<--include("sub")
+	`, "include")
+	assert.Equal(t, "Hello 123\nHello ", x)
+	assert.NoError(t, err)
+}
