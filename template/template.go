@@ -160,9 +160,6 @@ func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 	newTemplate.parent = t
 	newTemplate.importTemplates(t)
 	newTemplate.options = make(OptionsSet)
-	if dict := t.Context(); dict.Len() > 0 {
-		newTemplate.context = dict.Clone()
-	}
 
 	// We duplicate the options because the new context may alter them afterwhile and
 	// it should not modify the original values.
