@@ -388,9 +388,9 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	parentContext := t.userContext()
 	// Clone the current context to ensure that the sub template has a distinct set of values
 	t = t.GetNewContext("", false)
-	context := t.Context()
+	context := t.Context().Clone()
 	if context.Len() == 0 {
-		context.Set("CONTEXT", t.context)
+		context.Set("CONTEXT", context)
 	}
 	switch len(args) {
 	case 1:
