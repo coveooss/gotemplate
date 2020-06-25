@@ -36,3 +36,6 @@ Default configuration for christmas tree.
 Register the functions.
 @func("Fir", "template", "draw_fir", $firConfig)
 @func("ChristmasTree", "template", "draw_fir", $ctConfig)
+
+# Set global variable value
+@GlobalExtensionVariable := "I am set and I am global"
