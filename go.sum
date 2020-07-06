@@ -30,6 +30,8 @@ github.com/coveooss/multilogger v0.4.6 h1:svrYw2KGnAdrqmsksMGuYACQQT8yEiVsPB+mTM
 github.com/coveooss/multilogger v0.4.6/go.mod h1:A2c+mJI+0nxjg7vnEMg00sQFGwHXqhHP73zYdYIbieQ=
 github.com/coveooss/multilogger v0.4.7 h1:8N7UehpdKL09eTFh4ag6A5trp17EBI2VsKQdk0ltkeA=
 github.com/coveooss/multilogger v0.4.7/go.mod h1:MwtlfEwkxTa2WlEqiv99F1jWjdgIHXflZKP0TdbDDWg=
+github.com/coveooss/multilogger v0.4.8 h1:UodWv9PFx0KwPb3/9qXsOmlJDGoIgKUFJyJ/4aYfCSM=
+github.com/coveooss/multilogger v0.4.8/go.mod h1:Pw3jXW2Y4KEd+j5vFTTGSAFRX4fIOvJZzDPnvf9dr7U=
 github.com/coveord/kingpin/v2 v2.3.1 h1:GWdfhOpRbIE+5Bt/hGgDbfWkntsCC5484xFWXaor+sg=
 github.com/coveord/kingpin/v2 v2.3.1/go.mod h1:G7snIuRD09h58XUezPxWrLPuZplFdreCh6cmJZMtNUU=
 github.com/creack/pty v1.1.7/go.mod h1:lj5s0c3V2DBrqTV7llrYr5NG6My20zk30Fl46Y7DoTY=
@@ -80,6 +82,8 @@ github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
 github.com/mattn/go-colorable v0.1.4/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-colorable v0.1.6 h1:6Su7aK7lXmJ/U79bYtBjLNaha4Fs1Rg9plHpcH+vvnE=
 github.com/mattn/go-colorable v0.1.6/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
+github.com/mattn/go-colorable v0.1.7 h1:bQGKb3vps/j0E9GfJQ03JyhRuxsvdAanXlT9BTw3mdw=
+github.com/mattn/go-colorable v0.1.7/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
 github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
 github.com/mattn/go-isatty v0.0.10/go.mod h1:qgIWMr58cqv1PHHyhnkY9lrL7etaEgOFcMEpPG5Rm84=
 github.com/mattn/go-isatty v0.0.11/go.mod h1:PhnuNfih5lzO57/f3n+odYbM4JtupLOxQOAqxQCu2WE=
