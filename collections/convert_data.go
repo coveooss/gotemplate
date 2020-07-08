@@ -193,12 +193,7 @@ func MarshalGo(value interface{}) (result interface{}, err error) {
 				return
 			}
 		}
-		if len(array) == 1 && reflect.TypeOf(array[0]).Kind() == reflect.Map {
-			// If the result is an array of one map, we just return the inner element
-			result = array[0]
-		} else {
-			result = array
-		}
+		result = array
 
 	case reflect.Map:
 		m := make(map[string]interface{}, val.Len())

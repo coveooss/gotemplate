@@ -73,6 +73,11 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 	ifIndent := func(vTrue, vFalse interface{}) interface{} { return collections.IIf(indent, vTrue, vFalse) }
 	const specialFormat = "#HCL_ARRAY_MAP#!"
 
+	if valueList, isList := value.([]interface{}); isList && len(valueList) == 1 && isArrayOfMap(valueList) {
+		// If the result is an array of one map, we just return the inner element
+		value = valueList[0]
+	}
+
 	switch value := value.(type) {
 	case int, uint, int64, uint64, float64, bool:
 		result = fmt.Sprint(value)
@@ -96,7 +101,7 @@ func marshalHCL(value interface{}, fullHcl, head bool, prefix, indent string) (r
 
 	case []interface{}:
 		results := make([]string, len(value))
-		if fullHcl && isArrayOfMap(value) {
+		if fullHcl && isArrayOfMap(value) && len(value) == 1 {
 			for i, element := range value {
 				element := element.(map[string]interface{})
 				for key := range element {
@@ -223,7 +228,7 @@ func isArrayOfMap(array []interface{}) bool {
 		return false
 	}
 	for _, item := range array {
-		if item, isMap := item.([]map[string]interface{}); !isMap || len(item) != 1 {
+		if _, isMap := item.(map[string]interface{}); !isMap {
 			return false
 		}
 	}

@@ -11,6 +11,14 @@ import (
 func TestMergeDictionaries(t *testing.T) {
 	collections.SetDictionaryHelper(implementation.DictionaryHelper)
 	collections.SetListHelper(implementation.GenericListHelper)
+	emptyMap := map[string]interface{}{}
+	mapWithListOfSingleMap := map[string]interface{}{
+		"list": []interface{}{
+			map[string]interface{}{
+				"test": 123,
+			},
+		},
+	}
 	map1 := map[string]interface{}{
 		"int":         1000,
 		"Add1Int":     1,
@@ -111,6 +119,8 @@ func TestMergeDictionaries(t *testing.T) {
 				"newVal":      "NewValue",
 			},
 		}, false},
+		{"Merge list of a single map to empty map", []map[string]interface{}{emptyMap, mapWithListOfSingleMap}, mapWithListOfSingleMap, false},
+		{"Merge empty map to list of a single map", []map[string]interface{}{mapWithListOfSingleMap, emptyMap}, mapWithListOfSingleMap, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -120,7 +130,7 @@ func TestMergeDictionaries(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MergeDictionaries():\n got %v\nwant %v", got, tt.want)
+				t.Errorf("MergeDictionaries():\n got %#v\nwant %#v", got, tt.want)
 			}
 		})
 	}
