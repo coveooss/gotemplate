@@ -203,7 +203,7 @@ var dataFuncsHelp = descriptions{
 	"prepend":        "Push elements onto the front of a list, creating a new list.",
 	"rest":           "Gets the tail of the list (everything but the first item)",
 	"reverse":        "Produces a new list with the reversed elements of the given list.",
-	"removeEmpty":    "Returns a list will all empty element removed.",
+	"removeEmpty":    "Returns a list will all empty elements removed.",
 	"removeNil":      "Returns a list will all nil element removed.",
 	"safeIndex":      "Returns the element at index position or default if index is outside bounds.",
 	"set":            "Adds the value to the supplied map using key as identifier.",
