@@ -20,11 +20,11 @@ Converts the `string` into boolean value (`string` must be `True`,
 Returns the character corresponging to the supplied integer value
 </pre><h2 id=contains><strong>contains</strong></h2><pre><code class=language-go>func contains(list interface{}, elements ...interface{}) bool
 </code></pre><pre>
-Test to see if a list has a particular elements (matches any types).
+Tests whether a list contains all given elements (matches any types).
 </pre><h3 id=aliases-1>Aliases</h3><ul><li><em>has</em></li></ul><h2 id=containsstrict><strong>containsStrict</strong></h2><pre><code class=language-go>func containsStrict(list interface{}, elements ...interface{}) bool
 </code></pre><pre>
-Test to see if a list has a particular elements (matches only the same
-types).
+Tests whether a list contains all given elements (matches only the
+same types).
 </pre><h3 id=aliases-2>Aliases</h3><ul><li><em>hasStrict</em></li></ul><h2 id=content><strong>content</strong></h2><pre><code class=language-go>func content(keymap interface{}) interface{}
 </code></pre><pre>
 Returns the content of a single element map.
@@ -39,11 +39,11 @@ Extracts values from a slice or a map, indexes could be either
 integers for slice or strings for maps.
 </pre><h2 id=find><strong>find</strong></h2><pre><code class=language-go>func find(list interface{}, element interface{}) interface{}
 </code></pre><pre>
-Returns all index position where the element is found in the list
+Returns all index positions where the element is found in the list
 (matches any types).
 </pre><h2 id=findstrict><strong>findStrict</strong></h2><pre><code class=language-go>func findStrict(list interface{}, element interface{}) interface{}
 </code></pre><pre>
-Returns all index position where the element is found in the list
+Returns all index positions where the element is found in the list
 (matches only the same types).
 </pre><h2 id=get><strong>get</strong></h2><pre><code class=language-go>func get(map interface{}, key interface{}, default ...interface{})
 interface{}
@@ -118,10 +118,10 @@ dictionary.
 Push elements onto the front of a list, creating a new list.
 </pre><h2 id=removeempty><strong>removeEmpty</strong></h2><pre><code class=language-go>func removeEmpty(list interface{}) IGenericList
 </code></pre><pre>
-Returns a list will all empty elements removed.
+Returns a list with all empty elements removed.
 </pre><h2 id=removenil><strong>removeNil</strong></h2><pre><code class=language-go>func removeNil(list interface{}) IGenericList
 </code></pre><pre>
-Returns a list will all nil elements removed.
+Returns a list with all nil elements removed.
 </pre><h2 id=rest><strong>rest</strong></h2><pre><code class=language-go>func rest(list interface{}) interface{}
 </code></pre><pre>
 Gets the tail of the list (everything but the first item)
