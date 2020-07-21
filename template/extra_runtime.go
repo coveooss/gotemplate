@@ -351,6 +351,7 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 
 	if err = cmd.Run(); err == nil {
 		result = stdout.String()
+		InternalLog.Print(stderr.String())
 	} else {
 		err = fmt.Errorf("Error %w: %s", err, stderr.String())
 	}
