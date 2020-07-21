@@ -51,7 +51,7 @@ func WrapString(s string, width int) string {
 				length++
 			}
 		}
-		result = append(result, indent+strings.Join(words[start:len(words)], " "))
+		result = append(result, indent+strings.Join(words[start:], " "))
 	}
 
 	return strings.Join(result, "\n")

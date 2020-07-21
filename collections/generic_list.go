@@ -12,14 +12,18 @@ type IGenericList interface {
 	Cap() int                                               // Returns the capacity of the list.
 	Capacity() int                                          // Simply an alias for Cap.
 	Clone() IGenericList                                    // Returns a distinct copy of the object.
-	Contains(...interface{}) bool                           // Indicates if the list contains all specified elements
+	Contains(...interface{}) bool                           // Indicates if the list contains all specified elements (matches even if type are not the same).
+	ContainsStrict(...interface{}) bool                     // Indicates if the list contains all specified elements (matches only for same types).
 	Count() int                                             // Simply an alias for Len.
 	Create(...int) IGenericList                             // Allocates a new list of the same type implementation as this list. Optional arguments are size and capacity.
 	CreateDict(...int) IDictionary                          // Instantiates a new dictionary of the same type with optional size.
+	Find(interface{}) IGenericList                          // Return the index positions of the searched element in a list (match elements even if type is not the same).
+	FindStrict(interface{}) IGenericList                    // Return the index positions of the searched element in a list (must have the same type).
 	First() interface{}                                     // Returns the first element of the list.
 	Get(...int) interface{}                                 // Returns the element at position index in the list. If index is out of bound, nil is returned.
 	GetHelpers() (IDictionaryHelper, IListHelper)           // Returns the helpers implementation associated with the current type.
-	Has(...interface{}) bool                                // Alias for contains
+	Has(...interface{}) bool                                // Alias for Contains
+	HasStrict(...interface{}) bool                          // Alias for ContainsStrict
 	Intersect(...interface{}) IGenericList                  // Returns a list that is the result of the intersection of the list and the parameters (removing duplicates).
 	Join(sep interface{}) String                            // Returns the string representation of the list.
 	Last() interface{}                                      // Returns the last element of the list.
@@ -29,6 +33,8 @@ type IGenericList interface {
 	Prepend(...interface{}) IGenericList                    // Add elements to the beginning of the current list. If list is not large enough, it is enlarged to fit the required size.
 	PrettyPrint() string                                    // Returns the pretty string representation of the list.
 	Remove(indexes ...int) IGenericList                     // Returns a new list without the element specified.
+	RemoveEmpty() IGenericList                              // Returns a new list without the element that evaluates to empty or zero.
+	RemoveNil() IGenericList                                // Returns a new list without the nil elements.
 	Reverse() IGenericList                                  // Returns a copy of the current list in reverse order.
 	Set(index int, value interface{}) (IGenericList, error) // Sets the value at position index into the list. If list is not large enough, it is enlarged to fit the index.
 	String() string                                         // Returns the string representation of the list.

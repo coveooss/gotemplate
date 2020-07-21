@@ -18,35 +18,32 @@ type yamlList []interface{}
 
 var yamlLower = strings.ToLower("Yaml") // This is required because genny capitalize the type name in strings
 
-func (l yamlList) AsArray() []interface{} { return []interface{}(l) }
-func (l yamlList) Cap() int               { return cap(l) }
-func (l yamlList) Capacity() int          { return cap(l) }
-func (l yamlList) Clone() yamlIList       { return yamlListHelper.Clone(l) }
-func (l yamlList) Contains(values ...interface{}) bool {
-	return yamlListHelper.Contains(l, values...)
-}
-func (l yamlList) Count() int                   { return len(l) }
-func (l yamlList) Create(args ...int) yamlIList { return yamlListHelper.CreateList(args...) }
-func (l yamlList) CreateDict(args ...int) yamlIDict {
-	return yamlListHelper.CreateDictionary(args...)
-}
-func (l yamlList) First() interface{} { return yamlListHelper.GetIndexes(l, 0) }
-func (l yamlList) Get(indexes ...int) interface{} {
-	return yamlListHelper.GetIndexes(l, indexes...)
-}
-func (l yamlList) GetKinds() yamlIList               { return yamlListHelper.GetTypes(l, true) }
-func (l yamlList) GetTypes() yamlIList               { return yamlListHelper.GetTypes(l, false) }
-func (l yamlList) Has(values ...interface{}) bool    { return l.Contains(values...) }
-func (l yamlList) Join(sep interface{}) str          { return l.StringArray().Join(sep) }
-func (l yamlList) Last() interface{}                 { return yamlListHelper.GetIndexes(l, len(l)-1) }
-func (l yamlList) Len() int                          { return len(l) }
-func (l yamlList) New(args ...interface{}) yamlIList { return yamlListHelper.NewList(args...) }
-func (l yamlList) Reverse() yamlIList                { return yamlListHelper.Reverse(l) }
-func (l yamlList) StringArray() strArray             { return yamlListHelper.GetStringArray(l) }
-func (l yamlList) Strings() []string                 { return yamlListHelper.GetStrings(l) }
-func (l yamlList) Type() str                         { return yamlListHelper.Type(l) }
-func (l yamlList) TypeName() str                     { return str(yamlLower) }
-func (l yamlList) Unique() yamlIList                 { return yamlListHelper.Unique(l) }
+func (l yamlList) AsArray() []interface{}               { return []interface{}(l) }
+func (l yamlList) Cap() int                             { return cap(l) }
+func (l yamlList) Capacity() int                        { return cap(l) }
+func (l yamlList) Clone() yamlIList                     { return yamlListHelper.Clone(l) }
+func (l yamlList) Count() int                           { return len(l) }
+func (l yamlList) Create(args ...int) yamlIList         { return yamlListHelper.CreateList(args...) }
+func (l yamlList) CreateDict(args ...int) yamlIDict     { return yamlListHelper.CreateDictionary(args...) }
+func (l yamlList) Find(element interface{}) yamlIList   { return yamlListHelper.Find(l, element, false) }
+func (l yamlList) First() interface{}                   { return yamlListHelper.GetIndexes(l, 0) }
+func (l yamlList) Get(indexes ...int) interface{}       { return yamlListHelper.GetIndexes(l, indexes...) }
+func (l yamlList) GetKinds() yamlIList                  { return yamlListHelper.GetTypes(l, true) }
+func (l yamlList) GetTypes() yamlIList                  { return yamlListHelper.GetTypes(l, false) }
+func (l yamlList) Has(values ...interface{}) bool       { return l.Contains(values...) }
+func (l yamlList) HasStrict(values ...interface{}) bool { return l.ContainsStrict(values...) }
+func (l yamlList) Join(sep interface{}) str             { return l.StringArray().Join(sep) }
+func (l yamlList) Last() interface{}                    { return yamlListHelper.GetIndexes(l, len(l)-1) }
+func (l yamlList) Len() int                             { return len(l) }
+func (l yamlList) New(args ...interface{}) yamlIList    { return yamlListHelper.NewList(args...) }
+func (l yamlList) Reverse() yamlIList                   { return yamlListHelper.Reverse(l) }
+func (l yamlList) RemoveEmpty() yamlIList               { return yamlListHelper.RemoveEmpty(l) }
+func (l yamlList) RemoveNil() yamlIList                 { return yamlListHelper.RemoveNil(l) }
+func (l yamlList) StringArray() strArray                { return yamlListHelper.GetStringArray(l) }
+func (l yamlList) Strings() []string                    { return yamlListHelper.GetStrings(l) }
+func (l yamlList) Type() str                            { return yamlListHelper.Type(l) }
+func (l yamlList) TypeName() str                        { return str(yamlLower) }
+func (l yamlList) Unique() yamlIList                    { return yamlListHelper.Unique(l) }
 
 func (l yamlList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return yamlDictHelper, yamlListHelper
@@ -54,6 +51,18 @@ func (l yamlList) GetHelpers() (collections.IDictionaryHelper, collections.IList
 
 func (l yamlList) Append(values ...interface{}) yamlIList {
 	return yamlListHelper.Add(l, false, values...)
+}
+
+func (l yamlList) Contains(values ...interface{}) bool {
+	return yamlListHelper.Contains(l, false, values...)
+}
+
+func (l yamlList) ContainsStrict(values ...interface{}) bool {
+	return yamlListHelper.Contains(l, true, values...)
+}
+
+func (l yamlList) FindStrict(element interface{}) yamlIList {
+	return yamlListHelper.Find(l, element, true)
 }
 
 func (l yamlList) Intersect(values ...interface{}) yamlIList {

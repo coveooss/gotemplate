@@ -18,35 +18,32 @@ type xmlList []interface{}
 
 var xmlLower = strings.ToLower("Xml") // This is required because genny capitalize the type name in strings
 
-func (l xmlList) AsArray() []interface{} { return []interface{}(l) }
-func (l xmlList) Cap() int               { return cap(l) }
-func (l xmlList) Capacity() int          { return cap(l) }
-func (l xmlList) Clone() xmlIList        { return xmlListHelper.Clone(l) }
-func (l xmlList) Contains(values ...interface{}) bool {
-	return xmlListHelper.Contains(l, values...)
-}
-func (l xmlList) Count() int                  { return len(l) }
-func (l xmlList) Create(args ...int) xmlIList { return xmlListHelper.CreateList(args...) }
-func (l xmlList) CreateDict(args ...int) xmlIDict {
-	return xmlListHelper.CreateDictionary(args...)
-}
-func (l xmlList) First() interface{} { return xmlListHelper.GetIndexes(l, 0) }
-func (l xmlList) Get(indexes ...int) interface{} {
-	return xmlListHelper.GetIndexes(l, indexes...)
-}
-func (l xmlList) GetKinds() xmlIList               { return xmlListHelper.GetTypes(l, true) }
-func (l xmlList) GetTypes() xmlIList               { return xmlListHelper.GetTypes(l, false) }
-func (l xmlList) Has(values ...interface{}) bool   { return l.Contains(values...) }
-func (l xmlList) Join(sep interface{}) str         { return l.StringArray().Join(sep) }
-func (l xmlList) Last() interface{}                { return xmlListHelper.GetIndexes(l, len(l)-1) }
-func (l xmlList) Len() int                         { return len(l) }
-func (l xmlList) New(args ...interface{}) xmlIList { return xmlListHelper.NewList(args...) }
-func (l xmlList) Reverse() xmlIList                { return xmlListHelper.Reverse(l) }
-func (l xmlList) StringArray() strArray            { return xmlListHelper.GetStringArray(l) }
-func (l xmlList) Strings() []string                { return xmlListHelper.GetStrings(l) }
-func (l xmlList) Type() str                        { return xmlListHelper.Type(l) }
-func (l xmlList) TypeName() str                    { return str(xmlLower) }
-func (l xmlList) Unique() xmlIList                 { return xmlListHelper.Unique(l) }
+func (l xmlList) AsArray() []interface{}               { return []interface{}(l) }
+func (l xmlList) Cap() int                             { return cap(l) }
+func (l xmlList) Capacity() int                        { return cap(l) }
+func (l xmlList) Clone() xmlIList                      { return xmlListHelper.Clone(l) }
+func (l xmlList) Count() int                           { return len(l) }
+func (l xmlList) Create(args ...int) xmlIList          { return xmlListHelper.CreateList(args...) }
+func (l xmlList) CreateDict(args ...int) xmlIDict      { return xmlListHelper.CreateDictionary(args...) }
+func (l xmlList) Find(element interface{}) xmlIList    { return xmlListHelper.Find(l, element, false) }
+func (l xmlList) First() interface{}                   { return xmlListHelper.GetIndexes(l, 0) }
+func (l xmlList) Get(indexes ...int) interface{}       { return xmlListHelper.GetIndexes(l, indexes...) }
+func (l xmlList) GetKinds() xmlIList                   { return xmlListHelper.GetTypes(l, true) }
+func (l xmlList) GetTypes() xmlIList                   { return xmlListHelper.GetTypes(l, false) }
+func (l xmlList) Has(values ...interface{}) bool       { return l.Contains(values...) }
+func (l xmlList) HasStrict(values ...interface{}) bool { return l.ContainsStrict(values...) }
+func (l xmlList) Join(sep interface{}) str             { return l.StringArray().Join(sep) }
+func (l xmlList) Last() interface{}                    { return xmlListHelper.GetIndexes(l, len(l)-1) }
+func (l xmlList) Len() int                             { return len(l) }
+func (l xmlList) New(args ...interface{}) xmlIList     { return xmlListHelper.NewList(args...) }
+func (l xmlList) Reverse() xmlIList                    { return xmlListHelper.Reverse(l) }
+func (l xmlList) RemoveEmpty() xmlIList                { return xmlListHelper.RemoveEmpty(l) }
+func (l xmlList) RemoveNil() xmlIList                  { return xmlListHelper.RemoveNil(l) }
+func (l xmlList) StringArray() strArray                { return xmlListHelper.GetStringArray(l) }
+func (l xmlList) Strings() []string                    { return xmlListHelper.GetStrings(l) }
+func (l xmlList) Type() str                            { return xmlListHelper.Type(l) }
+func (l xmlList) TypeName() str                        { return str(xmlLower) }
+func (l xmlList) Unique() xmlIList                     { return xmlListHelper.Unique(l) }
 
 func (l xmlList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return xmlDictHelper, xmlListHelper
@@ -54,6 +51,18 @@ func (l xmlList) GetHelpers() (collections.IDictionaryHelper, collections.IListH
 
 func (l xmlList) Append(values ...interface{}) xmlIList {
 	return xmlListHelper.Add(l, false, values...)
+}
+
+func (l xmlList) Contains(values ...interface{}) bool {
+	return xmlListHelper.Contains(l, false, values...)
+}
+
+func (l xmlList) ContainsStrict(values ...interface{}) bool {
+	return xmlListHelper.Contains(l, true, values...)
+}
+
+func (l xmlList) FindStrict(element interface{}) xmlIList {
+	return xmlListHelper.Find(l, element, true)
 }
 
 func (l xmlList) Intersect(values ...interface{}) xmlIList {

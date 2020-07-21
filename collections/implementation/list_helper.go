@@ -32,6 +32,39 @@ func (lh ListHelper) Clone(list baseIList) baseIList {
 	return lh.NewList(list.AsArray()...)
 }
 
+// Contains indicates if the list contains all specified elements
+func (lh ListHelper) Contains(list baseIList, strict bool, values ...interface{}) bool {
+	source := list.AsArray()
+	for _, value := range values {
+		match := false
+		for _, item := range source {
+			if strict && value == item || !strict && fmt.Sprint(value) == fmt.Sprint(item) {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return false
+		}
+	}
+
+	return len(source) > 0
+}
+
+// Find returns the position of the searched element in the list.
+func (lh ListHelper) Find(list baseIList, element interface{}, strict bool) baseIList {
+	result := lh.NewList()
+	if !strict {
+		element = fmt.Sprint(element)
+	}
+	for i, value := range list.AsArray() {
+		if strict && element == value || !strict && element == fmt.Sprint(value) {
+			result = result.Append(i)
+		}
+	}
+	return result
+}
+
 // GetIndexes returns the element at position index in the list. If index is out of bound, nil is returned.
 func (lh ListHelper) GetIndexes(list baseIList, indexes ...int) interface{} {
 	switch len(indexes) {
@@ -77,35 +110,6 @@ func (lh ListHelper) GetTypes(list baseIList, kind bool) baseIList {
 		result.Set(i, iif(kind, reflect.TypeOf(value).Kind().String(), reflect.TypeOf(value).Name()))
 	}
 	return result
-}
-
-// NewList creates a new IGenericList from supplied arguments.
-func (bh BaseHelper) NewList(items ...interface{}) baseIList {
-	if len(items) == 1 && items[0] != nil {
-		v := reflect.ValueOf(items[0])
-		switch v.Kind() {
-		case reflect.Array, reflect.Slice:
-			// There is only one items and it is an array or a slice
-			items = make([]interface{}, v.Len())
-			for i := 0; i < v.Len(); i++ {
-				items[i] = v.Index(i).Interface()
-			}
-		}
-	}
-	newList := bh.CreateList(0, len(items))
-	for i := range items {
-		newList = newList.Append(items[i])
-	}
-	return newList
-}
-
-// NewStringList creates a new IGenericList from supplied arguments.
-func (bh BaseHelper) NewStringList(items ...string) baseIList {
-	newList := bh.CreateList(0, len(items))
-	for i := range items {
-		newList = newList.Append(items[i])
-	}
-	return newList
 }
 
 // Reverse returns a copy of the current list in reverse order.
@@ -177,6 +181,35 @@ func (lh ListHelper) Remove(list baseIList, indexes ...int) baseIList {
 	return target
 }
 
+// RemoveEmpty returns a new list without the empty elements.
+func (lh ListHelper) RemoveEmpty(list baseIList) baseIList {
+	target := list.Create(0, list.Len())
+	for _, item := range list.AsArray() {
+		var isEmpty bool
+		switch item := item.(type) {
+		case baseIList:
+			isEmpty = item.Len() == 0
+		default:
+			isEmpty = item == nil || fmt.Sprint(item) == ""
+		}
+		if !isEmpty {
+			target = target.Append(item)
+		}
+	}
+	return target
+}
+
+// RemoveNil returns a new list without the nil elements.
+func (lh ListHelper) RemoveNil(list baseIList) baseIList {
+	target := list.Create(0, list.Len())
+	for _, item := range list.AsArray() {
+		if item != nil {
+			target = target.Append(item)
+		}
+	}
+	return target
+}
+
 // Without returns a copy of the list removing specified elements.
 func (lh ListHelper) Without(list baseIList, values ...interface{}) baseIList {
 	source := list.AsArray()
@@ -188,25 +221,6 @@ func (lh ListHelper) Without(list baseIList, values ...interface{}) baseIList {
 		}
 	}
 	return target
-}
-
-// Contains indicates if the list contains all specified elements
-func (lh ListHelper) Contains(list baseIList, values ...interface{}) bool {
-	source := list.AsArray()
-	for _, value := range values {
-		match := false
-		for _, item := range source {
-			if fmt.Sprint(value) == fmt.Sprint(item) {
-				match = true
-				break
-			}
-		}
-		if !match {
-			return false
-		}
-	}
-
-	return len(source) > 0
 }
 
 // Register the implementation of list functions
