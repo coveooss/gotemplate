@@ -213,7 +213,7 @@ var sprigFuncRef = map[string]struct {
 	"concatSprig":  {group: sprigList, description: "Concatenate arbitrary number of lists into one.", aliases: []string{"concat"}},
 	"first":        {group: sprigList, description: "Get the head item on a list."},
 	"hasSprig":     {group: sprigList, description: "Test to see if a list has a particular element.", aliases: []string{"has"}},
-	"initialSprig": {group: sprigList, description: "Compliments last by returning all but the last element.", aliases: []string{"initial"}},
+	"initialSprig": {group: sprigList, description: "Complements last by returning all but the last element.", aliases: []string{"initial"}},
 	"last":         {group: sprigList, description: "Get the last item on a list."},
 	"prependSprig": {group: sprigList, description: "Push an element onto the front of a list, creating a new list.", aliases: []string{"prepend"}},
 	"pushSprig":    {group: sprigList, description: "Append a new item to an existing list, creating a new list.", aliases: []string{"push"}},

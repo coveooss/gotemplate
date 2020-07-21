@@ -16,6 +16,35 @@ type BaseHelper struct {
 	NeedConversion func(object interface{}, strict bool) bool
 }
 
+// NewList creates a new IGenericList from supplied arguments.
+func (bh BaseHelper) NewList(items ...interface{}) baseIList {
+	if len(items) == 1 && items[0] != nil {
+		v := reflect.ValueOf(items[0])
+		switch v.Kind() {
+		case reflect.Array, reflect.Slice:
+			// There is only one items and it is an array or a slice
+			items = make([]interface{}, v.Len())
+			for i := 0; i < v.Len(); i++ {
+				items[i] = v.Index(i).Interface()
+			}
+		}
+	}
+	newList := bh.CreateList(0, len(items))
+	for i := range items {
+		newList = newList.Append(items[i])
+	}
+	return newList
+}
+
+// NewStringList creates a new IGenericList from supplied arguments.
+func (bh BaseHelper) NewStringList(items ...string) baseIList {
+	newList := bh.CreateList(0, len(items))
+	for i := range items {
+		newList = newList.Append(items[i])
+	}
+	return newList
+}
+
 // AsList converts object to IGenericList object. It panics if conversion is impossible.
 func (bh BaseHelper) AsList(object interface{}) baseIList {
 	return must(bh.TryAsList(object)).(baseIList)

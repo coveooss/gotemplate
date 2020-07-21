@@ -2,11 +2,9 @@ package implementation
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
-	"github.com/coveooss/multilogger/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,9 +26,7 @@ func Test_list_Append(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Append(tt.values...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Append():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Append(tt.values...))
 		})
 	}
 }
@@ -51,9 +47,7 @@ func Test_list_Prepend(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Prepend(tt.values...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Prepend():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Prepend(tt.values...))
 		})
 	}
 }
@@ -72,9 +66,7 @@ func Test_list_AsArray(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.AsArray(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.AsList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.AsArray())
 		})
 	}
 }
@@ -93,9 +85,7 @@ func Test_baseList_Strings(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Strings(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Strings() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Strings())
 		})
 	}
 }
@@ -112,12 +102,8 @@ func Test_list_Capacity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Capacity(); got != tt.want {
-				t.Errorf("baseList.Capacity() = %v, want %v", got, tt.want)
-			}
-			if tt.l.Capacity() != tt.l.Cap() {
-				t.Errorf("Cap and Capacity return different values")
-			}
+			assert.Equal(t, tt.want, tt.l.Capacity())
+			assert.Equal(t, tt.want, tt.l.Cap())
 		})
 	}
 }
@@ -136,9 +122,7 @@ func Test_list_Clone(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Clone(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Clone())
 		})
 	}
 }
@@ -163,9 +147,7 @@ func Test_list_Get(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Get(tt.indexes...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Get() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Get(tt.indexes...))
 		})
 	}
 }
@@ -186,17 +168,14 @@ func Test_list_GetTypes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testFunc := tt.l.GetTypes
-			name := "Types"
 			if tt.kind {
 				testFunc = tt.l.GetKinds
-				name = "Kinds"
 			}
-			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Get%s() = %v, want %v", name, got, tt.want)
-			}
+			assert.Equal(t, tt.want, testFunc())
 		})
 	}
 }
+
 func Test_list_Len(t *testing.T) {
 	t.Parallel()
 
@@ -211,12 +190,8 @@ func Test_list_Len(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Len(); got != tt.want {
-				t.Errorf("baseList.Len() = %v, want %v", got, tt.want)
-			}
-			if tt.l.Len() != tt.l.Count() {
-				t.Errorf("Len and Count return different values")
-			}
+			assert.Equal(t, tt.want, tt.l.Count())
+			assert.Equal(t, tt.want, tt.l.Len())
 		})
 	}
 }
@@ -228,28 +203,25 @@ func Test_CreateList(t *testing.T) {
 		name    string
 		args    []int
 		want    baseIList
-		wantErr bool
+		wantErr string
 	}{
-		{"Empty", nil, baseList{}, false},
-		{"With nil elements", []int{10}, make(baseList, 10), false},
-		{"With capacity", []int{0, 10}, make(baseList, 0, 10), false},
-		{"Too much args", []int{0, 10, 1}, nil, true},
+		{"Empty", nil, baseList{}, ""},
+		{"With nil elements", []int{10}, make(baseList, 10), ""},
+		{"With capacity", []int{0, 10}, make(baseList, 0, 10), ""},
+		{"Too much args", []int{0, 10, 1}, nil, "CreateList only accept 2 arguments, size and capacity"},
 	}
 	for _, tt := range tests {
-		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() { err = errors.Trap(err, recover()) }()
+			defer func() {
+				if err := recover(); err != nil {
+					assert.EqualError(t, err.(error), tt.wantErr)
+				}
+			}()
+
 			got := baseListHelper.CreateList(tt.args...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CreateList():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if got.Capacity() != tt.want.Cap() {
-				t.Errorf("CreateList() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Cap(), tt.want.Capacity())
-			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want.Cap(), got.Capacity())
 		})
-		if (err != nil) != tt.wantErr {
-			t.Errorf("CreateList() error = %v, wantErr %v", err, tt.wantErr)
-		}
 	}
 }
 
@@ -270,12 +242,8 @@ func Test_list_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.l.Create(tt.args...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if got.Capacity() != tt.want.Capacity() {
-				t.Errorf("baseList.Create() capacity:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got.Capacity(), tt.want.Capacity())
-			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want.Capacity(), got.Cap())
 		})
 	}
 }
@@ -299,9 +267,7 @@ func Test_list_New(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.New(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.New(tt.args...))
 		})
 	}
 }
@@ -314,25 +280,21 @@ func Test_list_CreateDict(t *testing.T) {
 		l       baseList
 		args    []int
 		want    baseIDict
-		wantErr bool
+		wantErr string
 	}{
-		{"Empty", nil, nil, baseDict{}, false},
-		{"With capacity", nil, []int{10}, baseDict{}, false},
-		{"With too much parameter", nil, []int{10, 1}, nil, true},
+		{"Empty", nil, nil, baseDict{}, ""},
+		{"With capacity", nil, []int{10}, baseDict{}, ""},
+		{"With too much parameter", nil, []int{10, 1}, nil, "CreateList only accept 1 argument for size"},
 	}
 	for _, tt := range tests {
-		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() { err = errors.Trap(err, recover()) }()
-			got := tt.l.CreateDict(tt.args...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.CreateDict():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			defer func() {
+				if err := recover(); err != nil {
+					assert.EqualError(t, err.(error), tt.wantErr)
+				}
+			}()
+			assert.Equal(t, tt.want, tt.l.CreateDict(tt.args...))
 		})
-		if (err != nil) != tt.wantErr {
-			t.Errorf("baseList.CreateDict() error = %v, wantErr %v", err, tt.wantErr)
-			return
-		}
 	}
 }
 
@@ -340,26 +302,48 @@ func Test_list_Contains(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name string
-		l    baseList
-		args []interface{}
-		want bool
+		name             string
+		l                baseList
+		args             []interface{}
+		want, wantStrict bool
 	}{
-		{"Empty List", nil, []interface{}{}, false},
-		{"Search nothing", baseList{1}, nil, true},
-		{"Search nothing 2", baseList{1}, []interface{}{}, true},
-		{"Not there", baseList{1}, []interface{}{2}, false},
-		{"Included", baseList{1, 2}, []interface{}{2}, true},
-		{"Partially there", baseList{1, 2}, []interface{}{2, 3}, false},
+		{"Empty List", nil, []interface{}{}, false, false},
+		{"Search nothing", baseList{1}, nil, true, true},
+		{"Search nothing 2", baseList{1}, []interface{}{}, true, true},
+		{"Not there", baseList{1}, []interface{}{2}, false, false},
+		{"Included", baseList{1, 2}, []interface{}{2}, true, true},
+		{"Partially there", baseList{1, 2}, []interface{}{2, 3}, false, false},
+		{"Different types", baseList{1, 2, "3"}, []interface{}{"2", 3}, true, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Contains(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Contains():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if got := tt.l.Has(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Has():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Contains(tt.args...))
+			assert.Equal(t, tt.wantStrict, tt.l.ContainsStrict(tt.args...))
+			assert.Equal(t, tt.want, tt.l.Has(tt.args...))
+		})
+	}
+}
+
+func Test_list_Find(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name             string
+		l                baseList
+		element          interface{}
+		want, wantStrict baseList
+	}{
+		{"Empty List", nil, 2, baseList{}, baseList{}},
+		{"Not found", baseList{0, 1, 2, 3}, 4, baseList{}, baseList{}},
+		{"Fist", baseList{0, 1, 2, 3}, 0, baseList{0}, baseList{0}},
+		{"Last", baseList{0, 1, 2, 3}, 3, baseList{3}, baseList{3}},
+		{"Many", baseList{0, 1, 2, 3, 0, 1, 2, 3}, 3, baseList{3, 7}, baseList{3, 7}},
+		{"Different type", baseList{0, 1, 2, 3, "2", 2.0}, 2.0, baseList{2, 4, 5}, baseList{5}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.l.Find(tt.element))
+			assert.Equal(t, tt.wantStrict, tt.l.FindStrict(tt.element))
 		})
 	}
 }
@@ -380,12 +364,8 @@ func Test_list_First_Last(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.First(); !reflect.DeepEqual(got, tt.wantFirst) {
-				t.Errorf("baseList.First():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantFirst)
-			}
-			if got := tt.l.Last(); !reflect.DeepEqual(got, tt.wantLast) {
-				t.Errorf("baseList.Last():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.wantLast)
-			}
+			assert.Equal(t, tt.wantFirst, tt.l.First())
+			assert.Equal(t, tt.wantLast, tt.l.Last())
 		})
 	}
 }
@@ -413,13 +393,9 @@ func Test_list_Pop(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, gotL := tt.l.Pop(tt.args...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if !reflect.DeepEqual(gotL, tt.wantList) {
-				t.Errorf("baseList.Pop():\ngotList %[1]v (%[1]T)\n   want %[2]v (%[2]T)", gotL, tt.wantList)
-			}
+			got, listAfter := tt.l.Pop(tt.args...)
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.wantList, listAfter)
 		})
 	}
 }
@@ -443,9 +419,7 @@ func Test_list_Intersect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Intersect(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Intersect():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Intersect(tt.args...))
 		})
 	}
 }
@@ -469,9 +443,7 @@ func Test_list_Union(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Union(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Union():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Union(tt.args...))
 		})
 	}
 }
@@ -494,9 +466,7 @@ func Test_list_Without(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Without(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Without():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Without(tt.args...))
 		})
 	}
 }
@@ -516,12 +486,30 @@ func Test_list_Unique(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.l.Unique(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Unique():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Unique())
 		})
 	}
 }
+
+func Test_list_RemoveEmpty(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		l    baseList
+		want baseIList
+	}{
+		{"Empty List", baseList{}, baseList{}},
+		{"List of int", baseList{1, 2, 3}, baseList{3, 2, 1}},
+		{"List of string", strFixture, baseList{"Bar!", "Foo", "I'm", "World,", "Hello"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.l.Clone().Reverse())
+		})
+	}
+}
+
 func Test_list_Reverse(t *testing.T) {
 	t.Parallel()
 
@@ -536,10 +524,7 @@ func Test_list_Reverse(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := tt.l.Clone()
-			if got := l.Reverse(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Reverse():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.l.Clone().Reverse())
 		})
 	}
 }
@@ -556,22 +541,21 @@ func Test_list_Set(t *testing.T) {
 		l       baseIList
 		args    args
 		want    baseIList
-		wantErr bool
+		wantErr string
 	}{
-		{"Empty", baseList{}, args{2, 1}, baseList{nil, nil, 1}, false},
-		{"List of int", baseList{1, 2, 3}, args{0, 10}, baseList{10, 2, 3}, false},
-		{"List of string", strFixture, args{2, "You're"}, baseList{"Hello", "World,", "You're", "Foo", "Bar!"}, false},
-		{"Negative", baseList{}, args{-1, "negative value"}, nil, true},
+		{"Empty", baseList{}, args{2, 1}, baseList{nil, nil, 1}, ""},
+		{"List of int", baseList{1, 2, 3}, args{0, 10}, baseList{10, 2, 3}, ""},
+		{"List of string", strFixture, args{2, "You're"}, baseList{"Hello", "World,", "You're", "Foo", "Bar!"}, ""},
+		{"Negative", baseList{}, args{-1, "negative value"}, nil, "index must be positive number"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.l.Clone().Set(tt.args.i, tt.args.v)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("baseList.Set() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseList.Set():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
+			assert.Equal(t, tt.want, got)
+			if tt.wantErr == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr)
 			}
 		})
 	}
@@ -595,18 +579,6 @@ var mapFixture = map[string]interface{}{
 
 var dictFixture = baseDict(baseDictHelper.AsDictionary(mapFixture).AsMap())
 
-func dumpKeys(t *testing.T, d1, d2 baseIDict) {
-	t.Parallel()
-
-	for key := range d1.AsMap() {
-		v1, v2 := d1.Get(key), d2.Get(key)
-		if reflect.DeepEqual(v1, v2) {
-			continue
-		}
-		t.Logf("'%[1]v' = %[2]v (%[2]T) vs %[3]v (%[3]T)", key, v1, v2)
-	}
-}
-
 func Test_dict_AsMap(t *testing.T) {
 	t.Parallel()
 
@@ -621,9 +593,7 @@ func Test_dict_AsMap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.AsMap(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.AsMap():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.AsMap())
 		})
 	}
 }
@@ -645,22 +615,14 @@ func Test_dict_Clone(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.d.Clone(tt.keys...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Clone():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-				dumpKeys(t, got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 
 			// Ensure that the copy is distinct from the original
 			got.Set("NewFields", "Test")
-			if reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Should be different:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if !got.Has("NewFields") || !reflect.DeepEqual(got.Get("NewFields"), "Test") {
-				t.Errorf("Element has not been added")
-			}
-			if got.Len() != tt.want.Count()+1 {
-				t.Errorf("Len and Count don't return the same value")
-			}
+			assert.NotEqual(t, tt.want, got)
+			assert.True(t, got.Has("NewFields"))
+			assert.Equal(t, "Test", got.Get("NewFields"))
+			assert.Equal(t, tt.want.Count()+1, got.Len())
 		})
 	}
 }
@@ -686,12 +648,9 @@ func Test_baseDict_CreateList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.d.CreateList(tt.args...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.CreateList() = %v, want %v", got, tt.want)
-			}
-			if got.Len() != tt.wantLen || got.Cap() != tt.wantCapacity {
-				t.Errorf("baseDict.CreateList() size: %d, %d vs %d, %d", got.Len(), got.Cap(), tt.wantLen, tt.wantCapacity)
-			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.wantLen, got.Len())
+			assert.Equal(t, tt.wantCapacity, got.Capacity())
 		})
 	}
 }
@@ -704,25 +663,21 @@ func Test_dict_Create(t *testing.T) {
 		d       baseDict
 		args    []int
 		want    baseIDict
-		wantErr bool
+		wantErr string
 	}{
-		{"Empty", nil, nil, baseDict{}, false},
-		{"With capacity", nil, []int{10}, baseDict{}, false},
-		{"With too much parameter", nil, []int{10, 1}, nil, true},
+		{"Empty", nil, nil, baseDict{}, ""},
+		{"With capacity", nil, []int{10}, baseDict{}, ""},
+		{"With too much parameter", nil, []int{10, 1}, nil, "CreateList only accept 1 argument for size"},
 	}
 	for _, tt := range tests {
-		var err error
 		t.Run(tt.name, func(t *testing.T) {
-			defer func() { err = errors.Trap(err, recover()) }()
-			got := tt.d.Create(tt.args...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Create():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			defer func() {
+				if err := recover(); err != nil {
+					assert.EqualError(t, err.(error), tt.wantErr)
+				}
+			}()
+			assert.Equal(t, tt.want, tt.d.Create(tt.args...))
 		})
-		if (err != nil) != tt.wantErr {
-			t.Errorf("baseList.Create() error = %v, wantErr %v", err, tt.wantErr)
-			return
-		}
 	}
 }
 
@@ -746,9 +701,7 @@ func Test_dict_Default(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Default(tt.args.key, tt.args.defVal); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Default() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.Default(tt.args.key, tt.args.defVal))
 		})
 	}
 }
@@ -765,25 +718,22 @@ func Test_dict_Delete(t *testing.T) {
 		d       baseDict
 		args    args
 		want    baseIDict
-		wantErr bool
+		wantErr string
 	}{
-		{"Empty", nil, args{}, baseDict{}, true},
-		{"Map", dictFixture, args{}, dictFixture, true},
-		{"Non existant key", dictFixture, args{"Test", nil}, dictFixture, true},
-		{"Map with keys", dictFixture, args{"int", []interface{}{"list"}}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt"), false},
-		{"Map with keys + non existant", dictFixture, args{"int", []interface{}{"list", "Test"}}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt"), true},
+		{"Empty", nil, args{}, baseDict{}, "key <nil> not found"},
+		{"Map", dictFixture, args{}, dictFixture, "key <nil> not found"},
+		{"Non existant key", dictFixture, args{"Test", nil}, dictFixture, "key Test not found"},
+		{"Map with keys", dictFixture, args{"int", []interface{}{"list"}}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt"), ""},
+		{"Map with keys + non existant", dictFixture, args{"int", []interface{}{"list", "Test"}}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt"), "key Test not found"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := tt.d.Clone()
-			got, err := d.Delete(tt.args.key, tt.args.keys...)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("baseDict.Delete() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Delete():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-				dumpKeys(t, got, tt.want)
+			got, err := tt.d.Clone().Delete(tt.args.key, tt.args.keys...)
+			assert.Equal(t, tt.want, got)
+			if tt.wantErr == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr)
 			}
 		})
 	}
@@ -808,14 +758,8 @@ func Test_dict_Flush(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := tt.d.Clone()
 			got := d.Flush(tt.keys...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Flush():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-				dumpKeys(t, got, tt.want)
-			}
-			if !reflect.DeepEqual(d, got) {
-				t.Errorf("Should be equal after: %v, want %v", d, got)
-				dumpKeys(t, d, got)
-			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, d, got)
 		})
 	}
 }
@@ -833,9 +777,7 @@ func Test_dict_Keys(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.GetKeys(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.GetKeys():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.GetKeys())
 		})
 	}
 }
@@ -853,9 +795,7 @@ func Test_dict_KeysAsString(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.KeysAsString(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.KeysAsString():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.KeysAsString())
 		})
 	}
 }
@@ -900,10 +840,7 @@ func Test_dict_Merge(t *testing.T) {
 			t.Parallel()
 			d := tt.d.Clone()
 			got := d.Merge(tt.args.baseDict, tt.args.dicts...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Merge():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-				dumpKeys(t, got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -921,9 +858,7 @@ func Test_dict_Values(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.GetValues(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.GetValues():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.GetValues())
 		})
 	}
 }
@@ -947,12 +882,8 @@ func Test_dict_Pop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := tt.d.Clone()
 			got := d.Pop(tt.args...)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Pop():\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", got, tt.want)
-			}
-			if !reflect.DeepEqual(d, tt.wantObject) {
-				t.Errorf("baseDict.Pop() object:\n got %[1]v (%[1]T)\nwant %[2]v (%[2]T)", d, tt.wantObject)
-			}
+			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.wantObject, d)
 		})
 	}
 }
@@ -977,9 +908,7 @@ func Test_dict_Add(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Add(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Add() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.Add(tt.args.key, tt.args.v))
 		})
 	}
 }
@@ -1003,9 +932,7 @@ func Test_dict_Set(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Set(tt.args.key, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Set() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.Set(tt.args.key, tt.args.v))
 		})
 	}
 }
@@ -1026,9 +953,7 @@ func Test_dict_Transpose(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.d.Transpose(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Transpose() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, tt.d.Transpose())
 		})
 	}
 }
@@ -1064,14 +989,10 @@ func Test_dict_GetTypes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testFunc := tt.d.GetTypes
-			name := "Types"
 			if tt.kind {
 				testFunc = tt.d.GetKinds
-				name = "Kinds"
 			}
-			if got := testFunc(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("baseDict.Get%s() = %v, want %v", name, got, tt.want)
-			}
+			assert.Equal(t, tt.want, testFunc())
 		})
 	}
 }

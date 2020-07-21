@@ -18,35 +18,32 @@ type hclList []interface{}
 
 var hclLower = strings.ToLower("Hcl") // This is required because genny capitalize the type name in strings
 
-func (l hclList) AsArray() []interface{} { return []interface{}(l) }
-func (l hclList) Cap() int               { return cap(l) }
-func (l hclList) Capacity() int          { return cap(l) }
-func (l hclList) Clone() hclIList        { return hclListHelper.Clone(l) }
-func (l hclList) Contains(values ...interface{}) bool {
-	return hclListHelper.Contains(l, values...)
-}
-func (l hclList) Count() int                  { return len(l) }
-func (l hclList) Create(args ...int) hclIList { return hclListHelper.CreateList(args...) }
-func (l hclList) CreateDict(args ...int) hclIDict {
-	return hclListHelper.CreateDictionary(args...)
-}
-func (l hclList) First() interface{} { return hclListHelper.GetIndexes(l, 0) }
-func (l hclList) Get(indexes ...int) interface{} {
-	return hclListHelper.GetIndexes(l, indexes...)
-}
-func (l hclList) GetKinds() hclIList               { return hclListHelper.GetTypes(l, true) }
-func (l hclList) GetTypes() hclIList               { return hclListHelper.GetTypes(l, false) }
-func (l hclList) Has(values ...interface{}) bool   { return l.Contains(values...) }
-func (l hclList) Join(sep interface{}) str         { return l.StringArray().Join(sep) }
-func (l hclList) Last() interface{}                { return hclListHelper.GetIndexes(l, len(l)-1) }
-func (l hclList) Len() int                         { return len(l) }
-func (l hclList) New(args ...interface{}) hclIList { return hclListHelper.NewList(args...) }
-func (l hclList) Reverse() hclIList                { return hclListHelper.Reverse(l) }
-func (l hclList) StringArray() strArray            { return hclListHelper.GetStringArray(l) }
-func (l hclList) Strings() []string                { return hclListHelper.GetStrings(l) }
-func (l hclList) Type() str                        { return hclListHelper.Type(l) }
-func (l hclList) TypeName() str                    { return str(hclLower) }
-func (l hclList) Unique() hclIList                 { return hclListHelper.Unique(l) }
+func (l hclList) AsArray() []interface{}               { return []interface{}(l) }
+func (l hclList) Cap() int                             { return cap(l) }
+func (l hclList) Capacity() int                        { return cap(l) }
+func (l hclList) Clone() hclIList                      { return hclListHelper.Clone(l) }
+func (l hclList) Count() int                           { return len(l) }
+func (l hclList) Create(args ...int) hclIList          { return hclListHelper.CreateList(args...) }
+func (l hclList) CreateDict(args ...int) hclIDict      { return hclListHelper.CreateDictionary(args...) }
+func (l hclList) Find(element interface{}) hclIList    { return hclListHelper.Find(l, element, false) }
+func (l hclList) First() interface{}                   { return hclListHelper.GetIndexes(l, 0) }
+func (l hclList) Get(indexes ...int) interface{}       { return hclListHelper.GetIndexes(l, indexes...) }
+func (l hclList) GetKinds() hclIList                   { return hclListHelper.GetTypes(l, true) }
+func (l hclList) GetTypes() hclIList                   { return hclListHelper.GetTypes(l, false) }
+func (l hclList) Has(values ...interface{}) bool       { return l.Contains(values...) }
+func (l hclList) HasStrict(values ...interface{}) bool { return l.ContainsStrict(values...) }
+func (l hclList) Join(sep interface{}) str             { return l.StringArray().Join(sep) }
+func (l hclList) Last() interface{}                    { return hclListHelper.GetIndexes(l, len(l)-1) }
+func (l hclList) Len() int                             { return len(l) }
+func (l hclList) New(args ...interface{}) hclIList     { return hclListHelper.NewList(args...) }
+func (l hclList) Reverse() hclIList                    { return hclListHelper.Reverse(l) }
+func (l hclList) RemoveEmpty() hclIList                { return hclListHelper.RemoveEmpty(l) }
+func (l hclList) RemoveNil() hclIList                  { return hclListHelper.RemoveNil(l) }
+func (l hclList) StringArray() strArray                { return hclListHelper.GetStringArray(l) }
+func (l hclList) Strings() []string                    { return hclListHelper.GetStrings(l) }
+func (l hclList) Type() str                            { return hclListHelper.Type(l) }
+func (l hclList) TypeName() str                        { return str(hclLower) }
+func (l hclList) Unique() hclIList                     { return hclListHelper.Unique(l) }
 
 func (l hclList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return hclDictHelper, hclListHelper
@@ -54,6 +51,18 @@ func (l hclList) GetHelpers() (collections.IDictionaryHelper, collections.IListH
 
 func (l hclList) Append(values ...interface{}) hclIList {
 	return hclListHelper.Add(l, false, values...)
+}
+
+func (l hclList) Contains(values ...interface{}) bool {
+	return hclListHelper.Contains(l, false, values...)
+}
+
+func (l hclList) ContainsStrict(values ...interface{}) bool {
+	return hclListHelper.Contains(l, true, values...)
+}
+
+func (l hclList) FindStrict(element interface{}) hclIList {
+	return hclListHelper.Find(l, element, true)
 }
 
 func (l hclList) Intersect(values ...interface{}) hclIList {

@@ -21,44 +21,49 @@ const (
 )
 
 var dataFuncsBase = dictionary{
-	"String":    toStringClass,
-	"append":    addElements,
-	"array":     array,
-	"bool":      multilogger.ParseBool,
-	"char":      toChar,
-	"contains":  contains,
-	"content":   content,
-	"dict":      createDict,
-	"extract":   extract,
-	"get":       get,
-	"hasKey":    hasKey,
-	"initial":   initial,
-	"intersect": intersect,
-	"isNil":     func(value interface{}) bool { return value == nil },
-	"isSet":     func(value interface{}) bool { return value != nil },
-	"isZero":    isZero,
-	"key":       key,
-	"keys":      keys,
-	"lenc":      utf8.RuneCountInString,
-	"list":      collections.NewList,
-	"merge":     merge,
-	"omit":      omit,
-	"pick":      pick,
-	"pickv":     pickv,
-	"pluck":     pluck,
-	"prepend":   prepend,
-	"rest":      rest,
-	"reverse":   reverse,
-	"safeIndex": safeIndex,
-	"set":       set,
-	"slice":     slice,
-	"string":    toString,
-	"undef":     collections.IfUndef,
-	"unique":    unique,
-	"union":     union,
-	"unset":     unset,
-	"values":    values,
-	"without":   without,
+	"String":         toStringClass,
+	"append":         addElements,
+	"array":          array,
+	"bool":           multilogger.ParseBool,
+	"char":           toChar,
+	"contains":       contains,
+	"containsStrict": containsStrict,
+	"content":        content,
+	"dict":           createDict,
+	"extract":        extract,
+	"find":           find,
+	"findStrict":     findStrict,
+	"get":            get,
+	"hasKey":         hasKey,
+	"initial":        initial,
+	"intersect":      intersect,
+	"isNil":          func(value interface{}) bool { return value == nil },
+	"isSet":          func(value interface{}) bool { return value != nil },
+	"isZero":         isZero,
+	"key":            key,
+	"keys":           keys,
+	"lenc":           utf8.RuneCountInString,
+	"list":           collections.NewList,
+	"merge":          merge,
+	"omit":           omit,
+	"pick":           pick,
+	"pickv":          pickv,
+	"pluck":          pluck,
+	"prepend":        prepend,
+	"rest":           rest,
+	"reverse":        reverse,
+	"removeEmpty":    removeEmpty,
+	"removeNil":      removeNil,
+	"safeIndex":      safeIndex,
+	"set":            set,
+	"slice":          slice,
+	"string":         toString,
+	"undef":          collections.IfUndef,
+	"unique":         unique,
+	"union":          union,
+	"unset":          unset,
+	"values":         values,
+	"without":        without,
 }
 
 var dataFuncsConversion = dictionary{
@@ -83,9 +88,12 @@ var dataFuncsArgs = arguments{
 	"bool":           {"str"},
 	"char":           {"value"},
 	"contains":       {"list", "elements"},
+	"containsStrict": {"list", "elements"},
 	"content":        {"keymap"},
 	"data":           {"data", "context"},
 	"extract":        {"source", "indexes"},
+	"find":           {"list", "element"},
+	"findStrict":     {"list", "element"},
 	"get":            {"map", "key", "default"},
 	"hasKey":         {"dictionary", "key"},
 	"hcl":            {"hcl", "context"},
@@ -103,6 +111,8 @@ var dataFuncsArgs = arguments{
 	"prepend":        {"list", "elements"},
 	"rest":           {"list"},
 	"reverse":        {"list"},
+	"removeEmpty":    {"list"},
+	"removeNil":      {"list"},
 	"safeIndex":      {"value", "index", "default"},
 	"set":            {"dict", "key", "value"},
 	"slice":          {"value", "args"},
@@ -130,31 +140,32 @@ var dataFuncsArgs = arguments{
 }
 
 var dataFuncsAliases = aliases{
-	"append":        {"push"},
-	"contains":      {"has"},
-	"data":          {"DATA", "fromData", "fromDATA"},
-	"dict":          {"dictionary"},
-	"hcl":           {"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"},
-	"isNil":         {"isNull"},
-	"isZero":        {"isEmpty"},
-	"json":          {"JSON", "fromJson", "fromJSON"},
-	"lenc":          {"nbChars"},
-	"list":          {"tuple"},
-	"toHcl":         {"toHCL"},
-	"toInternalHcl": {"toInternalHCL", "toIHCL", "toIHcl"},
-	"toJson":        {"toJSON"},
-	"toPrettyHcl":   {"toPrettyHCL"},
-	"toPrettyJson":  {"toPrettyJSON"},
-	"toPrettyXml":   {"toPrettyXML"},
-	"toQuotedHcl":   {"toQuotedHCL"},
-	"toQuotedJson":  {"toQuotedJSON"},
-	"toXml":         {"toXML"},
-	"toYaml":        {"toYAML"},
-	"undef":         {"ifUndef"},
-	"unique":        {"uniq"},
-	"unset":         {"delete", "remove"},
-	"xml":           {"XML", "fromXml", "fromXML"},
-	"yaml":          {"YAML", "fromYaml", "fromYAML"},
+	"append":         {"push"},
+	"contains":       {"has"},
+	"containsStrict": {"hasStrict"},
+	"data":           {"DATA", "fromData", "fromDATA"},
+	"dict":           {"dictionary"},
+	"hcl":            {"HCL", "fromHcl", "fromHCL", "tfvars", "fromTFVars", "TFVARS", "fromTFVARS"},
+	"isNil":          {"isNull"},
+	"isZero":         {"isEmpty"},
+	"json":           {"JSON", "fromJson", "fromJSON"},
+	"lenc":           {"nbChars"},
+	"list":           {"tuple"},
+	"toHcl":          {"toHCL"},
+	"toInternalHcl":  {"toInternalHCL", "toIHCL", "toIHcl"},
+	"toJson":         {"toJSON"},
+	"toPrettyHcl":    {"toPrettyHCL"},
+	"toPrettyJson":   {"toPrettyJSON"},
+	"toPrettyXml":    {"toPrettyXML"},
+	"toQuotedHcl":    {"toQuotedHCL"},
+	"toQuotedJson":   {"toQuotedJSON"},
+	"toXml":          {"toXML"},
+	"toYaml":         {"toYAML"},
+	"undef":          {"ifUndef"},
+	"unique":         {"uniq"},
+	"unset":          {"delete", "remove"},
+	"xml":            {"XML", "fromXml", "fromXML"},
+	"yaml":           {"YAML", "fromYaml", "fromYAML"},
 }
 
 var dataFuncsHelp = descriptions{
@@ -163,12 +174,15 @@ var dataFuncsHelp = descriptions{
 	"array":          "Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value).",
 	"bool":           "Converts the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)",
 	"char":           "Returns the character corresponging to the supplied integer value",
-	"contains":       "Test to see if a list has a particular elements.",
+	"contains":       "Test to see if a list has a particular elements (matches any types).",
+	"containsStrict": "Test to see if a list has a particular elements (matches only the same types).",
 	"content":        "Returns the content of a single element map.\nUsed to retrieve content in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
 	"data":           "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.",
 	"dict":           "Returns a new dictionary from a list of pairs (key, value).",
-	"extract":        "Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps",
-	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode)",
+	"extract":        "Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps.",
+	"find":           "Returns all index position where the element is found in the list (matches any types).",
+	"findStrict":     "Returns all index position where the element is found in the list (matches only the same types).",
+	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode).",
 	"hasKey":         "Returns true if the dictionary contains the specified key.",
 	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
 	"initial":        "Returns but the last element.",
@@ -189,6 +203,8 @@ var dataFuncsHelp = descriptions{
 	"prepend":        "Push elements onto the front of a list, creating a new list.",
 	"rest":           "Gets the tail of the list (everything but the first item)",
 	"reverse":        "Produces a new list with the reversed elements of the given list.",
+	"removeEmpty":    "Returns a list will all empty element removed.",
+	"removeNil":      "Returns a list will all nil element removed.",
 	"safeIndex":      "Returns the element at index position or default if index is outside bounds.",
 	"set":            "Adds the value to the supplied map using key as identifier.",
 	"slice":          "Returns a slice of the supplied object (equivalent to object[from:to]).",
@@ -541,6 +557,14 @@ func unique(list interface{}) (r iList, err error) {
 }
 
 func contains(list interface{}, elements ...interface{}) (r bool, err error) {
+	return containsInternal(list, elements, false)
+}
+
+func containsStrict(list interface{}, elements ...interface{}) (r bool, err error) {
+	return containsInternal(list, elements, true)
+}
+
+func containsInternal(list interface{}, elements []interface{}, strict bool) (r bool, err error) {
 	// Then, the list argument must be a real list of elements
 	defer func() { err = trapError(err, recover()) }()
 	if _, err := collections.TryAsList(list); err != nil && len(elements) == 1 {
@@ -560,12 +584,50 @@ func contains(list interface{}, elements ...interface{}) (r bool, err error) {
 		// Sprig has bad documentation and inverse the arguments, so we try to support both modes.
 		list, elements = elements[0], []interface{}{list}
 	}
+	if strict {
+		return collections.AsList(list).ContainsStrict(elements...), nil
+	}
 	return collections.AsList(list).Contains(elements...), nil
+}
+
+func find(list interface{}, element interface{}) interface{} {
+	return findInternal(list, element, false)
+}
+
+func findStrict(list interface{}, element interface{}) interface{} {
+	return findInternal(list, element, true)
+}
+
+func findInternal(list interface{}, element interface{}, strict bool) interface{} {
+	switch list := list.(type) {
+	case iList:
+		if strict {
+			return list.FindStrict(element)
+		}
+		return list.Find(element)
+	case string:
+		return collections.AsList(String(list).IndexAll(fmt.Sprint(element)))
+	case String:
+		return collections.AsList(list.IndexAll(fmt.Sprint(element)))
+	default:
+		if strict {
+			return collections.AsList(list).FindStrict(element)
+		}
+		return collections.AsList(list).Find(element)
+	}
 }
 
 func intersect(list interface{}, elements ...interface{}) (r iList, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return collections.AsList(list).Intersect(elements...), nil
+}
+
+func removeEmpty(list interface{}) iList {
+	return collections.AsList(list).RemoveEmpty()
+}
+
+func removeNil(list interface{}) iList {
+	return collections.AsList(list).RemoveNil()
 }
 
 func union(list interface{}, elements ...interface{}) (r iList, err error) {

@@ -14,29 +14,32 @@ type baseList []interface{}
 
 var baseLower = strings.ToLower("base") // This is required because genny capitalize the type name in strings
 
-func (l baseList) AsArray() []interface{}              { return []interface{}(l) }
-func (l baseList) Cap() int                            { return cap(l) }
-func (l baseList) Capacity() int                       { return cap(l) }
-func (l baseList) Clone() baseIList                    { return baseListHelper.Clone(l) }
-func (l baseList) Contains(values ...interface{}) bool { return baseListHelper.Contains(l, values...) }
-func (l baseList) Count() int                          { return len(l) }
-func (l baseList) Create(args ...int) baseIList        { return baseListHelper.CreateList(args...) }
-func (l baseList) CreateDict(args ...int) baseIDict    { return baseListHelper.CreateDictionary(args...) }
-func (l baseList) First() interface{}                  { return baseListHelper.GetIndexes(l, 0) }
-func (l baseList) Get(indexes ...int) interface{}      { return baseListHelper.GetIndexes(l, indexes...) }
-func (l baseList) GetKinds() baseIList                 { return baseListHelper.GetTypes(l, true) }
-func (l baseList) GetTypes() baseIList                 { return baseListHelper.GetTypes(l, false) }
-func (l baseList) Has(values ...interface{}) bool      { return l.Contains(values...) }
-func (l baseList) Join(sep interface{}) str            { return l.StringArray().Join(sep) }
-func (l baseList) Last() interface{}                   { return baseListHelper.GetIndexes(l, len(l)-1) }
-func (l baseList) Len() int                            { return len(l) }
-func (l baseList) New(args ...interface{}) baseIList   { return baseListHelper.NewList(args...) }
-func (l baseList) Reverse() baseIList                  { return baseListHelper.Reverse(l) }
-func (l baseList) StringArray() strArray               { return baseListHelper.GetStringArray(l) }
-func (l baseList) Strings() []string                   { return baseListHelper.GetStrings(l) }
-func (l baseList) Type() str                           { return baseListHelper.Type(l) }
-func (l baseList) TypeName() str                       { return str(baseLower) }
-func (l baseList) Unique() baseIList                   { return baseListHelper.Unique(l) }
+func (l baseList) AsArray() []interface{}               { return []interface{}(l) }
+func (l baseList) Cap() int                             { return cap(l) }
+func (l baseList) Capacity() int                        { return cap(l) }
+func (l baseList) Clone() baseIList                     { return baseListHelper.Clone(l) }
+func (l baseList) Count() int                           { return len(l) }
+func (l baseList) Create(args ...int) baseIList         { return baseListHelper.CreateList(args...) }
+func (l baseList) CreateDict(args ...int) baseIDict     { return baseListHelper.CreateDictionary(args...) }
+func (l baseList) Find(element interface{}) baseIList   { return baseListHelper.Find(l, element, false) }
+func (l baseList) First() interface{}                   { return baseListHelper.GetIndexes(l, 0) }
+func (l baseList) Get(indexes ...int) interface{}       { return baseListHelper.GetIndexes(l, indexes...) }
+func (l baseList) GetKinds() baseIList                  { return baseListHelper.GetTypes(l, true) }
+func (l baseList) GetTypes() baseIList                  { return baseListHelper.GetTypes(l, false) }
+func (l baseList) Has(values ...interface{}) bool       { return l.Contains(values...) }
+func (l baseList) HasStrict(values ...interface{}) bool { return l.ContainsStrict(values...) }
+func (l baseList) Join(sep interface{}) str             { return l.StringArray().Join(sep) }
+func (l baseList) Last() interface{}                    { return baseListHelper.GetIndexes(l, len(l)-1) }
+func (l baseList) Len() int                             { return len(l) }
+func (l baseList) New(args ...interface{}) baseIList    { return baseListHelper.NewList(args...) }
+func (l baseList) Reverse() baseIList                   { return baseListHelper.Reverse(l) }
+func (l baseList) RemoveEmpty() baseIList               { return baseListHelper.RemoveEmpty(l) }
+func (l baseList) RemoveNil() baseIList                 { return baseListHelper.RemoveNil(l) }
+func (l baseList) StringArray() strArray                { return baseListHelper.GetStringArray(l) }
+func (l baseList) Strings() []string                    { return baseListHelper.GetStrings(l) }
+func (l baseList) Type() str                            { return baseListHelper.Type(l) }
+func (l baseList) TypeName() str                        { return str(baseLower) }
+func (l baseList) Unique() baseIList                    { return baseListHelper.Unique(l) }
 
 func (l baseList) GetHelpers() (collections.IDictionaryHelper, collections.IListHelper) {
 	return baseDictHelper, baseListHelper
@@ -44,6 +47,18 @@ func (l baseList) GetHelpers() (collections.IDictionaryHelper, collections.IList
 
 func (l baseList) Append(values ...interface{}) baseIList {
 	return baseListHelper.Add(l, false, values...)
+}
+
+func (l baseList) Contains(values ...interface{}) bool {
+	return baseListHelper.Contains(l, false, values...)
+}
+
+func (l baseList) ContainsStrict(values ...interface{}) bool {
+	return baseListHelper.Contains(l, true, values...)
+}
+
+func (l baseList) FindStrict(element interface{}) baseIList {
+	return baseListHelper.Find(l, element, true)
 }
 
 func (l baseList) Intersect(values ...interface{}) baseIList {
