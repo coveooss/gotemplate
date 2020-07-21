@@ -284,7 +284,7 @@ func Test_list_CreateDict(t *testing.T) {
 	}{
 		{"Empty", nil, nil, baseDict{}, ""},
 		{"With capacity", nil, []int{10}, baseDict{}, ""},
-		{"With too much parameter", nil, []int{10, 1}, nil, "CreateList only accept 1 argument for size"},
+		{"With too many parameters", nil, []int{10, 1}, nil, "CreateList only accept 1 argument for size"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
