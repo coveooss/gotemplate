@@ -20,8 +20,12 @@ Converts the `string` into boolean value (`string` must be `True`,
 Returns the character corresponging to the supplied integer value
 </pre><h2 id=contains><strong>contains</strong></h2><pre><code class=language-go>func contains(list interface{}, elements ...interface{}) bool
 </code></pre><pre>
-Test to see if a list has a particular elements.
-</pre><h3 id=aliases-1>Aliases</h3><ul><li><em>has</em></li></ul><h2 id=content><strong>content</strong></h2><pre><code class=language-go>func content(keymap interface{}) interface{}
+Test to see if a list has a particular elements (matches any types).
+</pre><h3 id=aliases-1>Aliases</h3><ul><li><em>has</em></li></ul><h2 id=containsstrict><strong>containsStrict</strong></h2><pre><code class=language-go>func containsStrict(list interface{}, elements ...interface{}) bool
+</code></pre><pre>
+Test to see if a list has a particular elements (matches only the same
+types).
+</pre><h3 id=aliases-2>Aliases</h3><ul><li><em>hasStrict</em></li></ul><h2 id=content><strong>content</strong></h2><pre><code class=language-go>func content(keymap interface{}) interface{}
 </code></pre><pre>
 Returns the content of a single element map.
 Used to retrieve content in a declaration like:
@@ -29,15 +33,23 @@ Used to retrieve content in a declaration like:
 </pre><h2 id=dict><strong>dict</strong></h2><pre><code class=language-go>func dict(args ...interface{}) IDictionary
 </code></pre><pre>
 Returns a new dictionary from a list of pairs (key, value).
-</pre><h3 id=aliases-2>Aliases</h3><ul><li><em>dictionary</em></li></ul><h2 id=extract><strong>extract</strong></h2><pre><code class=language-go>func extract(source interface{}, indexes ...interface{}) interface{}
+</pre><h3 id=aliases-3>Aliases</h3><ul><li><em>dictionary</em></li></ul><h2 id=extract><strong>extract</strong></h2><pre><code class=language-go>func extract(source interface{}, indexes ...interface{}) interface{}
 </code></pre><pre>
 Extracts values from a slice or a map, indexes could be either
-integers for slice or strings for maps
+integers for slice or strings for maps.
+</pre><h2 id=find><strong>find</strong></h2><pre><code class=language-go>func find(list interface{}, element interface{}) interface{}
+</code></pre><pre>
+Returns all index position where the element is found in the list
+(matches any types).
+</pre><h2 id=findstrict><strong>findStrict</strong></h2><pre><code class=language-go>func findStrict(list interface{}, element interface{}) interface{}
+</code></pre><pre>
+Returns all index position where the element is found in the list
+(matches only the same types).
 </pre><h2 id=get><strong>get</strong></h2><pre><code class=language-go>func get(map interface{}, key interface{}, default ...interface{})
 interface{}
 </code></pre><pre>
 Returns the value associated with the supplied map, key and map could
-be inverted for convenience (i.e. when using piping mode)
+be inverted for convenience (i.e. when using piping mode).
 </pre><h2 id=haskey><strong>hasKey</strong></h2><pre><code class=language-go>func hasKey(dictionary interface{}, key interface{}) interface{}
 </code></pre><pre>
 Returns true if the dictionary contains the specified key.
@@ -60,13 +72,13 @@ Returns a list that is the intersection of the list and all arguments
 </pre><h2 id=isnil><strong>isNil</strong></h2><pre><code class=language-go>func isNil(arg1 interface{}) bool
 </code></pre><pre>
 Returns true if the supplied value is nil.
-</pre><h3 id=aliases-3>Aliases</h3><ul><li><em>isNull</em></li></ul><h2 id=isset><strong>isSet</strong></h2><pre><code class=language-go>func isSet(arg1 interface{}) bool
+</pre><h3 id=aliases-4>Aliases</h3><ul><li><em>isNull</em></li></ul><h2 id=isset><strong>isSet</strong></h2><pre><code class=language-go>func isSet(arg1 interface{}) bool
 </code></pre><pre>
 Returns true if the supplied value is not nil.
 </pre><h2 id=iszero><strong>isZero</strong></h2><pre><code class=language-go>func isZero(arg1 interface{}) bool
 </code></pre><pre>
 Returns true if the supplied value is false, 0, nil or empty.
-</pre><h3 id=aliases-4>Aliases</h3><ul><li><em>isEmpty</em></li></ul><h2 id=key><strong>key</strong></h2><pre><code class=language-go>func key(value interface{}) interface{}
+</pre><h3 id=aliases-5>Aliases</h3><ul><li><em>isEmpty</em></li></ul><h2 id=key><strong>key</strong></h2><pre><code class=language-go>func key(value interface{}) interface{}
 </code></pre><pre>
 Returns the key name of a single element map.
 Used to retrieve name in a declaration like:
@@ -77,10 +89,10 @@ Returns a list of all of the keys in a dict (in alphabetical order).
 </pre><h2 id=lenc><strong>lenc</strong></h2><pre><code class=language-go>func lenc(str string) int
 </code></pre><pre>
 Returns the number of actual character in a string.
-</pre><h3 id=aliases-5>Aliases</h3><ul><li><em>nbChars</em></li></ul><h2 id=list><strong>list</strong></h2><pre><code class=language-go>func list(args ...interface{}) IGenericList
+</pre><h3 id=aliases-6>Aliases</h3><ul><li><em>nbChars</em></li></ul><h2 id=list><strong>list</strong></h2><pre><code class=language-go>func list(args ...interface{}) IGenericList
 </code></pre><pre>
 Returns a generic list from the supplied arguments.
-</pre><h3 id=aliases-6>Aliases</h3><ul><li><em>tuple</em></li></ul><h2 id=merge><strong>merge</strong></h2><pre><code class=language-go>func merge(destination IDictionary, sources IDictionary, args
+</pre><h3 id=aliases-7>Aliases</h3><ul><li><em>tuple</em></li></ul><h2 id=merge><strong>merge</strong></h2><pre><code class=language-go>func merge(destination IDictionary, sources IDictionary, args
 ...IDictionary) IDictionary
 </code></pre><pre>
 Merges two or more dictionaries into one, giving precedence to the
@@ -104,6 +116,12 @@ dictionary.
 </pre><h2 id=prepend><strong>prepend</strong></h2><pre><code class=language-go>func prepend(list interface{}, elements ...interface{}) IGenericList
 </code></pre><pre>
 Push elements onto the front of a list, creating a new list.
+</pre><h2 id=removeempty><strong>removeEmpty</strong></h2><pre><code class=language-go>func removeEmpty(list interface{}) IGenericList
+</code></pre><pre>
+Returns a list will all empty elements removed.
+</pre><h2 id=removenil><strong>removeNil</strong></h2><pre><code class=language-go>func removeNil(list interface{}) IGenericList
+</code></pre><pre>
+Returns a list will all nil elements removed.
 </pre><h2 id=rest><strong>rest</strong></h2><pre><code class=language-go>func rest(list interface{}) interface{}
 </code></pre><pre>
 Gets the tail of the list (everything but the first item)
@@ -130,17 +148,17 @@ Converts the supplied value into its string representation.
 Returns the default value if value is not set, alias `undef` (differs
 from Sprig `default` function as empty value such as 0, false, "" are
 not considered as unset).
-</pre><h3 id=aliases-7>Aliases</h3><ul><li><em>ifUndef</em></li></ul><h2 id=union><strong>union</strong></h2><pre><code class=language-go>func union(list interface{}, elements ...interface{}) IGenericList
+</pre><h3 id=aliases-8>Aliases</h3><ul><li><em>ifUndef</em></li></ul><h2 id=union><strong>union</strong></h2><pre><code class=language-go>func union(list interface{}, elements ...interface{}) IGenericList
 </code></pre><pre>
 Returns a list that is the union of the list and all arguments
 (removing duplicates).
 </pre><h2 id=unique><strong>unique</strong></h2><pre><code class=language-go>func unique(list interface{}) IGenericList
 </code></pre><pre>
 Generates a list with all of the duplicates removed.
-</pre><h3 id=aliases-8>Aliases</h3><ul><li><em>uniq</em></li></ul><h2 id=unset><strong>unset</strong></h2><pre><code class=language-go>func unset(dictionary interface{}, key interface{}) string
+</pre><h3 id=aliases-9>Aliases</h3><ul><li><em>uniq</em></li></ul><h2 id=unset><strong>unset</strong></h2><pre><code class=language-go>func unset(dictionary interface{}, key interface{}) string
 </code></pre><pre>
 Removes an element from a dictionary.
-</pre><h3 id=aliases-9>Aliases</h3><ul><li><em>delete</em></li><li><em>remove</em></li></ul><h3 id=examples-1>Examples</h3><pre><code class=language-go>Razor:    @{myDict} := dict(&quot;key&quot;, &quot;value&quot;, &quot;key2&quot;, &quot;value2&quot;, &quot;key3&quot;, &quot;value3&quot;)
+</pre><h3 id=aliases-10>Aliases</h3><ul><li><em>delete</em></li><li><em>remove</em></li></ul><h3 id=examples-1>Examples</h3><pre><code class=language-go>Razor:    @{myDict} := dict(&quot;key&quot;, &quot;value&quot;, &quot;key2&quot;, &quot;value2&quot;, &quot;key3&quot;, &quot;value3&quot;)
           @-unset($myDict, &quot;key&quot;)
           @-unset(&quot;key2&quot;, $myDict)
           @-toJson($myDict)
@@ -155,4 +173,4 @@ Returns the list of values contained in a map.
 </pre><h2 id=without><strong>without</strong></h2><pre><code class=language-go>func without(list interface{}, elements ...interface{}) IGenericList
 </code></pre><pre>
 Filters items out of a list.
-</pre></article></div><aside class="book-toc levels-2 fixed"><nav id=TableOfContents><ul><li><a href=#data-manipulation>Data Manipulation</a><ul><li><a href=#string><strong>String</strong></a></li><li><a href=#append><strong>append</strong></a><ul><li><a href=#aliases>Aliases</a></li></ul></li><li><a href=#array><strong>array</strong></a></li><li><a href=#bool><strong>bool</strong></a></li><li><a href=#char><strong>char</strong></a></li><li><a href=#contains><strong>contains</strong></a><ul><li><a href=#aliases-1>Aliases</a></li></ul></li><li><a href=#content><strong>content</strong></a></li><li><a href=#dict><strong>dict</strong></a><ul><li><a href=#aliases-2>Aliases</a></li></ul></li><li><a href=#extract><strong>extract</strong></a></li><li><a href=#get><strong>get</strong></a></li><li><a href=#haskey><strong>hasKey</strong></a><ul><li><a href=#examples>Examples</a></li></ul></li><li><a href=#initial><strong>initial</strong></a></li><li><a href=#intersect><strong>intersect</strong></a></li><li><a href=#isnil><strong>isNil</strong></a><ul><li><a href=#aliases-3>Aliases</a></li></ul></li><li><a href=#isset><strong>isSet</strong></a></li><li><a href=#iszero><strong>isZero</strong></a><ul><li><a href=#aliases-4>Aliases</a></li></ul></li><li><a href=#key><strong>key</strong></a></li><li><a href=#keys><strong>keys</strong></a></li><li><a href=#lenc><strong>lenc</strong></a><ul><li><a href=#aliases-5>Aliases</a></li></ul></li><li><a href=#list><strong>list</strong></a><ul><li><a href=#aliases-6>Aliases</a></li></ul></li><li><a href=#merge><strong>merge</strong></a></li><li><a href=#omit><strong>omit</strong></a></li><li><a href=#pick><strong>pick</strong></a></li><li><a href=#pickv><strong>pickv</strong></a></li><li><a href=#pluck><strong>pluck</strong></a></li><li><a href=#prepend><strong>prepend</strong></a></li><li><a href=#rest><strong>rest</strong></a></li><li><a href=#reverse><strong>reverse</strong></a></li><li><a href=#safeindex><strong>safeIndex</strong></a></li><li><a href=#set><strong>set</strong></a></li><li><a href=#slice><strong>slice</strong></a></li><li><a href=#string-1><strong>string</strong></a></li><li><a href=#undef><strong>undef</strong></a><ul><li><a href=#aliases-7>Aliases</a></li></ul></li><li><a href=#union><strong>union</strong></a></li><li><a href=#unique><strong>unique</strong></a><ul><li><a href=#aliases-8>Aliases</a></li></ul></li><li><a href=#unset><strong>unset</strong></a><ul><li><a href=#aliases-9>Aliases</a></li><li><a href=#examples-1>Examples</a></li></ul></li><li><a href=#values><strong>values</strong></a></li><li><a href=#without><strong>without</strong></a></li></ul></li></ul></nav></aside></main></body></html>
+</pre></article></div><aside class="book-toc levels-2 fixed"><nav id=TableOfContents><ul><li><a href=#data-manipulation>Data Manipulation</a><ul><li><a href=#string><strong>String</strong></a></li><li><a href=#append><strong>append</strong></a><ul><li><a href=#aliases>Aliases</a></li></ul></li><li><a href=#array><strong>array</strong></a></li><li><a href=#bool><strong>bool</strong></a></li><li><a href=#char><strong>char</strong></a></li><li><a href=#contains><strong>contains</strong></a><ul><li><a href=#aliases-1>Aliases</a></li></ul></li><li><a href=#containsstrict><strong>containsStrict</strong></a><ul><li><a href=#aliases-2>Aliases</a></li></ul></li><li><a href=#content><strong>content</strong></a></li><li><a href=#dict><strong>dict</strong></a><ul><li><a href=#aliases-3>Aliases</a></li></ul></li><li><a href=#extract><strong>extract</strong></a></li><li><a href=#find><strong>find</strong></a></li><li><a href=#findstrict><strong>findStrict</strong></a></li><li><a href=#get><strong>get</strong></a></li><li><a href=#haskey><strong>hasKey</strong></a><ul><li><a href=#examples>Examples</a></li></ul></li><li><a href=#initial><strong>initial</strong></a></li><li><a href=#intersect><strong>intersect</strong></a></li><li><a href=#isnil><strong>isNil</strong></a><ul><li><a href=#aliases-4>Aliases</a></li></ul></li><li><a href=#isset><strong>isSet</strong></a></li><li><a href=#iszero><strong>isZero</strong></a><ul><li><a href=#aliases-5>Aliases</a></li></ul></li><li><a href=#key><strong>key</strong></a></li><li><a href=#keys><strong>keys</strong></a></li><li><a href=#lenc><strong>lenc</strong></a><ul><li><a href=#aliases-6>Aliases</a></li></ul></li><li><a href=#list><strong>list</strong></a><ul><li><a href=#aliases-7>Aliases</a></li></ul></li><li><a href=#merge><strong>merge</strong></a></li><li><a href=#omit><strong>omit</strong></a></li><li><a href=#pick><strong>pick</strong></a></li><li><a href=#pickv><strong>pickv</strong></a></li><li><a href=#pluck><strong>pluck</strong></a></li><li><a href=#prepend><strong>prepend</strong></a></li><li><a href=#removeempty><strong>removeEmpty</strong></a></li><li><a href=#removenil><strong>removeNil</strong></a></li><li><a href=#rest><strong>rest</strong></a></li><li><a href=#reverse><strong>reverse</strong></a></li><li><a href=#safeindex><strong>safeIndex</strong></a></li><li><a href=#set><strong>set</strong></a></li><li><a href=#slice><strong>slice</strong></a></li><li><a href=#string-1><strong>string</strong></a></li><li><a href=#undef><strong>undef</strong></a><ul><li><a href=#aliases-8>Aliases</a></li></ul></li><li><a href=#union><strong>union</strong></a></li><li><a href=#unique><strong>unique</strong></a><ul><li><a href=#aliases-9>Aliases</a></li></ul></li><li><a href=#unset><strong>unset</strong></a><ul><li><a href=#aliases-10>Aliases</a></li><li><a href=#examples-1>Examples</a></li></ul></li><li><a href=#values><strong>values</strong></a></li><li><a href=#without><strong>without</strong></a></li></ul></li></ul></nav></aside></main></body></html>
