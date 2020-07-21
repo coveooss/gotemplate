@@ -208,7 +208,7 @@ func Test_CreateList(t *testing.T) {
 		{"Empty", nil, baseList{}, ""},
 		{"With nil elements", []int{10}, make(baseList, 10), ""},
 		{"With capacity", []int{0, 10}, make(baseList, 0, 10), ""},
-		{"Too much args", []int{0, 10, 1}, nil, "CreateList only accept 2 arguments, size and capacity"},
+		{"Too many args", []int{0, 10, 1}, nil, "CreateList only accept 2 arguments, size and capacity"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
