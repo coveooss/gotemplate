@@ -204,7 +204,7 @@ var dataFuncsHelp = descriptions{
 	"rest":           "Gets the tail of the list (everything but the first item)",
 	"reverse":        "Produces a new list with the reversed elements of the given list.",
 	"removeEmpty":    "Returns a list will all empty elements removed.",
-	"removeNil":      "Returns a list will all nil element removed.",
+	"removeNil":      "Returns a list will all nil elements removed.",
 	"safeIndex":      "Returns the element at index position or default if index is outside bounds.",
 	"set":            "Adds the value to the supplied map using key as identifier.",
 	"slice":          "Returns a slice of the supplied object (equivalent to object[from:to]).",
