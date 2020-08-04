@@ -31,6 +31,7 @@ var utilsFuncs = dictionary{
 	"indent":     indent,
 	"nIndent":    nIndent,
 	"raw":        rawPrint,
+	"rawList":    rawList,
 	"reCompile":  regexp.Compile,
 	"sIndent":    sIndent,
 	"splitLines": collections.SplitLines,
@@ -107,6 +108,7 @@ var utilsFuncsHelp = descriptions{
 	"mergeList": "Return a single list containing all elements from the lists supplied.",
 	"nIndent":   "Work as indent but add a newline before.",
 	"raw":       "Print the arguments outside of their enclosing quotes",
+	"rawList":   "Print the arguments outside of their enclosing quotes (no or single argument are considered as a list)",
 	"repeat":    "Returns an array with the item repeated n times.",
 	"reCompile": "Parses a regular expression and returns Regexp object that can be used to match against text.",
 	"sIndent": strings.TrimSpace(collections.UnIndent(`
@@ -209,5 +211,9 @@ func rawPrint(args ...interface{}) interface{} {
 	if len(args) <= 1 {
 		return fmt.Sprint(args...)
 	}
+	return utils.FormatList("!Q!%v!Q!", args...)
+}
+
+func rawList(args ...interface{}) interface{} {
 	return utils.FormatList("!Q!%v!Q!", args...)
 }
