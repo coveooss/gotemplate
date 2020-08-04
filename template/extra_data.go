@@ -3,6 +3,7 @@ package template
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/coveooss/gotemplate/v3/xml"
 	"github.com/coveooss/gotemplate/v3/yaml"
 	"github.com/coveooss/multilogger"
+	"github.com/coveooss/multilogger/reutils"
 )
 
 const (
@@ -73,7 +75,9 @@ var dataFuncsConversion = dictionary{
 	"toJson":         toJSON,
 	"toPrettyHcl":    toPrettyHCL,
 	"toPrettyJson":   toPrettyJSON,
+	"toPrettyPython": toPrettyPython,
 	"toPrettyTFVars": toPrettyTFVars,
+	"toPython":       toPython,
 	"toQuotedHcl":    toQuotedHCL,
 	"toQuotedJson":   toQuotedJSON,
 	"toQuotedTFVars": toQuotedTFVars,
@@ -124,7 +128,9 @@ var dataFuncsArgs = arguments{
 	"toJson":         {"value"},
 	"toPrettyHcl":    {"value"},
 	"toPrettyJson":   {"value"},
+	"toPrettyPython": {"value"},
 	"toPrettyTFVars": {"value"},
+	"toPython":       {"value"},
 	"toQuotedHcl":    {"value"},
 	"toQuotedJson":   {"value"},
 	"toQuotedTFVars": {"value"},
@@ -215,8 +221,10 @@ var dataFuncsHelp = descriptions{
 	"toJson":         "Converts the supplied value to compact JSON representation.",
 	"toPrettyHcl":    "Converts the supplied value to pretty HCL representation.",
 	"toPrettyJson":   "Converts the supplied value to pretty JSON representation.",
+	"toPrettyPython": "Converts the supplied value to pretty Python representation.",
 	"toPrettyTFVars": "Converts the supplied value to pretty HCL representation (without multiple map declarations).",
 	"toPrettyXml":    "Converts the supplied value to pretty XML representation.",
+	"toPython":       "Converts the supplied value to compact Python representation.",
 	"toQuotedHcl":    "Converts the supplied value to compact quoted HCL representation.",
 	"toQuotedJson":   "Converts the supplied value to compact quoted JSON representation.",
 	"toQuotedTFVars": "Converts the supplied value to compact HCL representation (without multiple map declarations).",
@@ -337,6 +345,31 @@ func toQuotedJSON(v interface{}) (string, error) {
 	output, err := json.Marshal(v)
 	result := fmt.Sprintf("%q", output)
 	return result[1 : len(result)-1], err
+}
+
+func toPython(v interface{}) (string, error) {
+	output, err := json.Marshal(v)
+	return rePython.ReplaceAllStringFunc(string(output), pythonReplace), err
+}
+
+func toPrettyPython(v interface{}) (string, error) {
+	output, err := json.MarshalIndent(v, "", "  ")
+	return rePython.ReplaceAllStringFunc(string(output), pythonReplace), err
+}
+
+var (
+	// https://regex101.com/r/7Vzm9Z/2
+	rePython          = regexp.MustCompile(`(?P<before>(?:,|:|\[)\s*)\b(?P<value>null|true|false)\b`)
+	pythonReplacement = map[string]string{
+		"true":  "True",
+		"false": "False",
+		"null":  "None",
+	}
+)
+
+func pythonReplace(s string) string {
+	matches, _ := reutils.MultiMatch(s, rePython)
+	return matches["before"] + pythonReplacement[matches["value"]]
 }
 
 func array(value interface{}) interface{} {
