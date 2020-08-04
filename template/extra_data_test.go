@@ -1,12 +1,12 @@
 package template
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/coveooss/gotemplate/v3/hcl"
 	"github.com/coveooss/gotemplate/v3/json"
 	"github.com/coveooss/gotemplate/v3/yaml"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_Data(t *testing.T) {
@@ -16,23 +16,22 @@ func Test_Data(t *testing.T) {
 		name    string
 		test    string
 		want    interface{}
-		wantErr bool
+		wantErr string
 	}{
-		{"Simple hcl", "a = 1", hcl.Dictionary{"a": 1}, false},
-		{"Simple yaml", "b: 2", yaml.Dictionary{"b": 2}, false},
-		{"Simple json", `{"c": 3}`, json.Dictionary{"c": 3}, false},
-		{"Simple string", "string", "string", false},
-		{"Error", "a = '", nil, true},
+		{"Simple hcl", "a = 1", hcl.Dictionary{"a": 1}, ""},
+		{"Simple yaml", "b: 2", yaml.Dictionary{"b": 2}, ""},
+		{"Simple json", `{"c": 3}`, json.Dictionary{"c": 3}, ""},
+		{"Simple string", "string", "string", ""},
+		{"Error", "a = '", nil, "\n   1 a = '\n\nTrying !json: invalid character 'a' looking for beginning of value\nTrying hcl: At 1:5: illegal char"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := template.dataConverter(tt.test)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Template.fromData() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Template.fromData()\ngot : %[1]v (%[1]T)\nwant: %[2]v (%[2]T)", got, tt.want)
+			assert.Equal(t, tt.want, got)
+			if tt.wantErr == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr)
 			}
 		})
 	}
@@ -42,25 +41,19 @@ func Test_YAML(t *testing.T) {
 	t.Parallel()
 	template := MustNewTemplate("", nil, "", nil)
 	tests := []struct {
-		name    string
-		test    string
-		want    interface{}
-		wantErr bool
+		name string
+		test string
+		want interface{}
 	}{
-		{"Simple yaml", "b: 2", yaml.Dictionary{"b": 2}, false},
-		{"Simple quoted string", `"string"`, "string", false},
-		{"Simple string", "string", "string", false},
+		{"Simple yaml", "b: 2", yaml.Dictionary{"b": 2}},
+		{"Simple quoted string", `"string"`, "string"},
+		{"Simple string", "string", "string"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := template.yamlConverter(tt.test)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Template.fromData() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Template.fromData() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
+			assert.NoError(t, err)
 		})
 	}
 }
@@ -72,21 +65,20 @@ func Test_HCL(t *testing.T) {
 		name    string
 		test    string
 		want    interface{}
-		wantErr bool
+		wantErr string
 	}{
-		{"Simple hcl", "a = 1", hcl.Dictionary{"a": 1}, false},
-		{"Simple string", `"string"`, "string", false},
-		{"Simple string", "string", nil, true},
+		{"Simple hcl", "a = 1", hcl.Dictionary{"a": 1}, ""},
+		{"Simple string", `"string"`, "string", ""},
+		{"Simple string", "string", nil, "\n   1 string\n\nAt 2:1: key 'string' expected start of object ('{') or assignment ('=')"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := template.hclConverter(tt.test)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Template.fromData() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Template.fromData() = %v, want %v", got, tt.want)
+			assert.Equal(t, tt.want, got)
+			if tt.wantErr == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr)
 			}
 		})
 	}
