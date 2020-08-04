@@ -1,34 +1,32 @@
 package utils
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/collections/implementation"
+	"github.com/stretchr/testify/assert"
 )
 
 type iList = collections.IGenericList
 type list = implementation.ListTypeName
 
 func TestFormatList(t *testing.T) {
-	type args struct {
-		format string
-		v      interface{}
-	}
 	tests := []struct {
-		name string
-		args args
-		want iList
+		name   string
+		format string
+		args   []interface{}
+		want   iList
 	}{
-		{"quote", args{`"%v"`, []int{1, 2}}, list{`"1"`, `"2"`}},
-		{"greating", args{"Hello %v", []int{1, 2}}, list{"Hello 1", "Hello 2"}},
+		{"Empty List", `"%v"`, []interface{}{}, list{}},
+		{"Single element", `"%v"`, []interface{}{1}, list{`"1"`}},
+		{"quote", `"%v"`, []interface{}{1, 2}, list{`"1"`, `"2"`}},
+		{"greating", "Hello %v", []interface{}{1, 2}, list{"Hello 1", "Hello 2"}},
+		{"greating list", "Hello %v", []interface{}{[]int{1, 2}}, list{"Hello 1", "Hello 2"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := FormatList(tt.args.format, tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FormatList() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, FormatList(tt.format, tt.args...))
 		})
 	}
 }
@@ -46,9 +44,7 @@ func TestMergeLists(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MergeLists(tt.args...); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MergeLists() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, MergeLists(tt.args...))
 		})
 	}
 }
