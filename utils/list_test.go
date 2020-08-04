@@ -21,8 +21,8 @@ func TestFormatList(t *testing.T) {
 		{"Empty List", `"%v"`, []interface{}{}, list{}},
 		{"Single element", `"%v"`, []interface{}{1}, list{`"1"`}},
 		{"quote", `"%v"`, []interface{}{1, 2}, list{`"1"`, `"2"`}},
-		{"greating", "Hello %v", []interface{}{1, 2}, list{"Hello 1", "Hello 2"}},
-		{"greating list", "Hello %v", []interface{}{[]int{1, 2}}, list{"Hello 1", "Hello 2"}},
+		{"greeting", "Hello %v", []interface{}{1, 2}, list{"Hello 1", "Hello 2"}},
+		{"greeting list", "Hello %v", []interface{}{[]int{1, 2}}, list{"Hello 1", "Hello 2"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
