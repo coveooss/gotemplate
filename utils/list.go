@@ -28,6 +28,8 @@ func FormatList(format string, args ...interface{}) collections.IGenericList {
 	case 1:
 		if l, err := collections.TryAsList(args[0]); err == nil {
 			list = l
+		} else {
+			list = collections.NewList(args[0])
 		}
 	default:
 		list = collections.AsList(args)
