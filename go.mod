@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/sergi/go-diff v1.1.0
-	github.com/sirupsen/logrus v1.6.0
+	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
