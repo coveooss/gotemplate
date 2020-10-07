@@ -121,7 +121,7 @@ var expressions = [][]interface{}{
 	{"Space eater", `@-endexpr;`, `{{- "" -}}`},
 
 	// Inline contents: Render the content without its enclosing double quotes
-	{`Raw content "{{ raw ...`, `"(?P<content>{{-? (?:raw(?:__FuncCall__)?|ellipsis "raw__FuncCall__") .*?}})"`, `"<<${content}"`},
+	{`Raw content "{{ raw ...`, `"(?P<content>{{-? (?:raw(?:List)?(?:__FuncCall__)?|ellipsis "raw__FuncCall__") .*?}})"`, `"<<${content}"`},
 	{`Inline content "<<..."`, `"<<(?P<content>.*?{{[sp].*?[sp]}}.*?)"`, `${content}`},
 
 	// Restoring literals
