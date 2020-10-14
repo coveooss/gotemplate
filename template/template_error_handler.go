@@ -139,7 +139,7 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			} else {
 				lines[faultyLine] = currentLine.Replace(context.Str(), runError).Str()
 			}
-		} else if errText != noValueError {
+		} else {
 			logMessage = fmt.Sprintf("Parsing error: %s", err)
 			lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
 		}
@@ -162,7 +162,7 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			}
 			result, changed, err2 := t.processContentInternal(newCode, t.Filename, t.Lines, t.Try+1, false, nil)
 			if err2 != nil {
-				if err != nil && errText != noValueError {
+				if err != nil {
 					if err.Error() == err2.Error() {
 						// TODO See: https://github.com/golang/go/issues/27319
 						err = fmt.Errorf("%v\n%s", err, color.HiRedString("Unable to continue processing to check for further errors"))

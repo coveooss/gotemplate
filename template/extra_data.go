@@ -269,7 +269,7 @@ func (t *Template) addDataFuncs() {
 func toChar(value interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return process(value, func(a interface{}) interface{} {
-		return string(toInt(a))
+		return string(byte(toInt(a)))
 	})
 }
 

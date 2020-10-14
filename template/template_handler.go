@@ -223,13 +223,7 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 
 	context := t.GetNewContext(filepath.Dir(th.Filename), true)
 	newTemplate := context.New(th.Filename)
-
-	if topCall {
-		newTemplate.Option("missingkey=default")
-	} else if !t.options[AcceptNoValue] {
-		// To help detect errors on second run, we enable the option to raise error on nil values
-		newTemplate.Option("missingkey=error")
-	}
+	newTemplate.Option("missingkey=default")
 
 	func() {
 		// Here, we invoke the parser within a pseudo func because we cannot
@@ -256,15 +250,12 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 
 	changed = result != originalContent
 
-	if topCall && !t.options[AcceptNoValue] {
+	if !t.options[AcceptNoValue] {
 		// Detect possible <no value> or <nil> that could be generated
 		if pos := strings.Index(strings.Replace(result, nilValue, noValue, -1), noValue); pos >= 0 {
 			line := len(strings.Split(result[:pos], "\n"))
 			return th.Handler(fmt.Errorf("template: %s:%d: %s", th.Filename, line, noValueError))
 		}
-	}
-
-	if !t.options[AcceptNoValue] {
 		// We restore the existing no value if any
 		result = strings.Replace(result, noValueRepl, noValue, -1)
 		result = strings.Replace(result, nilValueRepl, nilValue, -1)
