@@ -125,7 +125,6 @@ var expressions = [][]interface{}{
 	{`Inline content "<<..."`, `"<<(?P<content>.*?{{[sp].*?[sp]}}.*?)"`, `${content}`},
 
 	// Restoring literals
-	{"", `}}\\\.`, "}}."},
 	{"", literalAt, "@"},
 	{"", literalTripleBackticks, "```"},
 	{"", literalReplacement, "${"},
