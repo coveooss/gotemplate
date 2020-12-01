@@ -45,18 +45,17 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 	isCode := t.IsCode(template)
 	var content string
 
-	if isCode {
+	if fileContent, fileError := ioutil.ReadFile(template); fileError == nil {
+		content = string(fileContent)
+	} else if isCode {
 		content = template
 		template = "."
-	} else if fileContent, fileError := ioutil.ReadFile(template); fileError == nil {
-		content = string(fileContent)
 	} else {
 		err = fileError
 		return
 	}
 
 	result, changed, err := t.processContentInternal(content, template, nil, 0, true, handler)
-
 	if err != nil {
 		return
 	}
