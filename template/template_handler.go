@@ -47,6 +47,7 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 
 	if fileContent, fileError := ioutil.ReadFile(template); fileError == nil {
 		content = string(fileContent)
+		isCode = false
 	} else if isCode {
 		content = template
 		template = "."
@@ -249,15 +250,25 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 
 	changed = result != originalContent
 
-	if !t.options[AcceptNoValue] {
-		// Detect possible <no value> or <nil> that could be generated
-		if pos := strings.Index(strings.Replace(result, nilValue, noValue, -1), noValue); pos >= 0 {
-			line := len(strings.Split(result[:pos], "\n"))
-			return th.Handler(fmt.Errorf("template: %s:%d: %s", th.Filename, line, noValueError))
+	if topCall && !t.options[AcceptNoValue] {
+		s := String(result)
+		// Detect possible <no value> or <nil> that could have been generated
+		count := s.Replace(nilValue, noValue).Count(noValue)
+		if count > 0 {
+			// If there are invalid values, we highlight them
+			reset, textColor := color.New(color.Reset).Sprint(), color.New(color.FgHiBlack).Sprint()
+			reset = reset[0 : len(reset)/2]
+			textColor = textColor[0 : len(textColor)-len(reset)]
+			s = s.Replace(nilValue, color.RedString(nilValue)+textColor).Replace(noValue, color.RedString(noValue)+textColor)
 		}
 		// We restore the existing no value if any
-		result = strings.Replace(result, noValueRepl, noValue, -1)
-		result = strings.Replace(result, nilValueRepl, nilValue, -1)
+		s = s.Replace(noValueRepl, noValue).Replace(nilValueRepl, nilValue)
+
+		if count > 0 {
+			// If there are invalid values, we set the error message
+			err = fmt.Errorf("template: %s:: %s\n%s", th.Filename, noValueError, color.HiBlackString(s.AddLineNumber(0).Str()))
+		}
+		result = s.Str()
 	}
 	return
 }

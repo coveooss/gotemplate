@@ -11,26 +11,66 @@ import (
 func TestTemplateErrorHandling(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name     string
-		code     string
-		err      string
-		errCount int
+		name         string
+		code         string
+		err          string
+		noValueCount int
 	}{
-		{
-			"Undefined", `@value`,
-			noValueError, 1,
-		},
-		{
-			"Undefined with nil test", "@value@if(missing) whatever;",
-			noValueError, 1,
-		},
+		{"Undefined", `@value`, noValueError, 1},
+		{"Undefined with nil test", "@value@if(missing) whatever;", noValueError, 1},
 		{
 			"2 Undefined with nil test", `
-			   @value
-			   @if(missing) whatever;
-			   @otherValue
+			@value
+			@if(missing) whatever;
+			@otherValue
 			`,
-			noValueError, 2},
+			noValueError, 2,
+		},
+		{
+			"Invalid assignation (undefined variable)", `
+			@{var} := $value
+			@{var}
+			`,
+			":2: undefined variable \"$value\" in: \t\t\t@{var} := $value", 0,
+		},
+		{
+			"Invalid assignation (missing parameters)", `
+			@{var} := 3 + default()
+			@{var}
+			`,
+			":2: undefined variable \"$value\" in: \t\t\t@{var} := $value", 0,
+		},
+		{
+			"Invalid assignation (bad function)", `
+			@{var} := non_existing_func()
+			@{var}
+			`,
+			":2: undefined variable \"$value\" in: \t\t\t@{var} := $value", 0,
+		},
+		{
+			"Invalid if statement", `
+			@if ($value)
+				text
+			@endif
+			`,
+			":2: undefined variable \"$value\" in: \t\t\t@if ($value)", 0,
+		},
+		{
+			"Invalid with statement", `
+			@with ($value)
+				text
+			@endif
+			`,
+			":2: undefined variable \"$value\" in: \t\t\t@with ($value)", 0,
+		},
+		{
+			"Invalid foreach statement", `
+			@for ($i := $value)
+				text
+			@end
+			`,
+			noValueError, 0,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -38,8 +78,11 @@ func TestTemplateErrorHandling(t *testing.T) {
 			_, err := template.ProcessContent(tt.code, "")
 			if tt.err == "" {
 				assert.NoError(t, err)
+			} else if tt.noValueCount > 0 {
+				assert.Contains(t, err.Error(), tt.err)
+				assert.Equal(t, strings.Count(err.Error(), noValue), tt.noValueCount)
 			} else {
-				assert.Equal(t, tt.errCount, strings.Count(err.Error(), tt.err))
+				assert.EqualError(t, err, tt.err)
 			}
 		})
 	}
@@ -58,10 +101,9 @@ func Test_templateWithErrors(t *testing.T) {
 		{"Empty template", "", nil},
 		{"Non closed brace", "{{", fmt.Errorf("Non closed brace:1: unexpected unclosed action in command in: {{")},
 		{"Non opened brace", "}}", nil},
-		{"Undefined value", "@value", fmt.Errorf("Undefined value:1: contains undefined value(s) in: @value")},
-		{"2 Undefined values", "@(value1 + value2)", fmt.Errorf("2 Undefined values:1: contains undefined value(s) in: @(value1 + value2)")},
-		{"Several errors", "@(value1)\n@non_Existing_Func()\n{{\n", fmt.Errorf("Several errors:2: function \"non_Existing_Func\" not defined in: @non_Existing_Func()\nSeveral errors:3: unexpected unclosed action in command in: {{\nSeveral errors:1: contains undefined value(s) in: @(value1)")},
-		{"undefined variable", "@(value_non_existing)", fmt.Errorf("undefined variable:1: contains undefined value(s) in: @(value_non_existing)")},
+		{"Undefined value", "@value", fmt.Errorf("template: Undefined value:: contains undefined value(s)\n1 <no value>")},
+		{"2 Undefined values", "@(value1 + value2)", fmt.Errorf("template: 2 Undefined values:: contains undefined value(s)\n1 <no value>")},
+		{"Several errors", "@(value1)\n@non_Existing_Func()\n{{\n", fmt.Errorf("Several errors:2: function \"non_Existing_Func\" not defined in: @non_Existing_Func()\nSeveral errors:3: unexpected unclosed action in command in: {{")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

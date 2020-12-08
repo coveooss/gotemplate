@@ -212,7 +212,7 @@ func Test_CreateList(t *testing.T) {
 		{"Empty", nil, hclList{}, ""},
 		{"With nil elements", []int{10}, make(hclList, 10), ""},
 		{"With capacity", []int{0, 10}, make(hclList, 0, 10), ""},
-		{"Too much args", []int{0, 10, 1}, nil, "CreateList only accept 2 arguments, size and capacity"},
+		{"Too many args", []int{0, 10, 1}, nil, "CreateList only accept 2 arguments, size and capacity"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -288,7 +288,7 @@ func Test_list_CreateDict(t *testing.T) {
 	}{
 		{"Empty", nil, nil, hclDict{}, ""},
 		{"With capacity", nil, []int{10}, hclDict{}, ""},
-		{"With too much parameter", nil, []int{10, 1}, nil, "CreateList only accept 1 argument for size"},
+		{"With too many parameters", nil, []int{10, 1}, nil, "CreateList only accept 1 argument for size"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
