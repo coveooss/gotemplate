@@ -38,14 +38,14 @@ func TestTemplateErrorHandling(t *testing.T) {
 			@{var} := 3 + default()
 			@{var}
 			`,
-			":2: undefined variable \"$value\" in: \t\t\t@{var} := $value", 0,
+			":2:21: wrong number of args for default: want at least 1 got 0 (default) in: \t\t\t@{var} := 3 + default()\n:3: undefined variable \"$var\" in: \t\t\t@{var}", 0,
 		},
 		{
 			"Invalid assignation (bad function)", `
 			@{var} := non_existing_func()
 			@{var}
 			`,
-			":2: undefined variable \"$value\" in: \t\t\t@{var} := $value", 0,
+			":2: function \"non_existing_func\" not defined in: \t\t\t@{var} := non_existing_func()\n:3: undefined variable \"$var\" in: \t\t\t@{var}", 0,
 		},
 		{
 			"Invalid if statement", `
@@ -69,7 +69,8 @@ func TestTemplateErrorHandling(t *testing.T) {
 				text
 			@end
 			`,
-			noValueError, 0,
+			// TODO: The error handler should generate a valid value here to avoid detecting an unexpected {{end}}
+			":2: undefined variable \"$value\" in: \t\t\t@for ($i := $value)\n:2:18: range can't iterate over <UNDEF $value> (\"<UNDEF $value>\") in: \t\t\t@for ($i := $value)\n:4: unexpected {{end}} in: \t\t\t@end\nUnable to continue processing to check for further errors", 0,
 		},
 	}
 	for _, tt := range tests {
