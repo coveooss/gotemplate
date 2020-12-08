@@ -31,6 +31,7 @@ const (
 	tagFile      = "file"
 	tagKey       = "key"
 	tagErr       = "error"
+	tagValue     = "value"
 )
 
 // ProcessContent loads and runs the file template.

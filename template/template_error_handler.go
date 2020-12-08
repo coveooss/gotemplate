@@ -34,31 +34,25 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		lastErrorBegin = errorsPosition[len(errorsPosition)-1][0]
 	}
 
-	if matches, _ := reutils.MultiMatch(err.Error()[lastErrorBegin:], errorParsingExpressions...); len(matches) > 0 {
+	if matches, index := reutils.MultiMatch(err.Error()[lastErrorBegin:], errorParsingExpressions...); len(matches) > 0 {
+		InternalLog.Infof("An error occurred: %v Match = %s (%d)", err, errorParsingExpressions[index].String(), index)
 		// We remove the faulty line and continue the processing to get all errors at once
 		lines := strings.Split(t.Code, "\n")
 		faultyLine := toInt(matches[tagLine]) - 1
 		faultyColumn := 0
-		key, message, errText, code := matches[tagKey], matches[tagMsg], matches[tagErr], matches[tagCode]
+		key, message, errText, code, value := matches[tagKey], matches[tagMsg], matches[tagErr], matches[tagCode], matches[tagValue]
 
 		if matches[tagCol] != "" {
 			faultyColumn = toInt(matches[tagCol]) - 1
 		}
 
-		errorText, parserBug := color.RedString(errText), ""
-
-		if faultyLine >= len(lines) {
-			faultyLine = len(lines) - 1
-			// TODO: This code can be removed once issue has been fixed
-			parserBug = color.HiRedString("\nBad error line reported: check: https://github.com/golang/go/issues/27319")
-		}
+		errorText := color.RedString(errText)
 
 		currentLine := String(lines[faultyLine])
 
 		if matches[tagFile] != t.Filename {
 			// An error occurred in an included external template file, we cannot try to recuperate
 			// and try to find further errors, so we just return the error.
-
 			if fileContent, err := ioutil.ReadFile(matches[tagFile]); err != nil {
 				currentLine = String(fmt.Sprintf("Unable to read file: %v", err))
 			} else {
@@ -130,8 +124,10 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			errorText = color.RedString(message)
 			lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
 		} else if code != "" {
-			logMessage = fmt.Sprintf("Execution error: %s", err)
+			logMessage = fmt.Sprintf("Execution error: %s Code = %s", err, color.HiBlackString(code))
 			context := String(currentLine).SelectContext(faultyColumn, t.LeftDelim(), t.RightDelim())
+			logMessage = fmt.Sprintf("Execution error: %s Code = %s Context = %s", err, color.HiBlackString(code), color.HiBlackString(context.Str()))
+
 			errorText = fmt.Sprintf(color.RedString("%s (%s)", errText, code))
 			if context == "" {
 				// We have not been able to find the current context, we wipe the erroneous line
@@ -139,6 +135,9 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			} else {
 				lines[faultyLine] = currentLine.Replace(context.Str(), runError).Str()
 			}
+		} else if value != "" {
+			logMessage = fmt.Sprintf("Parsing error: %s", err)
+			lines[faultyLine] = currentLine.Replace(value, fmt.Sprintf(`"<UNDEF %s>"`, value)).Str()
 		} else {
 			logMessage = fmt.Sprintf("Parsing error: %s", err)
 			lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
@@ -146,13 +145,13 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		if currentLine.Contains(runError) || strings.Contains(code, undefError) {
 			// The erroneous line has already been replaced, we do not report the error again
 			err, errorText = nil, ""
-			InternalLog.Tracef("Ignored error %s", logMessage)
+			InternalLog.Debugf("Ignored error %s", logMessage)
 		} else if logMessage != "" {
-			InternalLog.Trace(logMessage)
+			InternalLog.Debug(logMessage)
 		}
 
 		if err != nil {
-			err = fmt.Errorf("%s%s%s%s", color.WhiteString(matches[tagLocation]), errorText, errorLine, parserBug)
+			err = fmt.Errorf("%s%s%s", color.WhiteString(matches[tagLocation]), errorText, errorLine)
 		}
 		if lines[faultyLine] != currentLine.Str() || strings.Contains(err.Error(), noValueError) {
 			// If we changed something in the current text, we try to continue the evaluation to get further errors
@@ -191,6 +190,7 @@ func init() {
 		execPrefix + `map has no entry for key "` + p(tagKey, `.*`) + `"`,
 		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
 		execPrefix + p(tagErr, `.*`),
+		linePrefix + p(tagErr, `undefined variable "`+p(tagValue, `.*`)+`"`),
 		linePrefix + p(tagErr, `.*`),
 	}
 

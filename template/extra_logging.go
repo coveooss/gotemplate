@@ -1,10 +1,12 @@
 package template
 
 import (
+	"os"
 	"sync"
 
 	"github.com/coveooss/multilogger"
 	multicolor "github.com/coveooss/multilogger/color"
+	"github.com/coveooss/multilogger/errors"
 )
 
 const (
@@ -82,4 +84,17 @@ func (t *Template) addLoggingFuncs() {
 func logBase(f func(...interface{}), args ...interface{}) string {
 	f(multicolor.FormatMessage(args...))
 	return ""
+}
+
+func init() {
+	if level := os.Getenv(EnvLogLevel); level != "" {
+		if err := TemplateLog.SetHookLevel("", level); err != nil {
+			errors.Printf("Unable to set logging level for templates: %v", err)
+		}
+	}
+	if level := os.Getenv(EnvInternalLogLevel); level != "" {
+		if err := InternalLog.SetHookLevel("", level); err != nil {
+			errors.Printf("Unable to set logging level for internal logs: %v", err)
+		}
+	}
 }

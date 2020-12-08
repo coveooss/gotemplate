@@ -284,9 +284,9 @@ func runGotemplate() (exitCode int) {
 
 	*templates = append(utils.MustFindFilesMaxDepth(*sourceFolder, *recursionDepth, *followSymLinks, extend(*includePatterns)...), *templates...)
 	for i, template := range *templates {
-		if !t.IsCode(template) {
-			if rel, err := filepath.Rel(*sourceFolder, (*templates)[i]); err == nil {
-				(*templates)[i] = rel
+		if file, err := filepath.Rel(*sourceFolder, template); err == nil {
+			if _, err = os.Stat(file); err == nil {
+				(*templates)[i] = file
 			}
 		}
 	}

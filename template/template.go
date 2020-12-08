@@ -44,6 +44,8 @@ const (
 	EnvSubstitutes      = "GOTEMPLATE_SUBSTITUTES"
 	EnvDebug            = "GOTEMPLATE_DEBUG"
 	EnvExtensionPath    = "GOTEMPLATE_PATH"
+	EnvInternalLogLevel = "GOTEMPLATE_INTERNAL_LOG_LEVEL"
+	EnvLogLevel         = "GOTEMPLATE_TEMPLATE_LOG_LEVEL"
 )
 
 const (
