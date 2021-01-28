@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"runtime/debug"
@@ -47,7 +48,7 @@ func runGotemplate() (exitCode int) {
 		cleanup()
 	}()
 
-	app := kingpin.New(os.Args[0], description).AutoShortcut().DefaultEnvars().InitOnlyOnce().UsageWriter(os.Stdout)
+	app := kingpin.New(path.Base(os.Args[0]), description).AutoShortcut().DefaultEnvars().InitOnlyOnce().UsageWriter(os.Stdout)
 	app.DeleteFlag("help")
 	app.DeleteFlag("help-long")
 	app.HelpFlag = app.Flag("help", "Show context-sensitive help (also try --help-man).").Short('h').PreAction(func(c *kingpin.ParseContext) error { return helpAction(app, c) })
@@ -81,7 +82,7 @@ func runGotemplate() (exitCode int) {
 		targetFolder        = run.Flag("target", "Specify a target folder (default to source folder)").PlaceHolder("folder").String()
 		forceStdin          = run.Flag("stdin", "Force read of the standard input to get a template definition (useful only if GOTEMPLATE_NO_STDIN is set)").Short('I').Bool()
 		followSymLinks      = run.Flag("follow-symlinks", "Follow the symbolic links while using the recursive option").Short('f').Bool()
-		print               = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
+		printOutput         = run.Flag("print", "Output the result directly to stdout").Short('P').Bool()
 		disableRender       = run.Flag("disable", "Disable go template rendering (used to view razor conversion)").Short('d').Bool()
 		acceptNoValue       = run.Flag("accept-no-value", "Do not consider rendering <no value> as an error").Alias("no-value").Envar(template.EnvAcceptNoValue).Bool()
 		strictError         = run.Flag("strict-error-validation", "Consider error encountered in any file as real error").Alias("strict").Envar(template.EnvStrictErrorCheck).Short('S').Bool()
@@ -169,7 +170,7 @@ func runGotemplate() (exitCode int) {
 
 	optionsSet[template.RenderingDisabled] = *disableRender
 	optionsSet[template.Overwrite] = *overwrite
-	optionsSet[template.OutputStdout] = *print
+	optionsSet[template.OutputStdout] = *printOutput
 	optionsSet[template.AcceptNoValue] = *acceptNoValue
 	optionsSet[template.StrictErrorCheck] = *strictError
 	for i := range options {
@@ -199,7 +200,7 @@ func runGotemplate() (exitCode int) {
 	}
 
 	if *getVersion {
-		println(version)
+		fmt.Println(version)
 		return 0
 	}
 
@@ -296,25 +297,18 @@ func runGotemplate() (exitCode int) {
 		exitCode = 1
 	}
 
+	if *forceStdin && stdinContent == "" {
+		*templates = append(*templates, readStdin())
+	}
+
 	resultFiles, err := t.ProcessTemplates(*sourceFolder, *targetFolder, *templates...)
 	if err != nil {
 		errors.Print(err)
 		exitCode = 1
 	}
 
-	if *forceStdin && stdinContent == "" {
-		// If there is input in stdin and it has not already been consumed as data (---var)
-		content := readStdin()
-		if result, err := t.ProcessContent(content, "Piped input"); err == nil {
-			println(result)
-		} else {
-			errors.Print(err)
-			exitCode = 2
-		}
-	}
-
 	// Apply terraform fmt if some generated files are terraform files
-	if !*print {
+	if !*printOutput {
 		utils.TerraformFormat(resultFiles...)
 	}
 	return
@@ -328,9 +322,6 @@ func enhanceHelp(object flag, flags []*kingpin.FlagModel) {
 	for _, flag := range flags {
 		if flag.Name == "version" {
 			continue
-		}
-		if flag.Envar != "" {
-			flag.Help = fmt.Sprintf("%s or set %s", flag.Help, flag.Envar)
 		}
 		if len(flag.Aliases) > 0 {
 			flag.Help = fmt.Sprintf("%s (alias: --%s)", flag.Help, strings.Join(flag.Aliases, ", --"))
@@ -370,9 +361,4 @@ func main() {
 	os.Exit(runGotemplate())
 }
 
-var (
-	print     = multicolor.Print
-	printf    = multicolor.Printf
-	println   = multicolor.Println
-	errPrintf = multicolor.ErrorPrintf
-)
+var errPrintf = multicolor.ErrorPrintf

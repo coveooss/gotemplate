@@ -64,7 +64,17 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 	if isCode {
 		// This occurs when gotemplate code has been supplied as a filename. In that case, we simply render
 		// the result to the stdout
-		Println(result)
+		if strings.TrimRight(result, " \t") == "" {
+			// We output nothing if the end results only contains blank characters
+			return
+		}
+
+		// Avoid addind an extra blank line if the result already ends with a newline
+		if !strings.HasSuffix(result, "\n") {
+			Println(result)
+		} else {
+			Print(result)
+		}
 		return
 	}
 	resultFile = template

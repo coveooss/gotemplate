@@ -28,11 +28,11 @@ func createContext(varsFiles, varsFilesIfExist, namedVars []string, mode string,
 	}
 
 	nameValuePairs := make([]fileDef, 0, len(varsFiles)+len(namedVars))
-	for i := range varsFiles {
-		nameValuePairs = append(nameValuePairs, fileDef{value: varsFiles[i], required: true})
-	}
 	for i := range varsFilesIfExist {
 		nameValuePairs = append(nameValuePairs, fileDef{value: varsFilesIfExist[i]})
+	}
+	for i := range varsFiles {
+		nameValuePairs = append(nameValuePairs, fileDef{value: varsFiles[i], required: true})
 	}
 
 	for i := range namedVars {
