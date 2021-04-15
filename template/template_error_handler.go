@@ -48,18 +48,19 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 
 		errorText := color.RedString(errText)
 
-		currentLine := String(lines[faultyLine])
-
 		if matches[tagFile] != t.Filename {
 			// An error occurred in an included external template file, we cannot try to recuperate
 			// and try to find further errors, so we just return the error.
+			var line string
 			if fileContent, err := ioutil.ReadFile(matches[tagFile]); err != nil {
-				currentLine = String(fmt.Sprintf("Unable to read file: %v", err))
+				line = fmt.Sprintf("Unable to read file: %v", err)
 			} else {
-				currentLine = String(fileContent).Lines()[toInt(matches[tagLine])-1]
+				line = String(fileContent).Lines()[toInt(matches[tagLine])-1].Str()
 			}
-			return "", true, fmt.Errorf("%s %w in: %s", color.WhiteString(t.Filename), err, color.HiBlackString(currentLine.Str()))
+			return "", true, fmt.Errorf("%s %w in: %s", color.WhiteString(t.Filename), err, color.HiBlackString(line))
 		}
+
+		currentLine := String(lines[faultyLine])
 		if faultyColumn != 0 && strings.Contains(" (", currentLine[faultyColumn:faultyColumn+1].Str()) {
 			// Sometime, the error is not reporting the exact column, we move 1 char forward to get the real problem
 			faultyColumn++
