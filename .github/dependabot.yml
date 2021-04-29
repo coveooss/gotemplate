@@ -1,0 +1,13 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 99
+  reviewers:
+  - julienduchesne
+  ignore:
+  - dependency-name: github.com/sirupsen/logrus
+    versions:
+    - 1.8.0
