@@ -14,12 +14,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Run Tests
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: |
-          make codecov
-
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2.4.13
         with:

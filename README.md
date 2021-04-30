@@ -1,7 +1,6 @@
 # gotemplate
 
 [![Build Status](https://github.com/coveooss/gotemplate/workflows/Build/badge.svg)](https://github.com/coveooss/gotemplate/actions)
-[![codecov](https://codecov.io/gh/coveooss/gotemplate/branch/master/graph/badge.svg)](https://codecov.io/gh/coveooss/gotemplate)
 [![Go Report Card](https://goreportcard.com/badge/github.com/coveooss/gotemplate)](https://goreportcard.com/report/github.com/coveooss/gotemplate)
 [![Documentation](https://img.shields.io/static/v1?label=doc&message=hugo&color=blue&logo=github)](https://coveooss.github.io/gotemplate/)
 
