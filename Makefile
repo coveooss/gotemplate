@@ -5,6 +5,8 @@ pre-commit:
 	go test ./... -count 1
 	./render-doc
 
+codecov:
+	bash ./test.sh
 
 # IMPORTANT:
 # call `make doc` to generate the doc rendering used to test gotemplate
