@@ -20,7 +20,7 @@ var TypeConverters = make(map[string]func([]byte, interface{}) error)
 func ConvertData(data string, out interface{}) (err error) {
 	trySimplified := func() error {
 		if strings.Count(data, "=") == 0 {
-			return fmt.Errorf("Not simplifiable")
+			return fmt.Errorf("not simplifiable")
 		}
 		// Special case where we want to have a map and the supplied string is simplified such as "a = 10 b = string"
 		// so we try transform the supplied string in valid YAML
@@ -57,7 +57,7 @@ func ConvertData(data string, out interface{}) (err error) {
 		if err == nil {
 			return
 		}
-		errs = append(errs, fmt.Errorf("Trying %s: %w", key, err))
+		errs = append(errs, fmt.Errorf("trying %s: %w", key, err))
 	}
 
 	return errs.AsError()
@@ -247,7 +247,7 @@ func MarshalGo(value interface{}) (result interface{}, err error) {
 						m[key] = value
 					}
 				} else {
-					return nil, fmt.Errorf("Cannot apply inline or squash to non struct on field '%s'", sf.Name)
+					return nil, fmt.Errorf("cannot apply inline or squash to non struct on field '%s'", sf.Name)
 				}
 			} else {
 				if value, err = MarshalGo(val.Field(i).Interface()); err != nil {
@@ -296,7 +296,7 @@ func getTags(t reflect.Type) (result []tagInfo, key int, err error) {
 		}
 		if options["key"] {
 			if key != -1 {
-				err = fmt.Errorf("Multiple keys defined on struct '%s' ('%s' and '%s')", t.Name(), t.Field(key).Name, sf.Name)
+				err = fmt.Errorf("multiple keys defined on struct '%s' ('%s' and '%s')", t.Name(), t.Field(key).Name, sf.Name)
 			}
 			key = i
 		}

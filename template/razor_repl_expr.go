@@ -37,7 +37,6 @@ func init() {
 }
 
 var dotPrefix = regexp.MustCompile(`(?P<prefix>^|[^\w\)\]])\.(?P<value>\w[\w\.]*)?`)
-var idRegex = regexp.MustCompile(`^[\p{L}\d_]+$`)
 
 func expressionParser(repl replacement, match string) string {
 	expr, _ := expressionParserInternal(repl, match, false, false)

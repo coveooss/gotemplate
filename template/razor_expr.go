@@ -124,7 +124,7 @@ func nodeValue(node ast.Node) (result string, err error) {
 		result = fmt.Sprintf("slice %s %s %s", x, low, high)
 
 	default:
-		err = fmt.Errorf("Unknown: %v", reflect.TypeOf(node))
+		err = fmt.Errorf("unknown: %v", reflect.TypeOf(node))
 	}
 	if !debugMode && InternalLog.IsLevelEnabled(logrus.TraceLevel) {
 		InternalLog.Tracef(color.HiBlueString("%T => %s"), node, result)
@@ -159,7 +159,7 @@ func operatorName(token token.Token) (string, error) {
 	if name, ok := operators[token.String()]; ok {
 		return name, nil
 	}
-	return "", fmt.Errorf("Unknown operator %v", token)
+	return "", fmt.Errorf("unknown operator %v", token)
 }
 
 func nodeValueInternal(node ast.Node) (result string, err error) {

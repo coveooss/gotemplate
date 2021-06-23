@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/coveooss/gotemplate/v3/utils"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 var templateExt = []string{".gt", ".template"}
@@ -78,7 +78,7 @@ func (t *Template) printResult(source, target, result string) (err error) {
 		InternalLog.Info(target)
 	}
 	Print(result)
-	if result != "" && terminal.IsTerminal(int(os.Stdout.Fd())) {
+	if result != "" && term.IsTerminal(int(os.Stdout.Fd())) {
 		Println()
 	}
 

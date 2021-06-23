@@ -7,8 +7,6 @@ import (
 // String is simply an alias of collections.String
 type String = collections.String
 
-var isEmpty = collections.IsEmptyValue
-
 // MergeDictionaries merges multiple dictionaries into a single one prioritizing the first ones.
 func MergeDictionaries(args ...map[string]interface{}) (map[string]interface{}, error) {
 	if len(args) == 0 {

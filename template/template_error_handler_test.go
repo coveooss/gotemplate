@@ -100,7 +100,8 @@ func Test_templateWithErrors(t *testing.T) {
 		err     error
 	}{
 		{"Empty template", "", nil},
-		{"Non closed brace", "{{", fmt.Errorf("Non closed brace:1: unexpected unclosed action in command in: {{")},
+		{"Non closed brace", "{{", fmt.Errorf("Non closed brace:1: unclosed action in: {{")},
+		{"Non closed brace with nl", "{{\n", fmt.Errorf("Non closed brace with nl:2: unclosed action started at Non closed brace:1 in:")},
 		{"Non opened brace", "}}", nil},
 		{"Undefined value", "@value", fmt.Errorf("template: Undefined value:: contains undefined value(s)\n1 <no value>")},
 		{"2 Undefined values", "@(value1 + value2)", fmt.Errorf("template: 2 Undefined values:: contains undefined value(s)\n1 <no value>")},

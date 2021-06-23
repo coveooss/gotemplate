@@ -10,7 +10,6 @@ import (
 	"github.com/coveooss/gotemplate/v3/hcl"
 	"github.com/coveooss/gotemplate/v3/json"
 	"github.com/coveooss/gotemplate/v3/utils"
-	"github.com/coveooss/gotemplate/v3/xml"
 	"github.com/coveooss/gotemplate/v3/yaml"
 	"github.com/coveooss/multilogger"
 )
@@ -313,10 +312,10 @@ func toQuotedTFVars(v interface{}) (string, error) {
 	return result[1 : len(result)-1], err
 }
 
-func toXML(v interface{}) (string, error) {
-	output, err := xml.Marshal(v)
-	return string(output), err
-}
+// func toXML(v interface{}) (string, error) {
+// 	output, err := xml.Marshal(v)
+// 	return string(output), err
+// }
 
 func toYAML(v interface{}) (string, error) {
 	output, err := yaml.Marshal(v)
@@ -360,7 +359,7 @@ func get(arg1, arg2 interface{}, defValue ...interface{}) (interface{}, error) {
 	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
 		result = dict.Get(arg1)
 	} else {
-		return nil, fmt.Errorf("Must supply dictionary object")
+		return nil, fmt.Errorf("must supply dictionary object")
 	}
 	if result == nil {
 		switch len(defValue) {
@@ -383,7 +382,7 @@ func hasKey(arg1, arg2 interface{}) (interface{}, error) {
 	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
 		return dict.Has(arg1), nil
 	} else {
-		return nil, fmt.Errorf("Must supply dictionary object")
+		return nil, fmt.Errorf("must supply dictionary object")
 	}
 }
 
@@ -395,7 +394,7 @@ func set(arg1, arg2, arg3 interface{}) (string, error) {
 	} else if dict, err = collections.TryAsDictionary(arg3); err == nil {
 		dict.Set(arg1, arg2)
 	} else {
-		return "", fmt.Errorf("Must supply dictionary object")
+		return "", fmt.Errorf("must supply dictionary object")
 	}
 	return "", nil
 }
@@ -408,7 +407,7 @@ func unset(arg1, arg2 interface{}) (string, error) {
 	} else if dict, err = collections.TryAsDictionary(arg2); err == nil {
 		dict.Delete(arg1)
 	} else {
-		return "", fmt.Errorf("Must supply dictionary object")
+		return "", fmt.Errorf("must supply dictionary object")
 	}
 	return "", nil
 }
@@ -461,9 +460,9 @@ func (t *Template) templateConverter(to marshaler, from unMarshaler, source inte
 	return
 }
 
-func (t *Template) xmlConverter(source interface{}, context ...interface{}) (interface{}, error) {
-	return t.templateConverter(xml.Marshal, xml.Unmarshal, source, context...)
-}
+// func (t *Template) xmlConverter(source interface{}, context ...interface{}) (interface{}, error) {
+// 	return t.templateConverter(xml.Marshal, xml.Unmarshal, source, context...)
+// }
 
 func (t *Template) yamlConverter(source interface{}, context ...interface{}) (interface{}, error) {
 	return t.templateConverter(yaml.Marshal, yaml.Unmarshal, source, context...)
@@ -513,7 +512,7 @@ func values(dict iDictionary) iList { return dict.GetValues() }
 
 func createDict(v ...interface{}) (iDictionary, error) {
 	if len(v)%2 != 0 {
-		return nil, fmt.Errorf("Must supply even number of arguments (keypair)")
+		return nil, fmt.Errorf("must supply even number of arguments (keypair)")
 	}
 
 	result := collections.CreateDictionary(len(v) / 2)

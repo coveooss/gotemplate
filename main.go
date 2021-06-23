@@ -102,12 +102,10 @@ func runGotemplate() (exitCode int) {
 	)
 
 	loadAllAddins := true
-	var changedArgs []int
 	for i := range os.Args {
 		// There is a problem with kingpin, it tries to interpret arguments beginning with @ as file
 		if strings.HasPrefix(os.Args[i], "@") {
 			os.Args[i] = "#!!" + os.Args[i]
-			changedArgs = append(changedArgs, i)
 		}
 		if os.Args[i] == "--base" {
 			loadAllAddins = false
@@ -137,9 +135,7 @@ func runGotemplate() (exitCode int) {
 
 	// We restore back the modified arguments
 	for i := range *templates {
-		if strings.HasPrefix((*templates)[i], "#!!") {
-			(*templates)[i] = (*templates)[i][3:]
-		}
+		(*templates)[i] = strings.TrimPrefix((*templates)[i], "#!!")
 	}
 
 	// Build the optionsSet

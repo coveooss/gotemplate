@@ -37,7 +37,7 @@ func GetLoremKind(name string) (kind LoremKind, err error) {
 	case "6", "url":
 		kind = URL
 	default:
-		err = fmt.Errorf("Undefined Lorem kind %s", name)
+		err = fmt.Errorf("undefined Lorem kind %s", name)
 	}
 	return
 }
@@ -66,6 +66,6 @@ func Lorem(kind LoremKind, params ...int) (string, error) {
 	case URL:
 		return goLorem.Url(), nil
 	default:
-		return "", fmt.Errorf("Unknown lorem type %v", kind)
+		return "", fmt.Errorf("unknown lorem type %v", kind)
 	}
 }

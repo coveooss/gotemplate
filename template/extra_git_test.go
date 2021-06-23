@@ -88,7 +88,7 @@ func initTestRepository(t *testing.T) (string, *git.Repository, *object.Commit) 
 	assert.NoError(t, err)
 
 	// Set a remote
-	_, err = repo.CreateRemote(&config.RemoteConfig{
+	repo.CreateRemote(&config.RemoteConfig{
 		Name: "origin",
 		URLs: []string{dummyRemote},
 	})

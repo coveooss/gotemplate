@@ -158,7 +158,7 @@ func (t *Template) runCommand(command interface{}, args ...interface{}) (interfa
 func (t *Template) include(source interface{}, context ...interface{}) (interface{}, error) {
 	content, _, err := t.runTemplate(collections.Interface2string(source), context...)
 	if source == content {
-		return nil, fmt.Errorf("Unable to find a template or a file named %s", source)
+		return nil, fmt.Errorf("unable to find a template or a file named %s", source)
 	}
 	return content, err
 }
@@ -201,23 +201,23 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 		config = collections.CreateDictionary()
 	case 1:
 		if defaultArgs[0] == nil {
-			err = fmt.Errorf("Default configuration is nil")
+			err = fmt.Errorf("default configuration is nil")
 			return
 		}
 		if reflect.TypeOf(defaultArgs[0]).Kind() == reflect.String {
 			var configFromString interface{}
 			if err = collections.ConvertData(fmt.Sprint(defaultArgs[0]), &configFromString); err != nil {
-				err = fmt.Errorf("Function configuration must be valid type: %v\n%v", defaultArgs[0], err)
+				err = fmt.Errorf("function configuration must be valid type: %v\n%v", defaultArgs[0], err)
 				return
 			}
 			defaultArgs[0] = configFromString
 		}
 		if config, err = collections.TryAsDictionary(defaultArgs[0]); err != nil {
-			err = fmt.Errorf("Function configuration must be valid dictionary: %[1]T %[1]v", defaultArgs[0])
+			err = fmt.Errorf("function configuration must be valid dictionary: %[1]T %[1]v", defaultArgs[0])
 			return
 		}
 	default:
-		return "", fmt.Errorf("Too many parameters supplied")
+		return "", fmt.Errorf("too many parameters supplied")
 	}
 
 	for key, val := range config.AsMap() {
@@ -251,7 +251,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 				return
 			}
 		default:
-			return "", fmt.Errorf("Unknown configuration %s", key)
+			return "", fmt.Errorf("unknown configuration %s", key)
 		}
 	}
 
@@ -266,7 +266,7 @@ func (t *Template) addAlias(name, function string, source interface{}, local, co
 
 	defaultValues := defval(config.Get("def"), collections.CreateDictionary()).(iDictionary)
 
-	fi.in = fmt.Sprintf("%s", strings.Join(fi.arguments, ", "))
+	fi.in = strings.Join(fi.arguments, ", ")
 	for i := range fi.arguments {
 		// We only keep the arg name and get rid of any supplemental information (likely type)
 		fi.arguments[i] = strings.Fields(fi.arguments[i])[0]
@@ -327,6 +327,14 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 		return
 	}
 
+	if len(args) == 1 {
+		if _, err := collections.TryAsDictionary(args[0]); err == nil {
+			// The arguments is a dictionnary and should have been processed by t.runTemplate, then we do
+			// not want to invoke the shell argument with the whole dictionnary as a parameter,
+			args = nil
+		}
+	}
+
 	var cmd *exec.Cmd
 	if filename != "" {
 		cmd, err = utils.GetCommandFromFile(filename, args...)
@@ -347,13 +355,13 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	cmd.Dir = t.folder
-	InternalLog.Info("Launching", cmd.Args, "in", cmd.Dir)
+	InternalLog.Infoln("Launching", cmd.Args, "in", cmd.Dir)
 
 	if err = cmd.Run(); err == nil {
 		result = stdout.String()
 		InternalLog.Print(stderr.String())
 	} else {
-		err = fmt.Errorf("Error %w: %s", err, stderr.String())
+		err = fmt.Errorf("error %w: %s", err, stderr.String())
 	}
 	return
 }
@@ -474,7 +482,7 @@ func (t *Template) ellipsis(function string, args ...interface{}) (interface{}, 
 	if last >= 0 && args[last] == nil {
 		args[last] = []interface{}{}
 	} else if last < 0 || reflect.TypeOf(args[last]).Kind() != reflect.Slice {
-		return nil, fmt.Errorf("The last argument must be a slice")
+		return nil, fmt.Errorf("the last argument must be a slice")
 	}
 
 	lastArg := reflect.ValueOf(args[last])

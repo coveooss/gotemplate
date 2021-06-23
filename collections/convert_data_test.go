@@ -211,5 +211,5 @@ func ExampleMarshalGo_withError() {
 	fmt.Println(MarshalGo(main))
 
 	// Output:
-	// <nil> Multiple keys defined on struct 'Element' ('Name' and 'Value')
+	// <nil> multiple keys defined on struct 'Element' ('Name' and 'Value')
 }

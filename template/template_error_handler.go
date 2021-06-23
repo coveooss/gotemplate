@@ -125,11 +125,10 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			errorText = color.RedString(message)
 			lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
 		} else if code != "" {
-			logMessage = fmt.Sprintf("Execution error: %s Code = %s", err, color.HiBlackString(code))
 			context := String(currentLine).SelectContext(faultyColumn, t.LeftDelim(), t.RightDelim())
 			logMessage = fmt.Sprintf("Execution error: %s Code = %s Context = %s", err, color.HiBlackString(code), color.HiBlackString(context.Str()))
 
-			errorText = fmt.Sprintf(color.RedString("%s (%s)", errText, code))
+			errorText = color.RedString("%s (%s)", errText, code)
 			if context == "" {
 				// We have not been able to find the current context, we wipe the erroneous line
 				lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)

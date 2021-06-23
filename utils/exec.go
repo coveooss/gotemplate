@@ -98,12 +98,15 @@ func saveTempFile(content string, args ...interface{}) (cmd *exec.Cmd, fileName 
 		return
 	}
 
+	if len(args) > 0 {
+		content += " " + fmt.Sprintln(args...)
+	}
 	if _, err = temp.WriteString(content); err != nil {
 		return
 	}
 	temp.Close()
 	fileName = temp.Name()
-	cmd, err = GetCommandFromFile(fileName, args...)
+	cmd, err = GetCommandFromFile(fileName)
 	return
 }
 

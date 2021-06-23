@@ -3,6 +3,8 @@ package implementation
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/coveooss/gotemplate/v3/collections"
 )
 
 type helperBase = BaseHelper
@@ -129,7 +131,7 @@ func (bh BaseHelper) tryAsDictionary(object interface{}, strict bool) (baseIDict
 					result.Set(fmt.Sprint(keys[i]), value.MapIndex(keys[i]).Interface())
 				}
 			default:
-				return nil, fmt.Errorf("Object cannot be converted to dictionary: %T", object)
+				return nil, fmt.Errorf("object cannot be converted to dictionary: %T", object)
 			}
 		}
 	}
@@ -182,7 +184,7 @@ func (bh BaseHelper) tryAsList(object interface{}, strict bool) (baseIList, erro
 					result.Set(i, value.Index(i).Interface())
 				}
 			default:
-				return nil, fmt.Errorf("Object cannot be converted to generic list: %T", object)
+				return nil, fmt.Errorf("object cannot be converted to generic list: %T", object)
 			}
 		}
 	}
@@ -245,4 +247,7 @@ func NeedConversion(object interface{}, strict bool, typeName string) bool {
 	return false
 }
 
-var needConversionImpl = NeedConversion
+var (
+	needConversionImpl = NeedConversion
+	iif                = collections.IIf
+)
