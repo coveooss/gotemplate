@@ -39,6 +39,10 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		// We remove the faulty line and continue the processing to get all errors at once
 		lines := strings.Split(t.Code, "\n")
 		faultyLine := toInt(matches[tagLine]) - 1
+		if actualLine := matches[tagActualLine]; actualLine != "" {
+			// The actual error occurred in another line
+			faultyLine = toInt(actualLine) - 1
+		}
 		faultyColumn := 0
 		key, message, errText, code, value := matches[tagKey], matches[tagMsg], matches[tagErr], matches[tagCode], matches[tagValue]
 
@@ -48,18 +52,19 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 
 		errorText := color.RedString(errText)
 
-		currentLine := String(lines[faultyLine])
-
 		if matches[tagFile] != t.Filename {
 			// An error occurred in an included external template file, we cannot try to recuperate
 			// and try to find further errors, so we just return the error.
+			var line string
 			if fileContent, err := ioutil.ReadFile(matches[tagFile]); err != nil {
-				currentLine = String(fmt.Sprintf("Unable to read file: %v", err))
+				line = fmt.Sprintf("Unable to read file: %v", err)
 			} else {
-				currentLine = String(fileContent).Lines()[toInt(matches[tagLine])-1]
+				line = String(fileContent).Lines()[toInt(matches[tagLine])-1].Str()
 			}
-			return "", true, fmt.Errorf("%s %w in: %s", color.WhiteString(t.Filename), err, color.HiBlackString(currentLine.Str()))
+			return "", true, fmt.Errorf("%s %w in: %s", color.WhiteString(t.Filename), err, color.HiBlackString(line))
 		}
+
+		currentLine := String(lines[faultyLine])
 		if faultyColumn != 0 && strings.Contains(" (", currentLine[faultyColumn:faultyColumn+1].Str()) {
 			// Sometime, the error is not reporting the exact column, we move 1 char forward to get the real problem
 			faultyColumn++
@@ -124,11 +129,10 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			errorText = color.RedString(message)
 			lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
 		} else if code != "" {
-			logMessage = fmt.Sprintf("Execution error: %s Code = %s", err, color.HiBlackString(code))
 			context := String(currentLine).SelectContext(faultyColumn, t.LeftDelim(), t.RightDelim())
 			logMessage = fmt.Sprintf("Execution error: %s Code = %s Context = %s", err, color.HiBlackString(code), color.HiBlackString(context.Str()))
 
-			errorText = fmt.Sprintf(color.RedString("%s (%s)", errText, code))
+			errorText = color.RedString("%s (%s)", errText, code)
 			if context == "" {
 				// We have not been able to find the current context, we wipe the erroneous line
 				lines[faultyLine] = fmt.Sprintf("ERROR %s", errText)
@@ -191,6 +195,7 @@ func init() {
 		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
 		execPrefix + p(tagErr, `.*`),
 		linePrefix + p(tagErr, `undefined variable "`+p(tagValue, `.*`)+`"`),
+		linePrefix + p(tagErr, "unclosed action"+" started at .*:"+p(tagActualLine, `\d+`)),
 		linePrefix + p(tagErr, `.*`),
 	}
 

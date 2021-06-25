@@ -433,10 +433,10 @@ func gamma(a interface{}) (r interface{}, err error) {
 	return processFloat(a, math.Gamma)
 }
 
-func infinity(a interface{}) (r interface{}, err error) {
-	defer func() { err = trapError(err, recover()) }()
-	return simplify(math.Inf(toInt(a))), nil
-}
+// func infinity(a interface{}) (r interface{}, err error) {
+// 	defer func() { err = trapError(err, recover()) }()
+// 	return simplify(math.Inf(toInt(a))), nil
+// }
 
 func isInfinity(a, b interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()

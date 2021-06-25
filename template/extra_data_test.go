@@ -22,7 +22,7 @@ func Test_Data(t *testing.T) {
 		{"Simple yaml", "b: 2", yaml.Dictionary{"b": 2}, ""},
 		{"Simple json", `{"c": 3}`, json.Dictionary{"c": 3}, ""},
 		{"Simple string", "string", "string", ""},
-		{"Error", "a = '", nil, "\n   1 a = '\n\nTrying !json: invalid character 'a' looking for beginning of value\nTrying hcl: At 1:5: illegal char"},
+		{"Error", "a = '", nil, "\n   1 a = '\n\ntrying !json: invalid character 'a' looking for beginning of value\ntrying hcl: At 1:5: illegal char"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

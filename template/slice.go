@@ -18,7 +18,7 @@ func safeIndex(value interface{}, index int, def interface{}) (result interface{
 		}
 		return valueOf.Index(index).Interface(), nil
 	default:
-		return nil, fmt.Errorf("First argument is not indexable %T", value)
+		return nil, fmt.Errorf("first argument is not indexable %T", value)
 	}
 }
 
@@ -50,7 +50,7 @@ func sliceInternal(value interface{}, extract bool, args ...interface{}) (result
 			fallthrough
 		default:
 			if !extract {
-				return nil, fmt.Errorf("To many parameters")
+				return nil, fmt.Errorf("to many parameters")
 			}
 			result := collections.AsList(value).Create(len(args))
 			for i := range args {
@@ -66,7 +66,7 @@ func sliceInternal(value interface{}, extract bool, args ...interface{}) (result
 		return sliceMap(value, extract, args...)
 
 	default:
-		return nil, fmt.Errorf("Cannot apply slice on type %s", reflect.TypeOf(value))
+		return nil, fmt.Errorf("cannot apply slice on type %s", reflect.TypeOf(value))
 	}
 }
 
@@ -98,7 +98,7 @@ func sliceMap(value interface{}, extract bool, args ...interface{}) (interface{}
 		fallthrough
 	default:
 		if !extract {
-			return nil, fmt.Errorf("Slice cannot have more that two parts")
+			return nil, fmt.Errorf("slice cannot have more that two parts")
 		}
 		results := dict.CreateList(len(args))
 		for i, key := range args {
@@ -157,7 +157,7 @@ func selectElement(value reflect.Value, index int) interface{} {
 }
 
 func getSingleMapElement(m interface{}) (key, value interface{}, err error) {
-	err = fmt.Errorf("Argument must be a map with a single key")
+	err = fmt.Errorf("argument must be a map with a single key")
 	if m == nil {
 		return
 	}

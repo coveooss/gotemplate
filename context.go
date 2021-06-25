@@ -28,11 +28,11 @@ func createContext(varsFiles, varsFilesIfExist, namedVars []string, mode string,
 	}
 
 	nameValuePairs := make([]fileDef, 0, len(varsFiles)+len(namedVars))
-	for i := range varsFiles {
-		nameValuePairs = append(nameValuePairs, fileDef{value: varsFiles[i], required: true})
-	}
 	for i := range varsFilesIfExist {
 		nameValuePairs = append(nameValuePairs, fileDef{value: varsFilesIfExist[i]})
+	}
+	for i := range varsFiles {
+		nameValuePairs = append(nameValuePairs, fileDef{value: varsFiles[i], required: true})
 	}
 
 	for i := range namedVars {
@@ -133,7 +133,7 @@ func createContext(varsFiles, varsFilesIfExist, namedVars []string, mode string,
 				template.InternalLog.Debugf("Import: %s not found. Skipping the import", filename)
 				continue
 			} else {
-				return nil, fmt.Errorf("Error %w while loading variable file %v", err, nv.value)
+				return nil, fmt.Errorf("error %w while loading variable file %v", err, nv.value)
 			}
 		}
 		if content != nil {

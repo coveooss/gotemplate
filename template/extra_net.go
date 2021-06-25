@@ -47,5 +47,5 @@ func httpDocument(url interface{}) (interface{}, error) {
 	if err != nil {
 		return response, err
 	}
-	return goquery.NewDocumentFromResponse(response)
+	return goquery.NewDocumentFromReader(response.Body)
 }

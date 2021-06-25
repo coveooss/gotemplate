@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/coveooss/gotemplate/v3/utils"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 var templateExt = []string{".gt", ".template"}
@@ -16,22 +16,23 @@ var templateExt = []string{".gt", ".template"}
 func p(name, expr string) string { return fmt.Sprintf("(?P<%s>%s)", name, expr) }
 
 const (
-	noValue      = "<no value>"
-	noValueRepl  = "!NO_VALUE!"
-	nilValue     = "<nil>"
-	nilValueRepl = "!NIL_VALUE!"
-	undefError   = `"` + noValue + `"`
-	noValueError = "contains undefined value(s)"
-	runError     = `"<RUN_ERROR>"`
-	tagLine      = "line"
-	tagCol       = "column"
-	tagCode      = "code"
-	tagMsg       = "message"
-	tagLocation  = "location"
-	tagFile      = "file"
-	tagKey       = "key"
-	tagErr       = "error"
-	tagValue     = "value"
+	noValue       = "<no value>"
+	noValueRepl   = "!NO_VALUE!"
+	nilValue      = "<nil>"
+	nilValueRepl  = "!NIL_VALUE!"
+	undefError    = `"` + noValue + `"`
+	noValueError  = "contains undefined value(s)"
+	runError      = `"<RUN_ERROR>"`
+	tagLine       = "line"
+	tagActualLine = "actual_line"
+	tagCol        = "column"
+	tagCode       = "code"
+	tagMsg        = "message"
+	tagLocation   = "location"
+	tagFile       = "file"
+	tagKey        = "key"
+	tagErr        = "error"
+	tagValue      = "value"
 )
 
 // ProcessContent loads and runs the file template.
@@ -78,7 +79,7 @@ func (t *Template) printResult(source, target, result string) (err error) {
 		InternalLog.Info(target)
 	}
 	Print(result)
-	if result != "" && terminal.IsTerminal(int(os.Stdout.Fd())) {
+	if result != "" && term.IsTerminal(int(os.Stdout.Fd())) {
 		Println()
 	}
 

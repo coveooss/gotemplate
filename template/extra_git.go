@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	gitBase = "Git functons"
+	gitBase = "Git functions"
 )
 
 var gitFuncs = dictionary{
@@ -60,7 +60,7 @@ func currentBranch(path string) (string, error) {
 		return "", err
 	}
 	if !head.Name().IsBranch() {
-		return "", fmt.Errorf("Not currently in a branch: %s", head.String())
+		return "", fmt.Errorf("not currently in a branch: %s", head.String())
 	}
 	return head.Name().Short(), nil
 }

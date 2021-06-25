@@ -161,7 +161,4 @@ type (
 	strArray = collections.StringArray
 )
 
-var (
-	iif  = collections.IIf
-	must = errors.Must
-)
+var must = errors.Must

@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar"
-	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/template"
 	"github.com/coveooss/multilogger/errors"
 	goerrors "github.com/go-errors/errors"
@@ -86,5 +85,3 @@ func extend(values []string) []string {
 	}
 	return result
 }
-
-var iif = collections.IIf

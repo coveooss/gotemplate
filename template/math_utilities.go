@@ -103,7 +103,7 @@ func execute(arg, handler interface{}) interface{} {
 		r1, r2 := handler(toFloat(arg))
 		return []interface{}{r1, r2}
 	default:
-		panic(fmt.Errorf("Unknown handler function %v", handler))
+		panic(fmt.Errorf("unknown handler function %v", handler))
 	}
 }
 
@@ -176,10 +176,10 @@ func generateNumericArray(limit bool, params ...interface{}) (result collections
 		start = toFloat(params[0])
 		stop = toFloat(params[1])
 	default:
-		return nil, fmt.Errorf("Invalid arguments, must be start [stop] [step]")
+		return nil, fmt.Errorf("invalid arguments, must be start [stop] [step]")
 	}
 	if step == 0 {
-		return nil, fmt.Errorf("Step cannot be zero")
+		return nil, fmt.Errorf("step cannot be zero")
 	}
 	array := make([]interface{}, 0, int64(math.Abs(stop-start)))
 	forward := stop > start

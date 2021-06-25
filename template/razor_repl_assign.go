@@ -7,8 +7,6 @@ import (
 	"github.com/coveooss/multilogger/reutils"
 )
 
-var alreadyIssued = make(map[string]int)
-
 func assignExpression(repl replacement, match string) string {
 	return assignExpressionInternal(repl, match, false)
 }

@@ -15,10 +15,12 @@ import (
 
 type dictionary = map[string]interface{}
 
-var hclHelper = hcl.DictionaryHelper
-var yamlHelper = yaml.DictionaryHelper
-var jsonHelper = json.DictionaryHelper
-var genHelper = impl.DictionaryHelper
+var (
+	_ = hcl.DictionaryHelper
+	_ = yaml.DictionaryHelper
+	_ = json.DictionaryHelper
+	_ = impl.DictionaryHelper
+)
 
 func TestConvertData(t *testing.T) {
 	tests := []struct {
@@ -33,7 +35,7 @@ func TestConvertData(t *testing.T) {
 		{"JSON", `{ "a": 10, "b": "Foo" }`, dictionary{"a": 10, "b": "Foo"}, nil},
 		{"Flexible", `a = 10 b = Foo`, dictionary{"a": 10, "b": "Foo"}, nil},
 		{"No change", "NoChange", "NoChange", nil},
-		{"Invalid", "a = 'value", nil, fmt.Errorf("Trying !json: invalid character 'a' looking for beginning of value\nTrying hcl: At 1:5: illegal char")},
+		{"Invalid", "a = 'value", nil, fmt.Errorf("trying !json: invalid character 'a' looking for beginning of value\ntrying hcl: At 1:5: illegal char")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

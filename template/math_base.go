@@ -79,7 +79,7 @@ func multiply(a interface{}, args ...interface{}) (r interface{}, err error) {
 					// If the second argument is also an array of float, we then multiply the two arrays
 					result := make([]interface{}, len(af2))
 					for i := range af2 {
-						result[i], err = multiply(af, af2[i])
+						result[i], _ = multiply(af, af2[i])
 					}
 					return result, nil
 				}
@@ -121,7 +121,7 @@ func divide(a, b interface{}) (r interface{}, err error) {
 	defer func() { err = trapError(err, recover()) }()
 	return processFloat2(a, b, func(a, b float64) float64 {
 		if b == 0 {
-			panic(fmt.Errorf("Division by 0"))
+			panic(fmt.Errorf("division by 0"))
 		}
 		return a / b
 	})
