@@ -101,11 +101,11 @@ func Test_templateWithErrors(t *testing.T) {
 	}{
 		{"Empty template", "", nil},
 		{"Non closed brace", "{{", fmt.Errorf("Non closed brace:1: unclosed action in: {{")},
-		{"Non closed brace with nl", "{{\n", fmt.Errorf("Non closed brace with nl:2: unclosed action started at Non closed brace:1 in:")},
+		{"Non closed brace with nl", "{{\n", fmt.Errorf("Non closed brace with nl:2: unclosed action started at Non closed brace with nl:1 in: {{")},
 		{"Non opened brace", "}}", nil},
 		{"Undefined value", "@value", fmt.Errorf("template: Undefined value:: contains undefined value(s)\n1 <no value>")},
 		{"2 Undefined values", "@(value1 + value2)", fmt.Errorf("template: 2 Undefined values:: contains undefined value(s)\n1 <no value>")},
-		{"Several errors", "@(value1)\n@non_Existing_Func()\n{{\n", fmt.Errorf("Several errors:2: function \"non_Existing_Func\" not defined in: @non_Existing_Func()\nSeveral errors:3: unexpected unclosed action in command in: {{")},
+		{"Several errors", "@(value1)\n@non_Existing_Func()\n{{\n", fmt.Errorf("Several errors:2: function \"non_Existing_Func\" not defined in: @non_Existing_Func()\nSeveral errors:4: unclosed action started at Several errors:3 in: {{")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -39,6 +39,10 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 		// We remove the faulty line and continue the processing to get all errors at once
 		lines := strings.Split(t.Code, "\n")
 		faultyLine := toInt(matches[tagLine]) - 1
+		if actualLine := matches[tagActualLine]; actualLine != "" {
+			// The actual error occurred in another line
+			faultyLine = toInt(actualLine) - 1
+		}
 		faultyColumn := 0
 		key, message, errText, code, value := matches[tagKey], matches[tagMsg], matches[tagErr], matches[tagCode], matches[tagValue]
 
@@ -191,6 +195,7 @@ func init() {
 		execPrefix + `(?s)error calling (raise|assert): ` + p(tagMsg, `.*`),
 		execPrefix + p(tagErr, `.*`),
 		linePrefix + p(tagErr, `undefined variable "`+p(tagValue, `.*`)+`"`),
+		linePrefix + p(tagErr, "unclosed action"+" started at .*:"+p(tagActualLine, `\d+`)),
 		linePrefix + p(tagErr, `.*`),
 	}
 
