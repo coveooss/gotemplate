@@ -1,48 +1,47 @@
-<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta property=og:title content="CLI Usage"><meta property=og:description content="CLI Usage usage: ./gotemplate [&lt;flags&gt;] &lt;command&gt; [&lt;args&gt; ...] An extended template processor for go. See: https://coveo.github.io/gotemplate for complete documentation. Flags: -h, --help Show context-sensitive help (also try --help-man). or set _GOTEMPLATE_HELP --color Force rendering of colors event if output is redirected or set _GOTEMPLATE_COLOR (alias: --c) -v, --version Get the current version of gotemplate --template-log-level=level Set the template logging level. Accepted values: disabled, panic, fatal, error, warning, info, debug, trace or set _GOTEMPLATE_TEMPLATE_LOG_LEVEL (alias: --tll) -L, --internal-log-level=level Set the internal logging level."><meta property=og:type content=article><meta property=og:url content=https://coveooss.github.io/gotemplate/docs/cli_usage/><title>CLI Usage | gotemplate</title><link rel=icon href=/gotemplate/favicon.png type=image/x-icon><link rel=stylesheet href=/gotemplate/book.min.41e4212348c96ea249d400aff9e0bc6419d3e37cd23911e00664489eb2906ada.css integrity="sha256-QeQhI0jJbqJJ1ACv&#43;eC8ZBnT43zSORHgBmRInrKQato="></head><body><input type=checkbox class=hidden id=menu-control><main class="flex container"><aside class="book-menu fixed"><nav><h2 class=book-brand><a href=https://coveooss.github.io/gotemplate/><img src=/gotemplate/gopher.png alt=Logo><span>gotemplate</span></a></h2><ul><li><a href=/gotemplate/docs/cli_usage/ class=active>CLI Usage</a></li><li class=book-section-flat><span>Basic Features</span><ul><li><a href=/gotemplate/docs/basic_features/arithmetic/>Arithmetic</a></li><li><a href=/gotemplate/docs/basic_features/assignation/>Assignation</a></li><li><a href=/gotemplate/docs/basic_features/collections/>Collections</a></li><li><a href=/gotemplate/docs/basic_features/comments/>Comments</a></li><li><a href=/gotemplate/docs/basic_features/conditionals/>Conditionals</a></li><li><a href=/gotemplate/docs/basic_features/data/>Data</a></li><li><a href=/gotemplate/docs/basic_features/literals/>Literals</a></li><li><a href=/gotemplate/docs/basic_features/os-commands/>Os Commands</a></li></ul></li><li class=book-section-flat><span>Advanced Features</span><ul><li><a href=/gotemplate/docs/advanced_features/disabling_processing/>Disabling Processing</a></li><li><a href=/gotemplate/docs/advanced_features/functions/>Functions</a></li><li><a href=/gotemplate/docs/advanced_features/mixing_razor_and_gotemplate/>Mixing Razor and Gotemplate</a></li><li><a href=/gotemplate/docs/advanced_features/pausing_processing/>Pausing Processing</a></li><li><a href=/gotemplate/docs/advanced_features/sub_templates/>Sub Templates</a></li></ul></li><li class=book-section-flat><span>Functions Reference</span><ul><li><a href=/gotemplate/docs/functions_reference/all_functions/>All Functions</a></li><li><a href=/gotemplate/docs/functions_reference/base-go-template-functions/>Base Go Template Functions</a></li><li><a href=/gotemplate/docs/functions_reference/data-conversion/>Data Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/data-manipulation/>Data Manipulation</a></li><li><a href=/gotemplate/docs/functions_reference/git-functons/>Git Functons</a></li><li><a href=/gotemplate/docs/functions_reference/logging/>Logging</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-bit-operations/>Mathematic Bit Operations</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-fundamental/>Mathematic Fundamental</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-stats/>Mathematic Stats</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-trigonometry/>Mathematic Trigonometry</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-utilities/>Mathematic Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/net/>Net</a></li><li><a href=/gotemplate/docs/functions_reference/operating-systems-functions/>Operating Systems Functions</a></li><li><a href=/gotemplate/docs/functions_reference/other-utilities/>Other Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/runtime/>Runtime</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-cryptographic-security/>Sprig Cryptographic &amp; Security</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-date/>Sprig Date</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-default/>Sprig Default</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-dictionary/>Sprig Dictionary</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-encoding/>Sprig Encoding</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-file-path/>Sprig File Path</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-flow-control/>Sprig Flow Control</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-general/>Sprig General</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-list/>Sprig List</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-mathematics/>Sprig Mathematics</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-network-functions/>Sprig Network Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-os/>Sprig Os</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-reflection/>Sprig Reflection</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-regex/>Sprig Regex</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-string-slice/>Sprig String Slice</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-strings/>Sprig Strings</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-type-conversion/>Sprig Type Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-url-functions/>Sprig Url Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-version-comparison/>Sprig Version Comparison</a></li></ul></li><li class=book-section-flat><span>Objects</span><ul><li><a href=/gotemplate/docs/objects/dict_methods/>Dict Methods</a></li><li><a href=/gotemplate/docs/objects/list_methods/>List Methods</a></li><li><a href=/gotemplate/docs/objects/string_array_methods/>String Array Methods</a></li><li><a href=/gotemplate/docs/objects/string_methods/>String Methods</a></li></ul></li></ul></nav><script>(function(){var menu=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(event){localStorage.setItem("menu.scrollTop",menu.scrollTop);});menu.scrollTop=localStorage.getItem("menu.scrollTop");})();</script></aside><div class=book-page><header class="flex align-center justify-between book-header"><label for=menu-control><img src=/gotemplate/svg/menu.svg alt=Menu></label>
-<strong>CLI Usage</strong></header><article class=markdown><h1 id=cli-usage>CLI Usage</h1><pre><code class=language-text>usage: ./gotemplate [&lt;flags&gt;] &lt;command&gt; [&lt;args&gt; ...]
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta property="og:title" content="CLI Usage"><meta property="og:description" content="CLI Usage usage: gotemplate [<flags>] <command> [<args> ...] An extended template processor for go. See: https://coveo.github.io/gotemplate for complete documentation. Flags: -h, --help Show context-sensitive help (also try --help-man). ($GOTEMPLATE_HELP) --color Force rendering of colors event if output is redirected (alias: --c) ($GOTEMPLATE_COLOR) -v, --version Get the current version of gotemplate --template-log-level=level Set the template logging level. Accepted values: disabled, panic, fatal, error, warning, info, debug, trace (alias: --tll) ($GOTEMPLATE_TEMPLATE_LOG_LEVEL) -L, --internal-log-level=level Set the internal logging level."><meta property="og:type" content="article"><meta property="og:url" content="https://coveooss.github.io/gotemplate/docs/cli_usage/"><meta property="article:section" content="docs"><title>CLI Usage | gotemplate</title><link rel=icon href=/gotemplate/favicon.png type=image/x-icon><link rel=stylesheet href=/gotemplate/book.min.c5b60b33d7ce9e9d9196dad3bffdcbcb0978820209e024ba13dfb994b7e76529.css integrity="sha256-xbYLM9fOnp2RltrTv/3Lywl4ggIJ4CS6E9+5lLfnZSk="></head><body><input type=checkbox class=hidden id=menu-control><main class="flex container"><aside class="book-menu fixed"><nav><h2 class=book-brand><a href=https://coveooss.github.io/gotemplate/><img src=/gotemplate/gopher.png alt=Logo><span>gotemplate</span></a></h2><ul><li><a href=/gotemplate/docs/cli_usage/ class=active>CLI Usage</a></li><li class=book-section-flat><span>Basic Features</span><ul><li><a href=/gotemplate/docs/basic_features/arithmetic/>Arithmetic</a></li><li><a href=/gotemplate/docs/basic_features/assignation/>Assignation</a></li><li><a href=/gotemplate/docs/basic_features/collections/>Collections</a></li><li><a href=/gotemplate/docs/basic_features/comments/>Comments</a></li><li><a href=/gotemplate/docs/basic_features/conditionals/>Conditionals</a></li><li><a href=/gotemplate/docs/basic_features/data/>Data</a></li><li><a href=/gotemplate/docs/basic_features/literals/>Literals</a></li><li><a href=/gotemplate/docs/basic_features/os-commands/>Os Commands</a></li></ul></li><li class=book-section-flat><span>Advanced Features</span><ul><li><a href=/gotemplate/docs/advanced_features/disabling_processing/>Disabling Processing</a></li><li><a href=/gotemplate/docs/advanced_features/functions/>Functions</a></li><li><a href=/gotemplate/docs/advanced_features/mixing_razor_and_gotemplate/>Mixing Razor and Gotemplate</a></li><li><a href=/gotemplate/docs/advanced_features/pausing_processing/>Pausing Processing</a></li><li><a href=/gotemplate/docs/advanced_features/sub_templates/>Sub Templates</a></li></ul></li><li class=book-section-flat><span>Functions Reference</span><ul><li><a href=/gotemplate/docs/functions_reference/all_functions/>All Functions</a></li><li><a href=/gotemplate/docs/functions_reference/base-go-template-functions/>Base Go Template Functions</a></li><li><a href=/gotemplate/docs/functions_reference/data-conversion/>Data Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/data-manipulation/>Data Manipulation</a></li><li><a href=/gotemplate/docs/functions_reference/git-functions/>Git Functions</a></li><li><a href=/gotemplate/docs/functions_reference/logging/>Logging</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-bit-operations/>Mathematic Bit Operations</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-fundamental/>Mathematic Fundamental</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-stats/>Mathematic Stats</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-trigonometry/>Mathematic Trigonometry</a></li><li><a href=/gotemplate/docs/functions_reference/mathematic-utilities/>Mathematic Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/net/>Net</a></li><li><a href=/gotemplate/docs/functions_reference/operating-systems-functions/>Operating Systems Functions</a></li><li><a href=/gotemplate/docs/functions_reference/other-utilities/>Other Utilities</a></li><li><a href=/gotemplate/docs/functions_reference/runtime/>Runtime</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-cryptographic-security/>Sprig Cryptographic & Security</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-date/>Sprig Date</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-default/>Sprig Default</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-dictionary/>Sprig Dictionary</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-encoding/>Sprig Encoding</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-file-path/>Sprig File Path</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-flow-control/>Sprig Flow Control</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-general/>Sprig General</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-list/>Sprig List</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-mathematics/>Sprig Mathematics</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-network-functions/>Sprig Network Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-os/>Sprig Os</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-reflection/>Sprig Reflection</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-regex/>Sprig Regex</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-string-slice/>Sprig String Slice</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-strings/>Sprig Strings</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-type-conversion/>Sprig Type Conversion</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-url-functions/>Sprig URL Functions</a></li><li><a href=/gotemplate/docs/functions_reference/sprig-version-comparison/>Sprig Version Comparison</a></li></ul></li><li class=book-section-flat><span>Objects</span><ul><li><a href=/gotemplate/docs/objects/dict_methods/>Dict Methods</a></li><li><a href=/gotemplate/docs/objects/list_methods/>List Methods</a></li><li><a href=/gotemplate/docs/objects/string_array_methods/>String Array Methods</a></li><li><a href=/gotemplate/docs/objects/string_methods/>String Methods</a></li></ul></li></ul></nav><script>(function(){var a=document.querySelector("aside.book-menu nav");addEventListener("beforeunload",function(b){localStorage.setItem("menu.scrollTop",a.scrollTop)}),a.scrollTop=localStorage.getItem("menu.scrollTop")})()</script></aside><div class=book-page><header class="flex align-center justify-between book-header"><label for=menu-control><img src=/gotemplate/svg/menu.svg alt=Menu></label>
+<strong>CLI Usage</strong></header><article class=markdown><h1 id=cli-usage>CLI Usage</h1><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text>usage: gotemplate [&lt;flags&gt;] &lt;command&gt; [&lt;args&gt; ...]
 
 An extended template processor for go.
 
 See: https://coveo.github.io/gotemplate for complete documentation.
 
 Flags:
-  -h, --help                     Show context-sensitive help (also try --help-man). or set _GOTEMPLATE_HELP
-      --color                    Force rendering of colors event if output is redirected or set
-                                 _GOTEMPLATE_COLOR (alias: --c)
+  -h, --help                     Show context-sensitive help (also try --help-man). ($GOTEMPLATE_HELP)
+      --color                    Force rendering of colors event if output is redirected (alias: --c)
+                                 ($GOTEMPLATE_COLOR)
   -v, --version                  Get the current version of gotemplate
       --template-log-level=level  
                                  Set the template logging level. Accepted values: disabled, panic, fatal,
-                                 error, warning, info, debug, trace or set _GOTEMPLATE_TEMPLATE_LOG_LEVEL
-                                 (alias: --tll)
+                                 error, warning, info, debug, trace (alias: --tll)
+                                 ($GOTEMPLATE_TEMPLATE_LOG_LEVEL)
   -L, --internal-log-level=level  
                                  Set the internal logging level. Accepted values: disabled, panic, fatal,
-                                 error, warning, info, debug, trace or set _GOTEMPLATE_INTERNAL_LOG_LEVEL
-                                 (alias: --ill, --ll, --log-level)
+                                 error, warning, info, debug, trace (alias: --ill, --ll, --log-level)
+                                 ($GOTEMPLATE_INTERNAL_LOG_LEVEL)
   -F, --internal-log-file-path=path  
-                                 Set a file where verbose logs should be written or set
-                                 _GOTEMPLATE_INTERNAL_LOG_FILE_PATH (alias: --ilfp)
+                                 Set a file where verbose logs should be written (alias: --ilfp)
+                                 ($GOTEMPLATE_INTERNAL_LOG_FILE_PATH)
       --template-log-file-level=level  
-                                 Set the template logging level for the verbose logs file or set
-                                 _GOTEMPLATE_TEMPLATE_LOG_FILE_LEVEL (alias: --tlfl)
+                                 Set the template logging level for the verbose logs file (alias: --tlfl)
+                                 ($GOTEMPLATE_TEMPLATE_LOG_FILE_LEVEL)
       --internal-log-file-level=level  
-                                 Set the internal logging level for the verbose logs file or set
-                                 _GOTEMPLATE_INTERNAL_LOG_FILE_LEVEL (alias: --ilfl)
-      --base                     Turn off all addons (they could then be enabled explicitly) or set
-                                 _GOTEMPLATE_BASE
-      --razor                    Razor Addon (ON by default) or set _GOTEMPLATE_RAZOR (off: --no-razor)
-      --extension                Extension Addon (ON by default) or set _GOTEMPLATE_EXTENSION (alias: --ext)
-                                 (off: --next, --no-ext, --no-extension)
-      --math                     Math Addon (ON by default) or set _GOTEMPLATE_MATH (off: --no-math)
-      --sprig                    Sprig Addon (ON by default) or set _GOTEMPLATE_SPRIG (off: --no-sprig)
-      --data                     Data Addon (ON by default) or set _GOTEMPLATE_DATA (off: --no-data)
-      --logging                  Logging Addon (ON by default) or set _GOTEMPLATE_LOGGING (off:
-                                 --no-logging)
-      --runtime                  Runtime Addon (ON by default) or set _GOTEMPLATE_RUNTIME (off:
-                                 --no-runtime)
-      --utils                    Utils Addon (ON by default) or set _GOTEMPLATE_UTILS (off: --no-utils)
-      --net                      Net Addon (ON by default) or set _GOTEMPLATE_NET (off: --nnet, --no-net)
-      --os                       OS Addon (ON by default) or set _GOTEMPLATE_OS (off: --no-os, --nos)
-      --git                      Git Addon (ON by default) or set _GOTEMPLATE_GIT (off: --ngit, --no-git)
+                                 Set the internal logging level for the verbose logs file (alias: --ilfl)
+                                 ($GOTEMPLATE_INTERNAL_LOG_FILE_LEVEL)
+      --base                     Turn off all addons (they could then be enabled explicitly)
+                                 ($GOTEMPLATE_BASE)
+      --razor                    Razor Addon (ON by default) (off: --no-razor) ($GOTEMPLATE_RAZOR)
+      --extension                Extension Addon (ON by default) (alias: --ext) (off: --next, --no-ext,
+                                 --no-extension) ($GOTEMPLATE_EXTENSION)
+      --math                     Math Addon (ON by default) (off: --no-math) ($GOTEMPLATE_MATH)
+      --sprig                    Sprig Addon (ON by default) (off: --no-sprig) ($GOTEMPLATE_SPRIG)
+      --data                     Data Addon (ON by default) (off: --no-data) ($GOTEMPLATE_DATA)
+      --logging                  Logging Addon (ON by default) (off: --no-logging) ($GOTEMPLATE_LOGGING)
+      --runtime                  Runtime Addon (ON by default) (off: --no-runtime) ($GOTEMPLATE_RUNTIME)
+      --utils                    Utils Addon (ON by default) (off: --no-utils) ($GOTEMPLATE_UTILS)
+      --net                      Net Addon (ON by default) (off: --nnet, --no-net) ($GOTEMPLATE_NET)
+      --os                       OS Addon (ON by default) (off: --no-os, --nos) ($GOTEMPLATE_OS)
+      --git                      Git Addon (ON by default) (off: --ngit, --no-git) ($GOTEMPLATE_GIT)
+                                 ($GOTEMPLATE_IGNORE_MISSING_PATHS)
 
 Args:
   [&lt;templates&gt;]  Template files or commands to process
@@ -55,56 +54,55 @@ Commands:
   run [&lt;flags&gt;] [&lt;templates&gt;...]
 
         --delimiters={{,}},@       Define the default delimiters for go template (separate the left, right
-                                   and razor delimiters by a comma) or set _GOTEMPLATE_DELIMITERS (alias:
-                                   --d, --del)
-    -i, --import=file ...          Import variables files (could be any of YAML, JSON or HCL format) or set
-                                   _GOTEMPLATE_IMPORT
+                                   and razor delimiters by a comma) (alias: --d, --del)
+                                   ($GOTEMPLATE_DELIMITERS)
+    -i, --import=file ...          Import variables files (could be any of YAML, JSON or HCL format)
+                                   ($GOTEMPLATE_IMPORT)
         --import-if-exist=file ...  
-                                   Import variables files (do not consider missing file as an error) or set
-                                   _GOTEMPLATE_IMPORT_IF_EXIST (alias: --iie)
-    -V, --var=values ...           Import named variables (if value is a file, the content is loaded) or set
-                                   _GOTEMPLATE_VAR
-    -t, --type=TYPE                Force the type used for the main context (Json, Yaml, Hcl) or set
-                                   _GOTEMPLATE_TYPE
-    -p, --patterns=pattern ...     Additional patterns that should be processed by gotemplate or set
-                                   _GOTEMPLATE_PATTERNS
+                                   Import variables files (do not consider missing file as an error) (alias:
+                                   --iie) ($GOTEMPLATE_IMPORT_IF_EXIST)
+    -V, --var=values ...           Import named variables (if value is a file, the content is loaded)
+                                   ($GOTEMPLATE_VAR)
+    -t, --type=TYPE                Force the type used for the main context (Json, Yaml, Hcl)
+                                   ($GOTEMPLATE_TYPE)
+    -p, --patterns=pattern ...     Additional patterns that should be processed by gotemplate
+                                   ($GOTEMPLATE_PATTERNS)
     -e, --exclude=pattern ...      Exclude file patterns (comma separated) when applying gotemplate
-                                   recursively or set _GOTEMPLATE_EXCLUDE
+                                   recursively ($GOTEMPLATE_EXCLUDE)
     -o, --overwrite                Overwrite file instead of renaming them if they exist (required only if
-                                   source folder is the same as the target folder) or set
-                                   _GOTEMPLATE_OVERWRITE
+                                   source folder is the same as the target folder) ($GOTEMPLATE_OVERWRITE)
     -s, --substitute=exp ...       Substitute text in the processed files by applying the regex substitute
                                    expression (format: /regex/substitution, the first character acts as
-                                   separator like in sed, see: Go regexp) or set _GOTEMPLATE_SUBSTITUTE
-    -E, --remove-empty-lines       Remove empty lines from the result or set _GOTEMPLATE_REMOVE_EMPTY_LINES
-                                   (alias: --re, --rel, --remove-empty)
-    -r, --recursive                Process all template files recursively or set _GOTEMPLATE_RECURSIVE
-    -R, --recursion-depth=depth    Process template files recursively specifying depth or set
-                                   _GOTEMPLATE_RECURSION_DEPTH (alias: --rd)
-        --source=folder            Specify a source folder (default to the current folder) or set
-                                   _GOTEMPLATE_SOURCE (alias: --s)
-        --target=folder            Specify a target folder (default to source folder) or set
-                                   _GOTEMPLATE_TARGET (alias: --t)
+                                   separator like in sed, see: Go regexp) ($GOTEMPLATE_SUBSTITUTE)
+    -E, --remove-empty-lines       Remove empty lines from the result (alias: --re, --rel, --remove-empty)
+                                   ($GOTEMPLATE_REMOVE_EMPTY_LINES)
+    -r, --recursive                Process all template files recursively ($GOTEMPLATE_RECURSIVE)
+    -R, --recursion-depth=depth    Process template files recursively specifying depth (alias: --rd)
+                                   ($GOTEMPLATE_RECURSION_DEPTH)
+        --source=folder            Specify a source folder (default to the current folder) (alias: --s)
+                                   ($GOTEMPLATE_SOURCE)
+        --target=folder            Specify a target folder (default to source folder) (alias: --t)
+                                   ($GOTEMPLATE_TARGET)
     -I, --stdin                    Force read of the standard input to get a template definition (useful
-                                   only if GOTEMPLATE_NO_STDIN is set) or set _GOTEMPLATE_STDIN
-    -f, --follow-symlinks          Follow the symbolic links while using the recursive option or set
-                                   _GOTEMPLATE_FOLLOW_SYMLINKS (alias: --fs)
-    -P, --print                    Output the result directly to stdout or set _GOTEMPLATE_PRINT
-    -d, --disable                  Disable go template rendering (used to view razor conversion) or set
-                                   _GOTEMPLATE_DISABLE
-        --accept-no-value          Do not consider rendering &lt;no value&gt; as an error or set
-                                   GOTEMPLATE_NO_VALUE (alias: --anv, --no-value, --nv)
-    -S, --strict-error-validation  Consider error encountered in any file as real error or set
-                                   GOTEMPLATE_STRICT_ERROR (alias: --sev, --strict)
+                                   only if GOTEMPLATE_NO_STDIN is set) ($GOTEMPLATE_STDIN)
+    -f, --follow-symlinks          Follow the symbolic links while using the recursive option (alias: --fs)
+                                   ($GOTEMPLATE_FOLLOW_SYMLINKS)
+    -P, --print                    Output the result directly to stdout ($GOTEMPLATE_PRINT)
+    -d, --disable                  Disable go template rendering (used to view razor conversion)
+                                   ($GOTEMPLATE_DISABLE)
+        --accept-no-value          Do not consider rendering &lt;no value&gt; as an error (alias: --anv,
+                                   --no-value, --nv) ($GOTEMPLATE_NO_VALUE)
+    -S, --strict-error-validation  Consider error encountered in any file as real error (alias: --sev,
+                                   --strict) ($GOTEMPLATE_STRICT_ERROR)
         --strict-assignations-validation=warning  
-                                   Enforce strict assignation validation on global variables or set
-                                   _GOTEMPLATE_STRICT_ASSIGNATIONS_VALIDATION (alias: --sav)
-        --ignore-missing-import    Exit with code 0 even if import does not exist or set
-                                   _GOTEMPLATE_IGNORE_MISSING_IMPORT (alias: --imi)
-        --ignore-missing-source    Exit with code 0 even if source does not exist or set
-                                   _GOTEMPLATE_IGNORE_MISSING_SOURCE (alias: --ims)
-        --ignore-missing-paths     Exit with code 0 even if import or source do not exist or set
-                                   _GOTEMPLATE_IGNORE_MISSING_PATHS (alias: --imp)
+                                   Enforce strict assignation validation on global variables (alias: --sav)
+                                   ($GOTEMPLATE_STRICT_ASSIGNATIONS_VALIDATION)
+        --ignore-missing-import    Exit with code 0 even if import does not exist (alias: --imi)
+                                   ($GOTEMPLATE_IGNORE_MISSING_IMPORT)
+        --ignore-missing-source    Exit with code 0 even if source does not exist (alias: --ims)
+                                   ($GOTEMPLATE_IGNORE_MISSING_SOURCE)
+        --ignore-missing-paths     Exit with code 0 even if import or source do not exist (alias: --imp)
+                                   ($GOTEMPLATE_IGNORE_MISSING_PATHS)
 
   list [&lt;flags&gt;] [&lt;filters&gt;...]
     Get detailed help on gotemplate functions
@@ -114,4 +112,4 @@ Commands:
     -l, --long       Get detailed list
     -a, --all        List all
     -c, --category   Group functions by category
-</code></pre></article></div></main></body></html>
+</code></pre></div></article></div></main></body></html>

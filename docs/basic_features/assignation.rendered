@@ -109,4 +109,3 @@ Using the Razor syntax, it is possible to use assignment operators such as `+=`,
 ```go
     value = 4
 ```
-
