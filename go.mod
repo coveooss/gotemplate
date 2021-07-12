@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
-	github.com/PuerkitoBio/goquery v1.7.0
+	github.com/PuerkitoBio/goquery v1.7.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/bmatcuk/doublestar v1.3.4
 	github.com/coveooss/multilogger v0.5.2
