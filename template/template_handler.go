@@ -197,6 +197,9 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 			th.Code = strings.Join(splitLines, "\n")
 		}
 
+		// We call a first round of replacement where we use only the replacers marked with b(egin)
+		t.substituteFilteredReplacers(th.Code, "b")
+
 		var razor []byte
 		razor, _ = t.applyRazor([]byte(th.Code))
 		th.Code = string(razor)
@@ -257,6 +260,8 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		return th.Handler(err)
 	}
 	result = revertReplacements(t.substitute(out.String()))
+	// we execute last the replacers marked with e(nd)
+	result = t.substituteFilteredReplacers(out.String(), "e")
 
 	changed = result != originalContent
 

@@ -66,6 +66,7 @@ var expressions = [][]interface{}{
 	{"", `\${`, literalReplacement},
 	{"", `@@`, literalAt},
 	{"", `@{{`, literalStart},
+	{"", `@sha256`, literalSha256},
 	{"", `@<;`, `{{- $.NEWLINE }}`},
 	{"Auto indent", `(?m)^(?P<before>.*)@reduce;(?:autoIndent|aindent|aIndent)\(`, "@<-spaceIndent(`${before}`, "},
 	{"Auto wrap", `(?m)^(?P<before>.*)@(?P<nl><)?reduce;(?P<func>autoWrap|awrap|aWrap)(?P<context>\(.*)$`, "", replacementFunc(autoWrap)},
@@ -128,6 +129,7 @@ var expressions = [][]interface{}{
 	{"", literalAt, "@"},
 	{"", literalTripleBackticks, "```"},
 	{"", literalReplacement, "${"},
+	{"", literalSha256, `@sha256`},
 	{"", fmt.Sprintf(`\x60%s(?P<num>\d+)\x60`, protectString), "", replacementFunc(protectMultiLineStrings)},
 }
 

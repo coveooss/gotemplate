@@ -54,6 +54,15 @@ func (t *Template) substitute(content string) string {
 	return utils.Substitute(content, t.substitutes...)
 }
 
+//Apply only regular expression that are marked b(egin) or e(nd)
+//
+//  substitueFilteredReplacer(content string, replacerFilter "b" | "e" | "")
+// - Note : filters should "b" for beginning or "e" for end which mark when they prefer to be executed.
+// Passing nothing as filter will execute everything but timed expressions and everything else, will execute nothing
+func (t *Template) substituteFilteredReplacers(content string, replacerFilter string) string {
+	return utils.SubstituteFilteredReplacers(content, replacerFilter, t.substitutes...)
+}
+
 // List the available template names
 func (t *Template) getTemplateNames() []string {
 	templates := t.Templates()
