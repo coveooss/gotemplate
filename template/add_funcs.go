@@ -53,7 +53,7 @@ func (t *Template) addFuncs() {
 //
 // IMPORTANT: The filter is optional, but since there's no such thing in Go, it's a var arg
 //  substitute(content string, replacerTimingFilter? "b" | "e" | "" = "")
-// - Note: filters should "b" for beginning or "e" for end which mark when they prefer to be executed.
+// - Note: filters should be "b" for beginning or "e" for end which mark when they prefer to be executed.
 // Passing nothing (or empty quotes "") as filter will execute everything but timed expressions.
 // Not passing these will fail to find replacers and, well, do nothing...
 func (t *Template) substitute(content string, replacerTimingFilter ...string) string {
