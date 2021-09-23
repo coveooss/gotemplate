@@ -24,7 +24,7 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 		}
 		expression := strings.Split(replacers[i], string(replacers[i][0]))
 		exprLen := len(expression)
-		if exprLen < 3 || expression[1] == "" {
+		if 3 > exprLen || exprLen > 4 || expression[1] == "" {
 			errors.Raise("Bad replacer %s", replacers[i])
 		}
 
