@@ -12,7 +12,7 @@ func TestSubstitute(t *testing.T) {
 		args   args
 		want   string
 		filter string
-		err    error // add error testing cases
+		err    error // add error testing cases?
 	}{
 		{"Simple regex", args{"This is a test", []string{`/\b(\w{2})\b/$1$1`, `/\b(\w)\b/-$1-`}}, "This isis -a- test", "", nil},
 		{"Only exec on no timing", args{"This is a chat256", []string{`/chat256/miaou/b`, `/dummy/withtiming/e`}}, "This is a chat256", "", nil},
