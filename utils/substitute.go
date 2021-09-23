@@ -55,26 +55,22 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 	return result
 }
 
-// FilterReplacers will return only replacers that are marked with the right Timing
-func filterReplacers(replacers []RegexReplacer, filter string) []RegexReplacer {
+// FilterReplacers will return only replacers that are marked with the right timing
+func filterReplacers(replacers []RegexReplacer, timingFilter string) []RegexReplacer {
 	var acc []RegexReplacer
 	for _, r := range replacers {
-		if r.timing == filter {
+		if r.timing == timingFilter {
 			acc = append(acc, r)
 		}
 	}
 	return acc
 }
 
-func SubstituteFilteredReplacers(content string, replaceFilter string, replacers ...RegexReplacer) string {
-	return Substitute(content, filterReplacers(replacers, replaceFilter)...)
-}
-
 // Substitute actually applies the configured substituter
-func Substitute(content string, replacers ...RegexReplacer) string {
-	// Check timing during replace phase
-	for i := range replacers {
-		content = replacers[i].regex.ReplaceAllString(content, replacers[i].replace)
+func Substitute(content string, replacerFilter string, replacers ...RegexReplacer) string {
+	filteredReplacers := filterReplacers(replacers, replacerFilter)
+	for i := range filteredReplacers {
+		content = filteredReplacers[i].regex.ReplaceAllString(content, filteredReplacers[i].replace)
 	}
 	return content
 }
