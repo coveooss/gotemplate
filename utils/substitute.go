@@ -46,7 +46,7 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 		if exprLen == 4 && (strings.Contains("be", strings.ToLower(expression[3]))) {
 			result[i].timing = expression[3]
 		} else if exprLen == 4 && !strings.Contains("be", strings.ToLower(expression[3])) {
-			errors.Raise("Bad timing information %b, valid values are b(egin) or e(nd)", replacers[i][3])
+			errors.Raise("Bad timing information %b, valid values are b(egin) or e(nd). e.g. /regex/replacer[/b | /e]", replacers[i][3])
 		}
 		result[i].regex = regexp.MustCompile(expression[1])
 		result[i].replace = expression[2]
