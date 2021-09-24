@@ -170,8 +170,8 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		}
 
 		// We call a first round of replacement where we use only the replacers marked with b(egin)
-		th.Code = t.substitute(th.Code, "b")
-		th.Code = t.substitute(th.Code)
+		th.Code = t.substitute(th.Code, utils.BEGIN)
+		th.Code = t.substitute(th.Code, utils.NONE)
 
 		if strings.HasPrefix(th.Code, "#!") {
 			// If the content starts with a Shebang operator including gotemplate, we remove the first line
@@ -258,9 +258,9 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		InternalLog.Debugf("%s(%d): Execution error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}
-	result = revertReplacements(t.substitute(out.String()))
+	result = revertReplacements(t.substitute(out.String(), utils.NONE))
 	// we execute last the replacers marked with e(nd)
-	result = t.substitute(result, "e")
+	result = t.substitute(result, utils.END)
 
 	changed = result != originalContent
 

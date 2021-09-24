@@ -49,19 +49,12 @@ func (t *Template) addFuncs() {
 	add(Git, t.addGitFuncs)
 }
 
-// Apply regular expression that match the replacerTimingFilter (default = "")
+// Apply regular expression that match the replacerTimingFilter
 //
-// IMPORTANT: The filter is optional, but since there's no such thing in Go, it's a var arg
-//  substitute(content string, replacerTimingFilter? "b" | "e" | "" = "")
-// - Note: filters should be "b" for beginning or "e" for end which mark when they prefer to be executed.
-// Passing nothing (or empty quotes "") as filter will execute everything but timed expressions.
-// Not passing these will fail to find replacers and, well, do nothing...
-func (t *Template) substitute(content string, replacerTimingFilter ...string) string {
-	filter := ""
-	if len(replacerTimingFilter) != 0 {
-		filter = replacerTimingFilter[0]
-	}
-	return utils.Substitute(content, filter, t.substitutes...)
+//  substitute(content string, SubstituteTimingsEnum.OneOfTheValues)
+// - Note: The best way to call this function is to use the utils.SubstituteTimingsEnum
+func (t *Template) substitute(content string, replacerTimingFilter utils.SubstituteTiming) string {
+	return utils.Substitute(content, replacerTimingFilter, t.substitutes...)
 }
 
 // List the available template names

@@ -11,8 +11,23 @@ import (
 type RegexReplacer struct {
 	regex   *regexp.Regexp
 	replace string
-	timing  string
+	timing  substituteTiming
 }
+
+type substituteTiming string
+type SubstituteTiming interface {
+	Get() substituteTiming
+}
+
+func (sub substituteTiming) Get() substituteTiming {
+	return sub
+}
+
+const (
+	BEGIN substituteTiming = "b"
+	END   substituteTiming = "e"
+	NONE  substituteTiming = ""
+)
 
 // InitReplacers configures the list of substitution that should be applied on each document
 func InitReplacers(replacers ...string) []RegexReplacer {
@@ -44,7 +59,7 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 		}
 		// last part is optional, but specifies the timing. By default, we assume it's not important
 		if exprLen == 4 && (strings.Contains("be", strings.ToLower(expression[3]))) {
-			result[i].timing = expression[3]
+			result[i].timing = substituteTiming(expression[3])
 		} else if exprLen == 4 && !strings.Contains("be", strings.ToLower(expression[3])) {
 			errors.Raise("Bad timing information %b, valid values are b(egin) or e(nd). e.g. /regex/replacer[/b | /e]", replacers[i][3])
 		}
@@ -56,10 +71,10 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 }
 
 // FilterReplacers will return only replacers that are marked with the right timing
-func filterReplacers(replacers []RegexReplacer, timingFilter string) []RegexReplacer {
+func filterReplacers(replacers []RegexReplacer, timingFilter substituteTiming) []RegexReplacer {
 	acc := make([]RegexReplacer, 0, len(replacers))
 	for _, r := range replacers {
-		if r.timing == timingFilter {
+		if r.timing == timingFilter.Get() {
 			acc = append(acc, r)
 		}
 	}
@@ -67,8 +82,8 @@ func filterReplacers(replacers []RegexReplacer, timingFilter string) []RegexRepl
 }
 
 // Substitute actually applies the configured substituter
-func Substitute(content string, replacerFilter string, replacers ...RegexReplacer) string {
-	filteredReplacers := filterReplacers(replacers, replacerFilter)
+func Substitute(content string, replacerFilter SubstituteTiming, replacers ...RegexReplacer) string {
+	filteredReplacers := filterReplacers(replacers, replacerFilter.Get())
 	for i := range filteredReplacers {
 		content = filteredReplacers[i].regex.ReplaceAllString(content, filteredReplacers[i].replace)
 	}
