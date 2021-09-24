@@ -14,7 +14,10 @@ type RegexReplacer struct {
 	timing  substituteTiming
 }
 
+// Typed string to represent the different timings for the replacers. Private, so no other values can be instatiated
 type substituteTiming string
+
+// Interface to access the private type substituteTiming used to define a simili enum
 type SubstituteTiming interface {
 	Get() substituteTiming
 }

@@ -50,9 +50,6 @@ func (t *Template) addFuncs() {
 }
 
 // Apply regular expression that match the replacerTimingFilter
-//
-//  substitute(content string, SubstituteTimingsEnum.OneOfTheValues)
-// - Note: The best way to call this function is to use the utils.SubstituteTimingsEnum
 func (t *Template) substitute(content string, replacerTimingFilter utils.SubstituteTiming) string {
 	return utils.Substitute(content, replacerTimingFilter, t.substitutes...)
 }
