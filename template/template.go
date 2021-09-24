@@ -39,14 +39,13 @@ type Template struct {
 
 // Environment variables that could be defined to override default behaviors.
 const (
-	EnvAcceptNoValue        = "GOTEMPLATE_NO_VALUE"
-	EnvStrictErrorCheck     = "GOTEMPLATE_STRICT_ERROR"
-	EnvSubstitutes          = "GOTEMPLATE_SUBSTITUTES"
-	EnvSubstitutesSeparator = "GOTEMPLATE_SUBSTITUTES_SEPARATOR"
-	EnvDebug                = "GOTEMPLATE_DEBUG"
-	EnvExtensionPath        = "GOTEMPLATE_PATH"
-	EnvInternalLogLevel     = "GOTEMPLATE_INTERNAL_LOG_LEVEL"
-	EnvLogLevel             = "GOTEMPLATE_TEMPLATE_LOG_LEVEL"
+	EnvAcceptNoValue    = "GOTEMPLATE_NO_VALUE"
+	EnvStrictErrorCheck = "GOTEMPLATE_STRICT_ERROR"
+	EnvSubstitutes      = "GOTEMPLATE_SUBSTITUTES"
+	EnvDebug            = "GOTEMPLATE_DEBUG"
+	EnvExtensionPath    = "GOTEMPLATE_PATH"
+	EnvInternalLogLevel = "GOTEMPLATE_INTERNAL_LOG_LEVEL"
+	EnvLogLevel         = "GOTEMPLATE_TEMPLATE_LOG_LEVEL"
 )
 
 const (
@@ -113,11 +112,8 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 		`/"!Q!(?P<content>.*?)!Q!"/"${content}"`,
 	}
 	if substitutesFromEnv := os.Getenv(EnvSubstitutes); substitutesFromEnv != "" {
-		seperator := os.Getenv(EnvSubstitutesSeparator)
-		if seperator == "" {
-			seperator = "\n" // bad idea but the default
-		}
-		baseSubstitutesRegex = append(baseSubstitutesRegex, strings.Split(substitutesFromEnv, seperator)...)
+		separator := ":" // /regex/replace[/timing]:...
+		baseSubstitutesRegex = append(baseSubstitutesRegex, strings.Split(substitutesFromEnv, separator)...)
 	}
 	t.substitutes = utils.InitReplacers(append(baseSubstitutesRegex, substitutes...)...)
 
