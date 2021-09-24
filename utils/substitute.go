@@ -57,7 +57,7 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 
 // FilterReplacers will return only replacers that are marked with the right timing
 func filterReplacers(replacers []RegexReplacer, timingFilter string) []RegexReplacer {
-	var acc []RegexReplacer
+	acc := make([]RegexReplacer, 0, len(replacers))
 	for _, r := range replacers {
 		if r.timing == timingFilter {
 			acc = append(acc, r)
