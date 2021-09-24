@@ -16,7 +16,6 @@ const (
 	literalAt              = "_=!AT!=_"
 	literalTripleBackticks = "_=!TRIPLE_BT!=_"
 	literalReplacement     = "_=!REPL!=_"
-	literalSha256          = "_=!miaou!=_"
 	literalStart           = `{{ "{{" }}`
 	funcCall               = "__FuncCall__"
 	dotRep                 = "__DoTPrefix__"
