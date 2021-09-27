@@ -112,7 +112,7 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 		`/"!Q!(?P<content>.*?)!Q!"/"${content}"`,
 	}
 	if substitutesFromEnv := os.Getenv(EnvSubstitutes); substitutesFromEnv != "" {
-		separator := ":" // /regex/replace[/timing]:...
+		separator := ":"
 		baseSubstitutesRegex = append(baseSubstitutesRegex, strings.Split(substitutesFromEnv, separator)...)
 	}
 	t.substitutes = utils.InitReplacers(append(baseSubstitutesRegex, substitutes...)...)

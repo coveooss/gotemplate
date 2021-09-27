@@ -17,8 +17,10 @@ func TestSubstitute(t *testing.T) {
 		{"Only exec on no timing", args{"This is a cat256", []string{`/cat256/meow/b`, `/dummy/withtiming/e`}}, "This is a cat256", NONE},
 		{"Only exec on b timing", args{"This is a dummy cat256", []string{`/cat256/meow/b`, `/dummy/withtiming`}}, "This is a dummy meow", BEGIN},
 		{"Only exec on e timing", args{"This is a dummy cat256", []string{`/cat256/meow`, `/dummy/smart/e`}}, "This is a smart cat256", END},
-		{"Protection on begin", args{"Infamous @sha256", []string{`/@sha256/meow/p`}}, "Infamous _=!meow!=_", BEGIN},
-		{"Protection on end", args{"Infamous _=!meow!=_", []string{`/@sha256/meow/p`}}, "Infamous @sha256", END},
+		{"Protection on begin", args{"Infamous @cat256", []string{`/@cat256/meow/p`}}, "Infamous _=!meow!=_", BEGIN},
+		{"Protection on end", args{"Infamous _=!meow!=_", []string{`/@cat256/meow/p`}}, "Infamous @cat256", END},
+		{"Mix protect + begin", args{"Infamous @cat256", []string{`/@cat256/meow/p`, `/Infamous/famous/b`}}, "famous _=!meow!=_", BEGIN},
+		{"Mix protect + end", args{"famous _=!meow!=_", []string{`/@cat256/meow/p`, `/famous/The real/e`}}, "The real @cat256", END},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

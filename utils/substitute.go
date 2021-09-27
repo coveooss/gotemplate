@@ -75,7 +75,6 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 		if timing == _PROTECT {
 			var protectExpr []string
 			expression, protectExpr = genProtectExpressions(expression)
-
 			protectors = append(protectors, (&RegexReplacer{}).fromExpressionArray(protectExpr))
 		}
 		result[i].fromExpressionArray(expression)
