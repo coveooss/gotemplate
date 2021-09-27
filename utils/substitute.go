@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -12,6 +13,13 @@ type RegexReplacer struct {
 	regex   *regexp.Regexp
 	replace string
 	timing  substituteTiming
+}
+
+func (r *RegexReplacer) fromExpressionArray(source []string) RegexReplacer {
+	r.timing = extractTiming(source)
+	r.regex = regexp.MustCompile(source[1])
+	r.replace = source[2]
+	return *r
 }
 
 // Typed string to represent the different timings for the replacers. Private, so no other values can be instatiated
@@ -27,14 +35,17 @@ func (sub substituteTiming) Get() substituteTiming {
 }
 
 const (
-	BEGIN substituteTiming = "b"
-	END   substituteTiming = "e"
-	NONE  substituteTiming = ""
+	BEGIN    substituteTiming = "b"
+	END      substituteTiming = "e"
+	_PROTECT substituteTiming = "p"
+	NONE     substituteTiming = ""
 )
 
 // InitReplacers configures the list of substitution that should be applied on each document
 func InitReplacers(replacers ...string) []RegexReplacer {
 	result := make([]RegexReplacer, len(replacers))
+	// Static allocation would add empty replacers, so we start with no protectors
+	var protectors []RegexReplacer
 	for i := range replacers {
 		replacers[i] = strings.TrimSpace(replacers[i])
 		if replacers[i] == "" {
@@ -60,20 +71,43 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 			}
 			expression[2] = ""
 		}
-		// last part is optional, but specifies the timing. By default, we assume it's not important
-		if exprLen == 4 && (strings.Contains("be", strings.ToLower(expression[3]))) {
-			result[i].timing = substituteTiming(expression[3])
-		} else if exprLen == 4 && !strings.Contains("be", strings.ToLower(expression[3])) {
-			errors.Raise("Bad timing information %b, valid values are b(egin) or e(nd). e.g. /regex/replacer[/b | /e]", replacers[i][3])
+		timing := extractTiming(expression)
+		if timing == _PROTECT {
+			var protectExpr []string
+			expression, protectExpr = genProtectExpressions(expression)
+
+			protectors = append(protectors, (&RegexReplacer{}).fromExpressionArray(protectExpr))
 		}
-		result[i].regex = regexp.MustCompile(expression[1])
-		result[i].replace = expression[2]
+		result[i].fromExpressionArray(expression)
 
 	}
-	return result
+	return append(result, protectors...)
 }
 
-// FilterReplacers will return only replacers that are marked with the right timing
+func extractTiming(expression []string) substituteTiming {
+	exprLen := len(expression)
+	// the exprLen is repeated, but with boolean algebra magic, we can prove it disapears everytime and makes the program not crash (^,^)
+	isValidTiming := exprLen == 4 && strings.Contains("bep", strings.ToLower(expression[3]))
+	if exprLen == 4 && isValidTiming {
+		return substituteTiming(expression[3])
+	} else if exprLen == 4 && !isValidTiming {
+		errors.Raise("Bad timing information %s, valid values are b(egin) or e(nd) or p(rotect) for both e.g. /regex/replacer[/b | /e | /p]", expression[3])
+	}
+	return NONE
+}
+
+// generate a "begin" replacer and an "end" replacer and put the extra replacer in the protectors slice.
+// It is arbitrary, but place the "end" replacer in the protectors slice.
+//
+// Return a modified version of the expression passed in params.
+func genProtectExpressions(expression []string) (begin []string, end []string) {
+	protectionString := fmt.Sprintf("_=!%s!=_", expression[2])
+	beginExpr := []string{"", expression[1], protectionString, string(BEGIN)}
+	endExpr := []string{"", protectionString, expression[1], string(END)}
+	return beginExpr, endExpr
+}
+
+// filterReplacers will return only replacers that are marked with the right timing
 func filterReplacers(replacers []RegexReplacer, timingFilter substituteTiming) []RegexReplacer {
 	acc := make([]RegexReplacer, 0, len(replacers))
 	for _, r := range replacers {
