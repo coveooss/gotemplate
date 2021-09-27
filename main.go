@@ -74,7 +74,7 @@ func runGotemplate() (exitCode int) {
 		includePatterns     = run.Flag("patterns", "Additional patterns that should be processed by gotemplate").PlaceHolder("pattern").Short('p').Strings()
 		excludedPatterns    = run.Flag("exclude", "Exclude file patterns (comma separated) when applying gotemplate recursively").PlaceHolder("pattern").Short('e').Strings()
 		overwrite           = run.Flag("overwrite", "Overwrite file instead of renaming them if they exist (required only if source folder is the same as the target folder)").Short('o').Bool()
-		substitutes         = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution, the first character acts as separator like in sed, see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
+		substitutes         = run.Flag("substitute", "Substitute text in the processed files by applying the regex substitute expression (format: /regex/substitution[/timing][:/other/expr], the first character acts as separator like in sed, timing indicates when to run the substitution (b(egin), e(nd)), see: Go regexp)").PlaceHolder("exp").Short('s').Strings()
 		removeEmptyLines    = run.Flag("remove-empty-lines", "Remove empty lines from the result").Alias("remove-empty").Short('E').Bool()
 		recursive           = run.Flag("recursive", "Process all template files recursively").Short('r').Bool()
 		recursionDepth      = run.Flag("recursion-depth", "Process template files recursively specifying depth").Short('R').PlaceHolder("depth").Int()
