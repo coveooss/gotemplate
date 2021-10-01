@@ -65,9 +65,9 @@ rsync -av docs_tests/ $DOC_FOLDER -r
             @<println("func", include("trim", dict("text", stripColor($func.Signature))))
             @-print("```")
             @-if ($func.Description)
-                @<print("\n<pre>")
+                @<print("\n```")
                 @<template("trim", dict("text", $func.Description))
-                @<;</pre>
+                @<;```
             @-else
                 @-warning($func.Name, "does not have description")
             @-endif
