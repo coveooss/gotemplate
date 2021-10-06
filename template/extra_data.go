@@ -460,20 +460,16 @@ func (t *Template) templateConverter(to marshaler, from unMarshaler, source inte
 	return
 }
 
-// func (t *Template) xmlConverter(source interface{}, context ...interface{}) (interface{}, error) {
-// 	return t.templateConverter(xml.Marshal, xml.Unmarshal, source, context...)
-// }
-
-func (t *Template) yamlConverter(source interface{}, context ...interface{}) (interface{}, error) {
-	return t.templateConverter(yaml.Marshal, yaml.Unmarshal, source, context...)
+func (t *Template) yamlConverter(source string) (interface{}, error) {
+	return converter(yaml.Unmarshal, source, true)
 }
 
-func (t *Template) jsonConverter(source interface{}, context ...interface{}) (interface{}, error) {
-	return t.templateConverter(json.Marshal, json.Unmarshal, source, context...)
+func (t *Template) jsonConverter(source string) (interface{}, error) {
+	return converter(json.Unmarshal, source, true)
 }
 
-func (t *Template) hclConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
-	return t.templateConverter(hcl.Marshal, hcl.Unmarshal, source, context...)
+func (t *Template) hclConverter(source string) (result interface{}, err error) {
+	return converter(hcl.Unmarshal, source, true)
 }
 
 func (t *Template) dataConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
