@@ -449,7 +449,11 @@ func (t *Template) templateConverter(to marshaler, from unMarshaler, rawSource i
 		if content != source {
 			InternalLog.Warnf(
 				"(Deprecated) In future versions of gotemplate the data function and its aliases (%s) will no longer attempt "+
-					"to template its input.",
+					"to template their input. "+
+					"If you would like your input string to continue being templated in the future, "+
+					"please use `@data(include(\"...\"))` or `{{ data (include \"...\") }}`."+
+					"If you don't want your input string to be templated at all, please consider using the json, hcl or yaml "+
+					"functions directly as they don't template their input at all.",
 				strings.Join(dataFuncsAliases["data"], ", "),
 			)
 		}
