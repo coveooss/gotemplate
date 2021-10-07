@@ -442,19 +442,32 @@ func converter(from unMarshaler, content string, sourceWithError bool, context .
 }
 
 // Apply a converter to the result of the template execution of the supplied string
-func (t *Template) templateConverter(to marshaler, from unMarshaler, source interface{}, context ...interface{}) (result interface{}, err error) {
-	if source == nil {
+func (t *Template) templateConverter(to marshaler, from unMarshaler, rawSource interface{}, context ...interface{}) (result interface{}, err error) {
+	if rawSource == nil {
 		return nil, nil
 	}
-	if reflect.TypeOf(source).Kind() != reflect.String {
-		if source, err = to(source); err != nil {
+
+	var source string
+	if reflect.TypeOf(rawSource).Kind() != reflect.String {
+		var convertedSource []byte
+		if convertedSource, err = to(rawSource); err != nil {
 			return
 		}
-		source = string(source.([]byte))
+		source = string(convertedSource)
+	} else {
+		source = rawSource.(string)
 	}
 
 	var content string
 	if content, _, err = t.runTemplate(fmt.Sprint(source), context...); err == nil {
+		if content != source {
+			InternalLog.Warnf(
+				"(Deprecated) In future versions of gotemplate the data function and its aliases (%s) will no longer attempt "+
+					"to template its input.",
+				strings.Join(dataFuncsAliases["data"], ", "),
+			)
+		}
+
 		result, err = converter(from, content, true, context...)
 	}
 	return
