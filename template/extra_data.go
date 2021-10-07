@@ -246,7 +246,16 @@ var dataFuncsExamples = examples{
 	"data": {
 		{"@data(`{\"foo\": \"bar\"}`).foo", "{{ (data (`{\"foo\": \"bar\"}`)).foo }}", `bar`},
 		{"@data(`foo: bar`).foo", "{{ (data (`foo: bar`)).foo }}", `bar`},
-		{"@data(`foo = bar`).foo", "{{ (data (`foo = bar`)).foo }}", `bar`},
+		{"@data(`foo = \"bar\"`).foo", "{{ (data (`foo = \"bar\"`)).foo }}", `bar`},
+	},
+	"json": {
+		{"@json(`{\"foo\": \"bar\"}`).foo", "{{ (json (`{\"foo\": \"bar\"}`)).foo }}", `bar`},
+	},
+	"hcl": {
+		{"@hcl(`foo = \"bar\"`).foo", "{{ (hcl (`foo = \"bar\"`)).foo }}", `bar`},
+	},
+	"yaml": {
+		{"@yaml(`foo: bar`).foo", "{{ (yaml (`foo: bar`)).foo }}", `bar`},
 	},
 }
 
