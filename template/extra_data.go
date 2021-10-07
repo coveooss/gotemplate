@@ -78,7 +78,6 @@ var dataFuncsConversion = dictionary{
 	"toQuotedTFVars": toQuotedTFVars,
 	"toTFVars":       toTFVars,
 	"toYaml":         toYAML,
-	//"toXml":          toXML,
 }
 
 var dataFuncsArgs = arguments{
@@ -134,7 +133,6 @@ var dataFuncsArgs = arguments{
 	"union":          {"list", "elements"},
 	"unset":          {"dictionary", "key"},
 	"without":        {"list", "elements"},
-	"xml":            {"yaml", "context"},
 	"yaml":           {"yaml", "context"},
 }
 
@@ -155,15 +153,12 @@ var dataFuncsAliases = aliases{
 	"toJson":         {"toJSON"},
 	"toPrettyHcl":    {"toPrettyHCL"},
 	"toPrettyJson":   {"toPrettyJSON"},
-	"toPrettyXml":    {"toPrettyXML"},
 	"toQuotedHcl":    {"toQuotedHCL"},
 	"toQuotedJson":   {"toQuotedJSON"},
-	"toXml":          {"toXML"},
 	"toYaml":         {"toYAML"},
 	"undef":          {"ifUndef"},
 	"unique":         {"uniq"},
 	"unset":          {"delete", "remove"},
-	"xml":            {"XML", "fromXml", "fromXML"},
 	"yaml":           {"YAML", "fromYaml", "fromYAML"},
 }
 
@@ -215,12 +210,10 @@ var dataFuncsHelp = descriptions{
 	"toPrettyHcl":    "Converts the supplied value to pretty HCL representation.",
 	"toPrettyJson":   "Converts the supplied value to pretty JSON representation.",
 	"toPrettyTFVars": "Converts the supplied value to pretty HCL representation (without multiple map declarations).",
-	"toPrettyXml":    "Converts the supplied value to pretty XML representation.",
 	"toQuotedHcl":    "Converts the supplied value to compact quoted HCL representation.",
 	"toQuotedJson":   "Converts the supplied value to compact quoted JSON representation.",
 	"toQuotedTFVars": "Converts the supplied value to compact HCL representation (without multiple map declarations).",
 	"toTFVars":       "Converts the supplied value to compact HCL representation (without multiple map declarations).",
-	"toXml":          "Converts the supplied value to XML representation.",
 	"toYaml":         "Converts the supplied value to YAML representation.",
 	"undef":          "Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, \"\" are not considered as unset).",
 	"union":          "Returns a list that is the union of the list and all arguments (removing duplicates).",
@@ -228,7 +221,6 @@ var dataFuncsHelp = descriptions{
 	"unset":          "Removes an element from a dictionary.",
 	"values":         "Returns the list of values contained in a map.",
 	"without":        "Filters items out of a list.",
-	"xml":            "Converts the supplied xml string into data structure (Go spec). If context is omitted, default context is used.",
 	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",
 }
 
@@ -260,7 +252,6 @@ func (t *Template) addDataFuncs() {
 		"data": t.dataConverter,
 		"hcl":  t.hclConverter,
 		"json": t.jsonConverter,
-		//"xml":  t.xmlConverter,
 		"yaml": t.yamlConverter,
 	}, dataConversion, options)
 }
@@ -311,11 +302,6 @@ func toQuotedTFVars(v interface{}) (string, error) {
 	result := fmt.Sprintf("%q", output)
 	return result[1 : len(result)-1], err
 }
-
-// func toXML(v interface{}) (string, error) {
-// 	output, err := xml.Marshal(v)
-// 	return string(output), err
-// }
 
 func toYAML(v interface{}) (string, error) {
 	output, err := yaml.Marshal(v)
