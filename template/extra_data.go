@@ -94,10 +94,10 @@ var dataFuncsArgs = arguments{
 	"findStrict":     {"list", "element"},
 	"get":            {"map", "key", "default"},
 	"hasKey":         {"dictionary", "key"},
-	"hcl":            {"hcl", "context"},
+	"hcl":            {"hcl"},
 	"initial":        {"list"},
 	"intersect":      {"list", "elements"},
-	"json":           {"json", "context"},
+	"json":           {"json"},
 	"key":            {"value"},
 	"keys":           {"dictionary"},
 	"lenc":           {"str"},
@@ -133,7 +133,7 @@ var dataFuncsArgs = arguments{
 	"union":          {"list", "elements"},
 	"unset":          {"dictionary", "key"},
 	"without":        {"list", "elements"},
-	"yaml":           {"yaml", "context"},
+	"yaml":           {"yaml"},
 }
 
 var dataFuncsAliases = aliases{
