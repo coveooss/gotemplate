@@ -171,7 +171,13 @@ var dataFuncsHelp = descriptions{
 	"contains":       "Tests whether a list contains all given elements (matches any types).",
 	"containsStrict": "Tests whether a list contains all given elements (matches only the same types).",
 	"content":        "Returns the content of a single element map.\nUsed to retrieve content in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
-	"data":           "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.",
+	"data": "Tries to parse the given input string as a data structure. This function supports JSON, HCL and YAML. " +
+		"If the context argument is omitted, the default context is used. " +
+		"\n\n" +
+		"Note that this function attempts to template the given input string. This means that if the input string " +
+		"contains gotemplate expressions, those will be evaluated. This behavior is deprecated and will be removed in " +
+		"future versions of gotemplate. If you are using this behavior, please use `@data(include(\"...\"))` or " +
+		"`{{ data (include \"...\") }` to future proof your code.",
 	"dict":           "Returns a new dictionary from a list of pairs (key, value).",
 	"extract":        "Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps.",
 	"find":           "Returns all index positions where the element is found in the list (matches any types).",
