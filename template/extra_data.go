@@ -243,6 +243,11 @@ var dataFuncsExamples = examples{
 		@-unset("key2", $myDict)
 		@-toJson($myDict)`)), ``, `{"key3":"value3"}`},
 	},
+	"data": {
+		{"@data(`{\"foo\": \"bar\"}`).foo", "{{ (data (`{\"foo\": \"bar\"}`)).foo }}", `bar`},
+		{"@data(`foo: bar`).foo", "{{ (data (`foo: bar`)).foo }}", `bar`},
+		{"@data(`foo = bar`).foo", "{{ (data (`foo = bar`)).foo }}", `bar`},
+	},
 }
 
 func (t *Template) addDataFuncs() {
