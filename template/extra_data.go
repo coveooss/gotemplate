@@ -178,13 +178,13 @@ var dataFuncsHelp = descriptions{
 	"findStrict":     "Returns all index positions where the element is found in the list (matches only the same types).",
 	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode).",
 	"hasKey":         "Returns true if the dictionary contains the specified key.",
-	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
+	"hcl":            "Converts the supplied hcl string into data structure (Go spec).",
 	"initial":        "Returns but the last element.",
 	"intersect":      "Returns a list that is the intersection of the list and all arguments (removing duplicates).",
 	"isNil":          "Returns true if the supplied value is nil.",
 	"isSet":          "Returns true if the supplied value is not nil.",
 	"isZero":         "Returns true if the supplied value is false, 0, nil or empty.",
-	"json":           "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.",
+	"json":           "Converts the supplied json string into data structure (Go spec).",
 	"key":            "Returns the key name of a single element map.\nUsed to retrieve name in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
 	"keys":           "Returns a list of all of the keys in a dict (in alphabetical order).",
 	"lenc":           "Returns the number of actual character in a string.",
@@ -221,7 +221,7 @@ var dataFuncsHelp = descriptions{
 	"unset":          "Removes an element from a dictionary.",
 	"values":         "Returns the list of values contained in a map.",
 	"without":        "Filters items out of a list.",
-	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",
+	"yaml":           "Converts the supplied yaml string into data structure (Go spec).",
 }
 
 var dataFuncsExamples = examples{
