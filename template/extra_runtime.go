@@ -43,6 +43,7 @@ var runtimeFuncsAliases = aliases{
 	"getAttributes": {"attr", "attributes"},
 	"getMethods":    {"methods"},
 	"getSignature":  {"sign", "signature"},
+	"include":       {"eval"},
 	"raise":         {"raiseError"},
 	"userContext":   {"c", "context"},
 }
@@ -82,7 +83,16 @@ var runtimeFuncsHelp = descriptions{
 	"getAttributes": "List all attributes accessible from the supplied object.",
 	"getMethods":    "List all methods signatures accessible from the supplied object.",
 	"getSignature":  "List all attributes and methods signatures accessible from the supplied object.",
-	"include":       "Returns the result of the named template rendering (like template but it is possible to capture the output).",
+	"include": strings.TrimSpace(collections.UnIndent(`
+		Runs the given template code and returns the output.
+
+		Template code can be specified as:
+		- A file path
+		- The name of a defined template
+		- A string containing template code
+
+		This is similar to what the template action does but it allows you to capture its output in a variable.
+	`)),
 	"localAlias":    "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.",
 	"raise":         "Raise a formated error.",
 	"run":           "Returns the result of the shell command as string.",
@@ -90,6 +100,31 @@ var runtimeFuncsHelp = descriptions{
 	"templateNames": "Returns the list of available templates names.",
 	"templates":     "Returns the list of available templates.",
 	"userContext":   "Returns the user context (i.e. all global variables except the injected constant).",
+}
+
+var runtimeFuncExamples = examples{
+	"include": {
+		Example{
+			Razor:    `Raw code: @(include "@(2+2)")`,
+			Template: `Raw code: {{ include "@(2+2)" }}`,
+			Result:   `Raw code: 4`,
+		},
+		Example{
+			Razor: strings.TrimSpace(collections.UnIndent(`
+				@--define("my-template")
+				@--(2+2)
+				@--end
+				Defined template: @(include "my-template")
+			`)),
+			Template: strings.TrimSpace(collections.UnIndent(`
+				{{- define "my-template" -}}
+				{{- add 2 2 -}}
+				{{- end -}}
+				Defined template: {{ include "my-template" }}
+			`)),
+			Result: `Defined template: 4`,
+		},
+	},
 }
 
 func (t *Template) addRuntimeFuncs() {
@@ -121,9 +156,10 @@ func (t *Template) addRuntimeFuncs() {
 		"userContext":      t.userContext,
 	}
 	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
-		FuncHelp:    runtimeFuncsHelp,
-		FuncArgs:    runtimeFuncsArgs,
-		FuncAliases: runtimeFuncsAliases,
+		FuncHelp:     runtimeFuncsHelp,
+		FuncArgs:     runtimeFuncsArgs,
+		FuncAliases:  runtimeFuncsAliases,
+		FuncExamples: runtimeFuncExamples,
 	})
 }
 
