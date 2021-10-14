@@ -23,7 +23,7 @@ func (r *RegexReplacer) fromExpressionArray(source []string) RegexReplacer {
 }
 
 // Typed string to represent the different timings for the replacers. Private, so no other values can be instatiated
-type substituteTiming string
+type substituteTiming int
 
 // Interface to access the private type substituteTiming used to define a simili enum
 type SubstituteTiming interface {
@@ -34,11 +34,29 @@ func (sub substituteTiming) Get() substituteTiming {
 	return sub
 }
 
+func (sub substituteTiming) String() string {
+	return []string{"b", "e", "p", ""}[sub]
+}
+
+func substituteTiming_from_string(value string) substituteTiming {
+	switch value {
+	case "b":
+		return BeginTiming
+	case "e":
+		return EndTiming
+	case "p":
+		return _ProtectTiming
+	case "":
+		return NoTiming
+	}
+	return NoTiming
+}
+
 const (
-	BEGIN    substituteTiming = "b"
-	END      substituteTiming = "e"
-	_PROTECT substituteTiming = "p"
-	NONE     substituteTiming = ""
+	BeginTiming substituteTiming = iota
+	EndTiming
+	_ProtectTiming
+	NoTiming
 )
 
 // InitReplacers configures the list of substitution that should be applied on each document
@@ -72,7 +90,7 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 			expression[2] = ""
 		}
 		timing := extractTiming(expression)
-		if timing == _PROTECT {
+		if timing == _ProtectTiming {
 			var protectExpr []string
 			expression, protectExpr = genProtectExpressions(expression)
 			protectors = append(protectors, (&RegexReplacer{}).fromExpressionArray(protectExpr))
@@ -86,23 +104,34 @@ func InitReplacers(replacers ...string) []RegexReplacer {
 func extractTiming(expression []string) substituteTiming {
 	exprLen := len(expression)
 	// the exprLen is repeated, but with boolean algebra magic, we can prove it disapears everytime and makes the program not crash (^,^)
-	isValidTiming := exprLen == 4 && strings.Contains("bep", strings.ToLower(expression[3]))
-	if exprLen == 4 && isValidTiming {
-		return substituteTiming(expression[3])
-	} else if exprLen == 4 && !isValidTiming {
-		errors.Raise("Bad timing information %s, valid values are b(egin) or e(nd) or p(rotect) for both e.g. /regex/replacer[/b | /e | /p]", expression[3])
+	if exprLen == 4 {
+		isValidTiming := false
+		switch strings.ToLower(expression[3]) {
+		case
+			"b", "e", "p":
+			isValidTiming = true
+		}
+		if isValidTiming {
+			return substituteTiming_from_string(expression[3])
+		} else if !isValidTiming {
+			errors.Raise("Bad timing information %s, valid values are b(egin) or e(nd) or p(rotect) for both e.g. /regex/replacer[/b | /e | /p]", expression[3])
+		}
 	}
-	return NONE
+	return NoTiming
 }
 
 // generate a "begin" replacer and an "end" replacer and put the extra replacer in the protectors slice.
 // It is arbitrary, but place the "end" replacer in the protectors slice.
 //
-// Return a modified version of the expression passed in params.
+// Return the beginExpr and the endExpr
 func genProtectExpressions(expression []string) (begin []string, end []string) {
+	protectedLiteral := regexp.QuoteMeta(expression[1])
+	if protectedLiteral != expression[1] {
+		errors.Raise("Can't have regex metacharacters in the protected literal: %s", protectedLiteral)
+	}
 	protectionString := fmt.Sprintf("_=!%s!=_", expression[2])
-	beginExpr := []string{"", expression[1], protectionString, string(BEGIN)}
-	endExpr := []string{"", protectionString, expression[1], string(END)}
+	beginExpr := []string{"", protectedLiteral, protectionString, BeginTiming.String()}
+	endExpr := []string{"", protectionString, protectedLiteral, EndTiming.String()}
 	return beginExpr, endExpr
 }
 
