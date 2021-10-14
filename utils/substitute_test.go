@@ -30,3 +30,30 @@ func TestSubstitute(t *testing.T) {
 		})
 	}
 }
+
+func TestInitReplacers_panics(t *testing.T) {
+
+	tests := []struct {
+		name      string
+		replacers []string
+	}{
+		{"Empty replacer", []string{""}},
+		{"Not enough params", []string{"/potato"}},
+		{"Too many params", []string{"/potato/banana/mango/anana"}},
+		{"Bad timing information", []string{"/potato/banana/mango"}},
+		{"Timing mix be", []string{"/potato/banana/be"}},
+		{"Timing mix bp", []string{"/potato/banana/bp"}},
+		{"Timing mix ep", []string{"/potato/banana/ep"}},
+		{"Timing mix bep", []string{"/potato/banana/bep"}},
+		{"No timing information", []string{"/potato/banana/"}},
+		{"Protected literal is regex", []string{`/\d+[potato]/banana/`}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			defer func() { recover() }()
+			res := InitReplacers(tt.replacers...)
+			t.Log(tt.name, "should have panicked, instead returned", res)
+			t.Fail()
+		})
+	}
+}
