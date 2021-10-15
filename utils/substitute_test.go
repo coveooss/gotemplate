@@ -45,7 +45,7 @@ func TestInitReplacers_panics(t *testing.T) {
 		{"Timing mix bp", []string{"/potato/banana/bp"}},
 		{"Timing mix ep", []string{"/potato/banana/ep"}},
 		{"Timing mix bep", []string{"/potato/banana/bep"}},
-		{"Protected literal is regex", []string{`/\d+[potato]/banana/`}},
+		{"Protected literal is regex", []string{`/\d+[potato]/banana/p`}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
