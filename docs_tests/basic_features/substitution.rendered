@@ -4,6 +4,20 @@ It is possible to add custom substitution rules. This enables the user to apply 
 * `--substitutes` or `-s` flags 
 * `GOTEMPLATE_SUBSTITUTES` environment variable.
 
+## Usage
+To use the custom substitutions on the CLI, you would need to add the substitutions like this:
+```bash
+$ gotemplate --substitute "/@sha256/baton" -s "/my/me" "my @sha256"
+
+me baton
+```
+For the environment variable you have two choices:
+* Either use the current newline separator or the colon separator to separate your substitutions:
+```bash
+$ GOTEMPLATE_SUBSTITUTES="/@sha256/baton/b:/my/me" gotemplate "my @sha256"
+
+me baton
+``` 
 
 ## Format
 
