@@ -49,7 +49,8 @@ func substituteTiming_from_string(value string) substituteTiming {
 	case "":
 		return NoTiming
 	}
-	return NoTiming
+	errors.Raise("Bad timing information %s, valid values are b(egin) or e(nd) or p(rotect) for both e.g. /regex/replacer[/b | /e | /p]", value)
+	return NoTiming // this is useless, but the linter was complaining
 }
 
 const (
@@ -105,17 +106,7 @@ func extractTiming(expression []string) substituteTiming {
 	exprLen := len(expression)
 	// the exprLen is repeated, but with boolean algebra magic, we can prove it disapears everytime and makes the program not crash (^,^)
 	if exprLen == 4 {
-		isValidTiming := false
-		switch strings.ToLower(expression[3]) {
-		case
-			"b", "e", "p":
-			isValidTiming = true
-		}
-		if isValidTiming {
-			return substituteTiming_from_string(expression[3])
-		} else if !isValidTiming {
-			errors.Raise("Bad timing information %s, valid values are b(egin) or e(nd) or p(rotect) for both e.g. /regex/replacer[/b | /e | /p]", expression[3])
-		}
+		return substituteTiming_from_string(expression[3])
 	}
 	return NoTiming
 }
