@@ -1,0 +1,45 @@
+# Custom Substitutions
+
+It is possible to add custom substitution rules. This enables the user to apply _replace-all_ kind of operations to the text using one or both of these 2 options:
+* `--substitutes` or `-s` flags 
+* `GOTEMPLATE_SUBSTITUTES` environment variable.
+
+
+## Format
+
+All the rules are loaded through string values in the format of:
+
+`{separator} {select regex expression} {separator} {replace expression} [ {separator}{timing} ]`
+
+Where:
+* "separator" is a character to split the expression - for example "/"
+* "select regex expression" is a regex expression to select strings to replace - for example "^gotemplate$"
+* "replace regex expression" is the regex expression that will replace all selected expression - for example "templatego"
+* "timing" determines when the substitution will happen - valid values are `b`(egin), `e`(nd) or `p`(rotect) (See Timings section)
+
+Not very clear is it? Here's an example with concrete values:
+
+| separator | select regex expression | replace expression | timing | assembled rule       | In words
+| --------- | ----------------------- | ------------------ | ------ | -------------------- | ---------
+| /         | [select]                | replace            |    -   | /[string]/string     | Replace all matching strings by "replace"
+| /         | {{ $.sha256 }}                 | notsha256          |    b   | /{{ $.sha256 }}/notsha256/b | Replace all {{ $.sha256 }} by notsha256 _before_ templating
+| /         | {{ $.sha256 }}                 | notsha256          |    e   | /{{ $.sha256 }}/notsha256/e | Replace all {{ $.sha256 }} by notsha256 _after_ templating
+| /         | {{ $.sha256 }}                 | notsha256          |    p   | /{{ $.sha256 }}/notsha256/p | Protect all {{ $.sha256 }} _during_ templating then _restore_ them
+
+
+## Timings
+Timing is the term that was chosen to represent the concept of _when_ the substitution is run. The timing is totally optional, you don't have to specify it if you don't have a need for it. For example, you might receive text you want to template that contains expressions that **gotemplate** will try to convert or you'd like to make changes after the templating. You can use substitutions to do just that.
+
+### Supported timings
+**gotemplate** supports the use of a `b`egin, `e`nd or `p`rotect timing.
+* The `b`egin timing runs the substitution before any other timings and before templating.
+* The `e`nd timing runs after all substitutions and templating
+* The `p`rotect timing is a special case and works only on string literals. It generates 2 subsitutions: one `b`egin and one `e`nd that will cancel each other so that your literal is protected and won't be touched through templating. Hence the name.
+
+#### Example:
+
+Say we receive this: `This is my docker {{ some gotemplate }} sha digest [...]{{ $.sha256 }}:[...]`
+
+**gotemplate** will try to template the variable `sha256`, but it will most likely not exist... By adding a substitution in the form of `/{{ $.sha256 }}/notsha256/b`, gotemplate will replace all instances of `{{ $.sha256 }}` before trying to template the content. By changing the timing to protect (`[...]/b` => `[...]/p`), not only would there be no problem with the `{{ $.sha256 }}`, but it would be protected from the templating and left untouched. 
+
+We would have this: `This is my docker {result of the gotemplate} sha digest [...]{{ $.sha256 }}[..]`
