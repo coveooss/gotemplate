@@ -38,7 +38,7 @@ Not very clear is it? Here's an example with concrete values:
 | /         | [select]                | replace            |    -   | /[select]/replace    | Replace all matching strings by "replace"
 | /         | @sha256                 | notsha256          |    b   | /@sha256/notsha256/b | Replace all @sha256 by notsha256 _before_ templating
 | /         | @sha256                 | notsha256          |    e   | /@sha256/notsha256/e | Replace all @sha256 by notsha256 _after_ templating
-| /         | @sha256                 | notsha256          |    p   | /@sha256/notsha256/p | Replace all @sha256 but notsha256 _during_ templating then _restore_ them
+| /         | @sha256                 | notsha256          |    p   | /@sha256/notsha256/p | Replace all @sha256 by notsha256 _during_ templating then _restore_ them
 
 
 ## Timings
