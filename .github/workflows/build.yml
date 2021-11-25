@@ -53,9 +53,12 @@ jobs:
         with:
           emptyCommits: false
 
-      - name: Build Tag
+      - name: Run GoReleaser
         if: github.ref != 'refs/heads/master'
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          curl -sL https://git.io/goreleaser | bash;
