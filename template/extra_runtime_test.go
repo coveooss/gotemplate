@@ -4,7 +4,9 @@ import (
 	"testing"
 
 	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/hcl"
 	"github.com/coveooss/gotemplate/v3/json"
+	"github.com/coveooss/gotemplate/v3/yaml"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -89,4 +91,99 @@ func TestInclude(t *testing.T) {
 	`, "include")
 	assert.Equal(t, "Hello 123\nHello ", x)
 	assert.NoError(t, err)
+}
+
+func TestExec(t *testing.T) {
+	tests := []struct {
+		name     string
+		script   string
+		args     []interface{}
+		expected interface{}
+	}{
+		{
+			name:     "should return bare text as is",
+			script:   `echo -n 'hello world'`,
+			args:     []interface{}{},
+			expected: "hello world",
+		},
+		{
+			name:   "should template in arguments",
+			script: `echo -n 'hello @name'`,
+			args: []interface{}{
+				map[string]interface{}{
+					"name": "bob",
+				},
+			},
+			expected: "hello bob",
+		},
+		{
+			name:     "should not template output",
+			script:   `printf 'hello %s(2 + 2)' '@'`,
+			args:     []interface{}{},
+			expected: "hello @(2 + 2)",
+		},
+		{
+			name: "should parse json output",
+			script: `
+				echo '{
+					"foo": "bar",
+					"num": 1,
+					"bool": true,
+					"nope": null,
+					"with_at": "@@yay"
+				}'`,
+			args: []interface{}{},
+			expected: json.Dictionary{
+				"foo":  "bar",
+				"num":  1,
+				"bool": true,
+				// Nils are converted to empty dictionaries for some reason
+				"nope":    json.Dictionary{},
+				"with_at": "@yay",
+			},
+		},
+		{
+			name: "should parse yaml output",
+			script: `
+				echo 'foo: bar'
+				echo 'num: 1'
+				echo 'bool: true'
+				echo 'nope: null'
+				echo 'with_at: "@@yay"'`,
+			args: []interface{}{},
+			expected: yaml.Dictionary{
+				"foo":  "bar",
+				"num":  1,
+				"bool": true,
+				// Nils are converted to empty dictionaries for some reason
+				"nope":    yaml.Dictionary{},
+				"with_at": "@yay",
+			},
+		},
+		{
+			name: "should parse hcl output",
+			script: `
+				echo 'foo = "bar"'
+				echo 'num = 1'
+				echo 'bool = true'
+				echo 'with_at = "@@yay"'`,
+			args: []interface{}{},
+			expected: hcl.Dictionary{
+				"foo":     "bar",
+				"num":     1,
+				"bool":    true,
+				"with_at": "@yay",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			template := MustNewTemplate("", nil, "", nil)
+			res, err := template.exec(test.script, test.args...)
+
+			assert.NoError(t, err)
+			assert.Equal(t, test.expected, res)
+		})
+	}
 }

@@ -377,14 +377,20 @@ func (t *Template) tryConvert(value string) interface{} {
 }
 
 // Execute the command (command could be a file, a template or a script) and convert its result as data if possible
-func (t *Template) exec(command string, args ...interface{}) (result interface{}, err error) {
-	if result, err = t.run(command, args...); err == nil {
-		if result == nil {
-			return
-		}
-		result = t.tryConvert(result.(string))
+func (t *Template) exec(command string, args ...interface{}) (interface{}, error) {
+	commandOutput, err := t.run(command, args...)
+	if err != nil || commandOutput == nil {
+		return commandOutput, err
 	}
-	return
+
+	var parsedOutput interface{}
+	err = collections.ConvertData(commandOutput.(string), &parsedOutput)
+
+	if err == nil {
+		return parsedOutput, nil
+	} else {
+		return commandOutput, nil
+	}
 }
 
 func (t *Template) runTemplate(source string, args ...interface{}) (result, filename string, err error) {
