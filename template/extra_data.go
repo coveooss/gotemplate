@@ -78,7 +78,6 @@ var dataFuncsConversion = dictionary{
 	"toQuotedTFVars": toQuotedTFVars,
 	"toTFVars":       toTFVars,
 	"toYaml":         toYAML,
-	//"toXml":          toXML,
 }
 
 var dataFuncsArgs = arguments{
@@ -95,10 +94,10 @@ var dataFuncsArgs = arguments{
 	"findStrict":     {"list", "element"},
 	"get":            {"map", "key", "default"},
 	"hasKey":         {"dictionary", "key"},
-	"hcl":            {"hcl", "context"},
+	"hcl":            {"hcl"},
 	"initial":        {"list"},
 	"intersect":      {"list", "elements"},
-	"json":           {"json", "context"},
+	"json":           {"json"},
 	"key":            {"value"},
 	"keys":           {"dictionary"},
 	"lenc":           {"str"},
@@ -134,8 +133,7 @@ var dataFuncsArgs = arguments{
 	"union":          {"list", "elements"},
 	"unset":          {"dictionary", "key"},
 	"without":        {"list", "elements"},
-	"xml":            {"yaml", "context"},
-	"yaml":           {"yaml", "context"},
+	"yaml":           {"yaml"},
 }
 
 var dataFuncsAliases = aliases{
@@ -155,15 +153,12 @@ var dataFuncsAliases = aliases{
 	"toJson":         {"toJSON"},
 	"toPrettyHcl":    {"toPrettyHCL"},
 	"toPrettyJson":   {"toPrettyJSON"},
-	"toPrettyXml":    {"toPrettyXML"},
 	"toQuotedHcl":    {"toQuotedHCL"},
 	"toQuotedJson":   {"toQuotedJSON"},
-	"toXml":          {"toXML"},
 	"toYaml":         {"toYAML"},
 	"undef":          {"ifUndef"},
 	"unique":         {"uniq"},
 	"unset":          {"delete", "remove"},
-	"xml":            {"XML", "fromXml", "fromXML"},
 	"yaml":           {"YAML", "fromYaml", "fromYAML"},
 }
 
@@ -176,20 +171,26 @@ var dataFuncsHelp = descriptions{
 	"contains":       "Tests whether a list contains all given elements (matches any types).",
 	"containsStrict": "Tests whether a list contains all given elements (matches only the same types).",
 	"content":        "Returns the content of a single element map.\nUsed to retrieve content in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
-	"data":           "Tries to convert the supplied data string into data structure (Go spec). It will try to convert HCL, YAML and JSON format. If context is omitted, default context is used.",
+	"data": "Tries to parse the given input string as a data structure. This function supports JSON, HCL and YAML. " +
+		"If the context argument is omitted, the default context is used. " +
+		"\n\n" +
+		"Note that this function attempts to template the given input string. This means that if the input string " +
+		"contains gotemplate expressions, those will be evaluated. This behavior is deprecated and will be removed in " +
+		"future versions of gotemplate. If you are using this behavior, please use `@data(include(\"...\"))` or " +
+		"`{{ data (include \"...\") }` to future proof your code.",
 	"dict":           "Returns a new dictionary from a list of pairs (key, value).",
 	"extract":        "Extracts values from a slice or a map, indexes could be either integers for slice or strings for maps.",
 	"find":           "Returns all index positions where the element is found in the list (matches any types).",
 	"findStrict":     "Returns all index positions where the element is found in the list (matches only the same types).",
 	"get":            "Returns the value associated with the supplied map, key and map could be inverted for convenience (i.e. when using piping mode).",
 	"hasKey":         "Returns true if the dictionary contains the specified key.",
-	"hcl":            "Converts the supplied hcl string into data structure (Go spec). If context is omitted, default context is used.",
+	"hcl":            "Converts the supplied hcl string into data structure (Go spec).",
 	"initial":        "Returns but the last element.",
 	"intersect":      "Returns a list that is the intersection of the list and all arguments (removing duplicates).",
 	"isNil":          "Returns true if the supplied value is nil.",
 	"isSet":          "Returns true if the supplied value is not nil.",
 	"isZero":         "Returns true if the supplied value is false, 0, nil or empty.",
-	"json":           "Converts the supplied json string into data structure (Go spec). If context is omitted, default context is used.",
+	"json":           "Converts the supplied json string into data structure (Go spec).",
 	"key":            "Returns the key name of a single element map.\nUsed to retrieve name in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
 	"keys":           "Returns a list of all of the keys in a dict (in alphabetical order).",
 	"lenc":           "Returns the number of actual character in a string.",
@@ -215,12 +216,10 @@ var dataFuncsHelp = descriptions{
 	"toPrettyHcl":    "Converts the supplied value to pretty HCL representation.",
 	"toPrettyJson":   "Converts the supplied value to pretty JSON representation.",
 	"toPrettyTFVars": "Converts the supplied value to pretty HCL representation (without multiple map declarations).",
-	"toPrettyXml":    "Converts the supplied value to pretty XML representation.",
 	"toQuotedHcl":    "Converts the supplied value to compact quoted HCL representation.",
 	"toQuotedJson":   "Converts the supplied value to compact quoted JSON representation.",
 	"toQuotedTFVars": "Converts the supplied value to compact HCL representation (without multiple map declarations).",
 	"toTFVars":       "Converts the supplied value to compact HCL representation (without multiple map declarations).",
-	"toXml":          "Converts the supplied value to XML representation.",
 	"toYaml":         "Converts the supplied value to YAML representation.",
 	"undef":          "Returns the default value if value is not set, alias `undef` (differs from Sprig `default` function as empty value such as 0, false, \"\" are not considered as unset).",
 	"union":          "Returns a list that is the union of the list and all arguments (removing duplicates).",
@@ -228,8 +227,7 @@ var dataFuncsHelp = descriptions{
 	"unset":          "Removes an element from a dictionary.",
 	"values":         "Returns the list of values contained in a map.",
 	"without":        "Filters items out of a list.",
-	"xml":            "Converts the supplied xml string into data structure (Go spec). If context is omitted, default context is used.",
-	"yaml":           "Converts the supplied yaml string into data structure (Go spec). If context is omitted, default context is used.",
+	"yaml":           "Converts the supplied yaml string into data structure (Go spec).",
 }
 
 var dataFuncsExamples = examples{
@@ -244,6 +242,20 @@ var dataFuncsExamples = examples{
 		@-unset($myDict, "key")
 		@-unset("key2", $myDict)
 		@-toJson($myDict)`)), ``, `{"key3":"value3"}`},
+	},
+	"data": {
+		{"@data(`{\"foo\": \"bar\"}`).foo", "{{ (data (`{\"foo\": \"bar\"}`)).foo }}", `bar`},
+		{"@data(`foo: bar`).foo", "{{ (data (`foo: bar`)).foo }}", `bar`},
+		{"@data(`foo = \"bar\"`).foo", "{{ (data (`foo = \"bar\"`)).foo }}", `bar`},
+	},
+	"json": {
+		{"@json(`{\"foo\": \"bar\"}`).foo", "{{ (json (`{\"foo\": \"bar\"}`)).foo }}", `bar`},
+	},
+	"hcl": {
+		{"@hcl(`foo = \"bar\"`).foo", "{{ (hcl (`foo = \"bar\"`)).foo }}", `bar`},
+	},
+	"yaml": {
+		{"@yaml(`foo: bar`).foo", "{{ (yaml (`foo: bar`)).foo }}", `bar`},
 	},
 }
 
@@ -260,7 +272,6 @@ func (t *Template) addDataFuncs() {
 		"data": t.dataConverter,
 		"hcl":  t.hclConverter,
 		"json": t.jsonConverter,
-		//"xml":  t.xmlConverter,
 		"yaml": t.yamlConverter,
 	}, dataConversion, options)
 }
@@ -311,11 +322,6 @@ func toQuotedTFVars(v interface{}) (string, error) {
 	result := fmt.Sprintf("%q", output)
 	return result[1 : len(result)-1], err
 }
-
-// func toXML(v interface{}) (string, error) {
-// 	output, err := xml.Marshal(v)
-// 	return string(output), err
-// }
 
 func toYAML(v interface{}) (string, error) {
 	output, err := yaml.Marshal(v)
@@ -442,38 +448,51 @@ func converter(from unMarshaler, content string, sourceWithError bool, context .
 }
 
 // Apply a converter to the result of the template execution of the supplied string
-func (t *Template) templateConverter(to marshaler, from unMarshaler, source interface{}, context ...interface{}) (result interface{}, err error) {
-	if source == nil {
+func (t *Template) templateConverter(to marshaler, from unMarshaler, rawSource interface{}, context ...interface{}) (result interface{}, err error) {
+	if rawSource == nil {
 		return nil, nil
 	}
-	if reflect.TypeOf(source).Kind() != reflect.String {
-		if source, err = to(source); err != nil {
+
+	var source string
+	if reflect.TypeOf(rawSource).Kind() != reflect.String {
+		var convertedSource []byte
+		if convertedSource, err = to(rawSource); err != nil {
 			return
 		}
-		source = string(source.([]byte))
+		source = string(convertedSource)
+	} else {
+		source = rawSource.(string)
 	}
 
 	var content string
 	if content, _, err = t.runTemplate(fmt.Sprint(source), context...); err == nil {
+		if content != source {
+			InternalLog.Warnf(
+				"(Deprecated) In future versions of gotemplate the data function and its aliases (%s) will no longer attempt "+
+					"to template their input. "+
+					"If you would like your input string to continue being templated in the future, "+
+					"please use `@data(include(\"...\"))` or `{{ data (include \"...\") }}`."+
+					"If you don't want your input string to be templated at all, please consider using the json, hcl or yaml "+
+					"functions directly as they don't template their input at all.",
+				strings.Join(dataFuncsAliases["data"], ", "),
+			)
+		}
+
 		result, err = converter(from, content, true, context...)
 	}
 	return
 }
 
-// func (t *Template) xmlConverter(source interface{}, context ...interface{}) (interface{}, error) {
-// 	return t.templateConverter(xml.Marshal, xml.Unmarshal, source, context...)
-// }
-
-func (t *Template) yamlConverter(source interface{}, context ...interface{}) (interface{}, error) {
-	return t.templateConverter(yaml.Marshal, yaml.Unmarshal, source, context...)
+func (t *Template) yamlConverter(source string) (interface{}, error) {
+	return converter(yaml.Unmarshal, source, true)
 }
 
-func (t *Template) jsonConverter(source interface{}, context ...interface{}) (interface{}, error) {
-	return t.templateConverter(json.Marshal, json.Unmarshal, source, context...)
+func (t *Template) jsonConverter(source string) (interface{}, error) {
+	return converter(json.Unmarshal, source, true)
 }
 
-func (t *Template) hclConverter(source interface{}, context ...interface{}) (result interface{}, err error) {
-	return t.templateConverter(hcl.Marshal, hcl.Unmarshal, source, context...)
+func (t *Template) hclConverter(source string) (result interface{}, err error) {
+	return converter(hcl.Unmarshal, source, true)
 }
 
 func (t *Template) dataConverter(source interface{}, context ...interface{}) (result interface{}, err error) {

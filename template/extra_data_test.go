@@ -37,6 +37,34 @@ func Test_Data(t *testing.T) {
 	}
 }
 
+func Test_JSON(t *testing.T) {
+	t.Parallel()
+	template := MustNewTemplate("", nil, "", nil)
+	tests := []struct {
+		name    string
+		test    string
+		want    interface{}
+		wantErr string
+	}{
+		{"Simple JSON", `{"b": 2}`, json.Dictionary{"b": 2}, ""},
+		{"JSON with Razor", `{"b": "@(2 + 2)"}`, json.Dictionary{"b": "@(2 + 2)"}, ""},
+		{"JSON with text/template", `{"b": "{{ add 2 2 }}"}`, json.Dictionary{"b": "{{ add 2 2 }}"}, ""},
+		{"Simple quoted string", `"string"`, "string", ""},
+		{"Simple string", "string", nil, "\n   1 string\n\ninvalid character 's' looking for beginning of value"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := template.jsonConverter(tt.test)
+			assert.Equal(t, tt.want, got)
+			if tt.wantErr == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func Test_YAML(t *testing.T) {
 	t.Parallel()
 	template := MustNewTemplate("", nil, "", nil)
@@ -46,6 +74,8 @@ func Test_YAML(t *testing.T) {
 		want interface{}
 	}{
 		{"Simple yaml", "b: 2", yaml.Dictionary{"b": 2}},
+		{"YAML with Razor", "b: '@(2 + 2)'", yaml.Dictionary{"b": "@(2 + 2)"}},
+		{"YAML with text/template", "b: '{{ add 2 2 }}'", yaml.Dictionary{"b": "{{ add 2 2 }}"}},
 		{"Simple quoted string", `"string"`, "string"},
 		{"Simple string", "string", "string"},
 	}
@@ -68,6 +98,8 @@ func Test_HCL(t *testing.T) {
 		wantErr string
 	}{
 		{"Simple hcl", "a = 1", hcl.Dictionary{"a": 1}, ""},
+		{"HCL with Razor", `b = "@(2 + 2)"`, hcl.Dictionary{"b": "@(2 + 2)"}, ""},
+		{"HCL with text/template", `b = "{{ add 2 2 }}"`, hcl.Dictionary{"b": "{{ add 2 2 }}"}, ""},
 		{"Simple string", `"string"`, "string", ""},
 		{"Simple string", "string", nil, "\n   1 string\n\nAt 2:1: key 'string' expected start of object ('{') or assignment ('=')"},
 	}

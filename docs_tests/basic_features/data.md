@@ -15,7 +15,7 @@ DictValue = {"key1": "value1", "key2": "value2"}
 
 | Razor | Gotemplate
 | ---   | ---
-| ```@toYaml(data("!Data"))``` | ```{{ toYaml (data "!Data") }}```
+| ```@toYaml(data(include("!Data")))``` | ```{{ toYaml (data (include "!Data")) }}```
 
 ```data
 DictValue:
@@ -34,7 +34,7 @@ StringValue: Foo bar
 
 | Razor | Gotemplate
 | ---   | ---
-| ```@toPrettyJson(data("!Data"))``` | ```{{ toPrettyJson (data "!Data") }}```
+| ```@toPrettyJson(data(include("!Data")))``` | ```{{ toPrettyJson (data (include "!Data")) }}```
 
 ```data
 {
@@ -57,7 +57,7 @@ StringValue: Foo bar
 
 | Razor | Gotemplate
 | ---   | ---
-| ```@toPrettyHcl(data("!Data"))``` | ```{{ toPrettyHcl (data "!Data") }}```
+| ```@toPrettyHcl(data(include("!Data")))``` | ```{{ toPrettyHcl (data (include "!Data")) }}```
 
 ```data
 EquationResult = 46658
@@ -78,7 +78,7 @@ This test shows how you can convert from and to other formats.
 
 | Razor | Gotemplate
 | ---   | ---
-| ```@toPrettyTFVars(data(toTFVars(fromHcl(toHcl(fromJson(toJson(data("!Data"))))))))``` | ```{{ toPrettyTFVars (data (toTFVars (fromHcl (toHcl (fromJson (toJson (data "!Data"))))))) }}```
+| ```@toPrettyTFVars(data(toTFVars(fromHcl(toHcl(fromJson(toJson(data(include("!Data")))))))))``` | ```{{ toPrettyTFVars (data (toTFVars (fromHcl (toHcl (fromJson (toJson (data (include "!Data")))))))) }}```
 
 ```data
 EquationResult = 46658
