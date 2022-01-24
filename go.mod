@@ -11,7 +11,7 @@ require (
 	github.com/coveord/kingpin/v2 v2.4.0
 	github.com/drhodes/goLorem v0.0.0-20160418191928-ecccc744c2d9
 	github.com/fatih/color v1.12.0
-	github.com/go-errors/errors v1.4.1
+	github.com/go-errors/errors v1.4.2
 	github.com/hashicorp/hcl v1.0.0
 	github.com/sergi/go-diff v1.2.0
 	github.com/sirupsen/logrus v1.8.1
