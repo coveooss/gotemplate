@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0
 	github.com/sergi/go-diff v1.2.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.4.0
