@@ -23,7 +23,7 @@ jobs:
         run: make codecov
 
       - name: Upload to codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
