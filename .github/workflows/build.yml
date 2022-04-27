@@ -17,7 +17,9 @@ jobs:
         id: go
 
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Generate code coverage files
         run: make codecov
