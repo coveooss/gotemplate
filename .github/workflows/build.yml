@@ -53,7 +53,7 @@ jobs:
           PUBLISH_BRANCH: gh-pages
           PUBLISH_DIR: ./docs/public
         with:
-          emptyCommits: false
+          allow_empty_commits: false
 
       - name: Run GoReleaser
         if: github.ref != 'refs/heads/master'
