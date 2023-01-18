@@ -33,7 +33,7 @@ jobs:
 
       - name: Setup Hugo
         if: github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-hugo@c03b5dbed22245418539b65eb9a3b1d5fdd9a0a6
+        uses: peaceiris/actions-hugo@v2.5.0
         with:
           hugo-version: "0.82.0"
           extended: true
