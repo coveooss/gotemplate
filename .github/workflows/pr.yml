@@ -25,7 +25,7 @@ jobs:
           fail_ci_if_error: true
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2.5.0
+        uses: peaceiris/actions-hugo@c03b5dbed22245418539b65eb9a3b1d5fdd9a0a6
         with:
           hugo-version: "0.82.0"
           extended: true
