@@ -13,7 +13,7 @@ require (
 	github.com/fatih/color v1.12.0
 	github.com/go-errors/errors v1.4.2
 	github.com/hashicorp/hcl v1.0.0
-	github.com/sergi/go-diff v1.2.0
+	github.com/sergi/go-diff v1.3.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
