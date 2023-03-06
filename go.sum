@@ -24,8 +24,8 @@ github.com/bmatcuk/doublestar v1.3.4 h1:gPypJ5xD31uhX6Tf54sDPUOBXTqKH4c9aPY66CyQ
 github.com/bmatcuk/doublestar v1.3.4/go.mod h1:wiQtGV+rzVYxB7WIlirSN++5HPtPlXEo9MEoZQC/PmE=
 github.com/coveooss/multilogger v0.5.2 h1:HmuMT1RTD0d6tkqrrO9FlUBbp2p7QYbcAR6guszlifc=
 github.com/coveooss/multilogger v0.5.2/go.mod h1:Pw3jXW2Y4KEd+j5vFTTGSAFRX4fIOvJZzDPnvf9dr7U=
-github.com/coveord/kingpin/v2 v2.4.0 h1:wU/bzvMIzN9JlN8kxpAUmTKc5MPSVN6mxqReTRNCaw8=
-github.com/coveord/kingpin/v2 v2.4.0/go.mod h1:Qw3FnQuB068XW8vcP58GH4c03MYzCmiK00/yLDfqQA8=
+github.com/coveord/kingpin/v2 v2.4.2 h1:d37EYf8mGw0n/S7uH6GtMFxBmrJvFD3uldZu4JC5ZLo=
+github.com/coveord/kingpin/v2 v2.4.2/go.mod h1:Qw3FnQuB068XW8vcP58GH4c03MYzCmiK00/yLDfqQA8=
 github.com/creack/pty v1.1.7/go.mod h1:lj5s0c3V2DBrqTV7llrYr5NG6My20zk30Fl46Y7DoTY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
