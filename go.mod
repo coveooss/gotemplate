@@ -16,7 +16,7 @@ require (
 	github.com/sergi/go-diff v1.3.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.2
-	golang.org/x/term v0.5.0
+	golang.org/x/term v0.6.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.4.0
 )
