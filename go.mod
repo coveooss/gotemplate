@@ -14,7 +14,7 @@ require (
 	github.com/go-errors/errors v1.4.2
 	github.com/hashicorp/hcl v1.0.0
 	github.com/sergi/go-diff v1.3.1
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.2
 	github.com/stretchr/testify v1.8.3
 	golang.org/x/term v0.7.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
