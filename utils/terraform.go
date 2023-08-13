@@ -11,12 +11,12 @@ import (
 
 // IsTerraformFile check if the file extension matches on of the terraform file extension
 func IsTerraformFile(file string) bool {
-	switch filepath.Ext(file) {
-	case ".tf", ".tf.json", ".tfvars":
-		return true
-	default:
-		return false
+	for _, ext := range []string{".tf", ".tf.json", ".tfvars"} {
+		if strings.HasSuffix(file, ext) {
+			return true
+		}
 	}
+	return false
 }
 
 // TerraformFormat applies terraform fmt on
