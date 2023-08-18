@@ -25,7 +25,7 @@ jobs:
 
       - name: Setup Hugo
         if: github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-hugo@v2.5.0
+        uses: peaceiris/actions-hugo@c03b5dbed22245418539b65eb9a3b1d5fdd9a0a6
         with:
           hugo-version: "0.82.0"
           extended: true
@@ -39,7 +39,7 @@ jobs:
 
       - name: Deploy Documentation
         if: github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-gh-pages@v3.9.3
+        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7
         with:
           allow_empty_commit: false
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
@@ -48,7 +48,7 @@ jobs:
 
       - name: Run GoReleaser
         if: github.ref != 'refs/heads/master'
-        uses: goreleaser/goreleaser-action@v3
+        uses: goreleaser/goreleaser-action@b508e2e3ef3b19d4e4146d4f8fb3ba9db644a757
         with:
           distribution: goreleaser
           version: latest
