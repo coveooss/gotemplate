@@ -21,15 +21,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate code coverage files
-        run: make codecov
-
-      - name: Upload to codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.txt
-          fail_ci_if_error: true
+      - run: make test-all
 
       - name: Setup Hugo
         if: github.ref == 'refs/heads/master'
