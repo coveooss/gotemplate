@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -11,10 +10,12 @@ import (
 )
 
 func TestCli(t *testing.T) {
-	variableTempDir := must(ioutil.TempDir("", "gotemplate-test-variable")).(string)
+	variableTempDir, err := os.MkdirTemp("", "gotemplate-test-variable")
+	assert.NoError(t, err)
 	defer os.RemoveAll(variableTempDir)
 	variableFile := path.Join(variableTempDir, "test.variables")
-	must(ioutil.WriteFile(variableFile, []byte("testInt = 5\ntestString = \"hello\"\ntestBool = true"), 0644))
+	err = os.WriteFile(variableFile, []byte("testInt = 5\ntestString = \"hello\"\ntestBool = true"), 0644)
+	assert.NoError(t, err)
 
 	tests := []struct {
 		name           string
@@ -48,7 +49,7 @@ func TestCli(t *testing.T) {
 		{
 			name:           "STDIN variables",
 			pipe:           "testInt=3",
-			args:           []string{"-V-", "--var", "test2=4", "test.template"},
+			args:           []string{"--var=-", "--var", "test2=4", "test.template"},
 			template:       "{{ $var := add .testInt .test2 }}{{ $var }}",
 			expectedCode:   0,
 			expectedResult: "7",
@@ -58,14 +59,14 @@ func TestCli(t *testing.T) {
 		{
 			name:           "Variables that may look like filenames",
 			args:           []string{"--var", "test1=2.3.4", "--var", "test2=/var/path/literal"},
-			template:       "{{ print .test1 \"-\" .test2 }}",
+			template:       `{{ print .test1 "-" .test2 }}`,
 			expectedCode:   0,
 			expectedResult: "2.3.4-/var/path/literal",
 		},
 		{
 			name:           "Variable file as var",
 			args:           []string{"--var", "testFile=" + variableFile},
-			template:       "{{ print .testFile.testInt \"-\" .testFile.testString }}",
+			template:       `{{ print .testFile.testInt "-" .testFile.testString }}`,
 			expectedCode:   0,
 			expectedResult: "5-hello",
 		},
@@ -136,7 +137,8 @@ func TestCli(t *testing.T) {
 
 			if tt.pipe != "" {
 				content := []byte(tt.pipe)
-				tmpStdin := must(ioutil.TempFile("", "example")).(*os.File)
+				tmpStdin, err := os.CreateTemp("", "example")
+				assert.NoError(t, err)
 				defer os.Remove(tmpStdin.Name())
 				must(tmpStdin.Write(content))
 				must(tmpStdin.Seek(0, 0))
@@ -152,11 +154,13 @@ func TestCli(t *testing.T) {
 
 			if tt.template != "" {
 				// Create template
-				tempDir = must(ioutil.TempDir("", "gotemplate-test")).(string)
+				tempDir, err = os.MkdirTemp("", "gotemplate-test")
+				assert.NoError(t, err)
 				os.Chdir(tempDir)
 				defer os.RemoveAll(tempDir)
 				templateFile := path.Join(tempDir, "test.template")
-				must(ioutil.WriteFile(templateFile, []byte(tt.template), 0644))
+				err = os.WriteFile(templateFile, []byte(tt.template), 0644)
+				assert.NoError(t, err)
 				os.Args = append([]string{"gotemplate", "--source", tempDir}, tt.args...)
 			} else {
 				os.Args = append([]string{"gotemplate"}, tt.args...)
@@ -169,7 +173,8 @@ func TestCli(t *testing.T) {
 
 			if tt.expectedResult != "" {
 				generatedFile := path.Join(tempDir, "test.generated")
-				readGeneratedFileContent := must(ioutil.ReadFile(generatedFile)).([]byte)
+				readGeneratedFileContent, err := os.ReadFile(generatedFile)
+				assert.NoError(t, err)
 				assert.Equal(t, []byte(tt.expectedResult), readGeneratedFileContent, "Bad generated content")
 			}
 		})

@@ -8,28 +8,19 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.16
+          go-version: '1.20'
         id: go
 
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Generate code coverage files
-        run: make codecov
-
-      - name: Upload to codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.txt
-          fail_ci_if_error: true
+      - run: make test-all
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2.5.0
+        uses: peaceiris/actions-hugo@c03b5dbed22245418539b65eb9a3b1d5fdd9a0a6
         with:
           hugo-version: "0.82.0"
           extended: true
 
       - name: Test Documentation
-        run: |
-          make doc-generate
+        run: make doc-generate
