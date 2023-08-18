@@ -11,8 +11,8 @@ Flags:
                                  ($GOTEMPLATE_COLOR)
   -v, --version                  Get the current version of gotemplate
       --template-log-level=level  
-                                 Set the template logging level. Accepted values: disabled, panic, fatal,
-                                 error, warning, info, debug, trace (alias: --tll)
+                                 Set the template logging level. Accepted values: disabled,
+                                 panic, fatal, error, warning, info, debug, trace (alias: --tll)
                                  ($GOTEMPLATE_TEMPLATE_LOG_LEVEL)
   -L, --internal-log-level=level  
                                  Set the internal logging level. Accepted values: disabled, panic, fatal,
@@ -53,8 +53,8 @@ Commands:
 
   run [&lt;flags&gt;] [&lt;templates&gt;...]
 
-        --delimiters={{,}},@       Define the default delimiters for go template (separate the left, right
-                                   and razor delimiters by a comma) (alias: --d, --del)
+        --delimiters={{,}},@       Define the default delimiters for go template (separate the left,
+                                   right and razor delimiters by a comma) (alias: --d, --del)
                                    ($GOTEMPLATE_DELIMITERS)
     -i, --import=file ...          Import variables files (could be any of YAML, JSON or HCL format)
                                    ($GOTEMPLATE_IMPORT)
@@ -85,8 +85,8 @@ Commands:
                                    ($GOTEMPLATE_TARGET)
     -I, --stdin                    Force read of the standard input to get a template definition (useful
                                    only if GOTEMPLATE_NO_STDIN is set) ($GOTEMPLATE_STDIN)
-    -f, --follow-symlinks          Follow the symbolic links while using the recursive option (alias: --fs)
-                                   ($GOTEMPLATE_FOLLOW_SYMLINKS)
+    -f, --follow-symlinks          Follow the symbolic links while using the recursive option (alias:
+                                   --fs) ($GOTEMPLATE_FOLLOW_SYMLINKS)
     -P, --print                    Output the result directly to stdout ($GOTEMPLATE_PRINT)
     -d, --disable                  Disable go template rendering (used to view razor conversion)
                                    ($GOTEMPLATE_DISABLE)
@@ -95,8 +95,8 @@ Commands:
     -S, --strict-error-validation  Consider error encountered in any file as real error (alias: --sev,
                                    --strict) ($GOTEMPLATE_STRICT_ERROR)
         --strict-assignations-validation=warning  
-                                   Enforce strict assignation validation on global variables (alias: --sav)
-                                   ($GOTEMPLATE_STRICT_ASSIGNATIONS_VALIDATION)
+                                   Enforce strict assignation validation on global variables (alias:
+                                   --sav) ($GOTEMPLATE_STRICT_ASSIGNATIONS_VALIDATION)
         --ignore-missing-import    Exit with code 0 even if import does not exist (alias: --imi)
                                    ($GOTEMPLATE_IGNORE_MISSING_IMPORT)
         --ignore-missing-source    Exit with code 0 even if source does not exist (alias: --ims)
