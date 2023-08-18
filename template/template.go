@@ -2,7 +2,6 @@ package template
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -229,7 +228,7 @@ func (t *Template) initExtension() {
 		// We just load all the template files available to ensure that all template definition are loaded
 		// We do not use ParseFiles because it names the template with the base name of the file
 		// which result in overriding templates with the same base name in different folders.
-		content := string(must(ioutil.ReadFile(file)).([]byte))
+		content := string(must(os.ReadFile(file)).([]byte))
 
 		// We execute the content, but we ignore errors. The goal is only to register the sub templates and aliases properly
 		// We also do not ask to clone the context as we wish to let extension to be able to alter the supplied context

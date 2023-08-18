@@ -3,7 +3,6 @@ package template
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -467,7 +466,7 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 			if !path.IsAbs(tryFile) {
 				tryFile = path.Join(t.folder, tryFile)
 			}
-			if fileContent, e := ioutil.ReadFile(tryFile); e != nil {
+			if fileContent, e := os.ReadFile(tryFile); e != nil {
 				if _, ok := e.(*os.PathError); !ok {
 					err = e
 					return

@@ -2,7 +2,6 @@ package collections
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"regexp"
@@ -66,7 +65,7 @@ func ConvertData(data string, out interface{}) (err error) {
 // LoadData returns a go representation of the supplied file name (YAML, JSON or HCL)
 func LoadData(filename string, out interface{}) (err error) {
 	var content []byte
-	if content, err = ioutil.ReadFile(filename); err == nil {
+	if content, err = os.ReadFile(filename); err == nil {
 		return ConvertData(string(content), out)
 	}
 	return

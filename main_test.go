@@ -10,11 +10,10 @@ import (
 )
 
 func TestCli(t *testing.T) {
-	variableTempDir, err := os.MkdirTemp("", "gotemplate-test-variable")
-	assert.NoError(t, err)
-	defer os.RemoveAll(variableTempDir)
+	variableTempDir := t.TempDir()
+
 	variableFile := path.Join(variableTempDir, "test.variables")
-	err = os.WriteFile(variableFile, []byte("testInt = 5\ntestString = \"hello\"\ntestBool = true"), 0644)
+	err := os.WriteFile(variableFile, []byte("testInt = 5\ntestString = \"hello\"\ntestBool = true"), 0644)
 	assert.NoError(t, err)
 
 	tests := []struct {
@@ -154,10 +153,8 @@ func TestCli(t *testing.T) {
 
 			if tt.template != "" {
 				// Create template
-				tempDir, err = os.MkdirTemp("", "gotemplate-test")
-				assert.NoError(t, err)
+				tempDir = t.TempDir()
 				os.Chdir(tempDir)
-				defer os.RemoveAll(tempDir)
 				templateFile := path.Join(tempDir, "test.template")
 				err = os.WriteFile(templateFile, []byte(tt.template), 0644)
 				assert.NoError(t, err)

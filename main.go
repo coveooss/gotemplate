@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -27,7 +26,7 @@ import (
 
 // Version is initialized at build time through -ldflags "-X main.Version=<version number>"
 var version = "2.7.4"
-var tempFolder = errors.Must(ioutil.TempDir("", "gotemplate-")).(string)
+var tempFolder = errors.Must(os.MkdirTemp("", "gotemplate-")).(string)
 
 const (
 	envDisableStdinCheck = "GOTEMPLATE_NO_STDIN"

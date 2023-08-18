@@ -2,7 +2,7 @@ package template
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 
@@ -56,7 +56,7 @@ func (t errorHandler) Handler(err error) (string, bool, error) {
 			// An error occurred in an included external template file, we cannot try to recuperate
 			// and try to find further errors, so we just return the error.
 			var line string
-			if fileContent, err := ioutil.ReadFile(matches[tagFile]); err != nil {
+			if fileContent, err := os.ReadFile(matches[tagFile]); err != nil {
 				line = fmt.Sprintf("Unable to read file: %v", err)
 			} else {
 				line = String(fileContent).Lines()[toInt(matches[tagLine])-1].Str()
