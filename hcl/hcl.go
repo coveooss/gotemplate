@@ -2,7 +2,7 @@ package hcl
 
 import (
 	"bytes"
-	"io/ioutil"
+	"os"
 	"reflect"
 
 	"github.com/coveooss/gotemplate/v3/collections"
@@ -70,7 +70,7 @@ func Unmarshal(bs []byte, out interface{}) (err error) {
 // Load loads hcl file into variable
 func Load(filename string) (result interface{}, err error) {
 	var content []byte
-	if content, err = ioutil.ReadFile(filename); err == nil {
+	if content, err = os.ReadFile(filename); err == nil {
 		err = Unmarshal(content, &result)
 	}
 	return

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
@@ -34,7 +33,7 @@ func ScriptParts(content string) (program, subprogram, source string) {
 
 // GetCommandFromFile returns an exec.Cmd structure to run the supplied script file
 func GetCommandFromFile(filename string, args ...interface{}) (cmd *exec.Cmd, err error) {
-	script, err := ioutil.ReadFile(filename)
+	script, err := os.ReadFile(filename)
 	if err != nil {
 		return
 	}
@@ -94,7 +93,7 @@ func IsCommand(command string) bool {
 
 func saveTempFile(content string, args ...interface{}) (cmd *exec.Cmd, fileName string, err error) {
 	var temp *os.File
-	if temp, err = ioutil.TempFile("", "exec_"); err != nil {
+	if temp, err = os.CreateTemp("", "exec_"); err != nil {
 		return
 	}
 

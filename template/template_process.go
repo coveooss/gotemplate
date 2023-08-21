@@ -2,7 +2,6 @@ package template
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -54,14 +53,14 @@ func (t *Template) ProcessTemplates(sourceFolder, targetFolder string, templates
 func (t *Template) printResult(source, target, result string) (err error) {
 	if utils.IsTerraformFile(target) {
 		base := filepath.Base(target)
-		tempFolder := must(ioutil.TempDir(t.tempFolder, base)).(string)
+		tempFolder := must(os.CreateTemp(t.tempFolder, base)).(string)
 		tempFile := filepath.Join(tempFolder, base)
-		err = ioutil.WriteFile(tempFile, []byte(result), 0644)
+		err = os.WriteFile(tempFile, []byte(result), 0644)
 		if err != nil {
 			return
 		}
 		err = utils.TerraformFormat(tempFile)
-		bytes := must(ioutil.ReadFile(tempFile)).([]byte)
+		bytes := must(os.ReadFile(tempFile)).([]byte)
 		result = string(bytes)
 	}
 

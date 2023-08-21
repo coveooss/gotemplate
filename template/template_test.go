@@ -1,7 +1,6 @@
 package template
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -71,7 +70,7 @@ func TestTemplateFilesOverwrite(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			tempfile, err := ioutil.TempFile("", "")
+			tempfile, err := os.CreateTemp("", "")
 			assert.Nil(t, err)
 			defer os.Remove(tempfile.Name())
 
@@ -82,7 +81,7 @@ func TestTemplateFilesOverwrite(t *testing.T) {
 			template.SetOption(Overwrite, true)
 			template.ProcessTemplates("", "", tempfile.Name())
 
-			result, err := ioutil.ReadFile(tempfile.Name())
+			result, err := os.ReadFile(tempfile.Name())
 			assert.Nil(t, err)
 			assert.Equal(t, tt.result, string(result))
 		})

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -34,7 +34,7 @@ func readStdin() string {
 	if stdinContent != "" {
 		return stdinContent
 	}
-	stdinContent = string(must(ioutil.ReadAll(os.Stdin)).([]byte))
+	stdinContent = string(must(io.ReadAll(os.Stdin)).([]byte))
 	return stdinContent
 }
 

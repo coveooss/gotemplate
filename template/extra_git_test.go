@@ -1,7 +1,6 @@
 package template
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -50,8 +49,7 @@ func TestOrigin(t *testing.T) {
 }
 
 func initTestRepository(t *testing.T) (string, *git.Repository, *object.Commit) {
-	path, err := ioutil.TempDir("", "")
-	assert.NoError(t, err)
+	path := t.TempDir()
 
 	// Init the repository
 	repo, err := git.PlainInit(path, false)
@@ -61,7 +59,7 @@ func initTestRepository(t *testing.T) (string, *git.Repository, *object.Commit) 
 
 	// Create a file to commit
 	filename := filepath.Join(path, "example-git-file")
-	err = ioutil.WriteFile(filename, []byte("hello world!"), 0644)
+	err = os.WriteFile(filename, []byte("hello world!"), 0644)
 	assert.NoError(t, err)
 	_, err = worktree.Add("example-git-file")
 	assert.NoError(t, err)

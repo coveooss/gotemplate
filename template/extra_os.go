@@ -2,7 +2,6 @@ package template
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
@@ -194,7 +193,7 @@ func saveToFile(filename string, object interface{}) (string, error) {
 			return "", err
 		}
 	}
-	return "", ioutil.WriteFile(filename, []byte(fmt.Sprint(object)), 0644)
+	return "", os.WriteFile(filename, []byte(fmt.Sprint(object)), 0644)
 }
 
 func username() string {

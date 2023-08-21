@@ -2,7 +2,6 @@ package template
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -43,7 +42,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 
 	template.options[AcceptNoValue] = true
 
-	load := func(path string) []byte { return must(ioutil.ReadFile(path)).([]byte) }
+	load := func(path string) []byte { return must(os.ReadFile(path)).([]byte) }
 
 	tests := make([]test, 0, len(files))
 	for _, file := range files {

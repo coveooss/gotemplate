@@ -3,7 +3,6 @@ package template
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -45,7 +44,7 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 	isCode := t.IsCode(template)
 	var content string
 
-	if fileContent, fileError := ioutil.ReadFile(template); fileError == nil {
+	if fileContent, fileError := os.ReadFile(template); fileError == nil {
 		content = string(fileContent)
 		isCode = false
 	} else if isCode {
@@ -125,7 +124,7 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 		mode = 0755
 	}
 
-	if err = ioutil.WriteFile(resultFile, []byte(result), mode); err != nil {
+	if err = os.WriteFile(resultFile, []byte(result), mode); err != nil {
 		return
 	}
 
