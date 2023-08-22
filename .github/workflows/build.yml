@@ -47,7 +47,7 @@ jobs:
 
       - name: Run GoReleaser
         if: github.ref != 'refs/heads/master'
-        uses: goreleaser/goreleaser-action@b508e2e3ef3b19d4e4146d4f8fb3ba9db644a757
+        uses: goreleaser/goreleaser-action@3fa32b8bb5620a2c1afe798654bbad59f9da4906
         with:
           distribution: goreleaser
           version: latest
