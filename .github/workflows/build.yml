@@ -38,7 +38,7 @@ jobs:
 
       - name: Deploy Documentation
         if: github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-gh-pages@bd8c6b06eba6b3d25d72b7a1767993c0aeee42e7
+        uses: peaceiris/actions-gh-pages@5e45b5dcd828760f1e259928c17513d9433ec594
         with:
           allow_empty_commit: false
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
