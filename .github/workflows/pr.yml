@@ -16,7 +16,7 @@ jobs:
       - run: make test-all
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@c03b5dbed22245418539b65eb9a3b1d5fdd9a0a6
+        uses: peaceiris/actions-hugo@1b06a03d2187c950c5a441dc45c80a01868eca5b
         with:
           hugo-version: "0.82.0"
           extended: true
