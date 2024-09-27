@@ -56,7 +56,7 @@ func (t *Template) addSprigFuncs() {
 
 			if info.group == "" {
 				if aliases[key] == "" {
-					InternalLog.Warningln(key, "not found")
+					InternalLog.Warningf("function %s from Sprig not found in documentation", key)
 					continue
 				}
 				key = aliases[key]
@@ -82,7 +82,7 @@ var sprigFuncRef = map[string]struct {
 	"dateModify":     {group: sprigDate, description: "The dateModify takes a modification and a date and returns the timestamp.", arguments: []string{"fmt", "date"}},
 	"duration":       {group: sprigDate, description: "Formats a given amount of seconds as a time.Duration.", arguments: []string{"second"}},
 	"durationRound":  {group: sprigDate, description: "Rounds a given duration to the most significant unit.", arguments: []string{"duration"}},
-	"htmlDate":       {group: sprigDate, description: "The htmlDate function formates a date for inserting into an HTML date picker input field.", arguments: []string{"date"}},
+	"htmlDate":       {group: sprigDate, description: "The htmlDate function formats a date for inserting into an HTML date picker input field.", arguments: []string{"date"}},
 	"htmlDateInZone": {group: sprigDate, description: "Same as htmlDate, but with a timezone.", arguments: []string{"date", "zone"}},
 	"now":            {group: sprigDate, description: "The current date/time. Use this in conjunction with other date functions."},
 	"toDate":         {group: sprigDate, description: "Converts a string to a date. The first argument is the date layout and the second the date string. If the string can’t be convert it returns the zero value.", arguments: []string{"fmt", "str"}},
@@ -241,7 +241,7 @@ var sprigFuncRef = map[string]struct {
 	"uniqSprig":    {group: sprigList, description: "Generate a list with all of the duplicates removed.", aliases: []string{"uniq"}},
 	"withoutSprig": {group: sprigList, description: "Filters items out of a list.", aliases: []string{"without"}},
 
-	// Cryptographics functions
+	// Cryptographic functions
 	"adler32sum":               {group: sprigCrypto, description: "Computes Adler-32 checksum.", arguments: []string{"input"}},
 	"bcrypt":                   {group: sprigCrypto, description: "Receives a string, and generates its bcrypt hash."},
 	"buildCustomCert":          {group: sprigCrypto, description: "Allows customizing the certificate.", arguments: []string{"base64Cert", "base64PrivateKey"}},
@@ -259,6 +259,7 @@ var sprigFuncRef = map[string]struct {
 	"randBytes":                {group: sprigCrypto, description: "Accepts a count N and generates a cryptographically secure (uses crypto/rand) random sequence of N bytes. The sequence is returned as a base64 encoded string."},
 	"sha1sum":                  {group: sprigCrypto, description: "Computes SHA1 digest.", arguments: []string{"input"}},
 	"sha256sum":                {group: sprigCrypto, description: "Computes SHA256 digest.", arguments: []string{"input"}},
+	"sha512sum":                {group: sprigCrypto, description: "Computes SHA512 digest.", arguments: []string{"input"}},
 
 	// UUIDs:
 	"uuidv4": {group: sprigGen, description: "Returns a new UUID of the v4 (randomly generated) type.", aliases: []string{"uuid", "guid", "GUID"}},
@@ -274,8 +275,8 @@ var sprigFuncRef = map[string]struct {
 	"regexFind":              {group: sprigRegex, description: "Returns the first (left most) match of the regular expression in the input string.", arguments: []string{"regex", "str"}},
 	"regexFindAll":           {group: sprigRegex, description: "Returns a slice of all matches of the regular expression in the input string.", arguments: []string{"regex", "str", "n"}},
 	"regexMatch":             {group: sprigRegex, description: "Returns true if the input string matches the regular expression.", arguments: []string{"regex", "str"}},
-	"regexQuoteMeta":         {group: sprigRegex, description: "Returns a string that escapes all regular expression metacharacters inside the argument text; the returned string is a regular expression matching the literal text"},
-	"regexReplaceAll":        {group: sprigRegex, description: "Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement. Inside string replacement, $ signs are interpreted as in Expand, so for instance $1 represents the text of the first submatch.", arguments: []string{"regex", "str", "repl"}},
+	"regexQuoteMeta":         {group: sprigRegex, description: "Returns a string that escapes all regular expression meta-characters inside the argument text; the returned string is a regular expression matching the literal text"},
+	"regexReplaceAll":        {group: sprigRegex, description: "Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement. Inside string replacement, $ signs are interpreted as in Expand, so for instance $1 represents the text of the first sub-match.", arguments: []string{"regex", "str", "repl"}},
 	"regexReplaceAllLiteral": {group: sprigRegex, description: "Returns a copy of the input string, replacing matches of the Regexp with the replacement string replacement The replacement string is substituted directly, without using Expand.", arguments: []string{"regex", "str", "repl"}},
 	"regexSplit":             {group: sprigRegex, description: "Slices the input string into substrings separated by the expression and returns a slice of the substrings between those expression matches. The last parameter n determines the number of substrings to return, where -1 means return all matches.", arguments: []string{"regex", "str", "n"}},
 

@@ -21,7 +21,7 @@ func TestLorem(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rand.Seed(0)
+			rand.Seed(0) // This function is deprecated, but there is no alternative yet as the lorem package is using the default global rand generator
 			kind, _ := GetLoremKind(tt.name)
 			got, err := Lorem(kind)
 			if (err != nil) != tt.wantErr {

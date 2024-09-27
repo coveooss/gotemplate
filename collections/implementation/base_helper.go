@@ -213,8 +213,9 @@ func (bh BaseHelper) TryConvert(object interface{}) (interface{}, bool) {
 }
 
 // NeedConversion determine if the object need deep conversion.
-//    strict indicates that the type must be converted to the desired type
-//    even if the object implements the Dictionary or List interface.
+//
+//	strict indicates that the type must be converted to the desired type
+//	even if the object implements the Dictionary or List interface.
 func NeedConversion(object interface{}, strict bool, typeName string) bool {
 	if object == nil {
 		return false

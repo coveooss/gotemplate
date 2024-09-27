@@ -2,6 +2,7 @@ package template
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -608,7 +609,7 @@ func getSignature(object interface{}) string {
 }
 
 func raise(args ...interface{}) (string, error) {
-	return "", fmt.Errorf(multicolor.FormatMessage(args...))
+	return "", errors.New(multicolor.FormatMessage(args...))
 }
 
 func assertError(test interface{}, args ...interface{}) (string, error) {

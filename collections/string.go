@@ -9,6 +9,8 @@ import (
 	"unicode"
 
 	"github.com/coveooss/multilogger"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // String is an enhanced class implementation of the standard go string library.
@@ -131,9 +133,10 @@ func (s String) SplitAfter(sep string) StringArray {
 // SplitAfterN slices s into substrings after each instance of sep and returns a slice of those substrings.
 //
 // The count determines the number of substrings to return:
-//   n > 0: at most n substrings; the last substring will be the unsplit remainder.
-//   n == 0: the result is nil (zero substrings)
-//   n < 0: all substrings
+//
+//	n > 0: at most n substrings; the last substring will be the unsplit remainder.
+//	n == 0: the result is nil (zero substrings)
+//	n < 0: all substrings
 //
 // Edge cases for s and sep (for example, empty strings) are handled as described in the documentation for SplitAfter.
 func (s String) SplitAfterN(sep string, n int) StringArray {
@@ -143,9 +146,10 @@ func (s String) SplitAfterN(sep string, n int) StringArray {
 // SplitN slices s into substrings separated by sep and returns a slice of the substrings between those separators.
 //
 // The count determines the number of substrings to return:
-//   n > 0: at most n substrings; the last substring will be the unsplit remainder.
-//   n == 0: the result is nil (zero substrings)
-//   n < 0: all substrings
+//
+//	n > 0: at most n substrings; the last substring will be the unsplit remainder.
+//	n == 0: the result is nil (zero substrings)
+//	n < 0: all substrings
 //
 // Edge cases for s and sep (for example, empty strings) are handled as described in the documentation for Split.
 func (s String) SplitN(sep string, n int) StringArray {
@@ -155,7 +159,7 @@ func (s String) SplitN(sep string, n int) StringArray {
 // Title returns a copy of the string s with all Unicode letters that begin words mapped to their title case.
 //
 // BUG(rsc): The rule Title uses for word boundaries does not handle Unicode punctuation properly.
-func (s String) Title() String { return String(strings.Title(string(s))) }
+func (s String) Title() String { return String(cases.Title(language.English).String(string(s))) }
 
 // ToLower returns a copy of the string s with all Unicode letters mapped to their lower case.
 func (s String) ToLower() String { return String(strings.ToLower(string(s))) }
@@ -379,7 +383,7 @@ func (s String) SelectContext(pos int, left, right string) String {
 }
 
 // Protect returns a string with all included strings replaced by a token and an array of all replaced strings.
-// The function is able to detect strings enclosed between quotes "" or backtick `` and it detects escaped characters.
+// The function is able to detect strings enclosed between quotes "" or backtick “ and it detects escaped characters.
 func (s String) Protect() (result String, array StringArray) {
 	defer func() { result += s }()
 
@@ -443,7 +447,8 @@ func (s String) AddLineNumber(space int) String {
 }
 
 // ParseBool returns true if variable exist and is not clearly a false value.
-//    i.e. empty, 0, Off, No, n, false, f.
+//
+//	i.e. empty, 0, Off, No, n, false, f.
 func (s String) ParseBool() bool {
 	return multilogger.ParseBool(string(s))
 }

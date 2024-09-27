@@ -1,6 +1,7 @@
 package template
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -167,7 +168,7 @@ var dataFuncsHelp = descriptions{
 	"append":         "Append new items to an existing list, creating a new list.",
 	"array":          "Ensures that the supplied argument is an array (if it is already an array/slice, there is no change, if not, the argument is replaced by []interface{} with a single value).",
 	"bool":           "Converts the `string` into boolean value (`string` must be `True`, `true`, `TRUE`, `1` or `False`, `false`, `FALSE`, `0`)",
-	"char":           "Returns the character corresponging to the supplied integer value",
+	"char":           "Returns the character corresponding to the supplied integer value",
 	"contains":       "Tests whether a list contains all given elements (matches any types).",
 	"containsStrict": "Tests whether a list contains all given elements (matches only the same types).",
 	"content":        "Returns the content of a single element map.\nUsed to retrieve content in a declaration like:\n    value \"name\" { a = 1 b = 3 }",
@@ -234,7 +235,7 @@ var dataFuncsExamples = examples{
 	"hasKey": {
 		{`@hasKey(dict("key", "value"), "key")`, `{{ hasKey (dict "key" "value") "key" }}`, `true`},
 		{`@hasKey("key", dict("key", "value"))`, ``, `true`},
-		{`@hasKey(dict("key", "value"), "otherkey")`, ``, `false`},
+		{`@hasKey(dict("key", "value"), "other_key")`, ``, `false`},
 	},
 	"unset": {
 		{strings.TrimSpace(collections.UnIndent(`
@@ -436,7 +437,7 @@ type marshaler func(interface{}) ([]byte, error)
 type unMarshaler func([]byte, interface{}) error
 
 // Internal function used to actually convert the supplied string and apply a conversion function over it to get a go map
-func converter(from unMarshaler, content string, sourceWithError bool, context ...interface{}) (result interface{}, err error) {
+func converter(from unMarshaler, content string, sourceWithError bool) (result interface{}, err error) {
 	if err = from([]byte(content), &result); err != nil && sourceWithError {
 		source := "\n"
 		for i, line := range collections.SplitLines(content) {
@@ -467,7 +468,7 @@ func (t *Template) templateConverter(to marshaler, from unMarshaler, rawSource i
 	var content string
 	if content, _, err = t.runTemplate(fmt.Sprint(source), context...); err == nil {
 		if content != source {
-			InternalLog.Warnf(
+			InternalLog.Warningf(
 				"(Deprecated) In future versions of gotemplate the data function and its aliases (%s) will no longer attempt "+
 					"to template their input. "+
 					"If you would like your input string to continue being templated in the future, "+
@@ -478,7 +479,7 @@ func (t *Template) templateConverter(to marshaler, from unMarshaler, rawSource i
 			)
 		}
 
-		result, err = converter(from, content, true, context...)
+		result, err = converter(from, content, true)
 	}
 	return
 }
@@ -521,7 +522,7 @@ func pickv(dict iDictionary, message string, key interface{}, otherKeys ...inter
 			message = iif(message == "", "Unwanted values", message).(string)
 			message = fmt.Sprintf("%s %s", message, over)
 		}
-		return nil, fmt.Errorf(message)
+		return nil, errors.New(message)
 	}
 	return pick(dict, append(otherKeys, key)), nil
 }
