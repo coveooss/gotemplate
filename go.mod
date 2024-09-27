@@ -11,7 +11,7 @@ require (
 	github.com/bmatcuk/doublestar v1.3.4
 	github.com/coveooss/multilogger v0.5.2
 	github.com/coveord/kingpin/v2 v2.4.2
-	github.com/drhodes/goLorem v0.0.0-20160418191928-ecccc744c2d9
+	github.com/drhodes/goLorem v0.0.0-20220328165741-da82e5b29246
 	github.com/fatih/color v1.17.0
 	github.com/go-errors/errors v1.5.1
 	github.com/hashicorp/hcl v1.0.0
