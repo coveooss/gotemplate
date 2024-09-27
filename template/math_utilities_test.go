@@ -13,7 +13,7 @@ type a = []interface{}
 type l = implementation.ListTypeName
 type j = json.List
 
-func withHelper(list collections.IListHelper, dict collections.IDictionaryHelper, f func()) {
+func withHelper(list collections.IListHelper, dict collections.IDictionaryHelper, test_func func()) {
 	defaultList, defaultDict := collections.GetListHelper(), collections.GetDictionaryHelper()
 	defer func() {
 		collections.SetDictionaryHelper(defaultDict)
@@ -21,6 +21,7 @@ func withHelper(list collections.IListHelper, dict collections.IDictionaryHelper
 	}()
 	collections.SetDictionaryHelper(dict)
 	collections.SetListHelper(list)
+	test_func()
 }
 
 func Test_convertArgs(t *testing.T) {
@@ -87,7 +88,6 @@ func Test_toListOfFloats(t *testing.T) {
 
 func Test_asFloats(t *testing.T) {
 	t.Parallel()
-	type a = []interface{}
 	type l = implementation.ListTypeName
 	type j = json.List
 	tests := []struct {
