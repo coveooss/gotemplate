@@ -7,16 +7,15 @@ import (
 
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/collections/implementation"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Expose yaml public objects
 var (
-	Marshal               = yaml.Marshal
-	NewDecoder            = yaml.NewDecoder
-	NewEncoder            = yaml.NewEncoder
-	NativeUnmarshal       = yaml.Unmarshal
-	NativeUnmarshalStrict = yaml.UnmarshalStrict
+	Marshal         = yaml.Marshal
+	NewDecoder      = yaml.NewDecoder
+	NewEncoder      = yaml.NewEncoder
+	NativeUnmarshal = yaml.Unmarshal
 )
 
 func (l yamlList) String() string      { result, _ := Marshal(l.AsArray()); return string(result) }
@@ -32,18 +31,6 @@ func Unmarshal(data []byte, out interface{}) (err error) {
 	// Yaml does not support tab, so we replace tabs by spaces if there are
 	data = bytes.Replace(data, []byte("\t"), []byte("    "), -1)
 	if err = NativeUnmarshal(data, out); err != nil {
-		return
-	}
-	transform(out)
-	return
-}
-
-// UnmarshalStrict calls the native UnmarshalStrict but transform the results
-// to returns Dictionary and GenericList instead of go native collections.
-func UnmarshalStrict(data []byte, out interface{}) (err error) {
-	// Yaml does not support tab, so we replace tabs by spaces if there are
-	data = bytes.Replace(data, []byte("\t"), []byte("    "), -1)
-	if err = NativeUnmarshalStrict(data, out); err != nil {
 		return
 	}
 	transform(out)

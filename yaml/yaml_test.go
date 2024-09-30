@@ -53,18 +53,18 @@ func Test_dict_String(t *testing.T) {
 			float: 1.23
 			int: 123
 			list:
-			- 1
-			- two
+			    - 1
+			    - two
 			listInt:
-			- 1
-			- 2
-			- 3
+			    - 1
+			    - 2
+			    - 3
 			map:
-			  sub1: 1
-			  sub2: two
+			    sub1: 1
+			    sub2: two
 			mapInt:
-			  "1": 1
-			  "2": two
+			    "1": 1
+			    "2": two
 			string: Foo bar
 			`)[1:]},
 	}
@@ -135,7 +135,7 @@ func TestUnmarshalStrict(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var out map[string]interface{}
-			err := UnmarshalStrict([]byte(tt.yaml), &out)
+			err := Unmarshal([]byte(tt.yaml), &out)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Unmarshal() error = %v, wantErr %v", err, tt.wantErr)
 			}
