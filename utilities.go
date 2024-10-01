@@ -7,7 +7,7 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/bmatcuk/doublestar"
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/coveooss/gotemplate/v3/template"
 	"github.com/coveooss/multilogger/errors"
 	goerrors "github.com/go-errors/errors"
