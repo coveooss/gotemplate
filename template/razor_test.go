@@ -600,3 +600,36 @@ func TestReservedKeywords(t *testing.T) {
 		})
 	}
 }
+
+var log = multilogger.New("example")
+
+func ExampleTemplate_IgnoreRazorExpression() {
+	code := []string{
+		"Hello, @Name! From @Author",
+		"This @variable should not be changed.",
+		"Neither than @thisOne or @thatOne",
+		`And this @function("arg, 1) won't be invoked while @add(2, 3) will be`,
+	}
+
+	context := map[string]string{
+		"Name":   "There",
+		"Author": "Obi-Wan Kenobi",
+	}
+	template := MustNewTemplate(".", context, "", nil)
+	template.IgnoreRazorExpression(
+		"variable",     // Work with full variable name
+		`th(is|at)One`, // or with a regular expression
+		`function`,     // or with a function
+	)
+	result, err := template.ProcessContent(strings.Join(code, "\n"), "Internal example")
+	if err != nil {
+		log.Fatalf("execution failed: %s", err)
+	}
+	fmt.Println(result)
+
+	// Output:
+	// Hello, There! From Obi-Wan Kenobi
+	// This @variable should not be changed.
+	// Neither than @thisOne or @thatOne
+	// And this @function("arg, 1) won't be invoked while 5 will be
+}
