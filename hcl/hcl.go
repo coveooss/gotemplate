@@ -8,7 +8,7 @@ import (
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/collections/implementation"
 	"github.com/coveooss/multilogger/errors"
-	"github.com/hashicorp/hcl"
+	"github.com/hashicorp/hcl/v2"
 )
 
 // Expose hcl public objects
