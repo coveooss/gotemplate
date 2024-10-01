@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bmatcuk/doublestar"
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/coveooss/multilogger"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +20,7 @@ func TestTemplate_applyRazor(t *testing.T) {
 	dmp := diffmatchpatch.New()
 	TemplateLog = multilogger.New("test")
 	template := MustNewTemplate("../docs_tests", nil, "", nil)
-	files, err := doublestar.Glob(filepath.Join(template.folder, "**/*.md"))
+	files, err := doublestar.Glob(os.DirFS("."), filepath.Join(template.folder, "**/*.md"))
 	if err != nil {
 		t.Fatalf("Unable to read test files (documentation in %s)", template.folder)
 		t.Fail()

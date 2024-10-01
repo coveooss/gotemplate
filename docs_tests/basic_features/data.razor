@@ -19,14 +19,14 @@ DictValue = {"key1": "value1", "key2": "value2"}
 
 ```data
 DictValue:
-  key1: value1
-  key2: value2
+    key1: value1
+    key2: value2
 EquationResult: 46658
 FloatValue: 1.23
 IntegerValue: 1
 ListValue:
-- value1
-- value2
+    - value1
+    - value2
 StringValue: Foo bar
 ```
 
