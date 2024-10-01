@@ -22,18 +22,19 @@ var templateMutex sync.Mutex
 // Template let us extend the functionalities of base go template library.
 type Template struct {
 	*template.Template
-	tempFolder     string
-	substitutes    []utils.RegexReplacer
-	context        interface{}
-	constantKeys   []interface{}
-	delimiters     []string
-	parent         *Template
-	folder         string
-	children       map[string]*Template
-	aliases        funcTableMap
-	functions      funcTableMap
-	options        OptionsSet
-	optionsEnabled OptionsSet
+	tempFolder       string
+	substitutes      []utils.RegexReplacer
+	context          interface{}
+	constantKeys     []interface{}
+	delimiters       []string
+	parent           *Template
+	folder           string
+	children         map[string]*Template
+	aliases          funcTableMap
+	functions        funcTableMap
+	options          OptionsSet
+	optionsEnabled   OptionsSet
+	ignoredRazorExpr []string
 }
 
 // Environment variables that could be defined to override default behaviors.
@@ -290,21 +291,25 @@ func (t *Template) importTemplates(source *Template) {
 }
 
 // Add allows adding a value to the template context.
-// The context must be a dictionnary to use that function, otherwise, it will panic.
+// The context must be a dictionary to use that function, otherwise, it will panic.
 func (t *Template) Add(key string, value interface{}) {
 	collections.AsDictionary(t.context).Add(key, value)
 }
 
 // Merge allows adding multiple values to the template context.
-// The context and values must both be dictionnary to use that function, otherwise, it will panic.
+// The context and values must both be dictionary to use that function, otherwise, it will panic.
 func (t *Template) Merge(values interface{}) {
 	collections.AsDictionary(t.context).Add(key, collections.AsDictionary(values))
 }
 
-// Context returns the template context as a dictionnary if possible, otherwise, it returns null.
+// Context returns the template context as a dictionary if possible, otherwise, it returns null.
 func (t *Template) Context() (result collections.IDictionary) {
 	if result, _ = collections.TryAsDictionary(t.context); result == nil {
 		result = collections.CreateDictionary()
 	}
 	return
+}
+
+func (t *Template) IgnoreRazorExpression(expr ...string) {
+	t.ignoredRazorExpr = expr
 }

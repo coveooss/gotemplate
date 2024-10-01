@@ -141,6 +141,47 @@ func TestBase(t *testing.T) {
 	}
 }
 
+func TestIgnoredRazorExpression(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		code    string
+		context map[string]interface{}
+		ignored []string
+		want    string
+	}{
+		{
+			"Sha256",
+			"Hello @var1 @sha256",
+			map[string]interface{}{"var1": "world"},
+			[]string{"sha256"},
+			"Hello world @sha256",
+		},
+		{
+			"Real Sha256",
+			"Hello @var1 public.ecr.aws/lambda/python:3.12-arm64@sha256:335461dca279eede475193ac3cfda992d2f7e632710f8d92cbb4fb6f439abc06",
+			map[string]interface{}{"var1": "world"},
+			[]string{"sha256"},
+			"Hello world public.ecr.aws/lambda/python:3.12-arm64@sha256:335461dca279eede475193ac3cfda992d2f7e632710f8d92cbb4fb6f439abc06",
+		},
+		{
+			"Regex",
+			"Hello @var1 @this_var_is_not_a_razor_one",
+			map[string]interface{}{"var1": "world"},
+			[]string{"\\w*not_a_razor\\w+"},
+			"Hello world @this_var_is_not_a_razor_one",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", tt.context, "", nil)
+			template.IgnoreRazorExpression(tt.ignored...)
+			got, _ := template.ProcessContent(tt.code, tt.name)
+			assert.Equal(t, tt.want, string(got))
+		})
+	}
+}
+
 func TestInvocation(t *testing.T) {
 	tests := []struct {
 		name  string
