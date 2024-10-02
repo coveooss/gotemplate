@@ -1,3 +1,55 @@
+// Package template provides extended functionalities for the base Go template library.
+// It includes additional features such as context management, custom delimiters, and
+// environment variable configurations for template processing.
+//
+// The package imports several other packages to enhance its capabilities:
+// - fmt, os, filepath, reflect, strings, sync, and text/template from the standard library.
+// - collections and utils from github.com/coveooss/gotemplate/v3.
+// - multicolor from github.com/coveooss/multilogger/color.
+//
+// The package defines several constants for environment variables that can override default behaviors:
+// - EnvAcceptNoValue: Allows the template processor to accept variables with no value without throwing an error.
+// - EnvStrictErrorCheck: Enables strict error checking.
+// - EnvSubstitutes: Specifies regex replacements.
+// - EnvDebug: Enables debug mode.
+// - EnvExtensionPath: Specifies the path for template extensions.
+// - EnvInternalLogLevel: Sets the internal log level.
+// - EnvLogLevel: Sets the template log level.
+//
+// The Template struct extends the base template functionalities and includes fields for:
+// - tempFolder: Temporary folder used by the template.
+// - substitutes: List of regex replacements.
+// - context: Template context.
+// - constantKeys: List of constant keys.
+// - delimiters: List of delimiters.
+// - parent: Parent template.
+// - folder: Template folder.
+// - children: Map of child templates.
+// - aliases: Function table map for aliases.
+// - functions: Function table map for functions.
+// - options: Set of template options.
+// - optionsEnabled: Set of enabled template options.
+// - ignoredRazorExpr: List of ignored Razor expressions.
+//
+// The package provides several functions and methods for template management:
+// - IsRazor: Determines if the supplied code contains Razor code.
+// - IsCode: Determines if the supplied code contains template code.
+// - NewTemplate: Creates a new Template object with default initialization.
+// - MustNewTemplate: Creates a new Template object and panics if an error occurs.
+// - TempFolder: Sets the temporary folder for the template.
+// - GetNewContext: Returns a distinct context for each folder.
+// - LeftDelim: Returns the left delimiter.
+// - RightDelim: Returns the right delimiter.
+// - RazorDelim: Returns the Razor delimiter.
+// - SetOption: Sets a template option after initialization.
+// - initExtension: Initializes template extensions.
+// - init: Initializes a new template with the same attributes as the current context.
+// - setConstant: Sets a constant value in the template context.
+// - importTemplates: Imports templates from another template.
+// - Add: Adds a value to the template context.
+// - Merge: Merges multiple values into the template context.
+// - Context: Returns the template context as a dictionary.
+// - IgnoreRazorExpression: Ignores specified Razor expressions.
 package template
 
 import (
@@ -38,6 +90,8 @@ type Template struct {
 }
 
 // Environment variables that could be defined to override default behaviors.
+// EnvAcceptNoValue is an environment variable that, when set, allows the template
+// processor to accept variables with no value without throwing an error.
 const (
 	EnvAcceptNoValue    = "GOTEMPLATE_NO_VALUE"
 	EnvStrictErrorCheck = "GOTEMPLATE_STRICT_ERROR"
@@ -187,16 +241,22 @@ func (t *Template) IsRazor(code string) bool {
 	return strings.Contains(code, t.RazorDelim()) && !strings.Contains(code, noGoTemplate) && !strings.Contains(code, noRazor)
 }
 
-// LeftDelim returns the left delimiter.
+// LeftDelim returns the left delimiter used in the template.
+// It retrieves the first element from the delimiters slice.
 func (t *Template) LeftDelim() string { return t.delimiters[0] }
 
-// RightDelim returns the right delimiter.
+// RightDelim returns the right delimiter used in the template.
+// It retrieves the second element from the delimiters slice.
 func (t *Template) RightDelim() string { return t.delimiters[1] }
 
-// RazorDelim returns the razor delimiter.
+// RazorDelim returns the third delimiter from the Template's delimiters slice.
+// This delimiter is typically used for Razor-style templating.
 func (t *Template) RazorDelim() string { return t.delimiters[2] }
 
-// SetOption allows setting of template option after initialization.
+// SetOption sets the specified option to the given boolean value in the Template's options map.
+// Parameters:
+//   - option: The option to be set.
+//   - value: The boolean value to set for the specified option.
 func (t *Template) SetOption(option Options, value bool) { t.options[option] = value }
 
 func (t *Template) isTemplate(file string) bool {
@@ -302,7 +362,8 @@ func (t *Template) Merge(values interface{}) {
 	collections.AsDictionary(t.context).Add(key, collections.AsDictionary(values))
 }
 
-// Context returns the template context as a dictionary if possible, otherwise, it returns null.
+// Context returns the context of the Template as a collections.IDictionary.
+// It provides access to the underlying data structure that holds the template's context.
 func (t *Template) Context() (result collections.IDictionary) {
 	if result, _ = collections.TryAsDictionary(t.context); result == nil {
 		result = collections.CreateDictionary()
@@ -310,6 +371,13 @@ func (t *Template) Context() (result collections.IDictionary) {
 	return
 }
 
+// IgnoreRazorExpression sets the list of Razor expressions to be ignored by the template.
+// This method accepts a variadic number of string arguments, allowing multiple expressions
+// to be specified at once.
+//
+// Parameters:
+//
+//	expr: A variadic list of strings representing the Razor expressions to ignore (can also be a regular expression).
 func (t *Template) IgnoreRazorExpression(expr ...string) {
 	t.ignoredRazorExpr = expr
 }
