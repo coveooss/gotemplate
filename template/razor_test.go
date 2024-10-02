@@ -608,7 +608,7 @@ func ExampleTemplate_IgnoreRazorExpression() {
 		"Hello, @Name! From @Author",
 		"This @variable should not be changed.",
 		"Neither than @thisOne or @thatOne",
-		`And this @function("arg, 1) won't be invoked while @add(2, 3) will be`,
+		`And this @function("text", 1) won't be invoked while @add(2, 3) will be`,
 	}
 
 	context := map[string]string{
@@ -631,5 +631,5 @@ func ExampleTemplate_IgnoreRazorExpression() {
 	// Hello, There! From Obi-Wan Kenobi
 	// This @variable should not be changed.
 	// Neither than @thisOne or @thatOne
-	// And this @function("arg, 1) won't be invoked while 5 will be
+	// And this @function("text", 1) won't be invoked while 5 will be
 }
