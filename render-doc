@@ -8,6 +8,7 @@ function cleanup {
 trap cleanup EXIT
 go build -o gotemplate
 
+export GOTEMPLATE_NO_STDIN=1
 CONTENT_FOLDER="docs/content"
 DOC_FOLDER="$CONTENT_FOLDER/docs"
 export COLUMNS=108
