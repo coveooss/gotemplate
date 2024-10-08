@@ -52,8 +52,8 @@ var runtimeFuncsHelp = descriptions{
 	"alias":         "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the caller.",
 	"aliases":       "Returns the list of all functions that are simply an alias of another function.",
 	"allFunctions":  "Returns the list of all available functions.",
-	"assert":        "Raises a formated error if the test condition is false.",
-	"assertWarning": "Issues a formated warning if the test condition is false.",
+	"assert":        "Raises a formatted error if the test condition is false.",
+	"assertWarning": "Issues a formatted warning if the test condition is false.",
 	"categories": strings.TrimSpace(collections.UnIndent(`
 		Returns all functions group by categories.
 
@@ -94,7 +94,7 @@ var runtimeFuncsHelp = descriptions{
 		This is similar to what the template action does but it allows you to capture its output in a variable.
 	`)),
 	"localAlias":    "Defines an alias (go template function) using the function (exec, run, include, template). Executed in the context of the function it maps to.",
-	"raise":         "Raise a formated error.",
+	"raise":         "Raise a formatted error.",
 	"run":           "Returns the result of the shell command as string.",
 	"substitute":    "Applies the supplied regex substitute specified on the command line on the supplied string (see --substitute).",
 	"templateNames": "Returns the list of available templates names.",
@@ -365,8 +365,8 @@ func (t *Template) run(command string, args ...interface{}) (result interface{},
 
 	if len(args) == 1 {
 		if _, err := collections.TryAsDictionary(args[0]); err == nil {
-			// The arguments is a dictionnary and should have been processed by t.runTemplate, then we do
-			// not want to invoke the shell argument with the whole dictionnary as a parameter,
+			// The arguments is a dictionary and should have been processed by t.runTemplate, then we do
+			// not want to invoke the shell argument with the whole dictionary as a parameter,
 			args = nil
 		}
 	}

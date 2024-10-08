@@ -129,4 +129,4 @@ printf -- '---\nbookFlatSection: true\nweight: 5\n---' > $DOC_FOLDER/objects/_in
 
 # Copy README as the main page
 printf -- '---\ntype: docs\n---' > $CONTENT_FOLDER/_index.md
-cat README.md >> $CONTENT_FOLDER/_index.md
+cat README.md | grep -v "More examples and statement" >> $CONTENT_FOLDER/_index.md

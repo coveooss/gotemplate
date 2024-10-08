@@ -10,7 +10,7 @@ import (
 	"github.com/fatih/color"
 )
 
-// TemplateErrorHandler handle errors occuring during template evaluation and try to mitigate the error
+// TemplateErrorHandler handle errors occurring during template evaluation and try to mitigate the error
 // and continuing evaluation in order to return all potential errors instead of stopping after the first one
 type errorHandler struct {
 	*Template

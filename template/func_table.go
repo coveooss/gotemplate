@@ -202,7 +202,7 @@ type dictionary = map[string]interface{}
 type examples = map[string][]Example
 type groups = map[string]string
 
-// AddFunctions add functions to the template, but keep a detailled definition of the function added for helping purpose
+// AddFunctions add functions to the template, but keep a detailed definition of the function added for helping purpose
 func (t *Template) AddFunctions(funcs dictionary, group string, options FuncOptions) *Template {
 	ft := make(funcTableMap, len(funcs))
 	help := defval(options[FuncHelp], descriptions{}).(descriptions)

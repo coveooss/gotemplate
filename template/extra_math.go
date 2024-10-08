@@ -291,7 +291,7 @@ var mathFuncsHelp = descriptions{
 	"sincos":          "Returns Sin(x), Cos(x).\nSpecial cases are:\n    sincos(±0) = ±0, 1\n    sincos(±Inf) = NaN, NaN\n    sincos(NaN) = NaN, NaN",
 	"sinh":            "Returns the hyperbolic sine of x.\nSpecial cases are:\n    sinh(±0) = ±0\n    sinh(±Inf) = ±Inf\n    sinh(NaN) = NaN",
 	"sqrt":            "Returns the square root of x.\nSpecial cases are:\n    sqrt(+Inf) = +Inf\n    sqrt(±0) = ±0\n    sqrt(x < 0) = NaN\n    sqrt(NaN) = NaN",
-	"sub":             "Returns the result of the substraction of the two arguments.",
+	"sub":             "Returns the result of the subtraction of the two arguments.",
 	"tan":             "Returns the tangent of the radian argument x.\nSpecial cases are:\n    tan(±0) = ±0\n    tan(±Inf) = NaN\n    tan(NaN) = NaN",
 	"tanh":            "Returns the hyperbolic tangent of x.\nSpecial cases are:\n    tanh(±0) = ±0\n    tanh(±Inf) = ±1\n    tanh(NaN) = NaN",
 	"to":              "Builds a range of integers starting with 1 by default and including the upper limit.",

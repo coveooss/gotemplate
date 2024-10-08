@@ -701,7 +701,7 @@ func Test_dict_Default(t *testing.T) {
 		{"Empty", nil, args{"Foo", "Bar"}, "Bar"},
 		{"Map int", dictFixture, args{"int", 1}, 123},
 		{"Map float", dictFixture, args{"float", 1}, 1.23},
-		{"Map Non existant", dictFixture, args{"Foo", "Bar"}, "Bar"},
+		{"Map Non existent", dictFixture, args{"Foo", "Bar"}, "Bar"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -726,9 +726,9 @@ func Test_dict_Delete(t *testing.T) {
 	}{
 		{"Empty", nil, args{}, hclDict{}, "key <nil> not found"},
 		{"Map", dictFixture, args{}, dictFixture, "key <nil> not found"},
-		{"Non existant key", dictFixture, args{"Test", nil}, dictFixture, "key Test not found"},
+		{"Non existent key", dictFixture, args{"Test", nil}, dictFixture, "key Test not found"},
 		{"Map with keys", dictFixture, args{"int", []interface{}{"list"}}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt"), ""},
-		{"Map with keys + non existant", dictFixture, args{"int", []interface{}{"list", "Test"}}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt"), "key Test not found"},
+		{"Map with keys + non existent", dictFixture, args{"int", []interface{}{"list", "Test"}}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt"), "key Test not found"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -754,9 +754,9 @@ func Test_dict_Flush(t *testing.T) {
 	}{
 		{"Empty", nil, nil, hclDict{}},
 		{"Map", dictFixture, nil, hclDict{}},
-		{"Non existant key", dictFixture, []interface{}{"Test"}, dictFixture},
+		{"Non existent key", dictFixture, []interface{}{"Test"}, dictFixture},
 		{"Map with keys", dictFixture, []interface{}{"int", "list"}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt")},
-		{"Map with keys + non existant", dictFixture, []interface{}{"int", "list", "Test"}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt")},
+		{"Map with keys + non existent", dictFixture, []interface{}{"int", "list", "Test"}, dictFixture.Clone("float", "string", "listInt", "map", "mapInt")},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

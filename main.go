@@ -34,7 +34,7 @@ const (
 const description = `
 An extended template processor for go.
 
-See: https://coveo.github.io/gotemplate for complete documentation.
+See: https://coveooss.github.io/gotemplate for complete documentation.
 `
 
 func runGotemplate() (exitCode int) {

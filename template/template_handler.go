@@ -68,7 +68,7 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 			return
 		}
 
-		// Avoid addind an extra blank line if the result already ends with a newline
+		// Avoid adding an extra blank line if the result already ends with a newline
 		if !strings.HasSuffix(result, "\n") {
 			Println(result)
 		} else {
