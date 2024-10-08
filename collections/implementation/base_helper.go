@@ -149,17 +149,22 @@ func (bh BaseHelper) tryAsDictionary(object interface{}, strict bool) (baseIDict
 	return result, nil
 }
 
-// TryAsList tries to convert any object to IGenericList object.
+// TryAsList attempts to convert the given object to a baseIList.
+// If the object is a pointer, it dereferences it first.
+// If the object is already a baseIList, it returns it directly.
+// If the object is nil, it creates a new list.
+// If the object is a slice or array, it creates a new list and populates it with the elements of the slice or array.
+// If the object can be converted to a baseList, it performs the conversion.
+// If the object cannot be converted to a baseIList, it returns an error.
+// If the resulting list needs conversion, it creates a new list and copies the elements to it.
+//
+// Parameters:
+// - object: The object to be converted to a baseIList.
+//
+// Returns:
+// - baseIList: The converted list.
+// - error: An error if the object cannot be converted to a baseIList.
 func (bh BaseHelper) TryAsList(object interface{}) (baseIList, error) {
-	return bh.tryAsList(object, false)
-}
-
-// TryAsListStrict tries to convert any object to IGenericList object.
-func (bh BaseHelper) TryAsListStrict(object interface{}) (baseIList, error) {
-	return bh.tryAsList(object, true)
-}
-
-func (bh BaseHelper) tryAsList(object interface{}, strict bool) (baseIList, error) {
 	if object != nil && reflect.TypeOf(object).Kind() == reflect.Ptr {
 		object = reflect.ValueOf(object).Elem().Interface()
 	}

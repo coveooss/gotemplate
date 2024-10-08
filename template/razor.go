@@ -17,7 +17,15 @@ func (t *Template) applyRazor(content []byte) (result []byte, changed bool) {
 	t.ensureInit()
 
 	for _, ignoredExpr := range t.ignoredRazorExpr {
-		content = regexp.MustCompile(t.delimiters[2]+ignoredExpr).ReplaceAllFunc(content, func(match []byte) []byte {
+		ignoredExpr = strings.TrimSpace(ignoredExpr)
+		if ignoredExpr == "" {
+			continue
+		}
+		if strings.HasSuffix(ignoredExpr, "*") || strings.HasSuffix(ignoredExpr, "+") {
+			ignoredExpr += `?` // Ensure that the regex is not greedy
+		}
+		ignoredExpr = t.delimiters[2] + ignoredExpr + `\b` // Stop at the end of the expression
+		content = regexp.MustCompile(ignoredExpr).ReplaceAllFunc(content, func(match []byte) []byte {
 			return []byte(strings.Replace(string(match), t.delimiters[2], literalAt, 1))
 		})
 	}

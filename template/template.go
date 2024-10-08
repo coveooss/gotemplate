@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"text/template"
+	"unicode"
 
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/utils"
@@ -44,7 +45,7 @@ const (
 	EnvAcceptNoValue    = "GOTEMPLATE_NO_VALUE"
 	EnvStrictErrorCheck = "GOTEMPLATE_STRICT_ERROR"
 	EnvSubstitutes      = "GOTEMPLATE_SUBSTITUTES"
-	EnvIgnoreRazor      = "GOTEMPLATE_IGNORE_RAZOR_JSON"
+	EnvIgnoreRazor      = "GOTEMPLATE_IGNORE_RAZOR"
 	EnvDebug            = "GOTEMPLATE_DEBUG"
 	EnvExtensionPath    = "GOTEMPLATE_PATH"
 	EnvInternalLogLevel = "GOTEMPLATE_INTERNAL_LOG_LEVEL"
@@ -86,7 +87,27 @@ func IsCode(code string) bool {
 	return IsRazor(code) || strings.Contains(code, "{{") || strings.Contains(code, "}}")
 }
 
-// NewTemplate creates an Template object with default initialization.
+// NewTemplate creates a new Template instance with the provided parameters.
+// It initializes the template with default or provided options, context, and substitutes.
+//
+// Parameters:
+//   - folder: The folder path where the template is located.
+//   - context: The context data to be used within the template.
+//   - delimiters: Custom delimiters for the template, separated by commas.
+//   - options: A set of options to configure the template behavior.
+//   - substitutes: Optional additional substitution patterns.
+//
+// Returns:
+//   - result: A pointer to the created Template instance.
+//   - err: An error if the template creation fails.
+//
+// The function handles panics by recovering and returning an error.
+// It sets up default options, context, and substitutes if not provided.
+// It also processes environment variables for substitutes (GOTEMPLATE_SUBSTITUTES) and ignore razor expressions (GOTEMPLATE_IGNORE_RAZOR).
+// GOTEMPLATE_IGNORE_RAZOR can be a json, yaml or hcl array of strings or a string with comma, newline or space separated values.
+// GOTEMPLATE_SUBSTITUTES must be a list of substitute pattern separated by newlines.
+//
+// Custom delimiters can be specified, with a maximum of three comma-separated parts.
 func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) (result *Template, err error) {
 	defer func() {
 		if rec := recover(); rec != nil {
@@ -120,11 +141,20 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 	t.substitutes = utils.InitReplacers(append(baseSubstitutesRegex, substitutes...)...)
 
 	if ignoreRazorFromEnv := os.Getenv(EnvIgnoreRazor); ignoreRazorFromEnv != "" {
-		var list []interface{}
-		if err := collections.ConvertData(ignoreRazorFromEnv, &list); err != nil {
-			return nil, fmt.Errorf("invalid value for %s: %v", EnvIgnoreRazor, ignoreRazorFromEnv)
+		var list []string
+		if unicode.IsLetter(rune(ignoreRazorFromEnv[0])) {
+			ignoreRazorFromEnv = strings.ReplaceAll(ignoreRazorFromEnv, "\r\n", ",")
+			ignoreRazorFromEnv = strings.ReplaceAll(ignoreRazorFromEnv, "\n", ",")
+			ignoreRazorFromEnv = strings.ReplaceAll(ignoreRazorFromEnv, " ", ",")
+			list = strings.Split(ignoreRazorFromEnv, ",")
+		} else {
+			var data []interface{}
+			if err := collections.ConvertData(ignoreRazorFromEnv, &data); err != nil {
+				return nil, fmt.Errorf("invalid value for %s: %v", EnvIgnoreRazor, ignoreRazorFromEnv)
+			}
+			list = collections.ToStrings(data)
 		}
-		t.IgnoreRazorExpression(collections.ToStrings(list)...)
+		t.AppendIgnoreRazorExpression(list...)
 	}
 
 	if t.options[Extension] {
@@ -346,7 +376,7 @@ func (t *Template) IgnoreRazorExpression(expr ...string) {
 //
 //	expr: A variadic parameter representing one or more Razor expressions to be ignored.
 func (t *Template) AppendIgnoreRazorExpression(expr ...string) {
-	t.ignoredRazorExpr = append(t.ignoredRazorExpr, expr...)
+	t.ignoredRazorExpr = append(expr, t.ignoredRazorExpr...)
 }
 
 // GetIgnoredRazorExpressions returns a slice of strings containing the ignored Razor expressions.

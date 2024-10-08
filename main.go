@@ -89,7 +89,7 @@ func runGotemplate() (exitCode int) {
 		ignoreMissingImport = run.Flag("ignore-missing-import", "Exit with code 0 even if import does not exist").Bool()
 		ignoreMissingSource = run.Flag("ignore-missing-source", "Exit with code 0 even if source does not exist").Bool()
 		ignoreMissingPaths  = run.Flag("ignore-missing-paths", "Exit with code 0 even if import or source do not exist").Bool()
-		ignoreRazor         = run.Flag("ignore-razor", "Do not consider the list of excluded Razor name as razor expression").PlaceHolder("regex").Strings()
+		ignoreRazor         = run.Flag("ignore-razor", "Do not consider the list of excluded Razor name as razor expression").PlaceHolder("regex").NoEnvar().Strings()
 		templates           = run.Arg("templates", "Template files or commands to process").Strings()
 
 		list          = app.Command("list", "Get detailed help on gotemplate functions").NoAutoShortcut()
@@ -259,7 +259,7 @@ func runGotemplate() (exitCode int) {
 	t.TempFolder(tempFolder)
 
 	if len(*ignoreRazor) > 0 {
-		t.IgnoreRazorExpression(*ignoreRazor...)
+		t.AppendIgnoreRazorExpression(*ignoreRazor...)
 	}
 
 	if command == list.FullCommand() {
