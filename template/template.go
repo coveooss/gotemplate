@@ -301,7 +301,7 @@ func (t *Template) init(folder string) {
 	}
 	t.addFuncs()
 	t.children = make(map[string]*Template)
-	t.Delims(t.delimiters[0], t.delimiters[1])
+	t.Delims(t.LeftDelim(), t.RightDelim())
 	t.setConstant(false, "\n", "NL", "CR", "NEWLINE")
 	t.setConstant(false, true, "true")
 	t.setConstant(false, false, "false")
@@ -381,6 +381,6 @@ func (t *Template) AppendIgnoreRazorExpression(expr ...string) {
 
 // GetIgnoredRazorExpressions returns a slice of strings containing the ignored Razor expressions.
 // These expressions are not processed by the template engine.
-func (t Template) GetIgnoredRazorExpressions() []string {
+func (t *Template) GetIgnoredRazorExpressions() []string {
 	return t.ignoredRazorExpr
 }

@@ -685,3 +685,37 @@ func ExampleTemplate_IgnoreRazorExpression() {
 	// Neither than @thisOne or @thatOne
 	// And this @function("text", 1) won't be invoked while 5 will be
 }
+
+func ExampleTemplate_AppendIgnoreRazorExpression() {
+	code := "Hello, @Name! From @Author"
+
+	context := map[string]string{
+		"Name":   "There",
+		"Author": "Obi-Wan Kenobi",
+	}
+
+	template := MustNewTemplate(".", context, "", nil)
+	template.IgnoreRazorExpression("Name")
+	template.AppendIgnoreRazorExpression("Author")
+	result, err := template.ProcessContent(code, "Internal example")
+	if err != nil {
+		log.Fatalf("execution failed: %s", err)
+	}
+	fmt.Println("Ignored expressions:", template.GetIgnoredRazorExpressions())
+	fmt.Println(result)
+
+	// This reset the list of ignored expressions
+	template.IgnoreRazorExpression()
+	result, err = template.ProcessContent(code, "Internal example")
+	if err != nil {
+		log.Fatalf("execution failed: %s", err)
+	}
+	fmt.Println("Ignored expressions:", template.GetIgnoredRazorExpressions())
+	fmt.Println(result)
+
+	// Output:
+	// Ignored expressions: [Author Name]
+	// Hello, @Name! From @Author
+	// Ignored expressions: []
+	// Hello, There! From Obi-Wan Kenobi
+}

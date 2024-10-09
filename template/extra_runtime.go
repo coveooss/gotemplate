@@ -545,7 +545,7 @@ func (t *Template) ellipsis(function string, args ...interface{}) (interface{}, 
 		convertArg(lastArg.Index(i).Interface())
 	}
 
-	template := fmt.Sprintf("%s %s %s %s", t.delimiters[0], function, strings.Join(argsStr, " "), t.delimiters[1])
+	template := fmt.Sprintf("%s %s %s %s", t.LeftDelim(), function, strings.Join(argsStr, " "), t.RightDelim())
 	result, _, err := t.runTemplate(template, context)
 	if err != nil {
 		split := strings.SplitN(err.Error(), ">: ", 2)
