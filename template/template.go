@@ -1,55 +1,3 @@
-// Package template provides extended functionalities for the base Go template library.
-// It includes additional features such as context management, custom delimiters, and
-// environment variable configurations for template processing.
-//
-// The package imports several other packages to enhance its capabilities:
-// - fmt, os, filepath, reflect, strings, sync, and text/template from the standard library.
-// - collections and utils from github.com/coveooss/gotemplate/v3.
-// - multicolor from github.com/coveooss/multilogger/color.
-//
-// The package defines several constants for environment variables that can override default behaviors:
-// - EnvAcceptNoValue: Allows the template processor to accept variables with no value without throwing an error.
-// - EnvStrictErrorCheck: Enables strict error checking.
-// - EnvSubstitutes: Specifies regex replacements.
-// - EnvDebug: Enables debug mode.
-// - EnvExtensionPath: Specifies the path for template extensions.
-// - EnvInternalLogLevel: Sets the internal log level.
-// - EnvLogLevel: Sets the template log level.
-//
-// The Template struct extends the base template functionalities and includes fields for:
-// - tempFolder: Temporary folder used by the template.
-// - substitutes: List of regex replacements.
-// - context: Template context.
-// - constantKeys: List of constant keys.
-// - delimiters: List of delimiters.
-// - parent: Parent template.
-// - folder: Template folder.
-// - children: Map of child templates.
-// - aliases: Function table map for aliases.
-// - functions: Function table map for functions.
-// - options: Set of template options.
-// - optionsEnabled: Set of enabled template options.
-// - ignoredRazorExpr: List of ignored Razor expressions.
-//
-// The package provides several functions and methods for template management:
-// - IsRazor: Determines if the supplied code contains Razor code.
-// - IsCode: Determines if the supplied code contains template code.
-// - NewTemplate: Creates a new Template object with default initialization.
-// - MustNewTemplate: Creates a new Template object and panics if an error occurs.
-// - TempFolder: Sets the temporary folder for the template.
-// - GetNewContext: Returns a distinct context for each folder.
-// - LeftDelim: Returns the left delimiter.
-// - RightDelim: Returns the right delimiter.
-// - RazorDelim: Returns the Razor delimiter.
-// - SetOption: Sets a template option after initialization.
-// - initExtension: Initializes template extensions.
-// - init: Initializes a new template with the same attributes as the current context.
-// - setConstant: Sets a constant value in the template context.
-// - importTemplates: Imports templates from another template.
-// - Add: Adds a value to the template context.
-// - Merge: Merges multiple values into the template context.
-// - Context: Returns the template context as a dictionary.
-// - IgnoreRazorExpression: Ignores specified Razor expressions.
 package template
 
 import (
@@ -60,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"text/template"
+	"unicode"
 
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/utils"
@@ -96,6 +45,7 @@ const (
 	EnvAcceptNoValue    = "GOTEMPLATE_NO_VALUE"
 	EnvStrictErrorCheck = "GOTEMPLATE_STRICT_ERROR"
 	EnvSubstitutes      = "GOTEMPLATE_SUBSTITUTES"
+	EnvIgnoreRazor      = "GOTEMPLATE_IGNORE_RAZOR"
 	EnvDebug            = "GOTEMPLATE_DEBUG"
 	EnvExtensionPath    = "GOTEMPLATE_PATH"
 	EnvInternalLogLevel = "GOTEMPLATE_INTERNAL_LOG_LEVEL"
@@ -137,7 +87,27 @@ func IsCode(code string) bool {
 	return IsRazor(code) || strings.Contains(code, "{{") || strings.Contains(code, "}}")
 }
 
-// NewTemplate creates an Template object with default initialization.
+// NewTemplate creates a new Template instance with the provided parameters.
+// It initializes the template with default or provided options, context, and substitutes.
+//
+// Parameters:
+//   - folder: The folder path where the template is located.
+//   - context: The context data to be used within the template.
+//   - delimiters: Custom delimiters for the template, separated by commas.
+//   - options: A set of options to configure the template behavior.
+//   - substitutes: Optional additional substitution patterns.
+//
+// Returns:
+//   - result: A pointer to the created Template instance.
+//   - err: An error if the template creation fails.
+//
+// The function handles panics by recovering and returning an error.
+// It sets up default options, context, and substitutes if not provided.
+// It also processes environment variables for substitutes (GOTEMPLATE_SUBSTITUTES) and ignore razor expressions (GOTEMPLATE_IGNORE_RAZOR).
+// GOTEMPLATE_IGNORE_RAZOR can be a json, yaml or hcl array of strings or a string with comma, newline or space separated values.
+// GOTEMPLATE_SUBSTITUTES must be a list of substitute pattern separated by newlines.
+//
+// Custom delimiters can be specified, with a maximum of three comma-separated parts.
 func NewTemplate(folder string, context interface{}, delimiters string, options OptionsSet, substitutes ...string) (result *Template, err error) {
 	defer func() {
 		if rec := recover(); rec != nil {
@@ -169,6 +139,23 @@ func NewTemplate(folder string, context interface{}, delimiters string, options 
 		baseSubstitutesRegex = append(baseSubstitutesRegex, strings.Split(substitutesFromEnv, "\n")...)
 	}
 	t.substitutes = utils.InitReplacers(append(baseSubstitutesRegex, substitutes...)...)
+
+	if ignoreRazorFromEnv := os.Getenv(EnvIgnoreRazor); ignoreRazorFromEnv != "" {
+		var list []string
+		if unicode.IsLetter(rune(ignoreRazorFromEnv[0])) {
+			ignoreRazorFromEnv = strings.ReplaceAll(ignoreRazorFromEnv, "\r\n", ",")
+			ignoreRazorFromEnv = strings.ReplaceAll(ignoreRazorFromEnv, "\n", ",")
+			ignoreRazorFromEnv = strings.ReplaceAll(ignoreRazorFromEnv, " ", ",")
+			list = strings.Split(ignoreRazorFromEnv, ",")
+		} else {
+			var data []interface{}
+			if err := collections.ConvertData(ignoreRazorFromEnv, &data); err != nil {
+				return nil, fmt.Errorf("invalid value for %s: %v", EnvIgnoreRazor, ignoreRazorFromEnv)
+			}
+			list = collections.ToStrings(data)
+		}
+		t.AppendIgnoreRazorExpression(list...)
+	}
 
 	if t.options[Extension] {
 		t.initExtension()
@@ -314,7 +301,7 @@ func (t *Template) init(folder string) {
 	}
 	t.addFuncs()
 	t.children = make(map[string]*Template)
-	t.Delims(t.delimiters[0], t.delimiters[1])
+	t.Delims(t.LeftDelim(), t.RightDelim())
 	t.setConstant(false, "\n", "NL", "CR", "NEWLINE")
 	t.setConstant(false, true, "true")
 	t.setConstant(false, false, "false")
@@ -380,4 +367,20 @@ func (t *Template) Context() (result collections.IDictionary) {
 //	expr: A variadic list of strings representing the Razor expressions to ignore (can also be a regular expression).
 func (t *Template) IgnoreRazorExpression(expr ...string) {
 	t.ignoredRazorExpr = expr
+}
+
+// AppendIgnoreRazorExpression appends one or more Razor expressions to the list of ignored Razor expressions.
+// This allows the template to bypass processing for the specified expressions.
+//
+// Parameters:
+//
+//	expr: A variadic parameter representing one or more Razor expressions to be ignored.
+func (t *Template) AppendIgnoreRazorExpression(expr ...string) {
+	t.ignoredRazorExpr = append(expr, t.ignoredRazorExpr...)
+}
+
+// GetIgnoredRazorExpressions returns a slice of strings containing the ignored Razor expressions.
+// These expressions are not processed by the template engine.
+func (t *Template) GetIgnoredRazorExpressions() []string {
+	return t.ignoredRazorExpr
 }

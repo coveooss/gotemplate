@@ -36,7 +36,7 @@ func (d xmlDict) PrettyPrint() string {
 // func init() { collections.TypeConverters["xml"] = Unmarshal }
 
 // Unmarshal calls the native Unmarshal but transform the results
-// to returns Dictionary and GenerecList instead of go native collections.
+// to returns Dictionary and GenericList instead of go native collections.
 func Unmarshal(data []byte, out interface{}) (err error) {
 	if err = NativeUnmarshal(data, out); err != nil {
 		return

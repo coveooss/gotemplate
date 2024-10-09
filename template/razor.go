@@ -17,8 +17,16 @@ func (t *Template) applyRazor(content []byte) (result []byte, changed bool) {
 	t.ensureInit()
 
 	for _, ignoredExpr := range t.ignoredRazorExpr {
-		content = regexp.MustCompile(t.delimiters[2]+ignoredExpr).ReplaceAllFunc(content, func(match []byte) []byte {
-			return []byte(strings.Replace(string(match), t.delimiters[2], literalAt, 1))
+		ignoredExpr = strings.TrimSpace(ignoredExpr)
+		if ignoredExpr == "" {
+			continue
+		}
+		if strings.HasSuffix(ignoredExpr, "*") || strings.HasSuffix(ignoredExpr, "+") {
+			ignoredExpr += `?` // Ensure that the regex is not greedy
+		}
+		ignoredExpr = t.RazorDelim() + ignoredExpr + `\b` // Stop at the end of the expression
+		content = regexp.MustCompile(ignoredExpr).ReplaceAllFunc(content, func(match []byte) []byte {
+			return []byte(strings.Replace(string(match), t.RazorDelim(), literalAt, 1))
 		})
 	}
 
@@ -156,10 +164,10 @@ func (t *Template) ensureInit() {
 		replacements := make([]replacement, 0, len(expressions))
 		for _, expr := range expressions {
 			comment := expr[0].(string)
-			re := strings.Replace(expr[1].(string), "@", regexp.QuoteMeta(t.delimiters[2]), -1)
-			re = strings.Replace(re, "{{", regexp.QuoteMeta(t.delimiters[0]), -1)
-			re = strings.Replace(re, "}}", regexp.QuoteMeta(t.delimiters[1]), -1)
-			replace := strings.Replace(strings.Replace(strings.Replace(expr[2].(string), "{{", t.delimiters[0], -1), "}}", t.delimiters[1], -1), "@", t.delimiters[2], -1)
+			re := strings.Replace(expr[1].(string), "@", regexp.QuoteMeta(t.RazorDelim()), -1)
+			re = strings.Replace(re, "{{", regexp.QuoteMeta(t.LeftDelim()), -1)
+			re = strings.Replace(re, "}}", regexp.QuoteMeta(t.RightDelim()), -1)
+			replace := strings.Replace(strings.Replace(strings.Replace(expr[2].(string), "{{", t.LeftDelim(), -1), "}}", t.RightDelim(), -1), "@", t.RazorDelim(), -1)
 			var exprParser replacementFunc
 			if len(expr) >= 4 {
 				exprParser = expr[3].(replacementFunc)

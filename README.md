@@ -69,3 +69,5 @@ gotemplate --var my_var2=value2 --import vars.json '{{ .my_var }} {{ .my_var2 }}
 ```
 
 More examples and statement in the [documentation](https://coveooss.github.io/gotemplate/)
+
+Library usage [documentation](https://pkg.go.dev/github.com/coveooss/gotemplate/v3/template)

@@ -147,37 +147,89 @@ func TestIgnoredRazorExpression(t *testing.T) {
 		name    string
 		code    string
 		context map[string]interface{}
+		strict  bool
 		ignored []string
 		want    string
+		err     error
 	}{
 		{
 			"Sha256",
 			"Hello @var1 @sha256",
 			map[string]interface{}{"var1": "world"},
+			false,
 			[]string{"sha256"},
 			"Hello world @sha256",
+			nil,
+		},
+		{
+			"Sha256 with error",
+			"Hello @var1 @sha256 @sha256long",
+			map[string]interface{}{"var1": "world"},
+			false,
+			[]string{"sha256"},
+			"Hello @var1 @sha256 @sha256long",
+			nil,
+		},
+		{
+			"Sha256 with error strict",
+			"Hello @var1 @sha256 @sha256long",
+			map[string]interface{}{"var1": "world"},
+			true,
+			[]string{"sha256"},
+			"Hello world @sha256 <no value>",
+			fmt.Errorf("contains undefined value"),
+		},
+		{
+			"Sha256",
+			"Hello @sha256 @sha256long",
+			map[string]interface{}{"sha256long": "it works"},
+			false,
+			[]string{"sha256"},
+			"Hello @sha256 it works",
+			nil,
+		},
+		{
+			"Empty ignored",
+			"Hello @sha256 @sha256long",
+			map[string]interface{}{"sha256long": "it works"},
+			false,
+			[]string{"sha256", "", "    "},
+			"Hello @sha256 it works",
+			nil,
 		},
 		{
 			"Real Sha256",
 			"Hello @var1 public.ecr.aws/lambda/python:3.12-arm64@sha256:335461dca279eede475193ac3cfda992d2f7e632710f8d92cbb4fb6f439abc06",
 			map[string]interface{}{"var1": "world"},
+			false,
 			[]string{"sha256"},
 			"Hello world public.ecr.aws/lambda/python:3.12-arm64@sha256:335461dca279eede475193ac3cfda992d2f7e632710f8d92cbb4fb6f439abc06",
+			nil,
 		},
 		{
 			"Regex",
 			"Hello @var1 @this_var_is_not_a_razor_one",
 			map[string]interface{}{"var1": "world"},
+			false,
 			[]string{"\\w*not_a_razor\\w+"},
 			"Hello world @this_var_is_not_a_razor_one",
+			nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", tt.context, "", nil)
+			if tt.strict {
+				template.SetOption(StrictErrorCheck, true)
+			}
 			template.IgnoreRazorExpression(tt.ignored...)
-			got, _ := template.ProcessContent(tt.code, tt.name)
+			got, err := template.ProcessContent(tt.code, tt.name)
 			assert.Equal(t, tt.want, string(got))
+			if tt.err != nil {
+				assert.ErrorContains(t, err, tt.err.Error())
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }
@@ -511,7 +563,7 @@ func TestMultilineStringProtect(t *testing.T) {
 			"`{{ add 1 2 }}`",
 		},
 		{
-			"String withing expression",
+			"String within expression",
 			"@func(`@(1+2)`)",
 			"{{ func `@(1+2)` }}",
 		},
@@ -632,4 +684,38 @@ func ExampleTemplate_IgnoreRazorExpression() {
 	// This @variable should not be changed.
 	// Neither than @thisOne or @thatOne
 	// And this @function("text", 1) won't be invoked while 5 will be
+}
+
+func ExampleTemplate_AppendIgnoreRazorExpression() {
+	code := "Hello, @Name! From @Author"
+
+	context := map[string]string{
+		"Name":   "There",
+		"Author": "Obi-Wan Kenobi",
+	}
+
+	template := MustNewTemplate(".", context, "", nil)
+	template.IgnoreRazorExpression("Name")
+	template.AppendIgnoreRazorExpression("Author")
+	result, err := template.ProcessContent(code, "Internal example")
+	if err != nil {
+		log.Fatalf("execution failed: %s", err)
+	}
+	fmt.Println("Ignored expressions:", template.GetIgnoredRazorExpressions())
+	fmt.Println(result)
+
+	// This reset the list of ignored expressions
+	template.IgnoreRazorExpression()
+	result, err = template.ProcessContent(code, "Internal example")
+	if err != nil {
+		log.Fatalf("execution failed: %s", err)
+	}
+	fmt.Println("Ignored expressions:", template.GetIgnoredRazorExpressions())
+	fmt.Println(result)
+
+	// Output:
+	// Ignored expressions: [Author Name]
+	// Hello, @Name! From @Author
+	// Ignored expressions: []
+	// Hello, There! From Obi-Wan Kenobi
 }

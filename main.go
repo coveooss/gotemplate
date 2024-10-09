@@ -24,8 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Version is initialized at build time through -ldflags "-X main.Version=<version number>"
-var version = "2.7.4"
+var version = "major.minor.patch # locally built, should be replaced by the build process with -ldflags \"-X main.version=<version number>\""
 var tempFolder = errors.Must(os.MkdirTemp("", "gotemplate-")).(string)
 
 const (
@@ -34,7 +33,7 @@ const (
 const description = `
 An extended template processor for go.
 
-See: https://coveo.github.io/gotemplate for complete documentation.
+See: https://coveooss.github.io/gotemplate for complete documentation.
 `
 
 func runGotemplate() (exitCode int) {
@@ -89,7 +88,7 @@ func runGotemplate() (exitCode int) {
 		ignoreMissingImport = run.Flag("ignore-missing-import", "Exit with code 0 even if import does not exist").Bool()
 		ignoreMissingSource = run.Flag("ignore-missing-source", "Exit with code 0 even if source does not exist").Bool()
 		ignoreMissingPaths  = run.Flag("ignore-missing-paths", "Exit with code 0 even if import or source do not exist").Bool()
-		ignoreRazor         = run.Flag("ignore-razor", "Do not consider the list of excluded Razor name as razor expression").PlaceHolder("regex").Strings()
+		ignoreRazor         = run.Flag("ignore-razor", "Do not consider the list of excluded Razor name as razor expression").PlaceHolder("regex").NoEnvar().Strings()
 		templates           = run.Arg("templates", "Template files or commands to process").Strings()
 
 		list          = app.Command("list", "Get detailed help on gotemplate functions").NoAutoShortcut()
@@ -259,7 +258,7 @@ func runGotemplate() (exitCode int) {
 	t.TempFolder(tempFolder)
 
 	if len(*ignoreRazor) > 0 {
-		t.IgnoreRazorExpression(*ignoreRazor...)
+		t.AppendIgnoreRazorExpression(*ignoreRazor...)
 	}
 
 	if command == list.FullCommand() {

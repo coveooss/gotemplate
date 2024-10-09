@@ -18,7 +18,7 @@ func IsShebangScript(content string) bool {
 	return len(matches) > 0 && matches[1] != ""
 }
 
-// ScriptParts splits up the supplied content into program, subprogram and source if the content matches Shebang defintion
+// ScriptParts splits up the supplied content into program, subprogram and source if the content matches Shebang definition
 func ScriptParts(content string) (program, subprogram, source string) {
 	matches := shebang.FindStringSubmatch(strings.TrimSpace(content))
 	if len(matches) > 0 {
@@ -50,7 +50,7 @@ func GetCommandFromFile(filename string, args ...interface{}) (cmd *exec.Cmd, er
 		}
 	} else if _, errPath := exec.LookPath(command); errPath != nil {
 		if strings.Contains(command, " ") {
-			// The command is a string that should be splitted up into several parts
+			// The command is a string that should be split up into several parts
 			split := strings.Split(command, " ")
 			command = split[0]
 			strArgs = append(split[1:], strArgs...)

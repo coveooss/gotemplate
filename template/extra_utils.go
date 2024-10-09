@@ -84,7 +84,7 @@ var utilsFuncsHelp = descriptions{
 
 		Color can be prefixed by:
 		    Fg:   Meaning foreground (Fg is assumed if not specified)
-		    FgHi: Meaning high intensity forgeround
+		    FgHi: Meaning high intensity foreground
 		    Bg:   Meaning background"
 		    BgHi: Meaning high intensity background
 	`)),
