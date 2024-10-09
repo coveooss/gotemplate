@@ -24,8 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Version is initialized at build time through -ldflags "-X main.Version=<version number>"
-var version = "2.7.4"
+var version = "major.minor.patch # locally built, should be replaced by the build process with -ldflags \"-X main.version=<version number>\""
 var tempFolder = errors.Must(os.MkdirTemp("", "gotemplate-")).(string)
 
 const (
