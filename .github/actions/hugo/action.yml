@@ -10,6 +10,6 @@ runs:
   steps:
     - shell: bash
       run: |
-        wget -nv https://github.com/gohugoio/hugo/releases/download/v${{ inputs.hugo-version }}/hugo_${{ inputs.hugo-version }}_Linux-64bit.tar.gz
-        tar -C /usr/local/bin -xvf hugo_${{ inputs.hugo-version }}_Linux-64bit.tar.gz hugo
-        rm hugo_${{ inputs.hugo-version }}_Linux-64bit.tar.gz
+        wget -nv https://github.com/gohugoio/hugo/releases/download/v${{ inputs.hugo-version }}/hugo_extended_${{ inputs.hugo-version }}_Linux-64bit.tar.gz
+        tar -C /usr/local/bin -xvf hugo_extended_${{ inputs.hugo-version }}_Linux-64bit.tar.gz hugo
+        rm hugo_extended_${{ inputs.hugo-version }}_Linux-64bit.tar.gz
