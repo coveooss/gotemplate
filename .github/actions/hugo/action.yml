@@ -1,0 +1,15 @@
+description: Sets up Hugo
+
+inputs:
+  hugo-version:
+    description: Hugo version to install
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        wget -nv https://github.com/gohugoio/hugo/releases/download/v${{ inputs.hugo-version }}/hugo_extended_${{ inputs.hugo-version }}_Linux-64bit.tar.gz
+        tar -C /usr/local/bin -xvf hugo_extended_${{ inputs.hugo-version }}_Linux-64bit.tar.gz hugo
+        rm hugo_extended_${{ inputs.hugo-version }}_Linux-64bit.tar.gz

@@ -27,10 +27,9 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@75d2e84710de30f6ff7268e08f310b60ef14033f # v3
+        uses: ./.github/actions/hugo
         with:
-          hugo-version: "0.135.0"
-          extended: true
+          hugo-version: "0.136.0"
       - name: Build Documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
