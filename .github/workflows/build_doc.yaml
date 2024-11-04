@@ -29,7 +29,7 @@ jobs:
       - name: Setup Hugo
         uses: ./.github/actions/hugo
         with:
-          hugo-version: "0.135.0"
+          hugo-version: "0.136.0"
       - name: Build Documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
