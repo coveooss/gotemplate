@@ -16,10 +16,10 @@ import (
 	"github.com/coveooss/gotemplate/v3/template"
 	"github.com/coveooss/gotemplate/v3/utils"
 	"github.com/coveooss/gotemplate/v3/yaml"
+	"github.com/coveooss/kingpin/v2"
 	"github.com/coveooss/multilogger"
 	multicolor "github.com/coveooss/multilogger/color"
 	"github.com/coveooss/multilogger/errors"
-	"github.com/coveord/kingpin/v2"
 	"github.com/fatih/color"
 	"github.com/sirupsen/logrus"
 )
