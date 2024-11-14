@@ -173,7 +173,6 @@ func (t *Template) printFunctionsDetailed(functions []string, maxLength int, ali
 	for i := range functions {
 		fi := t.functions[functions[i]]
 		if fi.description != "" {
-			fmt.Println(fi.description)
 			text := String(fi.description).Wrap(100).Indent("// ").Lines().TrimSuffix(" ").Join("\n").String()
 			Println(color.GreenString(text))
 		}
