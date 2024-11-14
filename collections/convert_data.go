@@ -19,7 +19,7 @@ var TypeConverters = make(map[string]func([]byte, interface{}) error)
 func ConvertData(data string, out interface{}) (err error) {
 	trySimplified := func() error {
 		if strings.Count(data, "=") == 0 {
-			return fmt.Errorf("not simplifiable")
+			return fmt.Errorf("not reducible")
 		}
 		// Special case where we want to have a map and the supplied string is simplified such as "a = 10 b = string"
 		// so we try transform the supplied string in valid YAML

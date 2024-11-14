@@ -30,6 +30,7 @@ var osFuncs = dictionary{
 	"isWriteable":  isWriteable,
 	"joinPath":     path.Join,
 	"lastMod":      lastMod,
+	"load":         loadFromFile,
 	"lookPath":     lookPath,
 	"mode":         fileMode,
 	"pwd":          utils.Pwd,
@@ -49,6 +50,7 @@ var osFuncsArgs = arguments{
 	"isReadable":   {"filename"},
 	"isWriteable":  {"filename"},
 	"lastMod":      {"filename"},
+	"load":         {"filename", "binary"},
 	"mode":         {"filename"},
 	"save":         {"filename", "object"},
 	"size":         {"filename"},
@@ -62,10 +64,11 @@ var osFuncsAliases = aliases{
 	"home":     {"homeDir", "homeFolder"},
 	"isDir":    {"isDirectory", "isFolder"},
 	"lastMod":  {"lastModification", "lastModificationTime"},
+	"save":     {"write", "writeTo"},
 	"lookPath": {"whereIs", "look", "which", "type"},
 	"mode":     {"fileMode"},
 	"pwd":      {"currentDir"},
-	"save":     {"write", "writeTo"},
+	"load":     {"read", "readFrom"},
 	"size":     {"fileSize"},
 	"stat":     {"fileStat"},
 	"user":     {"currentUser"},
@@ -84,10 +87,11 @@ var osFuncsHelp = descriptions{
 	"isWriteable":  "Determines if the file is writeable by the current user.",
 	"joinPath":     "Joins any number of path elements into a single path, adding a separating slash if necessary. The result is Cleaned; in particular all empty strings are ignored.",
 	"lastMod":      "Returns the last modification time of the file.",
+	"load":         "Read object from file. If binary is true, the object is returned as a byte array.",
 	"lookPath":     "Returns the location of the specified executable (returns empty string if not found).",
 	"mode":         "Returns the file mode.",
 	"pwd":          "Returns the current working directory.",
-	"save":         "Save object to file.",
+	"save":         "Save object to file. If the object is not an array of byte, then the object is converted to a string.",
 	"size":         "Returns the file size.",
 	"stat":         "Returns the file Stat information (os.Stat object).",
 	"user":         "Returns the current user information (user.User object).",
@@ -186,6 +190,23 @@ func diff(text1, text2 interface{}) interface{} {
 	return dmp.DiffPrettyText(diffs)
 }
 
+func loadFromFile(filename string, binary ...bool) (interface{}, error) {
+	isBinary := false
+	switch len(binary) {
+	case 0:
+		break
+	case 1:
+		isBinary = binary[0]
+	default:
+		return "", fmt.Errorf("invalid number of arguments")
+	}
+	content, err := os.ReadFile(filename)
+	if isBinary {
+		return content, err
+	}
+	return string(content), err
+}
+
 func saveToFile(filename string, object interface{}) (string, error) {
 	folder := path.Dir(filename)
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
@@ -193,7 +214,25 @@ func saveToFile(filename string, object interface{}) (string, error) {
 			return "", err
 		}
 	}
-	return "", os.WriteFile(filename, []byte(fmt.Sprint(object)), 0644)
+	if list, err := collections.TryAsList(object); err != nil {
+		// If object is not a []byte, convert it to a string
+		object = []byte(fmt.Sprint(object))
+	} else {
+		// Convert each element of the list to byte
+		byteArray := make([]byte, len(list.AsArray()))
+		for i, v := range list.AsArray() {
+			byteValue, ok := v.(byte)
+			if !ok {
+				// Not all elements are byte, convert the whole list to a string
+				byteArray = []byte(fmt.Sprint(object))
+				break
+			}
+			byteArray[i] = byteValue
+		}
+		object = byteArray
+	}
+
+	return "", os.WriteFile(filename, object.([]byte), 0644)
 }
 
 func username() string {
