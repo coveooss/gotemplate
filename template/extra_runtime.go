@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/gotemplate/v3/utils"
-	multicolor "github.com/coveooss/multilogger/color"
-	"github.com/fatih/color"
 	"os"
 	"os/exec"
 	"path"
 	"reflect"
 	"strings"
+
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/utils"
+	multicolor "github.com/coveooss/multilogger/color"
+	"github.com/fatih/color"
 )
 
 const (

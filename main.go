@@ -3,6 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"path"
+	"path/filepath"
+	"regexp"
+	"runtime/debug"
+	"strings"
+
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/hcl"
 	"github.com/coveooss/gotemplate/v3/json"
@@ -15,12 +22,6 @@ import (
 	"github.com/coveooss/multilogger/errors"
 	"github.com/fatih/color"
 	"github.com/sirupsen/logrus"
-	"os"
-	"path"
-	"path/filepath"
-	"regexp"
-	"runtime/debug"
-	"strings"
 )
 
 var version = "major.minor.patch # locally built, should be replaced by the build process with -ldflags \"-X main.version=<version number>\""
