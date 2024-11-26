@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3
 	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/term v0.26.0
 	golang.org/x/text v0.20.0
 	gopkg.in/yaml.v3 v3.0.1
