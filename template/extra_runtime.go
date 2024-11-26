@@ -4,17 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/coveooss/gotemplate/v3/collections"
+	"github.com/coveooss/gotemplate/v3/utils"
+	multicolor "github.com/coveooss/multilogger/color"
+	"github.com/fatih/color"
 	"os"
 	"os/exec"
 	"path"
 	"reflect"
 	"strings"
-	"time"
-
-	"github.com/coveooss/gotemplate/v3/collections"
-	"github.com/coveooss/gotemplate/v3/utils"
-	multicolor "github.com/coveooss/multilogger/color"
-	"github.com/fatih/color"
 )
 
 const (
@@ -435,8 +433,6 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 }
 
 func optimizedRunTemplate(t *Template, withClone bool, source string, args ...interface{}) (result, filename string, err error) {
-	start := time.Now()
-
 	if source == "" {
 		return
 	}
@@ -533,8 +529,6 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 	if withClone {
 		t.context = parentContext
 	}
-	duration := time.Since(start)
-	fmt.Println(fmt.Sprintf("Took 'runTemplate()' %dms", duration.Milliseconds()))
 	return
 
 }

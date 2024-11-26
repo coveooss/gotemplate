@@ -3,14 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"os"
-	"path"
-	"path/filepath"
-	"regexp"
-	"runtime/debug"
-	"strings"
-	"time"
-
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/hcl"
 	"github.com/coveooss/gotemplate/v3/json"
@@ -23,6 +15,12 @@ import (
 	"github.com/coveooss/multilogger/errors"
 	"github.com/fatih/color"
 	"github.com/sirupsen/logrus"
+	"os"
+	"path"
+	"path/filepath"
+	"regexp"
+	"runtime/debug"
+	"strings"
 )
 
 var version = "major.minor.patch # locally built, should be replaced by the build process with -ldflags \"-X main.version=<version number>\""
@@ -38,7 +36,6 @@ See: https://coveooss.github.io/gotemplate for complete documentation.
 `
 
 func runGotemplate() (exitCode int) {
-	start := time.Now()
 	defer func() {
 		if rec := recover(); rec != nil {
 			errPrintf(color.RedString("Recovered %v\n"), rec)
@@ -312,8 +309,6 @@ func runGotemplate() (exitCode int) {
 	if !*printOutput {
 		utils.TerraformFormat(resultFiles...)
 	}
-	duration := time.Since(start)
-	fmt.Println(fmt.Sprintf("Took %dms", duration.Milliseconds()))
 	return
 }
 
