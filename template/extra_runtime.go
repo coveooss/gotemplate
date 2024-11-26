@@ -431,6 +431,10 @@ func (t *Template) exec(command string, args ...interface{}) (interface{}, error
 }
 
 func (t *Template) runTemplate(source string, args ...interface{}) (result, filename string, err error) {
+	return optimizedRunTemplate(t, false, source, args...)
+}
+
+func optimizedRunTemplate(t *Template, withClone bool, source string, args ...interface{}) (result, filename string, err error) {
 	start := time.Now()
 
 	if source == "" {
@@ -438,27 +442,30 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	}
 	var out bytes.Buffer
 
-	// Keep the parent context to make it available
-	parentContext := t.cloneUserContext()
-	context := t.context.(collections.IDictionary)
+	var parentContext interface{}
+	if withClone {
+		// Keep the parent context to make it available
+		parentContext = t.cloneUserContext()
+		context := t.context.(collections.IDictionary)
 
-	if context.Len() == 0 {
-		context.Set("CONTEXT", context)
-	}
-	switch len(args) {
-	case 1:
-		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
-			context = arguments.Merge(context)
-			break
+		if context.Len() == 0 {
+			context.Set("CONTEXT", context)
 		}
-		fallthrough
-	default:
-		context.Set("ARGS", args)
-	}
+		switch len(args) {
+		case 1:
+			if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
+				context = arguments.Merge(context)
+				break
+			}
+			fallthrough
+		default:
+			context.Set("ARGS", args)
+		}
 
-	// Make the parent context available
-	context.Set("_", parentContext)
-	t.context = context
+		// Make the parent context available
+		context.Set("_", parentContext)
+		t.context = context
+	}
 
 	// We first try to find a template named <source>
 	internalTemplate := t.Lookup(source)
@@ -492,8 +499,19 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	}
 
 	// We execute the resulting template
-	if err = internalTemplate.Execute(&out, context); err != nil {
-		return
+	var ctx interface{}
+	if withClone {
+		ctx = t.context
+		internalTemplate.Option("missingkey=default")
+	} else {
+		internalTemplate.Option("missingkey=error")
+	}
+
+	if err = internalTemplate.Execute(&out, ctx); err != nil {
+		if !withClone {
+			TemplateLog.Debug("Running template with context cloning")
+			return optimizedRunTemplate(t, true, source, args...)
+		}
 	}
 
 	result = out.String()
@@ -512,10 +530,13 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 		// templating, In that case, we do not consider the original filename as unaltered source.
 		filename = ""
 	}
+	if withClone {
+		t.context = parentContext
+	}
 	duration := time.Since(start)
 	fmt.Println(fmt.Sprintf("Took 'runTemplate()' %dms", duration.Milliseconds()))
-	t.context = parentContext
 	return
+
 }
 
 func (t *Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
