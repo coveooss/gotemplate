@@ -154,7 +154,7 @@ func (t *Template) addRuntimeFuncs() {
 		"substitute":       t.substitute,
 		"templateNames":    t.getTemplateNames,
 		"templates":        t.Templates,
-		"userContext":      t.userContext,
+		"userContext":      t.cloneUserContext,
 	}
 	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
 		FuncHelp:     runtimeFuncsHelp,
@@ -168,7 +168,7 @@ func exit(exitValue int) int { os.Exit(exitValue); return exitValue }
 
 func (t *Template) current() string { return t.folder }
 
-func (t *Template) userContext() interface{} {
+func (t *Template) cloneUserContext() interface{} {
 	return t.Context().Clone().Flush(t.constantKeys...)
 }
 
@@ -439,7 +439,7 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	var out bytes.Buffer
 
 	// Keep the parent context to make it available
-	parentContext := t.userContext()
+	parentContext := t.cloneUserContext()
 	context := t.context.(collections.IDictionary)
 
 	if context.Len() == 0 {
