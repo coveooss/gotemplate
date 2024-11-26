@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/hcl"
@@ -37,6 +38,7 @@ See: https://coveooss.github.io/gotemplate for complete documentation.
 `
 
 func runGotemplate() (exitCode int) {
+	start := time.Now()
 	defer func() {
 		if rec := recover(); rec != nil {
 			errPrintf(color.RedString("Recovered %v\n"), rec)
@@ -310,6 +312,8 @@ func runGotemplate() (exitCode int) {
 	if !*printOutput {
 		utils.TerraformFormat(resultFiles...)
 	}
+	duration := time.Since(start)
+	fmt.Println(fmt.Sprintf("Took %dms", duration.Milliseconds()))
 	return
 }
 

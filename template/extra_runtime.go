@@ -9,6 +9,7 @@ import (
 	"path"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/coveooss/gotemplate/v3/collections"
 	"github.com/coveooss/gotemplate/v3/utils"
@@ -430,16 +431,14 @@ func (t *Template) exec(command string, args ...interface{}) (interface{}, error
 }
 
 func (t *Template) runTemplate(source string, args ...interface{}) (result, filename string, err error) {
+	start := time.Now()
+
 	if source == "" {
 		return
 	}
 	var out bytes.Buffer
 
-	// Keep the parent context to make it available
-	parentContext := t.userContext()
-	// Clone the current context to ensure that the sub template has a distinct set of values
-	t = t.GetNewContext("", false)
-	context := t.Context().Clone()
+	context := t.context.(collections.IDictionary)
 	if context.Len() == 0 {
 		context.Set("CONTEXT", context)
 	}
@@ -454,8 +453,6 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 		context.Set("ARGS", args)
 	}
 
-	// Make the parent context available
-	context.Set("_", parentContext)
 	t.context = context
 
 	// We first try to find a template named <source>
@@ -510,6 +507,8 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 		// templating, In that case, we do not consider the original filename as unaltered source.
 		filename = ""
 	}
+	duration := time.Since(start)
+	fmt.Println(fmt.Sprintf("Took 'runTemplate()' %dms", duration.Milliseconds()))
 	return
 }
 
