@@ -438,7 +438,10 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	}
 	var out bytes.Buffer
 
+	// Keep the parent context to make it available
+	parentContext := t.userContext()
 	context := t.context.(collections.IDictionary)
+
 	if context.Len() == 0 {
 		context.Set("CONTEXT", context)
 	}
@@ -453,6 +456,8 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 		context.Set("ARGS", args)
 	}
 
+	// Make the parent context available
+	context.Set("_", parentContext)
 	t.context = context
 
 	// We first try to find a template named <source>
@@ -487,7 +492,7 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	}
 
 	// We execute the resulting template
-	if err = internalTemplate.Execute(&out, t.context); err != nil {
+	if err = internalTemplate.Execute(&out, context); err != nil {
 		return
 	}
 
@@ -509,6 +514,7 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	}
 	duration := time.Since(start)
 	fmt.Println(fmt.Sprintf("Took 'runTemplate()' %dms", duration.Milliseconds()))
+	t.context = parentContext
 	return
 }
 
