@@ -439,16 +439,27 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 	}
 	var out bytes.Buffer
 
+	var parentContext interface{}
 	var context collections.IDictionary
-
 	if withClone {
-		context = t.Context().Clone()
+		// Keep the parent context to make it available
+		parentContext = t.cloneUserContext()
+		context = t.context.(collections.IDictionary)
+
+		context.Set("_", t.cloneUserContext())
+
 		if context.Len() == 0 {
 			context.Set("CONTEXT", context)
 		}
-		context.Set("_", t.cloneUserContext())
+
+		// Make the parent context available
+		context.Set("_", parentContext)
+		t.context = context
 	} else {
 		context = collections.CreateDictionary()
+		for _, k := range t.constantKeys {
+			context.Set(k, t.Context().Get(k))
+		}
 	}
 
 	switch len(args) {
@@ -493,18 +504,16 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 		internalTemplate = inline
 	}
 
-	// We execute the resulting template
 	if withClone {
+		// Ignore missing keys
 		internalTemplate.Option("missingkey=default")
 	} else {
+		// Return error on missing keys in order to retry
 		internalTemplate.Option("missingkey=error")
 	}
 
-	previous_context := t.context
-	t.context = context
-	err = internalTemplate.Execute(&out, context)
-	t.context = previous_context
-	if err != nil {
+	// We execute the resulting template
+	if err = internalTemplate.Execute(&out, context); err != nil {
 		if !withClone {
 			TemplateLog.Debug("Running template with context cloning because:", err)
 			return optimizedRunTemplate(t, true, source, args...)
@@ -526,6 +535,9 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 		// If the content is different from the source, that is because the source contains
 		// templating, In that case, we do not consider the original filename as unaltered source.
 		filename = ""
+	}
+	if withClone {
+		t.context = parentContext
 	}
 	return
 
