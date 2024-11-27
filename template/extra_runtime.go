@@ -153,7 +153,7 @@ func (t *Template) addRuntimeFuncs() {
 		"substitute":       t.substitute,
 		"templateNames":    t.getTemplateNames,
 		"templates":        t.Templates,
-		"userContext":      t.userContext,
+		"userContext":      t.cloneUserContext,
 	}
 	t.AddFunctions(funcs, runtimeFunc, FuncOptions{
 		FuncHelp:     runtimeFuncsHelp,
@@ -167,7 +167,7 @@ func exit(exitValue int) int { os.Exit(exitValue); return exitValue }
 
 func (t *Template) current() string { return t.folder }
 
-func (t *Template) userContext() interface{} {
+func (t *Template) cloneUserContext() interface{} {
 	return t.Context().Clone().Flush(t.constantKeys...)
 }
 
@@ -430,19 +430,27 @@ func (t *Template) exec(command string, args ...interface{}) (interface{}, error
 }
 
 func (t *Template) runTemplate(source string, args ...interface{}) (result, filename string, err error) {
+	return optimizedRunTemplate(t, false, source, args...)
+}
+
+func optimizedRunTemplate(t *Template, withClone bool, source string, args ...interface{}) (result, filename string, err error) {
 	if source == "" {
 		return
 	}
 	var out bytes.Buffer
 
-	// Keep the parent context to make it available
-	parentContext := t.userContext()
-	// Clone the current context to ensure that the sub template has a distinct set of values
-	t = t.GetNewContext("", false)
-	context := t.Context().Clone()
-	if context.Len() == 0 {
-		context.Set("CONTEXT", context)
+	var context collections.IDictionary
+
+	if withClone {
+		context = t.Context().Clone()
+		if context.Len() == 0 {
+			context.Set("CONTEXT", context)
+		}
+		context.Set("_", t.cloneUserContext())
+	} else {
+		context = collections.CreateDictionary()
 	}
+
 	switch len(args) {
 	case 1:
 		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
@@ -453,10 +461,6 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	default:
 		context.Set("ARGS", args)
 	}
-
-	// Make the parent context available
-	context.Set("_", parentContext)
-	t.context = context
 
 	// We first try to find a template named <source>
 	internalTemplate := t.Lookup(source)
@@ -490,8 +494,21 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	}
 
 	// We execute the resulting template
-	if err = internalTemplate.Execute(&out, t.context); err != nil {
-		return
+	if withClone {
+		internalTemplate.Option("missingkey=default")
+	} else {
+		internalTemplate.Option("missingkey=error")
+	}
+
+	previous_context := t.context
+	t.context = context
+	err = internalTemplate.Execute(&out, context)
+	t.context = previous_context
+	if err != nil {
+		if !withClone {
+			TemplateLog.Debug("Running template with context cloning because:", err)
+			return optimizedRunTemplate(t, true, source, args...)
+		}
 	}
 
 	result = out.String()
@@ -511,6 +528,7 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 		filename = ""
 	}
 	return
+
 }
 
 func (t *Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {

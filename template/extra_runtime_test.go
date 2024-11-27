@@ -36,10 +36,12 @@ func TestRuntime(t *testing.T) {
 		{
 			name: "Get context",
 			content: `@define("func")
+			@base = 2
 			@-context()
 			@-end
-			@-include("func", 1, 2, 3)`,
-			result: `{"ARGS":[1,2,3],"_":{"base":1},"base":1}`,
+			@-include("func", 1, 2, 3)
+			@-context()`,
+			result: `{"ARGS":[1,2,3],"_":{"base":1},"base":2}{"base":1}`,
 		},
 		{
 			name: "Override parent value",
