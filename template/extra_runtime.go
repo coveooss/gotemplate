@@ -439,29 +439,27 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 	}
 	var out bytes.Buffer
 
-	var parentContext interface{}
-	if withClone {
-		// Keep the parent context to make it available
-		parentContext = t.cloneUserContext()
-		context := t.context.(collections.IDictionary)
+	var context collections.IDictionary
 
+	if withClone {
+		context = t.Context().Clone()
 		if context.Len() == 0 {
 			context.Set("CONTEXT", context)
 		}
-		switch len(args) {
-		case 1:
-			if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
-				context = arguments.Merge(context)
-				break
-			}
-			fallthrough
-		default:
-			context.Set("ARGS", args)
-		}
+		context.Set("_", t.cloneUserContext())
+	} else {
+		context = collections.CreateDictionary()
+	}
 
-		// Make the parent context available
-		context.Set("_", parentContext)
-		t.context = context
+	switch len(args) {
+	case 1:
+		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
+			context = arguments.Merge(context)
+			break
+		}
+		fallthrough
+	default:
+		context.Set("ARGS", args)
 	}
 
 	// We first try to find a template named <source>
@@ -496,17 +494,19 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 	}
 
 	// We execute the resulting template
-	var ctx interface{}
 	if withClone {
-		ctx = t.context
 		internalTemplate.Option("missingkey=default")
 	} else {
 		internalTemplate.Option("missingkey=error")
 	}
 
-	if err = internalTemplate.Execute(&out, ctx); err != nil {
+	previous_context := t.context
+	t.context = context
+	err = internalTemplate.Execute(&out, context)
+	t.context = previous_context
+	if err != nil {
 		if !withClone {
-			TemplateLog.Debug("Running template with context cloning")
+			TemplateLog.Debug("Running template with context cloning because:", err)
 			return optimizedRunTemplate(t, true, source, args...)
 		}
 	}
@@ -526,9 +526,6 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 		// If the content is different from the source, that is because the source contains
 		// templating, In that case, we do not consider the original filename as unaltered source.
 		filename = ""
-	}
-	if withClone {
-		t.context = parentContext
 	}
 	return
 
