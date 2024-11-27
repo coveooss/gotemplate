@@ -446,7 +446,7 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 		parentContext = t.cloneUserContext()
 		context = t.context.(collections.IDictionary)
 
-		context.Set("_", t.cloneUserContext())
+		context.Set("_", parentContext)
 
 		if context.Len() == 0 {
 			context.Set("CONTEXT", context)
