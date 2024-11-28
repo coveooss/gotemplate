@@ -439,28 +439,19 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 	}
 	var out bytes.Buffer
 
-	var parentContext interface{}
+	parentContext := t.context
+	defer func() { t.context = parentContext }()
 	var context collections.IDictionary
 	if withClone {
-		// Keep the parent context to make it available
-		parentContext = t.cloneUserContext()
-		context = t.context.(collections.IDictionary)
-
-		context.Set("_", parentContext)
-
-		if context.Len() == 0 {
-			context.Set("CONTEXT", context)
-		}
-
-		// Make the parent context available
-		context.Set("_", parentContext)
-		t.context = context
+		context = t.Context().Clone()
 	} else {
 		context = collections.CreateDictionary()
 		for _, k := range t.constantKeys {
 			context.Set(k, t.Context().Get(k))
 		}
 	}
+	context.Set("_", parentContext)
+	t.context = context
 
 	switch len(args) {
 	case 1:
@@ -516,6 +507,7 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 	if err = internalTemplate.Execute(&out, context); err != nil {
 		if !withClone {
 			TemplateLog.Debug("Running template with context cloning because:", err)
+			t.context = parentContext
 			return optimizedRunTemplate(t, true, source, args...)
 		}
 	}
@@ -524,7 +516,8 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 
 	if !t.options[AcceptNoValue] {
 		// Detect possible <no value> or <nil> that could be generated
-		if pos := strings.Index(strings.Replace(result, nilValue, noValue, -1), noValue); pos >= 0 {
+		result = strings.Replace(result, nilValue, noValue, -1)
+		if pos := strings.Index(result, noValue); pos >= 0 {
 			lines := strings.Split(result[:pos+len(noValue)], "\n")
 			err = fmt.Errorf(`%s in "%s"`, noValueError, strings.TrimSpace(lines[len(lines)-1]))
 			return
@@ -536,11 +529,7 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 		// templating, In that case, we do not consider the original filename as unaltered source.
 		filename = ""
 	}
-	if withClone {
-		t.context = parentContext
-	}
 	return
-
 }
 
 func (t *Template) runTemplateItf(source string, context ...interface{}) (interface{}, error) {
