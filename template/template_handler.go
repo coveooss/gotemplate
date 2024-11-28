@@ -95,7 +95,7 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 	}
 
 	if t.options[OutputStdout] {
-		err = t.printResult(template, resultFile, result)
+		err = t.printResult(template, resultFile, result, changed)
 		if err != nil {
 			errors.Print(err)
 		}
@@ -109,14 +109,13 @@ func (t *Template) processTemplate(template, sourceFolder, targetFolder string, 
 	}
 
 	mode := must(os.Stat(template)).(os.FileInfo).Mode()
-	if !isTemplate && !t.options[Overwrite] {
-		newName := template + ".original"
-		InternalLog.Infof("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
-		must(os.Rename(template, template+".original"))
-	}
 
 	if sourceFolder != targetFolder {
 		must(os.MkdirAll(filepath.Dir(resultFile), 0777))
+	} else if !isTemplate && !t.options[Overwrite] {
+		newName := template + ".original"
+		InternalLog.Infof("%s => %s", utils.Relative(t.folder, template), utils.Relative(t.folder, newName))
+		must(os.Rename(template, template+".original"))
 	}
 	InternalLog.Infoln("Writing file", utils.Relative(t.folder, resultFile))
 
@@ -225,6 +224,7 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 				if !(strictMode) {
 					InternalLog.Errorf("Ignored gotemplate error in %s (file left unchanged):\n%s", color.CyanString(th.Filename), err.Error())
 					result, err = th.Source, nil
+					changed = false
 				}
 			}
 		}()
@@ -252,12 +252,11 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		workingContext = collections.AsDictionary(workingContext).Clone()
 	}
 	if err = newTemplate.Execute(&out, workingContext); err != nil {
+		fmt.Println("error", err)
 		InternalLog.Debugf("%s(%d): Execution error %v", th.Filename, th.Try, err)
 		return th.Handler(err)
 	}
 	result = revertReplacements(t.substitute(out.String()))
-
-	changed = result != originalContent
 
 	if topCall && !t.options[AcceptNoValue] {
 		s := String(result)
@@ -279,5 +278,6 @@ func (t *Template) processContentInternal(originalContent, source string, origin
 		}
 		result = s.Str()
 	}
+	changed = result != originalContent
 	return
 }

@@ -50,7 +50,7 @@ func (t *Template) ProcessTemplates(sourceFolder, targetFolder string, templates
 	return t.ProcessTemplatesWithHandler(sourceFolder, targetFolder, nil, templates...)
 }
 
-func (t *Template) printResult(source, target, result string) (err error) {
+func (t *Template) printResult(source, target, result string, changed bool) (err error) {
 	if utils.IsTerraformFile(target) {
 		base := filepath.Base(target)
 		tempFolder := must(os.CreateTemp(t.tempFolder, base)).(string)
@@ -64,7 +64,7 @@ func (t *Template) printResult(source, target, result string) (err error) {
 		result = string(bytes)
 	}
 
-	if !t.isTemplate(source) && !t.options[Overwrite] {
+	if changed && !t.isTemplate(source) && !t.options[Overwrite] {
 		source += ".original"
 	}
 
