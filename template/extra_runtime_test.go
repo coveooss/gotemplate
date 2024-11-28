@@ -35,23 +35,30 @@ func TestRuntime(t *testing.T) {
 		},
 		{
 			name: "Get context",
-			content: `@define("func")
-			@base = 2
-			@-context()
+			content: `
+			@-define("func")
+				@base = 2
+				@-println("base =", base)
+				@-println("ARGS =", ARGS)
+				@-println("_.base =", _.base)
 			@-end
+
 			@-include("func", 1, 2, 3)
-			@-context()`,
-			result: `{"ARGS":[1,2,3],"_":{"base":1},"base":2}{"base":1}`,
+			@--println("base =", base)
+			`,
+			result: "base = 2\nARGS = [1,2,3]\n_.base = 1\nbase = 1\n",
 		},
 		{
 			name: "Override parent value",
-			content: `@define("func")
-			@-println("base =", base)
-			@-println("_.base =", _.base)
+			content: `
+			@-define("func")
+				@-println("base =", base)
+				@-println("_.base =", _.base)
 			@-end
 			@-include("func", data("base=over"))`,
 			result: "base = over\n_.base = 1\n",
-		}}
+		},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			template := MustNewTemplate(".", nil, "", nil)
