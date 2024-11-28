@@ -20,14 +20,6 @@ universal_binaries:
 # Archive customization
 archives:
   - format: zip
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- .Version }}_
-      {{- if eq .Os "darwin" }}macOS_
-      {{- else }}{{ .Os }}_{{ end }}
-      {{- if eq .Arch "amd64" }}64-bits
-      {{- else }}{{ .Arch }}{{ end }}
-
     files:
       - nothing.*
 
