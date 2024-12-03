@@ -98,7 +98,7 @@ rsync -av docs_tests/ $DOC_FOLDER -r
     @{name} := $re.ReplaceAllString($category.Name, `${name}`)
     @-info("Generating documentation for", $name)
     @-save(joinPath(folder, lower($name))+".md", $content)
-@--end foreach' -Vfolder=$DOC_FOLDER/functions_reference
+@--end foreach' -V folder=$DOC_FOLDER/functions_reference
 printf -- '---\nbookFlatSection: true\nweight: 4\n---' > $DOC_FOLDER/functions_reference/_index.md
 
 ./gotemplate --no-extension '

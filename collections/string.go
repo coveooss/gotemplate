@@ -9,6 +9,7 @@ import (
 	"unicode"
 
 	"github.com/coveooss/multilogger"
+	"github.com/pmezard/go-difflib/difflib"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -33,6 +34,26 @@ func (s String) ContainsRune(r rune) bool { return strings.ContainsRune(string(s
 // Count counts the number of non-overlapping instances of substr in s.
 // If substr is an empty string, Count returns 1 + the number of Unicode code points in s.
 func (s String) Count(substr string) int { return strings.Count(string(s), substr) }
+
+// Diff compares the current String with another string and returns the differences
+// in a unified diff format. The context lines are set to 3.
+//
+// Parameters:
+//
+//	compare - the string to compare with the current String.
+//
+// Returns:
+//
+//	A new String containing the unified diff of the two strings.
+func (s String) Diff(compare string) String {
+	diff := difflib.UnifiedDiff{
+		A:       difflib.SplitLines(s.String()),
+		B:       difflib.SplitLines(compare),
+		Context: 3,
+	}
+	text, _ := difflib.GetUnifiedDiffString(diff)
+	return String(text)
+}
 
 // EqualFold reports whether s and t, interpreted as UTF-8 strings,
 // are equal under Unicode case-folding.

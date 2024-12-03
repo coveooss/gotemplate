@@ -12,7 +12,7 @@ test-all:
 
 # IMPORTANT:
 # call `make doc` to generate the doc rendering used to test gotemplate
-# Be sure to validate the rendered files before commiting your code
+# Be sure to validate the rendered files before committing your code
 .PHONY: doc
 doc:
 	./render-doc
