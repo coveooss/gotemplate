@@ -6,7 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/PuerkitoBio/goquery v1.10.0
+	github.com/PuerkitoBio/goquery v1.10.1
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/bmatcuk/doublestar/v4 v4.7.1
 	github.com/coveooss/kingpin/v2 v2.4.5
@@ -32,7 +32,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.1.3 // indirect
 	github.com/alecthomas/units v0.0.0-20240927000941-0f3dac36c52b // indirect
-	github.com/andybalholm/cascadia v1.3.2 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/cloudflare/circl v1.5.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.3.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
