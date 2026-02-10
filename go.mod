@@ -1,6 +1,6 @@
 module github.com/coveooss/gotemplate/v3
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.5
 
@@ -14,14 +14,14 @@ require (
 	github.com/drhodes/goLorem v0.0.0-20220328165741-da82e5b29246
 	github.com/fatih/color v1.18.0
 	github.com/go-errors/errors v1.5.1
-	github.com/go-git/go-git/v5 v5.16.2
+	github.com/go-git/go-git/v5 v5.16.5
 	github.com/hashicorp/hcl v1.0.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/sergi/go-diff v1.4.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/term v0.33.0
-	golang.org/x/text v0.27.0
+	golang.org/x/term v0.37.0
+	golang.org/x/text v0.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -54,8 +54,8 @@ require (
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
-	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/crypto v0.45.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
