@@ -23,7 +23,7 @@ func cleanup() {
 		case errors.Managed:
 			errors.Print(err)
 		case *goerrors.Error:
-			errors.Printf(err.ErrorStack())
+			errors.Printf("%s", err.ErrorStack())
 		default:
 			errors.Printf("%T: %[1]v\n%s", err, string(debug.Stack()))
 		}

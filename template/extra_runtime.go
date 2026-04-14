@@ -572,7 +572,7 @@ func (t *Template) ellipsis(function string, args ...interface{}) (interface{}, 
 		split := strings.SplitN(err.Error(), ">: ", 2)
 		if len(split) == 2 {
 			// For internal evaluation, we do not want the file/position details on the error
-			err = fmt.Errorf(split[1])
+			err = fmt.Errorf("%s", split[1])
 		}
 	}
 	return t.tryConvert(result), err
