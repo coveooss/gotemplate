@@ -1,27 +1,27 @@
 module github.com/coveooss/gotemplate/v3
 
-go 1.24.0
+go 1.25.0
 
-toolchain go1.24.5
+toolchain go1.26.2
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/PuerkitoBio/goquery v1.10.3
+	github.com/PuerkitoBio/goquery v1.12.0
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
-	github.com/bmatcuk/doublestar/v4 v4.9.0
+	github.com/bmatcuk/doublestar/v4 v4.10.0
 	github.com/coveooss/kingpin/v2 v2.4.5
 	github.com/coveooss/multilogger v0.6.0
 	github.com/drhodes/goLorem v0.0.0-20220328165741-da82e5b29246
-	github.com/fatih/color v1.18.0
+	github.com/fatih/color v1.19.0
 	github.com/go-errors/errors v1.5.1
-	github.com/go-git/go-git/v5 v5.17.1
+	github.com/go-git/go-git/v5 v5.17.2
 	github.com/hashicorp/hcl v1.0.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/sergi/go-diff v1.4.0
-	github.com/sirupsen/logrus v1.9.3
-	github.com/stretchr/testify v1.10.0
-	golang.org/x/term v0.37.0
-	golang.org/x/text v0.31.0
+	github.com/sirupsen/logrus v1.9.4
+	github.com/stretchr/testify v1.11.1
+	golang.org/x/term v0.41.0
+	golang.org/x/text v0.35.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -44,7 +44,7 @@ require (
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
@@ -54,8 +54,8 @@ require (
 	github.com/spf13/cast v1.7.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/net v0.47.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/net v0.52.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
