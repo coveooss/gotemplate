@@ -14,7 +14,7 @@ require (
 	github.com/drhodes/goLorem v0.0.0-20220328165741-da82e5b29246
 	github.com/fatih/color v1.19.0
 	github.com/go-errors/errors v1.5.1
-	github.com/go-git/go-git/v5 v5.17.2
+	github.com/go-git/go-git/v5 v5.18.0
 	github.com/hashicorp/hcl v1.0.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/sergi/go-diff v1.4.0
