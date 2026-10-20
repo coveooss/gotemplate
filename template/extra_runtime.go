@@ -433,22 +433,6 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	return optimizedRunTemplate(t, false, source, args...)
 }
 
-// mergeIntoCopy is target.Merge(source) without modifying target, which may be the caller's context
-func mergeIntoCopy(target, source collections.IDictionary) collections.IDictionary {
-	result := target.Create().Merge(target)
-	for key, sourceValue := range source.AsMap() {
-		targetValue, found := result.AsMap()[key]
-		targetDict, targetIsDict := targetValue.(collections.IDictionary)
-		sourceDict, sourceIsDict := sourceValue.(collections.IDictionary)
-		if !found {
-			result.AsMap()[key] = sourceValue
-		} else if targetIsDict && sourceIsDict {
-			result.AsMap()[key] = mergeIntoCopy(targetDict, sourceDict)
-		}
-	}
-	return result
-}
-
 func optimizedRunTemplate(t *Template, withClone bool, source string, args ...interface{}) (result, filename string, err error) {
 	if source == "" {
 		return
@@ -472,7 +456,14 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 	switch len(args) {
 	case 1:
 		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
-			context = mergeIntoCopy(arguments, context)
+			// Copy, because with include "x" . the arguments are the caller's context, which "_" would make reference itself
+			merged := arguments.Create().Merge(arguments)
+			for key, value := range context.AsMap() {
+				if _, found := merged.AsMap()[key]; !found {
+					merged.AsMap()[key] = value
+				}
+			}
+			context = merged
 			break
 		}
 		fallthrough
