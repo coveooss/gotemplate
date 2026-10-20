@@ -188,6 +188,11 @@ func (t *Template) TempFolder(folder string) *Template {
 	return t
 }
 
+// setMissingKeyError sets the missingkey option, which applies to the whole template set
+func (t *Template) setMissingKeyError(enabled bool) {
+	t.Option(iif(enabled, "missingkey=error", "missingkey=default").(string))
+}
+
 // GetNewContext returns a distinct context for each folder.
 func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 	folder = iif(folder != "", folder, t.folder).(string)
