@@ -435,22 +435,15 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 
 // mergeIntoCopy is target.Merge(source) without modifying target, so include "x" . can't make a context reference itself
 func mergeIntoCopy(target, source collections.IDictionary) collections.IDictionary {
-	targetMap := target.AsMap()
-	result := target.Create(len(targetMap))
-	resultMap := result.AsMap()
-	for key, value := range targetMap {
-		resultMap[key] = value
-	}
+	result := target.Create().Merge(target)
 	for key, sourceValue := range source.AsMap() {
-		targetValue, found := resultMap[key]
-		if !found {
-			resultMap[key] = sourceValue
-			continue
-		}
+		targetValue, found := result.AsMap()[key]
 		targetDict, targetIsDict := targetValue.(collections.IDictionary)
 		sourceDict, sourceIsDict := sourceValue.(collections.IDictionary)
-		if targetIsDict && sourceIsDict {
-			resultMap[key] = mergeIntoCopy(targetDict, sourceDict)
+		if !found {
+			result.AsMap()[key] = sourceValue
+		} else if targetIsDict && sourceIsDict {
+			result.AsMap()[key] = mergeIntoCopy(targetDict, sourceDict)
 		}
 	}
 	return result
