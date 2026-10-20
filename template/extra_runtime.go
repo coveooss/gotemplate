@@ -433,7 +433,7 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	return optimizedRunTemplate(t, false, source, args...)
 }
 
-// mergeIntoCopy is target.Merge(source) without modifying target, so include "x" . can't make a context reference itself
+// mergeIntoCopy is target.Merge(source) without modifying target, which may be the caller's context
 func mergeIntoCopy(target, source collections.IDictionary) collections.IDictionary {
 	result := target.Create().Merge(target)
 	for key, sourceValue := range source.AsMap() {

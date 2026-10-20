@@ -154,7 +154,7 @@ namespace: {{ .kubernetes.namespace }}
 func TestFailingIncludesOfCallerContextReturnTheirError(t *testing.T) {
 	t.Parallel()
 
-	// Each failing line makes the error handler render the file again, so every include runs again
+	// Each failing line makes the error handler render the file again; 4 lines were already enough to overflow
 	template := MustNewTemplate(".", nil, "", nil)
 	template.SetOption(StrictErrorCheck, true)
 	_, err := template.ProcessContent(strings.Repeat("{{ include \"missing\" . }}\n", 8), "failing includes")
