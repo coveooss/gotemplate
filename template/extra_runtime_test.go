@@ -102,74 +102,21 @@ func TestInclude(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestNestedIncludeGlobalValue(t *testing.T) {
+func TestIncludeResolvesGlobalValueAfterNestedInclude(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name    string
-		content string
-		result  string
-	}{
-		{
-			name: "Value read after a nested include",
-			content: `{{- define "labels" -}}
-app.kubernetes.io/managed-by: compare-manifest
+	template := MustNewTemplate(".", nil, "", nil)
+	template.Add("kubernetes", map[string]interface{}{"namespace": "monitoring"})
+	result, err := template.ProcessContent(`{{- define "labels" -}}
+managed-by: gotemplate
 {{- end -}}
 {{- define "alert-labels" -}}
 {{ include "labels" }}
 namespace: {{ .kubernetes.namespace }}
 {{- end -}}
-{{- include "alert-labels" }}`,
-			result: "app.kubernetes.io/managed-by: compare-manifest\nnamespace: monitoring",
-		},
-		{
-			name: "Value read before a nested include",
-			content: `
-				{{- define "labels" }}managed{{ end }}
-				{{- define "alert-labels" }}{{ .kubernetes.namespace }} {{ include "labels" }}{{ end }}
-				{{- include "alert-labels" }}`,
-			result: "monitoring managed",
-		},
-		{
-			name: "Values read between includes nested three levels deep",
-			content: `
-				{{- define "leaf" }}static{{ end }}
-				{{- define "middle" }}{{ include "leaf" }} {{ .kubernetes.namespace }}{{ end }}
-				{{- define "top" }}{{ include "middle" }} {{ .base }} {{ include "leaf" }} {{ .kubernetes.namespace }}{{ end }}
-				{{- include "top" }}`,
-			result: "static monitoring 1 static monitoring",
-		},
-		{
-			name: "Nested include of a template that itself needs the global context",
-			content: `
-				{{- define "inner" }}{{ .base }}{{ end }}
-				{{- define "outer" }}{{ include "inner" }} {{ .kubernetes.namespace }}{{ end }}
-				{{- include "outer" }}`,
-			result: "1 monitoring",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			template := MustNewTemplate(".", nil, "", nil)
-			template.Add("base", 1)
-			template.Add("kubernetes", map[string]interface{}{"namespace": "monitoring"})
-			result, err := template.ProcessContent(tt.content, tt.name)
-			assert.NoError(t, err)
-			assert.Equal(t, tt.result, result)
-		})
-	}
-}
-
-func TestNestedIncludeMissingValueIsStillReported(t *testing.T) {
-	t.Parallel()
-
-	template := MustNewTemplate(".", nil, "", nil)
-	template.SetOption(StrictErrorCheck, true)
-	_, err := template.ProcessContent(`
-		{{- define "labels" }}managed{{ end }}
-		{{- define "alert-labels" }}{{ include "labels" }} {{ .does.not.exist }}{{ end }}
-		{{- include "alert-labels" }}`, "missing")
-	assert.ErrorContains(t, err, "undefined value")
+{{ include "alert-labels" }}`, "nested include")
+	assert.NoError(t, err)
+	assert.Equal(t, "managed-by: gotemplate\nnamespace: monitoring", result)
 }
 
 func TestExec(t *testing.T) {

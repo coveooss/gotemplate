@@ -495,20 +495,10 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 		internalTemplate = inline
 	}
 
-	// missingkey is shared by the whole template set: restore the caller's mode so a nested include keeps its retry working
-	callerMissingKey := t.missingKey
-	defer func() {
-		t.missingKey = callerMissingKey
-		internalTemplate.Option("missingkey=" + iif(callerMissingKey == "", "default", callerMissingKey).(string))
-	}()
-	if withClone {
-		// Ignore missing keys
-		t.missingKey = "default"
-	} else {
-		// Return error on missing keys in order to retry but with context cloning
-		t.missingKey = "error"
-	}
-	internalTemplate.Option("missingkey=" + t.missingKey)
+	// Return error on missing keys in order to retry with context cloning, and restore the caller's mode afterward
+	callerMissingKeyError := t.missingKeyError
+	defer t.setMissingKeyError(internalTemplate, callerMissingKeyError)
+	t.setMissingKeyError(internalTemplate, !withClone)
 
 	// We execute the resulting template
 	if err = internalTemplate.Execute(&out, context); err != nil {
