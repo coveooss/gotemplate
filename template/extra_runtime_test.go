@@ -102,6 +102,37 @@ func TestInclude(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestIncludeContext(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content string
+		result  string
+	}{
+		{
+			name:    "Include without arguments resolves a value from the global context",
+			content: `{{- define "sub" }}{{ .base }}{{ end }}{{ include "sub" }}`,
+			result:  "1",
+		},
+		{
+			name:    "Include arguments take precedence over the include context",
+			content: `{{- define "sub" }}{{ .NL }}{{ end }}{{ include "sub" (dict "NL" "argument") }}`,
+			result:  "argument",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			template.SetOption(StrictErrorCheck, true)
+			template.Add("base", 1)
+			result, err := template.ProcessContent(tt.content, tt.name)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.result, result)
+		})
+	}
+}
+
 func TestIncludeResolvesGlobalValueAfterNestedInclude(t *testing.T) {
 	t.Parallel()
 

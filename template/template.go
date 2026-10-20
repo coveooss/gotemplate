@@ -189,7 +189,7 @@ func (t *Template) TempFolder(folder string) *Template {
 	return t
 }
 
-// setMissingKeyError tracks the missingkey option because it applies to the whole template set, nested includes included
+// setMissingKeyError sets the missingkey option, which applies to the whole template set, and tracks it for nested includes
 func (t *Template) setMissingKeyError(enabled bool) {
 	t.missingKeyError = enabled
 	t.Option(iif(enabled, "missingkey=error", "missingkey=default").(string))

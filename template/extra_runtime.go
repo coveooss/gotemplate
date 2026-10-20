@@ -495,9 +495,10 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 		internalTemplate = inline
 	}
 
-	// Return error on missing keys in order to retry with context cloning, and restore the caller's mode afterward
-	defer t.setMissingKeyError(t.missingKeyError)
+	// Return error on missing keys in order to retry with context cloning, then restore the caller's mode
+	callerMode := t.missingKeyError
 	t.setMissingKeyError(!withClone)
+	defer t.setMissingKeyError(callerMode)
 
 	// We execute the resulting template
 	if err = internalTemplate.Execute(&out, context); err != nil {
