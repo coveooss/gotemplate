@@ -36,6 +36,7 @@ type Template struct {
 	options          OptionsSet
 	optionsEnabled   OptionsSet
 	ignoredRazorExpr []string
+	missingKey       string
 }
 
 // Environment variables that could be defined to override default behaviors.
