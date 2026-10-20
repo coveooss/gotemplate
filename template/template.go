@@ -203,6 +203,7 @@ func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 
 	newTemplate := Template(*t)
 	newTemplate.Template = template.New(folder)
+	newTemplate.missingKey = ""
 	newTemplate.addFunctions(t.functions)
 	newTemplate.addFunctions(t.aliases)
 	newTemplate.init(folder)
