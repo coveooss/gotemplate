@@ -190,9 +190,9 @@ func (t *Template) TempFolder(folder string) *Template {
 }
 
 // setMissingKeyError tracks the missingkey option because it applies to the whole template set, nested includes included
-func (t *Template) setMissingKeyError(internalTemplate *template.Template, enabled bool) {
+func (t *Template) setMissingKeyError(enabled bool) {
 	t.missingKeyError = enabled
-	internalTemplate.Option(iif(enabled, "missingkey=error", "missingkey=default").(string))
+	t.Option(iif(enabled, "missingkey=error", "missingkey=default").(string))
 }
 
 // GetNewContext returns a distinct context for each folder.
