@@ -433,6 +433,29 @@ func (t *Template) runTemplate(source string, args ...interface{}) (result, file
 	return optimizedRunTemplate(t, false, source, args...)
 }
 
+// mergeIntoCopy is target.Merge(source) without modifying target, so include "x" . can't make a context reference itself
+func mergeIntoCopy(target, source collections.IDictionary) collections.IDictionary {
+	targetMap := target.AsMap()
+	result := target.Create(len(targetMap))
+	resultMap := result.AsMap()
+	for key, value := range targetMap {
+		resultMap[key] = value
+	}
+	for key, sourceValue := range source.AsMap() {
+		targetValue, found := resultMap[key]
+		if !found {
+			resultMap[key] = sourceValue
+			continue
+		}
+		targetDict, targetIsDict := targetValue.(collections.IDictionary)
+		sourceDict, sourceIsDict := sourceValue.(collections.IDictionary)
+		if targetIsDict && sourceIsDict {
+			resultMap[key] = mergeIntoCopy(targetDict, sourceDict)
+		}
+	}
+	return result
+}
+
 func optimizedRunTemplate(t *Template, withClone bool, source string, args ...interface{}) (result, filename string, err error) {
 	if source == "" {
 		return
@@ -456,7 +479,7 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 	switch len(args) {
 	case 1:
 		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
-			context = arguments.Merge(context)
+			context = mergeIntoCopy(arguments, context)
 			break
 		}
 		fallthrough

@@ -1,6 +1,8 @@
 package template
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/coveooss/gotemplate/v3/collections"
@@ -148,6 +150,144 @@ namespace: {{ .kubernetes.namespace }}
 {{ include "alert-labels" }}`, "nested include")
 	assert.NoError(t, err)
 	assert.Equal(t, "managed-by: gotemplate\nnamespace: monitoring", result)
+}
+
+func TestIncludeContextResolution(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content string
+		result  string
+	}{
+		{
+			name:    "Caller context passed as argument",
+			content: `{{- define "sub" }}{{ .base }}{{ end }}{{ include "sub" . }}`,
+			result:  "1",
+		},
+		{
+			name:    "Missing key falls back to the global context",
+			content: `{{- define "sub" }}{{ .base }}{{ end }}{{ include "sub" }}`,
+			result:  "1",
+		},
+		{
+			name: "Parent chain through nested includes",
+			content: `
+				{{- define "inner" }}{{ .base }} {{ ._._.base }}{{ end }}
+				{{- define "outer" }}{{ include "inner" (dict "base" 3) }}{{ end }}
+				{{- include "outer" (dict "base" 2) }}`,
+			result: "3 1",
+		},
+		{
+			name: "Caller context forwarded through nested includes",
+			content: `
+				{{- define "inner" }}{{ .base }}{{ end }}
+				{{- define "outer" }}{{ include "inner" . }}{{ end }}
+				{{- include "outer" . }}`,
+			result: "1",
+		},
+		{
+			name: "Missing key in a nested include falls back to the global context",
+			content: `
+				{{- define "inner" }}{{ .base }}{{ end }}
+				{{- define "outer" }}{{ include "inner" }}{{ end }}
+				{{- include "outer" }}`,
+			result: "1",
+		},
+		{
+			name: "Includes after an include of the caller context",
+			content: `
+				{{- define "first" }}{{ .base }}{{ end }}
+				{{- define "second" }}{{ .base }}{{ end }}
+				{{- include "first" . }} {{ include "second" }} {{ include "first" . }}`,
+			result: "1 1 1",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			template.Add("base", 1)
+			result, err := template.ProcessContent(tt.content, tt.name)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.result, result)
+		})
+	}
+}
+
+func TestIncludeCallerContextDoesNotReferenceItself(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content string
+		result  string
+	}{
+		{
+			name:    "Repeated include of a defined template with the caller context",
+			content: `{{- define "sub" }}{{ .base }}{{ end }}` + strings.Repeat(`{{ include "sub" . }}`, 8),
+			result:  strings.Repeat("1", 8),
+		},
+		{
+			name: "Repeated include of the parent context",
+			content: `
+				{{- define "inner" }}{{ .base }}{{ end }}
+				{{- define "outer" }}{{ include "inner" ._ }}{{ include "inner" ._ }}{{ include "inner" ._ }}{{ include "inner" ._ }}{{ end }}
+				{{- include "outer" . }}{{ include "outer" . }}`,
+			result: "11111111",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			template.Add("base", 1)
+			keysBefore := fmt.Sprint(template.Context().GetKeys())
+			result, err := template.ProcessContent(tt.content, tt.name)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.result, result)
+			assert.Equal(t, keysBefore, fmt.Sprint(template.Context().GetKeys()))
+		})
+	}
+}
+
+func TestMergeIntoCopyMatchesMergeWithoutModifyingTarget(t *testing.T) {
+	t.Parallel()
+
+	newTarget := func() collections.IDictionary {
+		return collections.AsDictionary(map[string]interface{}{
+			"kept":           "target",
+			"scalar":         "target",
+			"nested":         map[string]interface{}{"kept": "target", "deeper": map[string]interface{}{"kept": "target"}},
+			"dictOverScalar": map[string]interface{}{"kept": "target"},
+			"scalarOverDict": "target",
+		})
+	}
+	source := collections.AsDictionary(map[string]interface{}{
+		"added":          "source",
+		"scalar":         "source",
+		"nested":         map[string]interface{}{"kept": "source", "added": "source", "deeper": map[string]interface{}{"added": "source"}},
+		"dictOverScalar": "source",
+		"scalarOverDict": map[string]interface{}{"added": "source"},
+	})
+
+	expected := fmt.Sprint(newTarget().Merge(source))
+	target := newTarget()
+	untouched := fmt.Sprint(target)
+
+	assert.Equal(t, expected, fmt.Sprint(mergeIntoCopy(target, source)))
+	assert.Equal(t, untouched, fmt.Sprint(target))
+}
+
+func TestIncludeCallerContextErrorRecovery(t *testing.T) {
+	t.Parallel()
+
+	// Each failing line makes the error handler render the file again, so the include runs again
+	template := MustNewTemplate(".", nil, "", nil)
+	template.SetOption(StrictErrorCheck, true)
+	template.Add("base", 1)
+	keysBefore := fmt.Sprint(template.Context().GetKeys())
+	_, err := template.ProcessContent(strings.Repeat("{{ include \"missing\" . }}\n", 8), "error recovery")
+	assert.ErrorContains(t, err, `unable to find a template or a file named missing`)
+	assert.Equal(t, keysBefore, fmt.Sprint(template.Context().GetKeys()))
 }
 
 func TestExec(t *testing.T) {
