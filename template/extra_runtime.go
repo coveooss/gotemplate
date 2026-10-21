@@ -456,7 +456,14 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 	switch len(args) {
 	case 1:
 		if arguments, err := collections.TryAsDictionary(args[0]); err == nil {
-			context = arguments.Merge(context)
+			// Copy, because with include "x" . the arguments are the caller's context, which "_" would make reference itself
+			merged := arguments.Create().Merge(arguments)
+			for key, value := range context.AsMap() {
+				if _, found := merged.AsMap()[key]; !found {
+					merged.AsMap()[key] = value
+				}
+			}
+			context = merged
 			break
 		}
 		fallthrough
@@ -495,15 +502,10 @@ func optimizedRunTemplate(t *Template, withClone bool, source string, args ...in
 		internalTemplate = inline
 	}
 
-	if withClone {
-		// Ignore missing keys
-		internalTemplate.Option("missingkey=default")
-	} else {
-		// Return error on missing keys in order to retry but with context cloning
-		// and ensure that we restore the original behavior on error handling
-		defer func() { internalTemplate.Option("missingkey=default") }()
-		internalTemplate.Option("missingkey=error")
-	}
+	// Return error on missing keys in order to retry with context cloning, then restore the caller's mode
+	callerMode := t.missingKeyError
+	t.setMissingKeyError(!withClone)
+	defer t.setMissingKeyError(callerMode)
 
 	// We execute the resulting template
 	if err = internalTemplate.Execute(&out, context); err != nil {

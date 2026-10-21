@@ -1,6 +1,7 @@
 package template
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/coveooss/gotemplate/v3/collections"
@@ -100,6 +101,64 @@ func TestInclude(t *testing.T) {
 	`, "include")
 	assert.Equal(t, "Hello 123\nHello ", x)
 	assert.NoError(t, err)
+}
+
+func TestIncludeContext(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content string
+		result  string
+	}{
+		{
+			name:    "Include without arguments resolves a value from the global context",
+			content: `{{- define "sub" }}{{ .base }}{{ end }}{{ include "sub" }}`,
+			result:  "1",
+		},
+		{
+			name:    "Include arguments take precedence over the include context",
+			content: `{{- define "sub" }}{{ .NL }}{{ end }}{{ include "sub" (dict "NL" "argument") }}`,
+			result:  "argument",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			template := MustNewTemplate(".", nil, "", nil)
+			template.SetOption(StrictErrorCheck, true)
+			template.Add("base", 1)
+			result, err := template.ProcessContent(tt.content, tt.name)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.result, result)
+		})
+	}
+}
+
+func TestIncludeResolvesGlobalValueAfterNestedInclude(t *testing.T) {
+	t.Parallel()
+
+	template := MustNewTemplate(".", nil, "", nil)
+	template.Add("kubernetes", map[string]interface{}{"namespace": "monitoring"})
+	result, err := template.ProcessContent(`{{- define "labels" -}}
+managed-by: gotemplate
+{{- end -}}
+{{- define "alert-labels" -}}
+{{ include "labels" }}
+namespace: {{ .kubernetes.namespace }}
+{{- end -}}
+{{ include "alert-labels" }}`, "nested include")
+	assert.NoError(t, err)
+	assert.Equal(t, "managed-by: gotemplate\nnamespace: monitoring", result)
+}
+
+func TestFailingIncludesOfCallerContextReturnTheirError(t *testing.T) {
+	t.Parallel()
+
+	// Each failing line makes the error handler render the file again; 4 lines were already enough to overflow
+	template := MustNewTemplate(".", nil, "", nil)
+	template.SetOption(StrictErrorCheck, true)
+	_, err := template.ProcessContent(strings.Repeat("{{ include \"missing\" . }}\n", 8), "failing includes")
+	assert.ErrorContains(t, err, "unable to find a template or a file named missing")
 }
 
 func TestExec(t *testing.T) {

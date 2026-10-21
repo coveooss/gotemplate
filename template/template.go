@@ -36,6 +36,7 @@ type Template struct {
 	options          OptionsSet
 	optionsEnabled   OptionsSet
 	ignoredRazorExpr []string
+	missingKeyError  bool
 }
 
 // Environment variables that could be defined to override default behaviors.
@@ -188,6 +189,12 @@ func (t *Template) TempFolder(folder string) *Template {
 	return t
 }
 
+// setMissingKeyError sets the missingkey option, which applies to the whole template set, and tracks it for nested includes
+func (t *Template) setMissingKeyError(enabled bool) {
+	t.missingKeyError = enabled
+	t.Option(iif(enabled, "missingkey=error", "missingkey=default").(string))
+}
+
 // GetNewContext returns a distinct context for each folder.
 func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 	folder = iif(folder != "", folder, t.folder).(string)
@@ -197,6 +204,7 @@ func (t *Template) GetNewContext(folder string, useCache bool) *Template {
 
 	newTemplate := Template(*t)
 	newTemplate.Template = template.New(folder)
+	newTemplate.missingKeyError = false
 	newTemplate.addFunctions(t.functions)
 	newTemplate.addFunctions(t.aliases)
 	newTemplate.init(folder)
